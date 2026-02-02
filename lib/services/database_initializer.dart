@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import '../features/travel_history/data/dao/travel_history_dao.dart';
 import 'database/user_profile_dao.dart';
 import 'database_service.dart';
 
@@ -9,6 +12,7 @@ import 'database_service.dart';
 class DatabaseInitializer {
   final DatabaseService _dbService = DatabaseService();
   final UserProfileDao _userProfileDao = UserProfileDao();
+  final TravelHistoryDao _travelHistoryDao = TravelHistoryDao();
 
   /// 初始化数据库表结构
   ///
@@ -16,7 +20,7 @@ class DatabaseInitializer {
   Future<void> initializeDatabase({bool forceReset = false}) async {
     // 如果需要强制重置,删除整个数据库文件并重新创建
     if (forceReset) {
-      print('🔄 强制重置数据库...');
+      log('🔄 强制重置数据库...');
       await _dbService.deleteDatabase();
     }
 
@@ -24,10 +28,15 @@ class DatabaseInitializer {
     await _dbService.database;
 
     // 初始化用户资料模块表（8个独立的表）
-    print('👤 初始化用户资料模块表...');
+    log('👤 初始化用户资料模块表...');
     await _userProfileDao.createUserProfileTables();
-    print('✅ 用户资料模块表创建完成');
+    log('✅ 用户资料模块表创建完成');
 
-    print('✅ 数据库初始化完成！(仅表结构,无测试数据)');
+    // 初始化旅行历史模块表
+    log('🗺️ 初始化旅行历史模块表...');
+    await _travelHistoryDao.ensureTables();
+    log('✅ 旅行历史模块表创建完成');
+
+    log('✅ 数据库初始化完成！(仅表结构,无测试数据)');
   }
 }

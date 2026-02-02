@@ -37,26 +37,22 @@ class _GridSkeletonState extends BaseSkeletonState<GridSkeleton> {
 
   Widget _buildGridItem() {
     return SkeletonCard(
-      shimmerController: shimmerController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonBox(
-            shimmerController: shimmerController,
+          const SkeletonBox(
             width: double.infinity,
             height: 140,
             borderRadius: 12,
           ),
           const SizedBox(height: 12),
-          SkeletonBox(
-            shimmerController: shimmerController,
+          const SkeletonBox(
             width: double.infinity,
             height: 16,
             borderRadius: 4,
           ),
           const SizedBox(height: 8),
-          SkeletonBox(
-            shimmerController: shimmerController,
+          const SkeletonBox(
             width: 100,
             height: 14,
             borderRadius: 4,

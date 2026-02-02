@@ -1,6 +1,6 @@
 // Legacy model import removed - model no longer exists
-// import 'package:df_admin_mobile/models/city_detail_model.dart' as legacy;
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart'
+// import 'package:go_nomads_app/models/city_detail_model.dart' as legacy;
+import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart'
     as entity;
 
 // ============================================================
@@ -1079,61 +1079,141 @@ class DigitalNomadGuideDto {
 /// 闄勮繎鍩庡競鏁版嵁浼犺緭瀵硅薄
 class NearbyCityDto {
   final String id;
-  final String name;
+  final String sourceCityId;
+  final String? targetCityId;
+  final String name; // targetCityName in backend
   final String country;
-  final double distance;
-  final String transportation;
-  final double travelTime;
-  final double overallScore;
-  final String imageUrl;
+  final double distance; // distanceKm in backend
+  final String transportation; // transportationType in backend
+  final int travelTimeMinutes;
+  final List<String> highlights;
+  final NearbyCityNomadFeaturesDto? nomadFeatures;
+  final String? imageUrl;
+  final double? overallScore;
+  final double? latitude;
+  final double? longitude;
+  final bool isAIGenerated;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   NearbyCityDto({
     required this.id,
+    required this.sourceCityId,
+    this.targetCityId,
     required this.name,
     required this.country,
     required this.distance,
     required this.transportation,
-    required this.travelTime,
-    required this.overallScore,
-    required this.imageUrl,
+    required this.travelTimeMinutes,
+    this.highlights = const [],
+    this.nomadFeatures,
+    this.imageUrl,
+    this.overallScore,
+    this.latitude,
+    this.longitude,
+    this.isAIGenerated = true,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory NearbyCityDto.fromJson(Map<String, dynamic> json) {
     return NearbyCityDto(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      country: json['country'] as String,
-      distance: (json['distance'] as num).toDouble(),
-      transportation: json['transportation'] as String,
-      travelTime: (json['travelTime'] as num).toDouble(),
-      overallScore: (json['overallScore'] as num).toDouble(),
-      imageUrl: json['imageUrl'] as String,
+      id: json['id'] as String? ?? '',
+      sourceCityId: json['sourceCityId'] as String? ?? '',
+      targetCityId: json['targetCityId'] as String?,
+      name: json['targetCityName'] as String? ?? json['name'] as String? ?? '',
+      country: json['country'] as String? ?? '',
+      distance: (json['distanceKm'] as num?)?.toDouble() ?? (json['distance'] as num?)?.toDouble() ?? 0,
+      transportation: json['transportationType'] as String? ?? json['transportation'] as String? ?? 'car',
+      travelTimeMinutes: json['travelTimeMinutes'] as int? ?? ((json['travelTime'] as num?)?.toInt() ?? 0) * 60,
+      highlights: (json['highlights'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      nomadFeatures: json['nomadFeatures'] != null
+          ? NearbyCityNomadFeaturesDto.fromJson(json['nomadFeatures'] as Map<String, dynamic>)
+          : null,
+      imageUrl: json['imageUrl'] as String?,
+      overallScore: (json['overallScore'] as num?)?.toDouble(),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      isAIGenerated: json['isAIGenerated'] as bool? ?? true,
+      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'] as String) : null,
+      updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'] as String) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
+      'sourceCityId': sourceCityId,
+      'targetCityId': targetCityId,
+      'targetCityName': name,
       'country': country,
-      'distance': distance,
-      'transportation': transportation,
-      'travelTime': travelTime,
-      'overallScore': overallScore,
+      'distanceKm': distance,
+      'transportationType': transportation,
+      'travelTimeMinutes': travelTimeMinutes,
+      'highlights': highlights,
+      'nomadFeatures': nomadFeatures?.toJson(),
       'imageUrl': imageUrl,
+      'overallScore': overallScore,
+      'latitude': latitude,
+      'longitude': longitude,
+      'isAIGenerated': isAIGenerated,
     };
   }
 
-  NearbyCity toDomain() {
-    return NearbyCity(
+  /// 旅行时间（小时）
+  double get travelTime => travelTimeMinutes / 60.0;
+
+  entity.NearbyCity toDomain() {
+    return entity.NearbyCity(
       id: id,
       name: name,
       country: country,
       distance: distance,
       transportation: transportation,
       travelTime: travelTime,
-      overallScore: overallScore,
-      imageUrl: imageUrl,
+      overallScore: overallScore ?? 0,
+      imageUrl: imageUrl ?? '',
     );
+  }
+}
+
+/// 附近城市数字游民特色 DTO
+class NearbyCityNomadFeaturesDto {
+  final double? monthlyCostUsd;
+  final int? internetSpeedMbps;
+  final int? coworkingSpaces;
+  final String? visaInfo;
+  final double? safetyScore;
+  final String? qualityOfLife;
+
+  NearbyCityNomadFeaturesDto({
+    this.monthlyCostUsd,
+    this.internetSpeedMbps,
+    this.coworkingSpaces,
+    this.visaInfo,
+    this.safetyScore,
+    this.qualityOfLife,
+  });
+
+  factory NearbyCityNomadFeaturesDto.fromJson(Map<String, dynamic> json) {
+    return NearbyCityNomadFeaturesDto(
+      monthlyCostUsd: (json['monthlyCostUsd'] as num?)?.toDouble(),
+      internetSpeedMbps: json['internetSpeedMbps'] as int?,
+      coworkingSpaces: json['coworkingSpaces'] as int?,
+      visaInfo: json['visaInfo'] as String?,
+      safetyScore: (json['safetyScore'] as num?)?.toDouble(),
+      qualityOfLife: json['qualityOfLife'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'monthlyCostUsd': monthlyCostUsd,
+      'internetSpeedMbps': internetSpeedMbps,
+      'coworkingSpaces': coworkingSpaces,
+      'visaInfo': visaInfo,
+      'safetyScore': safetyScore,
+      'qualityOfLife': qualityOfLife,
+    };
   }
 }

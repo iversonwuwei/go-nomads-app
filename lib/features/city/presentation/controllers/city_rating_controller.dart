@@ -1,8 +1,11 @@
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_statistics.dart';
-import 'package:df_admin_mobile/features/city/domain/usecases/city_rating_usecases.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'dart:developer';
+
 import 'package:get/get.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_category.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_statistics.dart';
+import 'package:go_nomads_app/features/city/domain/usecases/city_rating_usecases.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// 城市评分控制器
 class CityRatingController extends GetxController {
@@ -32,11 +35,11 @@ class CityRatingController extends GetxController {
 
   /// 加载城市评分信息
   Future<void> loadCityRatings(String cityId) async {
-    print('🔍 [CityRatingController] 开始加载评分数据: cityId=$cityId');
-    
+    log('🔍 [CityRatingController] 开始加载评分数据: cityId=$cityId');
+
     // 如果切换到不同城市，先清空旧数据
     if (_currentCityId != null && _currentCityId != cityId) {
-      print('🔄 [CityRatingController] 城市切换: $_currentCityId -> $cityId, 清空旧数据');
+      log('🔄 [CityRatingController] 城市切换: $_currentCityId -> $cityId, 清空旧数据');
       statistics.clear();
       categories.clear();
       overallScore.value = 0.0;
@@ -44,7 +47,7 @@ class CityRatingController extends GetxController {
 
     // 如果已经加载过相同城市的数据，不重复加载
     if (_currentCityId == cityId && statistics.isNotEmpty) {
-      print('✅ [CityRatingController] 数据已缓存，跳过加载');
+      log('✅ [CityRatingController] 数据已缓存，跳过加载');
       return;
     }
 
@@ -53,20 +56,20 @@ class CityRatingController extends GetxController {
     error.value = null;
 
     try {
-      print('📡 [CityRatingController] 调用 API 获取评分信息...');
+      log('📡 [CityRatingController] 调用 API 获取评分信息...');
       final info = await _useCases.getCityRatings(cityId);
-      
-      print('📊 [CityRatingController] API 返回数据:');
-      print('  - categories: ${info.categories.length} 项');
-      print('  - statistics: ${info.statistics.length} 项');
-      print('  - overallScore: ${info.overallScore}');
+
+      log('📊 [CityRatingController] API 返回数据:');
+      log('  - categories: ${info.categories.length} 项');
+      log('  - statistics: ${info.statistics.length} 项');
+      log('  - overallScore: ${info.overallScore}');
 
       // 如果没有评分项，尝试初始化默认评分项
       if (info.categories.isEmpty) {
-        print('⚠️ [CityRatingController] 没有评分项，开始初始化默认评分项...');
+        log('⚠️ [CityRatingController] 没有评分项，开始初始化默认评分项...');
         try {
           await _useCases.initializeDefaultCategories();
-          print('✅ [CityRatingController] 默认评分项初始化成功，重新加载数据...');
+          log('✅ [CityRatingController] 默认评分项初始化成功，重新加载数据...');
 
           // 重新加载数据
           final updatedInfo = await _useCases.getCityRatings(cityId);
@@ -74,11 +77,11 @@ class CityRatingController extends GetxController {
           statistics.value = updatedInfo.statistics;
           overallScore.value = updatedInfo.overallScore;
 
-          print('📊 [CityRatingController] 重新加载后的数据:');
-          print('  - categories: ${updatedInfo.categories.length} 项');
-          print('  - statistics: ${updatedInfo.statistics.length} 项');
+          log('📊 [CityRatingController] 重新加载后的数据:');
+          log('  - categories: ${updatedInfo.categories.length} 项');
+          log('  - statistics: ${updatedInfo.statistics.length} 项');
         } catch (e) {
-          print('❌ [CityRatingController] 初始化默认评分项失败: $e');
+          log('❌ [CityRatingController] 初始化默认评分项失败: $e');
           // 初始化失败也不影响，继续显示空列表
           categories.value = info.categories;
           statistics.value = info.statistics;
@@ -86,20 +89,20 @@ class CityRatingController extends GetxController {
         }
       } else {
         if (info.categories.isNotEmpty) {
-          print('  - 评分项列表:');
+          log('  - 评分项列表:');
           for (var cat in info.categories) {
-            print('    * ${cat.name} (${cat.nameEn}) - ${cat.icon}');
+            log('    * ${cat.name} (${cat.nameEn}) - ${cat.icon}');
           }
         }
-        
+
         categories.value = info.categories;
         statistics.value = info.statistics;
         overallScore.value = info.overallScore;
       }
-      
-      print('✅ [CityRatingController] 评分数据加载完成');
+
+      log('✅ [CityRatingController] 评分数据加载完成');
     } catch (e) {
-      print('❌ [CityRatingController] 加载评分信息失败: $e');
+      log('❌ [CityRatingController] 加载评分信息失败: $e');
       error.value = e.toString();
       AppToast.error('加载评分信息失败: $e');
     } finally {
@@ -136,8 +139,7 @@ class CityRatingController extends GetxController {
 
       // 立即更新本地UI，不等待服务器响应
       final oldTotal = originalStat.averageRating * originalStat.ratingCount;
-      final newCount =
-          isNewRating ? originalStat.ratingCount + 1 : originalStat.ratingCount;
+      final newCount = isNewRating ? originalStat.ratingCount + 1 : originalStat.ratingCount;
       final newTotal = isNewRating ? oldTotal + rating : oldTotal - (originalStat.userRating ?? 0) + rating;
       final newAverage = newCount > 0 ? newTotal / newCount : 0.0;
 
@@ -152,6 +154,7 @@ class CityRatingController extends GetxController {
         averageRating: double.parse(newAverage.toStringAsFixed(1)),
         userRating: rating,
       );
+      statistics.refresh(); // 触发 Obx 更新
 
       // 设置提交中状态（短暂显示）
       submittingCategoryId.value = categoryId;
@@ -162,6 +165,9 @@ class CityRatingController extends GetxController {
         // 提交成功，显示完成状态
         submittingCategoryId.value = null;
         completedCategoryId.value = categoryId;
+
+        // 计算本地新的 overallScore 并通过事件通知其他控制器
+        _notifyRatingChanged();
 
         // 500ms 后清除完成状态
         Future.delayed(const Duration(milliseconds: 500), () {
@@ -178,6 +184,7 @@ class CityRatingController extends GetxController {
         final currentIndex = statistics.indexWhere((s) => s.categoryId == categoryId);
         if (currentIndex != -1) {
           statistics[currentIndex] = originalStat;
+          statistics.refresh(); // 触发 Obx 更新回滚状态
         }
 
         AppToast.error('提交评分失败');
@@ -189,12 +196,34 @@ class CityRatingController extends GetxController {
           submittingCategoryId.value = null;
         }
       });
-      
     } catch (e) {
       submittingCategoryId.value = null;
       completedCategoryId.value = null;
       AppToast.error('提交评分失败');
     }
+  }
+
+  /// 通知评分变更，发送事件给其他控制器静默更新
+  void _notifyRatingChanged() {
+    if (_currentCityId == null || statistics.isEmpty) return;
+
+    // 计算新的 overallScore
+    final validStats = statistics.where((s) => s.ratingCount > 0).toList();
+    if (validStats.isEmpty) return;
+
+    final newOverallScore = validStats.map((s) => s.averageRating).reduce((a, b) => a + b) / validStats.length;
+    final roundedScore = double.parse(newOverallScore.toStringAsFixed(1));
+    overallScore.value = roundedScore;
+
+    // 发送 city_rating 事件，携带新的 overallScore
+    log('📢 [CityRating] 发送 city_rating 事件: cityId=$_currentCityId, newScore=$roundedScore');
+    DataEventBus.instance.emit(DataChangedEvent(
+      entityType: 'city_rating',
+      entityId: _currentCityId!,
+      version: DateTime.now().millisecondsSinceEpoch,
+      changeType: DataChangeType.updated,
+      metadata: {'overallScore': roundedScore},
+    ));
   }
 
   /// 创建自定义评分项

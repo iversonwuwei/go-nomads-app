@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:df_admin_mobile/utils/city_name_helper.dart';
+import 'package:go_nomads_app/utils/city_name_helper.dart';
 
 /// 本地化城市名称Widget
 /// 自动将英文城市名称转换为当前语言的显示名称

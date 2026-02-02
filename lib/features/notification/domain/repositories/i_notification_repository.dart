@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 
 /// 通知数据响应（包含列表和未读数量）
 class NotificationDataResponse {
@@ -30,6 +30,9 @@ abstract class INotificationRepository {
   /// 标记通知为已读
   Future<Result<bool>> markAsRead(String notificationId);
 
+  /// 更新通知元数据
+  Future<Result<bool>> updateMetadata(String notificationId, Map<String, dynamic> metadata);
+
   /// 批量标记为已读
   Future<Result<bool>> markMultipleAsRead(List<String> notificationIds);
 
@@ -56,5 +59,19 @@ abstract class INotificationRepository {
     required NotificationType type,
     String? relatedId,
     Map<String, dynamic>? metadata,
+  });
+
+  /// 响应活动邀请
+  Future<Result<bool>> respondToEventInvitation({
+    required String notificationId,
+    required String invitationId,
+    required bool accepted,
+  });
+
+  /// 响应版主转让请求
+  Future<Result<bool>> respondToModeratorTransfer({
+    required String notificationId,
+    required String transferId,
+    required bool accepted,
   });
 }

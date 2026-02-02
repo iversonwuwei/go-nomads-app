@@ -1,4 +1,6 @@
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -34,7 +36,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     super.didUpdateWidget(oldWidget);
     // 如果 cityId 变化，重新加载数据
     if (oldWidget.cityId != widget.cityId) {
-      print('🔄 [CityRatingsCard] cityId 变化: ${oldWidget.cityId} -> ${widget.cityId}');
+      log('🔄 [CityRatingsCard] cityId 变化: ${oldWidget.cityId} -> ${widget.cityId}');
       _hasLoaded = false;
       _lastCityId = null;
       _loadData();
@@ -44,11 +46,11 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
   void _loadData() {
     // 如果已经加载过相同城市，跳过
     if (_hasLoaded && _lastCityId == widget.cityId) {
-      print('⏭️ [CityRatingsCard] 已加载过相同城市，跳过');
+      log('⏭️ [CityRatingsCard] 已加载过相同城市，跳过');
       return;
     }
 
-    print('📥 [CityRatingsCard] 开始加载数据: cityId=${widget.cityId}');
+    log('📥 [CityRatingsCard] 开始加载数据: cityId=${widget.cityId}');
     final controller = Get.find<CityRatingController>();
     controller.loadCityRatings(widget.cityId);
     _hasLoaded = true;
@@ -60,24 +62,24 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     final controller = Get.find<CityRatingController>();
 
     return Obx(() {
-      print('🎨 [CityRatingsCard] 重新构建 UI:');
-      print('  - isLoading: ${controller.isLoading.value}');
-      print('  - statistics.length: ${controller.statistics.length}');
-      print('  - categories.length: ${controller.categories.length}');
+      log('🎨 [CityRatingsCard] 重新构建 UI:');
+      log('  - isLoading: ${controller.isLoading.value}');
+      log('  - statistics.length: ${controller.statistics.length}');
+      log('  - categories.length: ${controller.categories.length}');
 
       // 加载中状态 - 显示骨架屏
       if (controller.isLoading.value) {
-        print('  ➡️ 显示骨架屏');
+        log('  ➡️ 显示骨架屏');
         return _buildSkeletonLoader();
       }
 
       // 无数据状态
       if (controller.statistics.isEmpty) {
-        print('  ➡️ 无数据，返回空白');
+        log('  ➡️ 无数据，返回空白');
         return const SizedBox.shrink();
       }
 
-      print('  ➡️ 显示评分列表 (${controller.statistics.length} 项)');
+      log('  ➡️ 显示评分列表 (${controller.statistics.length} 项)');
 
       // 正常显示数据
       return Container(
@@ -94,7 +96,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
               separatorBuilder: (context, index) => const SizedBox(height: 24),
               itemBuilder: (context, index) {
                 final stat = controller.statistics[index];
-                print('🎯 [CityRatingsCard] 渲染第 ${index + 1} 项: ${stat.categoryName}');
+                log('🎯 [CityRatingsCard] 渲染第 ${index + 1} 项: ${stat.categoryName}');
                 return _buildRatingItem(context, controller, stat);
               },
             ),
@@ -112,10 +114,10 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     final userRating = stat.userRating ?? 0;
     final averageRating = stat.averageRating;
 
-    print('🎯 [评分项] ${stat.categoryName}:');
-    print('   - userRating: $userRating');
-    print('   - averageRating: $averageRating');
-    print('   - ratingCount: ${stat.ratingCount}');
+    log('🎯 [评分项] ${stat.categoryName}:');
+    log('   - userRating: $userRating');
+    log('   - averageRating: $averageRating');
+    log('   - ratingCount: ${stat.ratingCount}');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -258,7 +260,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
       starIcon = FontAwesomeIcons.solidStar; // 实心星
       starColor = const Color(0xFFFF4458); // 红色
     } else if (isHalfFilled) {
-      starIcon = FontAwesomeIcons.starHalfAlt; // 半星
+      starIcon = FontAwesomeIcons.starHalfStroke; // 半星
       starColor = const Color(0xFFFF4458); // 红色
     } else {
       starIcon = FontAwesomeIcons.star; // 无评分：空心星
@@ -290,7 +292,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     if (isFilled) {
       starIcon = FontAwesomeIcons.solidStar; // 实心星
     } else if (isHalfFilled) {
-      starIcon = FontAwesomeIcons.starHalfAlt; // 半星
+      starIcon = FontAwesomeIcons.starHalfStroke; // 半星
     } else {
       starIcon = FontAwesomeIcons.star; // 空心星
     }

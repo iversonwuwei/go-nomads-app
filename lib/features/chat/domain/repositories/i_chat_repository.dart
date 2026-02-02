@@ -1,6 +1,5 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-
-import 'package:df_admin_mobile/features/chat/domain/entities/chat.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 
 /// Chat Repository 接口
 ///
@@ -40,6 +39,36 @@ abstract class IChatRepository {
   ///
   /// 返回: Result<void>
   Future<Result<void>> leaveChatRoom(String roomId);
+
+  /// 获取或创建 Meetup 聊天室
+  ///
+  /// 参数:
+  /// - [meetupId]: Meetup ID
+  /// - [meetupTitle]: Meetup 标题
+  /// - [meetupType]: Meetup 类型（可选）
+  ///
+  /// 返回: Result<ChatRoom>
+  /// 说明: 创建聊天室时会自动将当前用户加入群聊
+  Future<Result<ChatRoom>> getOrCreateMeetupChatRoom({
+    required String meetupId,
+    required String meetupTitle,
+    String? meetupType,
+  });
+
+  /// 获取或创建一对一私聊
+  ///
+  /// 参数:
+  /// - [targetUserId]: 目标用户ID
+  /// - [targetUserName]: 目标用户名称
+  /// - [targetUserAvatar]: 目标用户头像（可选）
+  ///
+  /// 返回: Result<ChatRoom>
+  /// 说明: 会自动将两个用户都加入聊天室
+  Future<Result<ChatRoom>> getOrCreateDirectChat({
+    required String targetUserId,
+    required String targetUserName,
+    String? targetUserAvatar,
+  });
 
   // ==================== 消息管理 ====================
 
@@ -137,5 +166,36 @@ abstract class IChatRepository {
     required String roomId,
     Function(OnlineUser user)? onUserJoined,
     Function(String userId)? onUserLeft,
+  });
+
+  // ==================== 消息搜索 ====================
+
+  /// 搜索消息
+  ///
+  /// 参数:
+  /// - [keyword]: 搜索关键词
+  /// - [roomId]: 聊天室ID (可选，不传则搜索所有聊天室)
+  /// - [page]: 页码 (默认1)
+  /// - [pageSize]: 每页数量 (默认20)
+  ///
+  /// 返回: Result<List<ChatMessage>>
+  /// 说明: 优先从本地缓存搜索，若无结果则从后端搜索
+  Future<Result<List<ChatMessage>>> searchMessages({
+    required String keyword,
+    String? roomId,
+    int page = 1,
+    int pageSize = 20,
+  });
+
+  /// 获取搜索结果数量
+  ///
+  /// 参数:
+  /// - [keyword]: 搜索关键词
+  /// - [roomId]: 聊天室ID (可选)
+  ///
+  /// 返回: Result<int>
+  Future<Result<int>> getSearchCount({
+    required String keyword,
+    String? roomId,
   });
 }

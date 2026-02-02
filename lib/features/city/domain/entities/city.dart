@@ -4,12 +4,16 @@ class Moderator {
   final String name;
   final String? email;
   final String? avatar;
+  final ModeratorTravelStats? stats;
+  final ModeratorTravelHistory? latestTravelHistory;
 
   const Moderator({
     required this.id,
     required this.name,
     this.email,
     this.avatar,
+    this.stats,
+    this.latestTravelHistory,
   });
 
   factory Moderator.fromJson(Map<String, dynamic> json) {
@@ -18,6 +22,10 @@ class Moderator {
       name: json['name'] as String? ?? '',
       email: json['email'] as String?,
       avatar: json['avatar'] as String?,
+      stats: json['stats'] != null ? ModeratorTravelStats.fromJson(json['stats'] as Map<String, dynamic>) : null,
+      latestTravelHistory: json['latestTravelHistory'] != null
+          ? ModeratorTravelHistory.fromJson(json['latestTravelHistory'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -27,6 +35,8 @@ class Moderator {
       'name': name,
       if (email != null) 'email': email,
       if (avatar != null) 'avatar': avatar,
+      if (stats != null) 'stats': stats!.toJson(),
+      if (latestTravelHistory != null) 'latestTravelHistory': latestTravelHistory!.toJson(),
     };
   }
 
@@ -41,6 +51,76 @@ class Moderator {
 
   @override
   String toString() => 'Moderator(id: $id, name: $name)';
+}
+
+/// 版主旅行统计
+class ModeratorTravelStats {
+  final int countriesVisited;
+  final int citiesVisited;
+  final int totalDays;
+  final int totalTrips;
+
+  const ModeratorTravelStats({
+    this.countriesVisited = 0,
+    this.citiesVisited = 0,
+    this.totalDays = 0,
+    this.totalTrips = 0,
+  });
+
+  factory ModeratorTravelStats.fromJson(Map<String, dynamic> json) {
+    return ModeratorTravelStats(
+      countriesVisited: json['countriesVisited'] as int? ?? 0,
+      citiesVisited: json['citiesVisited'] as int? ?? 0,
+      totalDays: json['totalDays'] as int? ?? 0,
+      totalTrips: json['totalTrips'] as int? ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'countriesVisited': countriesVisited,
+      'citiesVisited': citiesVisited,
+      'totalDays': totalDays,
+      'totalTrips': totalTrips,
+    };
+  }
+}
+
+/// 版主最新旅行历史
+class ModeratorTravelHistory {
+  final String? cityName;
+  final String? countryName;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final String? status;
+
+  const ModeratorTravelHistory({
+    this.cityName,
+    this.countryName,
+    this.startDate,
+    this.endDate,
+    this.status,
+  });
+
+  factory ModeratorTravelHistory.fromJson(Map<String, dynamic> json) {
+    return ModeratorTravelHistory(
+      cityName: json['cityName'] as String?,
+      countryName: json['countryName'] as String?,
+      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate'] as String) : null,
+      endDate: json['endDate'] != null ? DateTime.tryParse(json['endDate'] as String) : null,
+      status: json['status'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (cityName != null) 'cityName': cityName,
+      if (countryName != null) 'countryName': countryName,
+      if (startDate != null) 'startDate': startDate!.toIso8601String(),
+      if (endDate != null) 'endDate': endDate!.toIso8601String(),
+      if (status != null) 'status': status,
+    };
+  }
 }
 
 /// City Domain Entity - 城市实体
@@ -58,20 +138,26 @@ class City {
   final String? description; // 描述
   final String? timezone; // 时区
   final String? population; // 人口
+  final String? currency; // 货币
 
-  // 天气相关
+  // 天气相关（实时数据，仅在详情页加载）
   final int? temperature; // 温度
   final int? feelsLike; // 体感温度
   final String? weather; // 天气状况
   final int? humidity; // 湿度
   final int? airQualityIndex; // 空气质量指数
 
-  // 评分相关
+  // 评分相关 - 数字游民核心关注指标
   final double? overallScore; // 总体评分
   final double? costScore; // 成本评分
   final double? internetScore; // 网速评分
   final double? safetyScore; // 安全评分
   final double? likedScore; // 喜爱度
+  final double? communityScore; // 社区活跃度评分
+  final double? weatherScore; // 天气评分（静态评分）
+
+  // 城市标签 - 快速了解城市特点
+  final List<String>? tags;
 
   // 统计数据
   final int? meetupCount; // Meetup 数量
@@ -108,6 +194,7 @@ class City {
     this.description,
     this.timezone,
     this.population,
+    this.currency,
     this.temperature,
     this.feelsLike,
     this.weather,
@@ -118,6 +205,9 @@ class City {
     this.internetScore,
     this.safetyScore,
     this.likedScore,
+    this.communityScore,
+    this.weatherScore,
+    this.tags,
     this.meetupCount,
     this.reviewCount,
     this.coworkingCount,
@@ -132,6 +222,9 @@ class City {
   });
 
   /// Business Logic Methods
+
+  /// 是否有版主
+  bool get hasModerator => moderatorId != null && moderatorId!.isNotEmpty;
 
   /// 获取空气质量等级
   String get airQualityLevel {
@@ -162,9 +255,74 @@ class City {
     return '$name, $country';
   }
 
+  // ============================================================
+  // 智能默认值 Getters - 用于 UI 显示，确保不显示 null
+  // ============================================================
+
+  /// 显示用国家名（默认: 未知）
+  String get displayCountry => country ?? 'Unknown';
+
+  /// 显示用地区（默认: Global）
+  String get displayRegion => region ?? 'Global';
+
+  /// 显示用温度（默认: 25°C）
+  int get displayTemperature => temperature ?? 25;
+
+  /// 显示用天气（默认: Sunny）
+  String get displayWeather => weather ?? 'Sunny';
+
+  /// 显示用湿度（默认: 60%）
+  int get displayHumidity => humidity ?? 60;
+
+  /// 显示用空气质量指数（默认: 50 - Good）
+  int get displayAirQualityIndex => airQualityIndex ?? 50;
+
+  /// 显示用综合评分（默认: 0.0 - 暂无评分）
+  double get displayOverallScore => overallScore ?? 0.0;
+
+  /// 显示用成本评分（默认: 3.0）
+  double get displayCostScore => costScore ?? 3.0;
+
+  /// 显示用网速评分（默认: 3.0）
+  double get displayInternetScore => internetScore ?? 3.0;
+
+  /// 显示用安全评分（默认: 3.0）
+  double get displaySafetyScore => safetyScore ?? 3.0;
+
+  /// 显示用喜爱度（默认: 3.0）
+  double get displayLikedScore => likedScore ?? 3.0;
+
+  /// 显示用 Meetup 数量（默认: 0）
+  int get displayMeetupCount => meetupCount ?? 0;
+
+  /// 显示用评论数量（默认: 0）
+  int get displayReviewCount => reviewCount ?? 0;
+
+  /// 显示用 Coworking 数量（默认: 0）
+  int get displayCoworkingCount => coworkingCount ?? 0;
+
+  /// 显示用平均花费（默认: 1500 USD/月）
+  double get displayAverageCost => averageCost ?? 1500.0;
+
+  /// 显示用人口（默认: 未知）
+  String get displayPopulation => population ?? 'Unknown';
+
+  /// 显示用时区（默认: UTC）
+  String get displayTimezone => timezone ?? 'UTC';
+
+  /// 显示用描述（默认: 城市简介）
+  String get displayDescription => description ?? 'A vibrant city waiting to be explored by digital nomads.';
+
+  /// 显示用图片（默认占位图）
+  String get displayImageUrl => imageUrl ?? 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800';
+
+  /// 显示用竖屏图片（默认占位图）
+  String get displayPortraitImageUrl =>
+      portraitImageUrl ?? 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=720&h=1280&fit=crop';
+
   /// 获取天气图标
   String get weatherIcon {
-    switch (weather?.toLowerCase()) {
+    switch (displayWeather.toLowerCase()) {
       case 'sunny':
       case 'clear':
         return '☀️';
@@ -199,6 +357,13 @@ class City {
       }
     }
 
+    // 解析城市标签
+    final rawTags = json['tags'];
+    List<String>? tags;
+    if (rawTags != null && rawTags is List) {
+      tags = rawTags.map((e) => e.toString()).toList();
+    }
+
     return City(
       id: json['id'] as String,
       name: json['name'] as String? ?? 'Unknown',
@@ -209,18 +374,22 @@ class City {
       portraitImageUrl: json['portraitImageUrl'] as String?,
       landscapeImageUrls: landscapeImageUrls,
       description: json['description'] as String?,
-      timezone: json['timezone'] as String?,
+      timezone: json['timeZone'] as String? ?? json['timezone'] as String?,
       population: json['population'] as String?,
+      currency: json['currency'] as String?,
       temperature: weather?['temperature']?.toInt(),
       feelsLike: weather?['feelsLike']?.toInt(),
       weather: weather?['weather']?.toString(),
       humidity: weather?['humidity']?.toInt(),
       airQualityIndex: weather?['airQualityIndex']?.toInt(),
-      overallScore: json['overallScore']?.toDouble(),
+      overallScore: json['overallScore']?.toDouble() ?? json['overallRating']?.toDouble(),
       costScore: json['costScore']?.toDouble(),
-      internetScore: json['internetScore']?.toDouble(),
+      internetScore: json['internetQualityScore']?.toDouble() ?? json['internetScore']?.toDouble(),
       safetyScore: json['safetyScore']?.toDouble(),
       likedScore: json['likedScore']?.toDouble(),
+      communityScore: json['communityScore']?.toDouble(),
+      weatherScore: json['weatherScore']?.toDouble(),
+      tags: tags,
       meetupCount: json['meetupCount']?.toInt(),
       reviewCount: json['reviewCount']?.toInt(),
       coworkingCount: json['coworkingCount']?.toInt(),
@@ -249,6 +418,7 @@ class City {
       if (description != null) 'description': description,
       if (timezone != null) 'timezone': timezone,
       if (population != null) 'population': population,
+      if (currency != null) 'currency': currency,
       if (temperature != null || feelsLike != null || weather != null || humidity != null || airQualityIndex != null)
         'weather': {
           if (temperature != null) 'temperature': temperature,
@@ -262,6 +432,9 @@ class City {
       if (internetScore != null) 'internetScore': internetScore,
       if (safetyScore != null) 'safetyScore': safetyScore,
       if (likedScore != null) 'likedScore': likedScore,
+      if (communityScore != null) 'communityScore': communityScore,
+      if (weatherScore != null) 'weatherScore': weatherScore,
+      if (tags != null && tags!.isNotEmpty) 'tags': tags,
       if (meetupCount != null) 'meetupCount': meetupCount,
       if (reviewCount != null) 'reviewCount': reviewCount,
       if (coworkingCount != null) 'coworkingCount': coworkingCount,
@@ -289,6 +462,7 @@ class City {
     String? description,
     String? timezone,
     String? population,
+    String? currency,
     int? temperature,
     int? feelsLike,
     String? weather,
@@ -299,6 +473,9 @@ class City {
     double? internetScore,
     double? safetyScore,
     double? likedScore,
+    double? communityScore,
+    double? weatherScore,
+    List<String>? tags,
     int? meetupCount,
     int? reviewCount,
     int? coworkingCount,
@@ -323,6 +500,7 @@ class City {
       description: description ?? this.description,
       timezone: timezone ?? this.timezone,
       population: population ?? this.population,
+      currency: currency ?? this.currency,
       temperature: temperature ?? this.temperature,
       feelsLike: feelsLike ?? this.feelsLike,
       weather: weather ?? this.weather,
@@ -333,6 +511,9 @@ class City {
       internetScore: internetScore ?? this.internetScore,
       safetyScore: safetyScore ?? this.safetyScore,
       likedScore: likedScore ?? this.likedScore,
+      communityScore: communityScore ?? this.communityScore,
+      weatherScore: weatherScore ?? this.weatherScore,
+      tags: tags ?? this.tags,
       meetupCount: meetupCount ?? this.meetupCount,
       reviewCount: reviewCount ?? this.reviewCount,
       coworkingCount: coworkingCount ?? this.coworkingCount,
@@ -358,4 +539,46 @@ class City {
 
   @override
   String toString() => 'City(id: $id, name: $name, country: $country)';
+}
+
+/// 城市聚合数据 - 用于异步加载
+/// 包含需要单独查询的统计数据
+class CityCountsData {
+  final String cityId;
+  final int meetupCount;
+  final int coworkingCount;
+  final int reviewCount;
+  final double averageCost;
+
+  const CityCountsData({
+    required this.cityId,
+    this.meetupCount = 0,
+    this.coworkingCount = 0,
+    this.reviewCount = 0,
+    this.averageCost = 0,
+  });
+
+  factory CityCountsData.fromJson(Map<String, dynamic> json) {
+    return CityCountsData(
+      cityId: json['cityId'] as String,
+      meetupCount: json['meetupCount']?.toInt() ?? 0,
+      coworkingCount: json['coworkingCount']?.toInt() ?? 0,
+      reviewCount: json['reviewCount']?.toInt() ?? 0,
+      averageCost: json['averageCost']?.toDouble() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'cityId': cityId,
+      'meetupCount': meetupCount,
+      'coworkingCount': coworkingCount,
+      'reviewCount': reviewCount,
+      'averageCost': averageCost,
+    };
+  }
+
+  @override
+  String toString() =>
+      'CityCountsData(cityId: $cityId, meetup: $meetupCount, coworking: $coworkingCount, review: $reviewCount, avgCost: $averageCost)';
 }

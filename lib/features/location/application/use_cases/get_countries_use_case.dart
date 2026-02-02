@@ -1,7 +1,7 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/country/domain/entities/country_option.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/country/domain/entities/country_option.dart';
 
-import 'package:df_admin_mobile/features/location/domain/repositories/ilocation_repository.dart';
+import 'package:go_nomads_app/features/location/domain/repositories/ilocation_repository.dart';
 
 /// 获取国家列表 Use Case
 class GetCountriesUseCase {

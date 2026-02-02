@@ -1,4 +1,6 @@
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 
 /// 取消 RSVP Use Case
 class CancelRsvpUseCase {
@@ -9,8 +11,8 @@ class CancelRsvpUseCase {
   /// 执行取消 RSVP
   Future<bool> execute(String meetupId) async {
     try {
-      print('🎯 执行 CancelRsvpUseCase...');
-      print('   活动ID: $meetupId');
+      log('🎯 执行 CancelRsvpUseCase...');
+      log('   活动ID: $meetupId');
 
       if (meetupId.trim().isEmpty) {
         throw ArgumentError('活动ID不能为空');
@@ -19,14 +21,14 @@ class CancelRsvpUseCase {
       final success = await _repository.cancelRsvp(meetupId);
 
       if (success) {
-        print('✅ 取消 RSVP 成功');
+        log('✅ 取消 RSVP 成功');
       } else {
-        print('⚠️ 取消 RSVP 返回false');
+        log('⚠️ 取消 RSVP 返回false');
       }
 
       return success;
     } catch (e) {
-      print('❌ CancelRsvpUseCase 执行失败: $e');
+      log('❌ CancelRsvpUseCase 执行失败: $e');
       rethrow;
     }
   }

@@ -54,8 +54,7 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
     return Stack(
       children: [
         // 主图片区域
-        SkeletonBox(
-          shimmerController: shimmerController,
+        const SkeletonBox(
           width: double.infinity,
           height: 320,
           borderRadius: 0,
@@ -82,13 +81,12 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
         ),
 
         // 城市名称占位
-        Positioned(
+        const Positioned(
           bottom: 20,
           left: 0,
           right: 0,
           child: Center(
             child: SkeletonBox(
-              shimmerController: shimmerController,
               width: 180,
               height: 32,
               borderRadius: 20,
@@ -108,7 +106,6 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
               (index) => Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 child: SkeletonBox(
-                  shimmerController: shimmerController,
                   width: index == 0 ? 24 : 8,
                   height: 8,
                   borderRadius: 4,
@@ -137,16 +134,15 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
           ),
         ],
       ),
-      child: Row(
+      child: const Row(
         children: [
           // 评分徽章
           SkeletonBox(
-            shimmerController: shimmerController,
             width: 80,
             height: 44,
             borderRadius: 16,
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
 
           // 评论信息
           Expanded(
@@ -154,14 +150,12 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonBox(
-                  shimmerController: shimmerController,
                   width: 120,
                   height: 18,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 SkeletonBox(
-                  shimmerController: shimmerController,
                   width: 150,
                   height: 14,
                   borderRadius: 4,
@@ -174,14 +168,12 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
           Row(
             children: [
               SkeletonBox(
-                shimmerController: shimmerController,
                 width: 48,
                 height: 48,
                 borderRadius: 12,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               SkeletonBox(
-                shimmerController: shimmerController,
                 width: 48,
                 height: 48,
                 borderRadius: 12,
@@ -216,7 +208,6 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
             padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: SkeletonBox(
-                shimmerController: shimmerController,
                 width: index == 0 ? 60 : 50,
                 height: 20,
                 borderRadius: 4,
@@ -232,18 +223,17 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
   List<Widget> _buildScoreItems() {
     return List.generate(
       5,
-      (index) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
+      (index) => const Padding(
+        padding: EdgeInsets.only(bottom: 16),
         child: Row(
           children: [
             // 图标
             SkeletonBox(
-              shimmerController: shimmerController,
               width: 24,
               height: 24,
               borderRadius: 6,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
 
             // 进度条区域
             Expanded(
@@ -251,14 +241,12 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SkeletonBox(
-                    shimmerController: shimmerController,
                     width: 80,
                     height: 16,
                     borderRadius: 4,
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   SkeletonBox(
-                    shimmerController: shimmerController,
                     width: double.infinity,
                     height: 4,
                     borderRadius: 2,
@@ -266,11 +254,10 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
 
             // 分数
             SkeletonBox(
-              shimmerController: shimmerController,
               width: 30,
               height: 20,
               borderRadius: 4,
@@ -288,23 +275,20 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
       (index) => Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: SkeletonCard(
-          shimmerController: shimmerController,
           height: 180,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 卡片标题
-              Row(
+              const Row(
                 children: [
                   SkeletonBox(
-                    shimmerController: shimmerController,
                     width: 32,
                     height: 32,
                     borderRadius: 8,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   SkeletonBox(
-                    shimmerController: shimmerController,
                     width: 150,
                     height: 20,
                     borderRadius: 4,
@@ -319,7 +303,6 @@ class _CityDetailSkeletonState extends BaseSkeletonState<CityDetailSkeleton> {
                 (i) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: SkeletonBox(
-                    shimmerController: shimmerController,
                     width: i == 2 ? 200 : double.infinity,
                     height: 14,
                     borderRadius: 4,

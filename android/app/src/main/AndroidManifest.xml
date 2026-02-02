@@ -16,10 +16,110 @@
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 <uses-permission android:name="android.permission.VIBRATE" />
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+<!-- Android 11+ 需要声明 queries 才能检测其他App -->
+<queries>
+    <!-- Facebook -->
+    <package android:name="com.facebook.katana" />
+    <!-- Twitter/X -->
+    <package android:name="com.twitter.android" />
+    <!-- WhatsApp -->
+    <package android:name="com.whatsapp" />
+    <!-- Telegram -->
+    <package android:name="org.telegram.messenger" />
+    <!-- LinkedIn -->
+    <package android:name="com.linkedin.android" />
+    <!-- QQ -->
+    <package android:name="com.tencent.mobileqq" />
+    <!-- 微信 -->
+    <package android:name="com.tencent.mm" />
+    <!-- 微博 -->
+    <package android:name="com.sina.weibo" />
+    <!-- 钉钉 -->
+    <package android:name="com.alibaba.android.rimet" />
+    
+    <!-- 允许查询 URL scheme -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="https" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="fb" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="twitter" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="whatsapp" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="tg" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="linkedin" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqq" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqzone" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="weixin" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="sinaweibo" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="dingtalk" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.SENDTO" />
+        <data android:scheme="smsto" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.SENDTO" />
+        <data android:scheme="mailto" />
+    </intent>
+    
+    <!-- 地图应用 -->
+    <package android:name="com.google.android.apps.maps" />
+    <package android:name="com.autonavi.minimap" />
+    <package android:name="com.baidu.BaiduMap" />
+    <package android:name="com.tencent.map" />
+    
+    <!-- 地图应用 URL scheme -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="google.navigation" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="androidamap" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="baidumap" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="qqmap" />
+    </intent>
+</queries>
     
     <application
         android:label="行途"
-        android:icon="@mipmap/go_nomads"
+        android:icon="@mipmap/ic_launcher"
         android:networkSecurityConfig="@xml/network_security_config">
 
 <!-- 高德地图 API Key -->
@@ -46,6 +146,52 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            
+            <!-- Deep Link for Payment callbacks -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="gonomads" android:host="payment" />
+            </intent-filter>
+            
+            <!-- 行途 App 通用深链 (gonomads://) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="gonomads" />
+            </intent-filter>
+            
+            <!-- Universal Link / App Link (https://go-nomads.com) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="go-nomads.com" />
+            </intent-filter>
+            
+            <!-- Alipay URL Scheme for payment callback -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="alipay2021006115624759" />
+            </intent-filter>
+        </activity>
+        
+        <!-- 微信登录/分享/支付回调 Activity -->
+        <activity
+            android:name=".wxapi.WXEntryActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.gonomads.go_nomads_app"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="wx3b333eed7c75a444" />
+            </intent-filter>
         </activity>
         
         <!-- Don't delete the meta-data below.
@@ -63,6 +209,15 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- 支付宝包查询权限 -->
+        <package android:name="com.eg.android.AlipayGphone" />
+        <!-- PayPal 包查询权限 -->
+        <package android:name="com.paypal.android.p2pmobile" />
+        <!-- PayPal URL Scheme 查询 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="paypal" />
         </intent>
     </queries>
 </manifest>

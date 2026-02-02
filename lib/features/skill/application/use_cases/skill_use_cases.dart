@@ -1,7 +1,7 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
 
-import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
-import 'package:df_admin_mobile/features/skill/domain/repositories/i_skill_repository.dart';
+import 'package:go_nomads_app/features/skill/domain/entities/skill.dart';
+import 'package:go_nomads_app/features/skill/domain/repositories/i_skill_repository.dart';
 
 /// GetSkillsUseCase - 获取技能列表用例
 class GetSkillsUseCase {

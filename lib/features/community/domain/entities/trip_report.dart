@@ -132,6 +132,14 @@ class CityRecommendation {
         return 'luxury';
     }
   }
+
+  /// 获取完整地址（详细地址 + 城市）
+  String get fullAddress {
+    final parts = <String>[];
+    if (address != null && address!.isNotEmpty) parts.add(address!);
+    if (city.isNotEmpty) parts.add(city);
+    return parts.isNotEmpty ? parts.join(', ') : city;
+  }
 }
 
 /// Question Domain Entity - 问答问题
@@ -180,8 +188,7 @@ class Question {
     return now.difference(createdAt).inDays < 7;
   }
 
-  bool hasTag(String tag) =>
-      tags.any((t) => t.toLowerCase() == tag.toLowerCase());
+  bool hasTag(String tag) => tags.any((t) => t.toLowerCase() == tag.toLowerCase());
 }
 
 /// Answer Domain Entity - 问答答案

@@ -1,5 +1,5 @@
-// import 'package:df_admin_mobile/models/coworking_space_model.dart' as legacy;
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart' as entity;
+// import 'package:go_nomads_app/models/coworking_space_model.dart' as legacy;
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart' as entity;
 
 // Type aliases for backward compatibility
 typedef CoworkingSpace = CoworkingSpaceDto;
@@ -85,6 +85,7 @@ class CoworkingSpaceDto {
       // 扁平化 pricing 字段
       'pricePerHour': pricing.hourlyRate,
       'pricePerDay': pricing.dailyRate,
+      'pricePerWeek': pricing.weeklyRate,
       'pricePerMonth': pricing.monthlyRate,
       'currency': pricing.currency,
       // 扁平化 amenities 字段 - 后端期望 string[]
@@ -96,6 +97,8 @@ class CoworkingSpaceDto {
       // 扁平化 specs 字段
       'wifiSpeed': specs.wifiSpeed,
       'capacity': specs.capacity,
+      'desks': specs.numberOfDesks,
+      'meetingRooms': specs.numberOfMeetingRooms,
       // openingHours
       'openingHours': openingHours.isNotEmpty ? openingHours.join('; ') : null,
       // contact info - 空字符串转为 null 避免后端验证失败
@@ -113,6 +116,14 @@ class CoworkingSpaceDto {
   }
 
   factory CoworkingSpaceDto.fromJson(Map<String, dynamic> json) {
+    // 解析 amenities 数组（不区分大小写匹配）
+    final amenitiesList = json['amenities'] as List<dynamic>? ?? [];
+    final amenitiesLower = amenitiesList.map((e) => e.toString().toLowerCase()).toList();
+
+    bool hasAmenity(List<String> keywords) {
+      return amenitiesLower.any((a) => keywords.any((k) => a.contains(k)));
+    }
+
     // 适配后端实际返回的扁平化数据结构
     return CoworkingSpaceDto(
       id: json['id'] ?? '',
@@ -134,23 +145,34 @@ class CoworkingSpaceDto {
       pricing: CoworkingPricingDto.fromJson({
         'hourlyRate': json['pricePerHour'],
         'dailyRate': json['pricePerDay'],
+        'weeklyRate': json['pricePerWeek'],
         'monthlyRate': json['pricePerMonth'],
         'currency': json['currency'] ?? 'CNY',
       }),
-      // 适配后端扁平化的 amenities 字段
+      // 适配后端扁平化的 amenities 字段 - 完整解析所有设施
       amenities: CoworkingAmenitiesDto.fromJson({
-        'hasWifi': json['amenities']?.contains('wifi') ?? false,
-        'hasMeetingRoom': json['hasMeetingRoom'] ?? json['amenities']?.contains('meeting_room') ?? false,
-        'hasCoffee': json['hasCoffee'] ?? json['amenities']?.contains('coffee') ?? false,
-        'hasParking': json['hasParking'] ?? json['amenities']?.contains('parking') ?? false,
-        'has24HourAccess': json['has247Access'] ?? json['amenities']?.contains('24_hour') ?? false,
+        'hasWifi': hasAmenity(['wifi']),
+        'hasCoffee': json['hasCoffee'] ?? hasAmenity(['coffee', 'tea', 'drinks']),
+        'hasPrinter': hasAmenity(['printer', 'print']),
+        'hasMeetingRoom': json['hasMeetingRoom'] ?? hasAmenity(['meeting', 'conference']),
+        'hasPhoneBooth': hasAmenity(['phone booth', 'phonebooth', 'call']),
+        'hasKitchen': hasAmenity(['kitchen', 'pantry']),
+        'hasParking': json['hasParking'] ?? hasAmenity(['parking']),
+        'hasLocker': hasAmenity(['locker', 'storage']),
+        'has24HourAccess': json['has247Access'] ?? hasAmenity(['24', '7', 'access']),
+        'hasAirConditioning': hasAmenity(['a/c', 'ac', 'air conditioning', 'airconditioning']),
+        'hasStandingDesk': hasAmenity(['standing desk', 'standingdesk']),
+        'hasShower': hasAmenity(['shower']),
+        'hasBike': hasAmenity(['bike', 'bicycle']),
+        'hasEventSpace': hasAmenity(['event', 'space']),
+        'hasPetFriendly': hasAmenity(['pet']),
       }),
       // 适配后端扁平化的 specs 字段
       specs: CoworkingSpecsDto.fromJson({
         'capacity': json['capacity'],
-        'desks': json['desks'],
+        'numberOfDesks': json['desks'],
         'privateRooms': json['privateRooms'],
-        'meetingRooms': json['meetingRooms'],
+        'numberOfMeetingRooms': json['meetingRooms'],
         'wifiSpeed': json['wifiSpeed'],
       }),
       openingHours:

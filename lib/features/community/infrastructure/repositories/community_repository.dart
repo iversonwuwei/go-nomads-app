@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart';
-import 'package:df_admin_mobile/features/community/domain/repositories/i_community_repository.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart';
+import 'package:go_nomads_app/features/community/domain/repositories/i_community_repository.dart';
 
 /// Community Repository Implementation - 社区功能仓储实现
 /// 目前使用 Mock 数据,未来替换为真实 API 调用

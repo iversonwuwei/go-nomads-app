@@ -1,6 +1,7 @@
 /// 创新项目领域实体
 class InnovationProject {
   final int id;
+  final String? uuid; // 原始 UUID 字符串
   final String projectName;
   final String elevatorPitch;
   final String problem;
@@ -19,12 +20,16 @@ class InnovationProject {
   final int userId;
   final String? userName;
   final String? userAvatar;
+  final String? imageUrl; // 项目封面图
   final int? viewCount;
   final int? likeCount;
   final int? commentCount;
+  final bool isLiked; // 当前用户是否点赞
+  final bool canEdit; // 当前用户是否可以编辑
 
   const InnovationProject({
     required this.id,
+    this.uuid,
     required this.projectName,
     required this.elevatorPitch,
     required this.problem,
@@ -43,10 +48,45 @@ class InnovationProject {
     required this.userId,
     this.userName,
     this.userAvatar,
+    this.imageUrl,
     this.viewCount,
     this.likeCount,
     this.commentCount,
+    this.isLiked = false,
+    this.canEdit = false,
   });
+
+  /// 复制并更新 isLiked 状态
+  InnovationProject copyWithLiked(bool liked) {
+    return InnovationProject(
+      id: id,
+      uuid: uuid,
+      projectName: projectName,
+      elevatorPitch: elevatorPitch,
+      problem: problem,
+      solution: solution,
+      targetAudience: targetAudience,
+      productType: productType,
+      keyFeatures: keyFeatures,
+      competitiveAdvantage: competitiveAdvantage,
+      businessModel: businessModel,
+      marketOpportunity: marketOpportunity,
+      currentStatus: currentStatus,
+      team: team,
+      ask: ask,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      userId: userId,
+      userName: userName,
+      userAvatar: userAvatar,
+      imageUrl: imageUrl,
+      viewCount: viewCount,
+      likeCount: liked ? (likeCount ?? 0) + 1 : (likeCount ?? 1) - 1,
+      commentCount: commentCount,
+      isLiked: liked,
+      canEdit: canEdit,
+    );
+  }
 
   /// 是否有团队成员
   bool get hasTeam => team.isNotEmpty;
@@ -95,8 +135,7 @@ class InnovationProject {
   }
 
   /// 是否有足够的商业模式说明
-  bool get hasBusinessModelClarity =>
-      businessModel.isNotEmpty && businessModel.length > 50;
+  bool get hasBusinessModelClarity => businessModel.isNotEmpty && businessModel.length > 50;
 }
 
 /// 团队成员领域实体
@@ -112,9 +151,7 @@ class TeamMember {
   });
 
   /// 是否为创始人角色
-  bool get isFounder =>
-      role.toLowerCase().contains('founder') ||
-      role.toLowerCase().contains('创始人');
+  bool get isFounder => role.toLowerCase().contains('founder') || role.toLowerCase().contains('创始人');
 
   /// 是否为技术角色
   bool get isTechnicalRole =>

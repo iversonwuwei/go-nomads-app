@@ -1,11 +1,13 @@
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
-import 'package:df_admin_mobile/features/user/infrastructure/models/user_dto.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/user/domain/entities/nomad_stats.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/iuser_repository.dart';
+import 'package:go_nomads_app/features/user/infrastructure/models/user_dto.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 
 /// 用户仓储实现
 class UserRepository extends BaseRepository implements IUserRepository {
@@ -35,8 +37,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
         data: {'userIds': userIds},
         options: Options(
           headers: {
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
           },
         ),
       );
@@ -64,15 +65,13 @@ class UserRepository extends BaseRepository implements IUserRepository {
         '${ApiConfig.currentApiBaseUrl}$endpoint',
         options: Options(
           headers: {
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
           },
         ),
       );
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final userDto =
-            UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
+        final userDto = UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
         return userDto.toDomain();
       }
 
@@ -97,9 +96,14 @@ class UserRepository extends BaseRepository implements IUserRepository {
       );
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final userDto =
-            UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
-        return userDto.toDomain();
+        // 调试日志：检查后端返回的 latestTravelHistory
+        final data = response.data['data'] as Map<String, dynamic>;
+        log('🔍 getCurrentUser - latestTravelHistory: ${data['latestTravelHistory']}');
+
+        final userDto = UserDto.fromJson(data);
+        final user = userDto.toDomain();
+        log('🔍 getCurrentUser - User.latestTravelHistory: ${user.latestTravelHistory?.city ?? "null"}');
+        return user;
       }
 
       throw ServerException('获取当前用户失败', code: 'GET_CURRENT_USER_FAILED');
@@ -107,8 +111,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
   }
 
   @override
-  Future<Result<User>> updateUser(
-      String userId, Map<String, dynamic> updates) async {
+  Future<Result<User>> updateUser(String userId, Map<String, dynamic> updates) async {
     return execute(() async {
       final token = await _tokenService.getAccessToken();
 
@@ -126,8 +129,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
       );
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final userDto =
-            UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
+        final userDto = UserDto.fromJson(response.data['data'] as Map<String, dynamic>);
         return userDto.toDomain();
       }
 
@@ -153,8 +155,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
         },
         options: Options(
           headers: {
-            if (token != null && token.isNotEmpty)
-              'Authorization': 'Bearer $token',
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
           },
         ),
       );
@@ -184,7 +185,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
       }
 
       final response = await _dio.get(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities/check/$cityId',
+        '${ApiConfig.currentApiBaseUrl}/user-favorite-cities/check/$cityId',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -205,7 +206,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
 
       try {
         await _dio.post(
-          '${ApiConfig.apiBaseUrl}/user-favorite-cities',
+          '${ApiConfig.currentApiBaseUrl}/user-favorite-cities',
           data: {'cityId': cityId},
           options: Options(
             headers: {'Authorization': 'Bearer $token'},
@@ -231,8 +232,9 @@ class UserRepository extends BaseRepository implements IUserRepository {
         throw UnauthorizedException('未登录', code: 'NOT_AUTHENTICATED');
       }
 
-      await _dio.delete(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities/$cityId',
+      // 使用 POST 方法代替 DELETE，兼容某些不支持 DELETE 方法的网络环境
+      await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/user-favorite-cities/$cityId/remove',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -270,15 +272,13 @@ class UserRepository extends BaseRepository implements IUserRepository {
       }
 
       final response = await _dio.get(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities/ids',
+        '${ApiConfig.currentApiBaseUrl}/user-favorite-cities/ids',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
 
-      return (response.data as List<dynamic>)
-          .map((id) => id as String)
-          .toList();
+      return (response.data as List<dynamic>).map((id) => id as String).toList();
     });
   }
 
@@ -300,8 +300,12 @@ class UserRepository extends BaseRepository implements IUserRepository {
         ),
       );
 
+      log('📊 用户统计数据响应: ${response.data}');
+
       if (response.data['success'] == true && response.data['data'] != null) {
-        return NomadStats.fromJson(response.data['data'] as Map<String, dynamic>);
+        final data = response.data['data'] as Map<String, dynamic>;
+        log('📊 解析统计数据: meetupsCreated=${data['meetupsCreated']}, favoriteCitiesCount=${data['favoriteCitiesCount']}');
+        return NomadStats.fromJson(data);
       }
 
       throw ServerException('获取用户统计数据失败', code: 'GET_USER_STATS_FAILED');

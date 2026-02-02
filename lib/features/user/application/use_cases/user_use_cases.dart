@@ -1,7 +1,7 @@
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/features/user/domain/repositories/iuser_repository.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/user/domain/entities/nomad_stats.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/iuser_repository.dart';
 
 /// 批量获取用户信息用例
 class BatchGetUsersUseCase extends UseCase<List<User>, BatchGetUsersParams> {

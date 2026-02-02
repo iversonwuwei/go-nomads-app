@@ -99,8 +99,12 @@ enum NotificationType {
   moderatorApplication('moderator_application'), // 版主申请
   moderatorApproved('moderator_approved'), // 版主申请通过
   moderatorRejected('moderator_rejected'), // 版主申请被拒
+  moderatorTransfer('moderator_transfer'), // 版主转让请求
+  moderatorTransferResult('moderator_transfer_result'), // 版主转让结果通知
   cityUpdate('city_update'), // 城市信息更新
   systemAnnouncement('system_announcement'), // 系统公告
+  eventInvitation('event_invitation'), // 活动邀请
+  eventInvitationResponse('event_invitation_response'), // 活动邀请响应
   other('other'); // 其他
 
   final String value;
@@ -122,10 +126,18 @@ enum NotificationType {
         return '✅';
       case NotificationType.moderatorRejected:
         return '❌';
+      case NotificationType.moderatorTransfer:
+        return '🔄';
+      case NotificationType.moderatorTransferResult:
+        return '📋';
       case NotificationType.cityUpdate:
         return '🌆';
       case NotificationType.systemAnnouncement:
         return '📢';
+      case NotificationType.eventInvitation:
+        return '📨';
+      case NotificationType.eventInvitationResponse:
+        return '💬';
       case NotificationType.other:
         return '🔔';
     }
@@ -140,10 +152,18 @@ enum NotificationType {
         return '#4CAF50'; // 绿色
       case NotificationType.moderatorRejected:
         return '#F44336'; // 红色
+      case NotificationType.moderatorTransfer:
+        return '#9C27B0'; // 紫色
+      case NotificationType.moderatorTransferResult:
+        return '#3B82F6'; // 蓝色
       case NotificationType.cityUpdate:
         return '#2196F3'; // 蓝色
       case NotificationType.systemAnnouncement:
         return '#9C27B0'; // 紫色
+      case NotificationType.eventInvitation:
+        return '#10B981'; // 绿色
+      case NotificationType.eventInvitationResponse:
+        return '#3B82F6'; // 蓝色
       case NotificationType.other:
         return '#757575'; // 灰色
     }

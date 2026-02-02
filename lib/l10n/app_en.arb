@@ -15,6 +15,8 @@
   "logout": "Logout",
   "register": "Register",
   "email": "Email",
+  "invalidEmailFormat": "Invalid email format",
+  "emailAlreadyExists": "This email is already in use",
   "password": "Password",
   "confirmPassword": "Confirm Password",
   "username": "Username",
@@ -52,6 +54,8 @@
   "inviteToMeetup": "Invite to Meetup",
   "selectMeetup": "Select Meetup",
   "sendInvitation": "Send Invitation",
+  "userIsOrganizer": "User is the organizer",
+  "userAlreadyJoined": "User already joined",
   "date": "Date",
   "time": "Time",
   "location": "Location",
@@ -360,6 +364,7 @@
   "deleteSuccess": "Deleted Successfully",
   "saveSuccess": "Saved Successfully",
   "updateSuccess": "Updated Successfully",
+  "updateFailed": "Update Failed",
   "uploadPhoto": "Upload Photo",
   "takePhoto": "Take Photo",
   "chooseFromGallery": "Choose from Gallery",
@@ -478,7 +483,8 @@
   "cost": "Cost",
   "photos": "Photos",
   "weather": "Weather",
-  "neighborhoods": "Neighborhoods",
+  "neighborhoods": "Nearby",
+  "noNearbyCities": "No nearby cities available",
   "coworking": "Coworking",
   "loadingGuide": "Loading guide...",
   "startRating": "Start Rating",
@@ -1483,6 +1489,7 @@
   "recenter": "Recenter",
   "startNavigation": "Start Navigation",
   "noMapAppAvailable": "No map app available",
+  "selectMapApp": "Select Map App",
   "selectMapSource": "Select Map Source",
   "switchedToMapSource": "Switched to {mapSource}",
   "@switchedToMapSource": {
@@ -1707,6 +1714,8 @@
       }
     }
   },
+  "calendarPermissionDenied": "Calendar permission denied. Please enable it in Settings.",
+  "noCalendarAvailable": "No writable calendar found on your device.",
   "cityChats": "City Chats",
   "onlineMembers": "Online Members",
   "online": "Online",
@@ -1887,6 +1896,8 @@
   "receiveUpdatesAndAlerts": "Receive updates and alerts",
   "travelHistoryVisible": "Travel History Visible",
   "showTravelHistoryToOthers": "Show your travel history to other users",
+  "autoTravelDetection": "Auto Travel Detection",
+  "autoTravelDetectionDescription": "Automatically detect and record your travels",
   "publicProfile": "Public Profile",
   "makeProfileVisibleToEveryone": "Make your profile visible to everyone",
   "currency": "Currency",
@@ -1900,7 +1911,246 @@
   "privacySettingsComingSoon": "Privacy settings coming soon",
   "deleteAccount": "Delete Account",
   "deleteAccountConfirmation": "Are you sure you want to delete your account? This action cannot be undone.",
-  "accountDeletionCancelled": "Account deletion cancelled"
+  "accountDeletionCancelled": "Account deletion cancelled",
+
+  "membershipPlans": "Membership Plans",
+  "currentPlan": "Current: {planName}",
+  "@currentPlan": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "daysRemaining": "{days} days remaining",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "upgradeToUnlock": "Upgrade to unlock more features",
+  "selectPaymentMethod": "Select Payment Method",
+  "upgradeTo": "Upgrade to {planName} - ${price}/year",
+  "@upgradeTo": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paypalPayment": "PayPal",
+  "paypalDescription": "Fast & Secure international payment",
+  "wechatPayment": "WeChat Pay",
+  "wechatDescription": "Pay with WeChat",
+  "alipayPayment": "Alipay",
+  "alipayDescription": "Pay with Alipay",
+  "securePayment": "Secure Payment",
+  "allPaymentsSecure": "All payments are processed securely. Cancel anytime.",
+  "allPaymentsEncrypted": "All payments are secure and encrypted",
+  "unableToLoadPlans": "Unable to load membership plans",
+  "checkNetworkConnection": "Please check your network connection",
+  "currentPlanLabel": "Current Plan",
+  "selectPlanLabel": "Select Plan",
+  "popular": "POPULAR",
+  "perYear": "/year",
+  "alreadyHavePlan": "You already have this or higher plan",
+  "creatingPaypalOrder": "Creating PayPal order...",
+  "creatingWechatOrder": "Creating WeChat Pay order...",
+  "creatingAlipayOrder": "Creating Alipay order...",
+  "priceForPlan": "${price} for {planName}",
+  "@priceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "cnyPriceForPlan": "¥{price} for {planName}",
+  "@cnyPriceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentServiceNotAvailable": "Payment service not available",
+  "paymentError": "Payment error: {error}",
+  "@paymentError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "openingPaypal": "Opening PayPal for payment...",
+  "failedToCreateOrder": "Failed to create payment order",
+  "wechatNotInstalled": "Please install WeChat to use WeChat Pay",
+  "alipayNotInstalled": "Please install Alipay to use Alipay Pay",
+  "paymentSuccessful": "Payment successful!",
+  "wechatPayFailed": "WeChat Pay failed",
+  "alipayPayFailed": "Alipay payment failed",
+  "wechatPayError": "WeChat Pay error: {error}",
+  "@wechatPayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "alipayError": "Alipay error: {error}",
+  "@alipayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "travelHistory": "Travel History",
+  "travelDetected": "New Trip Detected",
+  "saveTravelQuestion": "Would you like to save this trip?",
+  "saveTravel": "Save Trip",
+  "ignore": "Ignore",
+  "travelSaved": "Trip saved",
+  "saveFailed": "Failed to save",
+  "dismiss": "Dismiss",
+  "noPendingTrips": "No pending trips",
+  "travelDetectedBanner": "We noticed you recently visited {city}",
+  "@travelDetectedBanner": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "tapToSave": "Tap to save this trip",
+  "durationDays": "{days} days",
+  "@durationDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceFromHome": "{km} km from home",
+  "@distanceFromHome": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingConfirmation": "Pending Confirmation",
+  "confirmedTrips": "Trip Records",
+  "homeLocation": "Home Location",
+  "setHomeLocation": "Set Home Location",
+  "homeLocationSet": "Home location set",
+  "setHomeFailed": "Failed to set home location",
+  "locationUnavailable": "Location unavailable",
+  "autoDetectionOn": "Auto detection on",
+  "autoDetectionOff": "Auto detection off",
+  "clearAllData": "Clear All Data",
+  "confirmClear": "Confirm Clear",
+  "clearAllDataWarning": "This will clear all travel detection data including location records, stay points and trip history. This action cannot be undone.",
+  "clear": "Clear",
+  "dataCleared": "Data cleared",
+  "noTravelHistory": "No travel history",
+  "travelHistoryEmptyHint": "Enable auto detection and we'll automatically identify your trips and remind you to save them",
+  "autoDetectionActive": "Auto detection active",
+  "enableAutoDetection": "Enable Auto Detection",
+  "days": "days",
+  "locationCoordinates": "{lat}, {lon}",
+  "@locationCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "confidence": "Confidence: {percent}%",
+  "@confidence": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "synced": "Synced",
+  "nights": "nights",
+  "tip": "Tip",
+  "travelHistoryNoCityLink": "This trip record is not linked to a city",
+  "syncCompleted": "Sync completed",
+  "syncFailed": "Sync failed",
+
+  "addHotel": "Add Hotel",
+  "editHotel": "Edit Hotel",
+  "hotelName": "Hotel Name",
+  "hotelNameHint": "Enter hotel name",
+  "hotelDescription": "Description",
+  "hotelDescriptionHint": "Describe this hotel for digital nomads",
+  "pricePerNight": "Price per Night",
+  "pricePerNightHint": "e.g., 50",
+  "longStayDiscount": "Long Stay Discount",
+  "longStayDiscountHint": "Discount % for weekly/monthly stays",
+  "nomadFeatures": "Nomad-Friendly Features",
+  "nomadFeaturesSubtitle": "Features important for remote workers",
+  "wifiSpeed": "WiFi Speed",
+  "wifiSpeedHint": "e.g., 100 Mbps",
+  "workDesk": "Work Desk",
+  "hasCoworkingSpace": "Has Coworking Space",
+  "airConditioning": "Air Conditioning",
+  "kitchen": "Kitchen",
+  "laundry": "Laundry",
+  "pool": "Pool",
+  "gym": "Gym",
+  "twentyFourHourReception": "24h Reception",
+  "submitHotel": "Submit Hotel",
+  "hotelSubmittedSuccess": "Hotel submitted successfully!",
+  "failedToSubmitHotel": "Failed to submit hotel",
+  "maxPhotosReached": "Maximum {max} photos allowed",
+  "@maxPhotosReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "addFirstHotel": "Add First Hotel",
+  "noTeamMembersAdded": "No team members added yet",
+  "addTeamMember": "Add Team Member",
+  "editTeamMember": "Edit Team Member",
+  "editProject": "Edit Project",
+  "enterMemberName": "Enter member name",
+  "enterMemberRole": "Enter member role",
+  "enterMemberDescription": "Enter member description (optional)",
+  "markAsFounder": "Mark as Founder",
+  "pleaseEnterMemberName": "Please enter member name",
+  "pleaseEnterMemberRole": "Please enter member role",
+  "founder": "Founder",
+  "name": "Name",
+  "role": "Role",
+  "searchAddress": "Search address or place",
+  "noResults": "No results found",
+  "eventInvitation": "Event Invitation",
+  "inviteYouToJoin": "invites you to join",
+  "moderatorTransfer": "Moderator Transfer",
+  "accept": "Accept",
+  "decline": "Decline",
+  "from": "From"
 }
 
 

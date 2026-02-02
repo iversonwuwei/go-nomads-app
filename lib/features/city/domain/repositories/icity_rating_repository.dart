@@ -1,5 +1,5 @@
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_category.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_rating_info.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_category.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_rating_info.dart';
 
 /// 城市评分仓储接口
 abstract class ICityRatingRepository {

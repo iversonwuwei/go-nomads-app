@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -20,8 +22,8 @@ class AsyncTaskProgressDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // 禁止返回键关闭
+    return PopScope(
+      canPop: false, // 禁止返回键关闭
       child: Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -146,19 +148,19 @@ class AsyncTaskProgressDialog extends StatelessWidget {
 
   /// 关闭对话框
   static void dismiss() {
-    print('[AsyncTaskProgressDialog] 尝试关闭对话框...');
+    log('[AsyncTaskProgressDialog] 尝试关闭对话框...');
 
     try {
       // 只关闭最顶层的对话框，不影响 snackbar
       if (Get.isDialogOpen == true) {
         // 使用 closeAllDialogs 而不是 back，避免误关闭 snackbar
         Get.until((route) => !Get.isDialogOpen!);
-        print('[AsyncTaskProgressDialog] ✅ 对话框已成功关闭');
+        log('[AsyncTaskProgressDialog] ✅ 对话框已成功关闭');
       } else {
-        print('[AsyncTaskProgressDialog] ✅ 对话框已经关闭');
+        log('[AsyncTaskProgressDialog] ✅ 对话框已经关闭');
       }
     } catch (e) {
-      print('[AsyncTaskProgressDialog] ❌ 关闭失败: $e');
+      log('[AsyncTaskProgressDialog] ❌ 关闭失败: $e');
     }
   }
 

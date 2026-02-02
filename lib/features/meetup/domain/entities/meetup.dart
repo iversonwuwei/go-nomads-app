@@ -48,8 +48,11 @@ class Meetup {
     return difference.inHours > 0 && difference.inHours <= 24;
   }
 
-  /// 是否已结束
-  bool get isEnded => schedule.startTime.isBefore(DateTime.now());
+  /// 是否已取消
+  bool get isCancelled => status == MeetupStatus.cancelled;
+
+  /// 是否已结束 (状态为 completed 或开始时间已过)
+  bool get isEnded => status == MeetupStatus.completed || schedule.startTime.isBefore(DateTime.now());
 
   /// 是否正在进行中
   bool get isOngoing {

@@ -1,10 +1,12 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart'
+import 'dart:developer';
+
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart'
     as entity;
-import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
-import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_repository.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/models/coworking_space_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/verification_eligibility.dart';
+import 'package:go_nomads_app/features/coworking/domain/repositories/icoworking_repository.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/models/coworking_space_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:get/get.dart';
 
 /// Coworking Repository 实现
@@ -19,9 +21,9 @@ class CoworkingRepository implements ICoworkingRepository {
     int pageSize = 20,
   }) async {
     try {
-      print('📡 Repository 调用 API:');
-      print('   路径: /coworking');
-      print('   参数: cityId=$cityId, page=$page, pageSize=$pageSize');
+      log('📡 Repository 调用 API:');
+      log('   路径: /coworking');
+      log('   参数: cityId=$cityId, page=$page, pageSize=$pageSize');
 
       final response = await _httpService.get(
         '/coworking',
@@ -35,7 +37,7 @@ class CoworkingRepository implements ICoworkingRepository {
       final data = response.data as Map<String, dynamic>;
       final items = data['items'] as List<dynamic>? ?? [];
 
-      print('✅ API 返回 ${items.length} 个 Coworking 空间');
+      log('✅ API 返回 ${items.length} 个 Coworking 空间');
 
       final spaces = items
           .map((item) =>
@@ -45,7 +47,7 @@ class CoworkingRepository implements ICoworkingRepository {
 
       return Result.success(spaces);
     } catch (e, stackTrace) {
-      print('❌ Repository 错误: $e');
+      log('❌ Repository 错误: $e');
       return Result.failure(
         UnknownException(
           '获取城市 Coworking 列表失败: ${e.toString()}',
@@ -102,11 +104,11 @@ class CoworkingRepository implements ICoworkingRepository {
     try {
       final response = await _httpService.get('/coworking/$id');
 
-      if (response.data['success'] == true && response.data['data'] != null) {
+      // HTTP 拦截器已自动解包响应，response.data 直接就是数据
+      if (response.data is Map<String, dynamic>) {
         final dto = CoworkingSpaceDto.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+            response.data as Map<String, dynamic>);
         final space = dto.toDomain();
-
         return Result.success(space);
       }
 
@@ -128,9 +130,9 @@ class CoworkingRepository implements ICoworkingRepository {
       final response =
           await _httpService.get('/coworking/cities/$cityId/count');
 
-      if (response.data['success'] == true && response.data['data'] != null) {
-        final count = response.data['data'] as int;
-        return Result.success(count);
+      // HTTP 拦截器已自动解包响应，response.data 直接就是 count 数值
+      if (response.data is int) {
+        return Result.success(response.data as int);
       }
 
       throw ServerException('Failed to get coworking count');
@@ -152,12 +154,25 @@ class CoworkingRepository implements ICoworkingRepository {
     try {
       final response = await _httpService.post(
         '/coworking/cities/counts',
-        data: {'cityIds': cityIds},
+        data: cityIds, // 直接发送 cityIds 数组
       );
 
-      if (response.data['success'] == true && response.data['data'] != null) {
-        final counts = response.data['data'] as Map<String, dynamic>;
-        return Result.success(counts.map((k, v) => MapEntry(k, v as int)));
+      // 后端返回格式: { counts: [{ cityId, count }, ...] }
+      if (response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        final countsList = data['counts'] as List<dynamic>? ?? [];
+        
+        final counts = <String, int>{};
+        for (final item in countsList) {
+          if (item is Map<String, dynamic>) {
+            final cityId = item['cityId'] as String?;
+            final count = item['count'] as int? ?? 0;
+            if (cityId != null) {
+              counts[cityId] = count;
+            }
+          }
+        }
+        return Result.success(counts);
       }
 
       throw ServerException('Failed to get coworking counts');
@@ -180,29 +195,22 @@ class CoworkingRepository implements ICoworkingRepository {
       final dto = _convertEntityToDto(space);
       final requestData = dto.toJson();
 
-      print('Creating coworking space with data: $requestData');
+      log('📤 [CoworkingRepository] 创建 Coworking 空间: $requestData');
 
       final response = await _httpService.post(
         '/coworking',
         data: requestData,
       );
 
-      // 解析响应数据
+      // HTTP 拦截器已自动解包响应，response.data 直接就是 Coworking 数据
+      log('📥 [CoworkingRepository] 响应类型: ${response.data.runtimeType}');
+      
       if (response.data is Map<String, dynamic>) {
         final responseData = response.data as Map<String, dynamic>;
-
-        // 检查是否有包装的 success/data 结构
-        if (responseData['success'] == true && responseData['data'] != null) {
-          final createdDto = CoworkingSpaceDto.fromJson(
-              responseData['data'] as Map<String, dynamic>);
-          final createdSpace = createdDto.toDomain();
-          return Result.success(createdSpace);
-        } else {
-          // 直接使用 response.data 作为 DTO
-          final createdDto = CoworkingSpaceDto.fromJson(responseData);
-          final createdSpace = createdDto.toDomain();
-          return Result.success(createdSpace);
-        }
+        final createdDto = CoworkingSpaceDto.fromJson(responseData);
+        final createdSpace = createdDto.toDomain();
+        log('✅ [CoworkingRepository] 创建成功: ${createdSpace.id}');
+        return Result.success(createdSpace);
       }
 
       throw ServerException('Invalid response format');
@@ -236,19 +244,38 @@ class CoworkingRepository implements ICoworkingRepository {
       final dto = _convertEntityToDto(space);
       final requestData = dto.toJson();
 
+      log('📤 [CoworkingRepository] 发送更新请求: id=$id');
       final response =
           await _httpService.put('/coworking/$id', data: requestData);
 
-      if (response.data['success'] == true && response.data['data'] != null) {
-        final updatedDto = CoworkingSpaceDto.fromJson(
-            response.data['data'] as Map<String, dynamic>);
-        final updatedSpace = updatedDto.toDomain();
+      // HTTP 拦截器已自动解包响应，response.data 直接就是 Coworking 数据
+      log('📥 [CoworkingRepository] 响应类型: ${response.data.runtimeType}');
 
-        return Result.success(updatedSpace);
+      final responseData = response.data;
+      if (responseData is Map<String, dynamic>) {
+        try {
+          // 直接解析 response.data，因为拦截器已经解包了
+          final updatedDto = CoworkingSpaceDto.fromJson(responseData);
+          final updatedSpace = updatedDto.toDomain();
+          log('✅ [CoworkingRepository] 更新成功: ${updatedSpace.id}');
+          return Result.success(updatedSpace);
+        } catch (parseError, parseStack) {
+          log('❌ [CoworkingRepository] 解析响应数据失败: $parseError');
+          log('   堆栈: $parseStack');
+          return Result.failure(
+            UnknownException(
+              '解析更新响应失败: ${parseError.toString()}',
+              code: 'COWORKING_PARSE_ERROR',
+              details: parseStack.toString(),
+            ),
+          );
+        }
       }
 
+      log('❌ [CoworkingRepository] 响应格式不正确: $responseData');
       throw ServerException('Failed to update coworking space');
     } catch (e, stackTrace) {
+      log('❌ [CoworkingRepository] 更新失败: $e');
       return Result.failure(
         UnknownException(
           '更新 Coworking 空间失败: ${e.toString()}',
@@ -280,22 +307,13 @@ class CoworkingRepository implements ICoworkingRepository {
     try {
       final response = await _httpService.get('/coworking/$id/verification-eligibility');
 
-      Map<String, dynamic>? payload;
+      // HTTP 拦截器已自动解包响应，response.data 直接就是数据
       if (response.data is Map<String, dynamic>) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['data'] is Map<String, dynamic>) {
-          payload = data['data'] as Map<String, dynamic>;
-        } else {
-          payload = data;
-        }
+        final eligibility = VerificationEligibility.fromJson(response.data as Map<String, dynamic>);
+        return Result.success(eligibility);
       }
 
-      if (payload == null) {
-        throw ServerException('验证资格检查接口返回格式无效');
-      }
-
-      final eligibility = VerificationEligibility.fromJson(payload);
-      return Result.success(eligibility);
+      throw ServerException('验证资格检查接口返回格式无效');
     } on HttpException catch (e) {
       return Result.failure(
         UnknownException(
@@ -320,22 +338,13 @@ class CoworkingRepository implements ICoworkingRepository {
     try {
       final response = await _httpService.post('/coworking/$id/verifications');
 
-      Map<String, dynamic>? payload;
+      // HTTP 拦截器已自动解包响应，response.data 直接就是数据
       if (response.data is Map<String, dynamic>) {
-        final data = response.data as Map<String, dynamic>;
-        if (data['data'] is Map<String, dynamic>) {
-          payload = data['data'] as Map<String, dynamic>;
-        } else {
-          payload = data;
-        }
+        final dto = CoworkingSpaceDto.fromJson(response.data as Map<String, dynamic>);
+        return Result.success(dto.toDomain());
       }
 
-      if (payload == null) {
-        throw ServerException('认证接口返回格式无效');
-      }
-
-      final dto = CoworkingSpaceDto.fromJson(payload);
-      return Result.success(dto.toDomain());
+      throw ServerException('认证接口返回格式无效');
     } on HttpException catch (e) {
       return Result.failure(
         UnknownException(

@@ -1,7 +1,9 @@
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/models/meetup_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:get/get.dart';
 
 /// Meetup Repository 实现
@@ -17,8 +19,8 @@ class MeetupRepository implements IMeetupRepository {
     int pageSize = 20,
   }) async {
     try {
-      print('📡 调用 HttpService GET /events...');
-      print('   status: $status, cityId: $cityId, page: $page');
+      log('📡 调用 HttpService GET /events...');
+      log('   status: $status, cityId: $cityId, page: $page');
 
       final queryParams = <String, dynamic>{
         'status': status ?? 'upcoming',
@@ -38,7 +40,7 @@ class MeetupRepository implements IMeetupRepository {
       // 提取活动列表 (HttpService 已自动解包 data 字段)
       final data = response.data as Map<String, dynamic>;
       final items = (data['items'] as List?) ?? [];
-      print('✅ 获取到 ${items.length} 个活动');
+      log('✅ 获取到 ${items.length} 个活动');
 
       // 转换为领域实体
       final meetups = items
@@ -47,11 +49,11 @@ class MeetupRepository implements IMeetupRepository {
               final dto = MeetupDto.fromJson(json as Map<String, dynamic>);
               final meetup = dto.toDomain();
               // 打印每个活动的 isParticipant 状态
-              print('   活动: ${meetup.title} - isParticipant: ${json['isParticipant']} -> isJoined: ${meetup.isJoined}');
+              log('   活动: ${meetup.title} - isParticipant: ${json['isParticipant']} -> isJoined: ${meetup.isJoined}');
               return meetup;
             } catch (e) {
-              print('❌ 解析 meetup 失败: $e');
-              print('   JSON: $json');
+              log('❌ 解析 meetup 失败: $e');
+              log('   JSON: $json');
               return null;
             }
           })
@@ -60,8 +62,8 @@ class MeetupRepository implements IMeetupRepository {
 
       return meetups;
     } catch (e, stackTrace) {
-      print('❌ MeetupRepository.getMeetups 失败: $e');
-      print('   堆栈: $stackTrace');
+      log('❌ MeetupRepository.getMeetups 失败: $e');
+      log('   堆栈: $stackTrace');
       rethrow;
     }
   }
@@ -69,7 +71,7 @@ class MeetupRepository implements IMeetupRepository {
   @override
   Future<Meetup?> getMeetupById(String meetupId) async {
     try {
-      print('📡 调用 HttpService GET /events/$meetupId');
+      log('📡 调用 HttpService GET /events/$meetupId');
 
       final response = await _httpService.get('/events/$meetupId');
       final data = response.data as Map<String, dynamic>;
@@ -77,7 +79,7 @@ class MeetupRepository implements IMeetupRepository {
       final dto = MeetupDto.fromJson(data);
       return dto.toDomain();
     } catch (e) {
-      print('❌ MeetupRepository.getMeetupById 失败: $e');
+      log('❌ MeetupRepository.getMeetupById 失败: $e');
       return null;
     }
   }
@@ -99,7 +101,7 @@ class MeetupRepository implements IMeetupRepository {
     List<String>? tags,
   }) async {
     try {
-      print('📡 创建活动: $title');
+      log('📡 创建活动: $title');
 
       // 构建 API 请求数据
       final requestData = {
@@ -129,31 +131,31 @@ class MeetupRepository implements IMeetupRepository {
         requestData['tags'] = tags;
       }
 
-      print('📤 请求数据: $requestData');
+      log('📤 请求数据: $requestData');
 
       // 调用 HttpService POST
       final response = await _httpService.post('/events', data: requestData);
       final data = response.data as Map<String, dynamic>;
 
-      print('✅ 活动创建成功, ID: ${data['id']}');
-      print('📦 后端返回的数据: $data');
-      print('🔍 organizer 信息: ${data['organizer']}');
-      print('🔍 organizerId: ${data['organizerId']}');
+      log('✅ 活动创建成功, ID: ${data['id']}');
+      log('📦 后端返回的数据: $data');
+      log('🔍 organizer 信息: ${data['organizer']}');
+      log('🔍 organizerId: ${data['organizerId']}');
 
       // 转换为领域实体
       final dto = MeetupDto.fromJson(data);
       final meetup = dto.toDomain();
 
-      print('✅ 转换后的 Meetup:');
-      print('   - ID: ${meetup.id}');
-      print('   - Title: ${meetup.title}');
-      print('   - Organizer ID: ${meetup.organizer.id}');
-      print('   - Organizer Name: ${meetup.organizer.name}');
+      log('✅ 转换后的 Meetup:');
+      log('   - ID: ${meetup.id}');
+      log('   - Title: ${meetup.title}');
+      log('   - Organizer ID: ${meetup.organizer.id}');
+      log('   - Organizer Name: ${meetup.organizer.name}');
 
       return meetup;
     } catch (e, stackTrace) {
-      print('❌ MeetupRepository.createMeetup 失败: $e');
-      print('   堆栈: $stackTrace');
+      log('❌ MeetupRepository.createMeetup 失败: $e');
+      log('   堆栈: $stackTrace');
       rethrow;
     }
   }
@@ -161,17 +163,17 @@ class MeetupRepository implements IMeetupRepository {
   @override
   Future<bool> rsvpToMeetup(String meetupId) async {
     try {
-      print('📡 RSVP 活动: $meetupId');
+      log('📡 RSVP 活动: $meetupId');
 
       // 后端需要一个非空的请求体
       await _httpService.post(
         '/events/$meetupId/join',
         data: {}, // 发送空的 JSON 对象
       );
-      print('✅ RSVP 成功');
+      log('✅ RSVP 成功');
       return true;
     } catch (e) {
-      print('❌ MeetupRepository.rsvpToMeetup 失败: $e');
+      log('❌ MeetupRepository.rsvpToMeetup 失败: $e');
       rethrow;
     }
   }
@@ -179,14 +181,14 @@ class MeetupRepository implements IMeetupRepository {
   @override
   Future<bool> cancelRsvp(String meetupId) async {
     try {
-      print('📡 取消 RSVP: $meetupId');
+      log('📡 取消 RSVP: $meetupId');
 
       // 使用 DELETE 方法取消参加
       await _httpService.delete('/events/$meetupId/join');
-      print('✅ 取消 RSVP 成功');
+      log('✅ 取消 RSVP 成功');
       return true;
     } catch (e) {
-      print('❌ MeetupRepository.cancelRsvp 失败: $e');
+      log('❌ MeetupRepository.cancelRsvp 失败: $e');
       rethrow;
     }
   }
@@ -194,14 +196,14 @@ class MeetupRepository implements IMeetupRepository {
   @override
   Future<List<Meetup>> getUserMeetups(String userId) async {
     try {
-      print('📡 获取用户活动: $userId');
+      log('📡 获取用户活动: $userId');
 
       // TODO: 需要 API 支持按用户ID查询
       // 暂时返回空列表
-      print('⚠️ getUserMeetups 尚未实现 API 支持');
+      log('⚠️ getUserMeetups 尚未实现 API 支持');
       return [];
     } catch (e) {
-      print('❌ MeetupRepository.getUserMeetups 失败: $e');
+      log('❌ MeetupRepository.getUserMeetups 失败: $e');
       return [];
     }
   }
@@ -212,8 +214,8 @@ class MeetupRepository implements IMeetupRepository {
     int pageSize = 20,
   }) async {
     try {
-      print('📡 调用 HttpService GET /events/joined...');
-      print('   page: $page, pageSize: $pageSize');
+      log('📡 调用 HttpService GET /events/joined...');
+      log('   page: $page, pageSize: $pageSize');
 
       final queryParams = <String, dynamic>{
         'page': page,
@@ -236,18 +238,18 @@ class MeetupRepository implements IMeetupRepository {
             try {
               return MeetupDto.fromJson(json as Map<String, dynamic>).toDomain();
             } catch (e) {
-              print('❌ 解析 meetup 失败: $e');
-              print('   JSON: $json');
+              log('❌ 解析 meetup 失败: $e');
+              log('   JSON: $json');
               return null;
             }
           })
           .whereType<Meetup>()
           .toList();
 
-      print('✅ 获取到 ${meetups.length} 个已加入的活动');
+      log('✅ 获取到 ${meetups.length} 个已加入的活动');
       return meetups;
     } catch (e) {
-      print('❌ MeetupRepository.getJoinedMeetups 失败: $e');
+      log('❌ MeetupRepository.getJoinedMeetups 失败: $e');
       rethrow;
     }
   }
@@ -259,9 +261,9 @@ class MeetupRepository implements IMeetupRepository {
     int pageSize = 20,
   }) async {
     try {
-      print('📡 调用 HttpService GET /events/cancelled...');
-      print('   userId: $userId');
-      print('   page: $page, pageSize: $pageSize');
+      log('📡 调用 HttpService GET /events/cancelled...');
+      log('   userId: $userId');
+      log('   page: $page, pageSize: $pageSize');
 
       final queryParams = <String, dynamic>{
         'page': page,
@@ -274,13 +276,13 @@ class MeetupRepository implements IMeetupRepository {
         queryParameters: queryParams,
       );
 
-      print('📦 收到响应: ${response.data}');
+      log('📦 收到响应: ${response.data}');
 
       // 提取活动列表 (HttpService 已自动解包 data 字段)
       final data = response.data as Map<String, dynamic>;
       final eventsJson = (data['items'] as List?) ?? [];
 
-      print('📝 解析到 ${eventsJson.length} 个活动记录');
+      log('📝 解析到 ${eventsJson.length} 个活动记录');
 
       // 将 JSON 转换为 DTO 再转换为领域实体
       final meetups = eventsJson
@@ -288,19 +290,19 @@ class MeetupRepository implements IMeetupRepository {
             try {
               return MeetupDto.fromJson(json as Map<String, dynamic>).toDomain();
             } catch (e) {
-              print('❌ 解析 meetup 失败: $e');
-              print('   JSON: $json');
+              log('❌ 解析 meetup 失败: $e');
+              log('   JSON: $json');
               return null;
             }
           })
           .whereType<Meetup>()
           .toList();
 
-      print('✅ 获取到 ${meetups.length} 个已取消的活动');
+      log('✅ 获取到 ${meetups.length} 个已取消的活动');
       return meetups;
     } catch (e, stackTrace) {
-      print('❌ MeetupRepository.getCancelledMeetupsByUser 失败: $e');
-      print('Stack trace: $stackTrace');
+      log('❌ MeetupRepository.getCancelledMeetupsByUser 失败: $e');
+      log('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -311,8 +313,8 @@ class MeetupRepository implements IMeetupRepository {
     Map<String, dynamic> updates,
   ) async {
     try {
-      print('📡 更新活动: $meetupId');
-      print('   更新内容: $updates');
+      log('📡 更新活动: $meetupId');
+      log('   更新内容: $updates');
 
       // 调用后端 PUT /events/{id} 接口
       final response = await _httpService.put('/events/$meetupId', data: updates);
@@ -327,10 +329,10 @@ class MeetupRepository implements IMeetupRepository {
         throw Exception('更新活动返回格式错误');
       }
 
-      print('✅ 活动更新成功');
+      log('✅ 活动更新成功');
       return MeetupDto.fromJson(eventData).toDomain();
     } catch (e) {
-      print('❌ MeetupRepository.updateMeetup 失败: $e');
+      log('❌ MeetupRepository.updateMeetup 失败: $e');
       rethrow;
     }
   }
@@ -338,15 +340,31 @@ class MeetupRepository implements IMeetupRepository {
   @override
   Future<bool> cancelMeetup(String meetupId) async {
     try {
-      print('📡 取消活动: $meetupId');
+      log('📡 取消活动: $meetupId');
 
       // 调用后端 API 取消活动 - 使用专用的 cancel 端点
       await _httpService.post('/events/$meetupId/cancel');
 
-      print('✅ 活动已取消');
+      log('✅ 活动已取消');
       return true;
     } catch (e) {
-      print('❌ MeetupRepository.cancelMeetup 失败: $e');
+      log('❌ MeetupRepository.cancelMeetup 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> deleteMeetup(String meetupId) async {
+    try {
+      log('🗑️ 删除活动(管理员): $meetupId');
+
+      // 调用后端 DELETE /events/{id} API (逻辑删除)
+      await _httpService.delete('/events/$meetupId');
+
+      log('✅ 活动已删除');
+      return true;
+    } catch (e) {
+      log('❌ MeetupRepository.deleteMeetup 失败: $e');
       rethrow;
     }
   }
@@ -354,7 +372,7 @@ class MeetupRepository implements IMeetupRepository {
   @override
   Future<List<Meetup>> getMyCreatedMeetups() async {
     try {
-      print('📡 调用 HttpService GET /events/me/created...');
+      log('📡 调用 HttpService GET /events/me/created...');
 
       final response = await _httpService.get('/events/me/created');
 
@@ -370,7 +388,7 @@ class MeetupRepository implements IMeetupRepository {
         items = [];
       }
 
-      print('✅ 获取到 ${items.length} 个我创建的活动');
+      log('✅ 获取到 ${items.length} 个我创建的活动');
 
       final meetups = items
           .map((json) {
@@ -378,7 +396,7 @@ class MeetupRepository implements IMeetupRepository {
               final dto = MeetupDto.fromJson(json as Map<String, dynamic>);
               return dto.toDomain();
             } catch (e) {
-              print('❌ 解析 meetup 失败: $e');
+              log('❌ 解析 meetup 失败: $e');
               return null;
             }
           })
@@ -387,8 +405,139 @@ class MeetupRepository implements IMeetupRepository {
 
       return meetups;
     } catch (e, stackTrace) {
-      print('❌ MeetupRepository.getMyCreatedMeetups 失败: $e');
-      print('   堆栈: $stackTrace');
+      log('❌ MeetupRepository.getMyCreatedMeetups 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  // ========== 邀请相关方法实现 ==========
+
+  @override
+  Future<MeetupInvitation> inviteToMeetup({
+    required String meetupId,
+    required String inviteeId,
+    String? message,
+  }) async {
+    try {
+      log('📡 调用 HttpService POST /events/$meetupId/invitations');
+      log('   inviteeId: $inviteeId, message: $message');
+
+      final response = await _httpService.post(
+        '/events/$meetupId/invitations',
+        data: {
+          'inviteeId': inviteeId,
+          if (message != null && message.isNotEmpty) 'message': message,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      log('✅ 邀请发送成功: ${data['id']}');
+
+      return MeetupInvitation.fromJson(data);
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.inviteToMeetup 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MeetupInvitation> respondToInvitation({
+    required String invitationId,
+    required bool accept,
+  }) async {
+    try {
+      final response = accept ? 'accept' : 'reject';
+      log('📡 调用 HttpService POST /events/invitations/$invitationId/respond');
+      log('   response: $response');
+
+      final apiResponse = await _httpService.post(
+        '/events/invitations/$invitationId/respond',
+        data: {
+          'response': response,
+        },
+      );
+
+      final data = apiResponse.data as Map<String, dynamic>;
+      log('✅ 邀请响应成功: $response');
+
+      return MeetupInvitation.fromJson(data);
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.respondToInvitation 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<MeetupInvitation>> getReceivedInvitations({String? status}) async {
+    try {
+      log('📡 调用 HttpService GET /events/invitations/received');
+
+      final queryParams = <String, dynamic>{};
+      if (status != null) {
+        queryParams['status'] = status;
+      }
+
+      final response = await _httpService.get(
+        '/events/invitations/received',
+        queryParameters: queryParams,
+      );
+
+      final data = response.data;
+      List items;
+
+      if (data is List) {
+        items = data;
+      } else if (data is Map<String, dynamic>) {
+        items = (data['items'] as List?) ?? (data['data'] as List?) ?? [];
+      } else {
+        items = [];
+      }
+
+      log('✅ 获取到 ${items.length} 条收到的邀请');
+
+      return items.map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>)).toList();
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getReceivedInvitations 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<MeetupInvitation>> getSentInvitations({String? status}) async {
+    try {
+      log('📡 调用 HttpService GET /events/invitations/sent');
+
+      final queryParams = <String, dynamic>{};
+      if (status != null) {
+        queryParams['status'] = status;
+      }
+
+      final response = await _httpService.get(
+        '/events/invitations/sent',
+        queryParameters: queryParams,
+      );
+
+      final data = response.data;
+      List items;
+
+      if (data is List) {
+        items = data;
+      } else if (data is Map<String, dynamic>) {
+        items = (data['items'] as List?) ?? (data['data'] as List?) ?? [];
+      } else {
+        items = [];
+      }
+
+      log('✅ 获取到 ${items.length} 条发出的邀请');
+
+      return items.map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>)).toList();
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getSentInvitations 失败: $e');
+      log('   堆栈: $stackTrace');
       rethrow;
     }
   }

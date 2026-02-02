@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
 
 /// 城市仓储接口 (Domain Layer)
 /// 定义城市数据访问的抽象契约,不依赖具体实现
@@ -12,6 +12,17 @@ abstract class ICityRepository implements IRepository {
     String? search,
     String? countryId,
   });
+
+  /// 获取城市列表（基础版本，不包含聚合数据）
+  /// 用于快速首屏加载
+  Future<Result<List<City>>> getCitiesBasic({
+    int page = 1,
+    int pageSize = 20,
+    String? search,
+  });
+
+  /// 批量获取城市聚合数据
+  Future<Result<Map<String, CityCountsData>>> getCityCountsBatch(List<String> cityIds);
 
   /// 根据ID获取城市详情
   Future<Result<City>> getCityById(String cityId);
@@ -95,6 +106,13 @@ abstract class ICityRepository implements IRepository {
     int pageSize = 100,
   });
 
+  /// 获取有 Coworking 空间的城市列表（不含数量，用于快速加载）
+  /// coworking 数量由前端异步加载
+  Future<Result<List<City>>> getCitiesWithCoworking({
+    int page = 1,
+    int pageSize = 20,
+  });
+
   /// 获取城市天气信息
   ///
   /// [cityId] 城市ID
@@ -124,4 +142,10 @@ abstract class ICityRepository implements IRepository {
   /// [cityId] 城市ID
   /// 返回生成结果，包含竖屏封面图和横屏图片的 URL
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId);
+
+  /// 删除城市（仅管理员）
+  ///
+  /// [cityId] 城市ID
+  /// 返回 true 表示删除成功
+  Future<Result<bool>> deleteCity(String cityId);
 }

@@ -1,8 +1,8 @@
-import 'package:df_admin_mobile/core/application/use_case.dart';
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
-import 'package:df_admin_mobile/features/auth/domain/repositories/iauth_repository.dart';
+import 'package:go_nomads_app/core/application/use_case.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_token.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
+import 'package:go_nomads_app/features/auth/domain/repositories/iauth_repository.dart';
 
 /// 登录用例
 class LoginUseCase extends UseCase<AuthToken, LoginParams> {
@@ -104,8 +104,7 @@ class GetCurrentUserUseCase extends UseCase<AuthUser, NoParams> {
 }
 
 /// 更新用户资料用例
-class UpdateUserProfileUseCase
-    extends UseCase<AuthUser, UpdateUserProfileParams> {
+class UpdateUserProfileUseCase extends UseCase<AuthUser, UpdateUserProfileParams> {
   final IAuthRepository _repository;
 
   UpdateUserProfileUseCase(this._repository);
@@ -168,4 +167,35 @@ class AutoRefreshTokenUseCase extends UseCase<AuthToken?, NoParams> {
       onFailure: (error) => Failure(error),
     );
   }
+}
+
+/// 社交登录用例
+class SocialLoginUseCase extends UseCase<AuthToken, SocialLoginParams> {
+  final IAuthRepository _repository;
+
+  SocialLoginUseCase(this._repository);
+
+  @override
+  Future<Result<AuthToken>> execute(SocialLoginParams params) async {
+    return await _repository.socialLogin(
+      provider: params.provider,
+      code: params.code,
+      accessToken: params.accessToken,
+      openId: params.openId,
+    );
+  }
+}
+
+class SocialLoginParams {
+  final SocialAuthProvider provider;
+  final String? code;
+  final String? accessToken;
+  final String? openId;
+
+  SocialLoginParams({
+    required this.provider,
+    this.code,
+    this.accessToken,
+    this.openId,
+  });
 }

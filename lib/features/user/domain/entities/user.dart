@@ -1,3 +1,5 @@
+import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
+
 /// User Domain Entity
 ///
 /// 纯粹的领域对象,不包含序列化逻辑
@@ -19,6 +21,12 @@ class User {
   final DateTime joinedDate;
   final bool isVerified;
 
+  /// 用户会员信息（从 /users/me 接口获取）
+  final UserMembership? membership;
+
+  /// 最新一条旅行历史（从后端返回，用于 Profile 页面显示）
+  final LatestTravelHistory? latestTravelHistory;
+
   User({
     required this.id,
     required this.name,
@@ -36,11 +44,12 @@ class User {
     this.travelHistory = const [],
     required this.joinedDate,
     this.isVerified = false,
+    this.membership,
+    this.latestTravelHistory,
   });
 
   // 业务逻辑方法
-  bool get hasCompletedProfile =>
-      bio != null && avatarUrl != null && currentCity != null;
+  bool get hasCompletedProfile => bio != null && avatarUrl != null && currentCity != null;
 
   bool get isActiveNomad => stats.citiesVisited > 0;
 
@@ -51,6 +60,50 @@ class User {
     if (visited >= 10) return 3; // Intermediate
     if (visited >= 5) return 2; // Beginner
     return 1; // Newbie
+  }
+
+  /// 创建用户副本，支持部分字段更新
+  /// 保留原有的 skills、interests 等字段
+  User copyWith({
+    String? id,
+    String? name,
+    String? username,
+    String? email,
+    String? bio,
+    String? avatarUrl,
+    String? currentCity,
+    String? currentCountry,
+    List<UserSkillInfo>? skills,
+    List<UserInterestInfo>? interests,
+    Map<String, String>? socialLinks,
+    List<Badge>? badges,
+    TravelStats? stats,
+    List<TravelHistory>? travelHistory,
+    DateTime? joinedDate,
+    bool? isVerified,
+    UserMembership? membership,
+    LatestTravelHistory? latestTravelHistory,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      bio: bio ?? this.bio,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      currentCity: currentCity ?? this.currentCity,
+      currentCountry: currentCountry ?? this.currentCountry,
+      skills: skills ?? this.skills,
+      interests: interests ?? this.interests,
+      socialLinks: socialLinks ?? this.socialLinks,
+      badges: badges ?? this.badges,
+      stats: stats ?? this.stats,
+      travelHistory: travelHistory ?? this.travelHistory,
+      joinedDate: joinedDate ?? this.joinedDate,
+      isVerified: isVerified ?? this.isVerified,
+      membership: membership ?? this.membership,
+      latestTravelHistory: latestTravelHistory ?? this.latestTravelHistory,
+    );
   }
 }
 
@@ -67,7 +120,7 @@ class UserSkillInfo {
     required this.level,
     this.icon,
   });
-  
+
   bool get hasIcon => icon != null && icon!.isNotEmpty;
 }
 
@@ -82,7 +135,7 @@ class UserInterestInfo {
     required this.name,
     this.icon,
   });
-  
+
   bool get hasIcon => icon != null && icon!.isNotEmpty;
 }
 
@@ -135,4 +188,37 @@ class TravelHistory {
     required this.visitDate,
     this.durationDays,
   });
+}
+
+/// Latest Travel History Value Object
+/// 最新旅行历史，用于 Profile 页面显示
+class LatestTravelHistory {
+  final String id;
+  final String city;
+  final String country;
+  final double? latitude;
+  final double? longitude;
+  final DateTime arrivalTime;
+  final DateTime? departureTime;
+  final bool isConfirmed;
+  final String? cityId;
+  final int? durationDays;
+  final bool isOngoing;
+
+  LatestTravelHistory({
+    required this.id,
+    required this.city,
+    required this.country,
+    this.latitude,
+    this.longitude,
+    required this.arrivalTime,
+    this.departureTime,
+    this.isConfirmed = true,
+    this.cityId,
+    this.durationDays,
+    this.isOngoing = false,
+  });
+
+  /// 是否可以跳转到城市详情
+  bool get canNavigateToCityDetail => cityId != null && cityId!.isNotEmpty;
 }

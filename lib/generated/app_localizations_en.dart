@@ -45,6 +45,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get email => 'Email';
 
   @override
+  String get invalidEmailFormat => 'Invalid email format';
+
+  @override
+  String get emailAlreadyExists => 'This email is already in use';
+
+  @override
   String get password => 'Password';
 
   @override
@@ -154,6 +160,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendInvitation => 'Send Invitation';
+
+  @override
+  String get userIsOrganizer => 'User is the organizer';
+
+  @override
+  String get userAlreadyJoined => 'User already joined';
 
   @override
   String get date => 'Date';
@@ -502,7 +514,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myProfile => 'Profile';
 
   @override
-  String get popular => 'Popular';
+  String get popular => 'POPULAR';
 
   @override
   String get costOfLiving => 'Cost of Living';
@@ -628,7 +640,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchResults => 'Search Results';
 
   @override
-  String get noResults => 'NO RESULTS';
+  String get noResults => 'No results found';
 
   @override
   String get tryAgain => 'Try Again';
@@ -707,7 +719,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String days(int count) {
-    return 'Days';
+    return 'days';
   }
 
   @override
@@ -961,6 +973,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateSuccess => 'Updated Successfully';
+
+  @override
+  String get updateFailed => 'Update Failed';
 
   @override
   String get uploadPhoto => 'Upload Photo';
@@ -1303,7 +1318,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cons => 'Cons';
 
   @override
-  String get neighborhoods => 'Neighborhoods';
+  String get neighborhoods => 'Nearby';
+
+  @override
+  String get noNearbyCities => 'No nearby cities available';
 
   @override
   String get loadingGuide => 'Loading guide...';
@@ -1929,7 +1947,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodDining => 'Food & Dining';
 
   @override
-  String get gym => 'Fitness & Gym';
+  String get gym => 'Gym';
 
   @override
   String get coworkingSpace => 'Coworking Space';
@@ -2986,7 +3004,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get localTransport => 'Local Transport';
 
   @override
-  String get pricePerNight => 'night';
+  String get pricePerNight => 'Price per Night';
 
   @override
   String get bookingTips => 'Booking Tips';
@@ -3147,7 +3165,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get specifications => 'Specifications';
 
   @override
-  String get wifiSpeed => 'WiFi Speed (Mbps)';
+  String get wifiSpeed => 'WiFi Speed';
 
   @override
   String get capacity => 'Capacity';
@@ -3189,6 +3207,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noMapAppAvailable => 'No map app available';
+
+  @override
+  String get selectMapApp => 'Select Map App';
 
   @override
   String get selectMapSource => 'Select Map Source';
@@ -3249,8 +3270,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pickLocationOnMap => 'Pick Location on Map';
 
   @override
-  String locationCoordinates(String lat, String lng) {
-    return 'Location: $lat, $lng';
+  String locationCoordinates(String lat, String lon) {
+    return '$lat, $lon';
   }
 
   @override
@@ -3293,7 +3314,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trialDurationHint => '1 day, 1 week, etc.';
 
   @override
-  String get wifiSpeedHint => '500';
+  String get wifiSpeedHint => 'e.g., 100 Mbps';
 
   @override
   String get capacityHint => '50';
@@ -3477,6 +3498,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String failedToAddEvent(String error) {
     return 'Failed to add event to calendar: $error';
   }
+
+  @override
+  String get calendarPermissionDenied =>
+      'Calendar permission denied. Please enable it in Settings.';
+
+  @override
+  String get noCalendarAvailable =>
+      'No writable calendar found on your device.';
 
   @override
   String get cityChats => 'City Chats';
@@ -3786,6 +3815,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Show your travel history to other users';
 
   @override
+  String get autoTravelDetection => 'Auto Travel Detection';
+
+  @override
+  String get autoTravelDetectionDescription =>
+      'Automatically detect and record your travels';
+
+  @override
   String get publicProfile => 'Public Profile';
 
   @override
@@ -3813,4 +3849,373 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeletionCancelled => 'Account deletion cancelled';
+
+  @override
+  String get membershipPlans => 'Membership Plans';
+
+  @override
+  String currentPlan(String planName) {
+    return 'Current: $planName';
+  }
+
+  @override
+  String daysRemaining(int days) {
+    return '$days days remaining';
+  }
+
+  @override
+  String get upgradeToUnlock => 'Upgrade to unlock more features';
+
+  @override
+  String get selectPaymentMethod => 'Select Payment Method';
+
+  @override
+  String upgradeTo(String planName, String price) {
+    return 'Upgrade to $planName - \$$price/year';
+  }
+
+  @override
+  String get paypalPayment => 'PayPal';
+
+  @override
+  String get paypalDescription => 'Fast & Secure international payment';
+
+  @override
+  String get wechatPayment => 'WeChat Pay';
+
+  @override
+  String get wechatDescription => 'Pay with WeChat';
+
+  @override
+  String get alipayPayment => 'Alipay';
+
+  @override
+  String get alipayDescription => 'Pay with Alipay';
+
+  @override
+  String get securePayment => 'Secure Payment';
+
+  @override
+  String get allPaymentsSecure =>
+      'All payments are processed securely. Cancel anytime.';
+
+  @override
+  String get allPaymentsEncrypted => 'All payments are secure and encrypted';
+
+  @override
+  String get unableToLoadPlans => 'Unable to load membership plans';
+
+  @override
+  String get checkNetworkConnection => 'Please check your network connection';
+
+  @override
+  String get currentPlanLabel => 'Current Plan';
+
+  @override
+  String get selectPlanLabel => 'Select Plan';
+
+  @override
+  String get perYear => '/year';
+
+  @override
+  String get alreadyHavePlan => 'You already have this or higher plan';
+
+  @override
+  String get creatingPaypalOrder => 'Creating PayPal order...';
+
+  @override
+  String get creatingWechatOrder => 'Creating WeChat Pay order...';
+
+  @override
+  String get creatingAlipayOrder => 'Creating Alipay order...';
+
+  @override
+  String priceForPlan(String price, String planName) {
+    return '\$$price for $planName';
+  }
+
+  @override
+  String cnyPriceForPlan(String price, String planName) {
+    return '¥$price for $planName';
+  }
+
+  @override
+  String get paymentServiceNotAvailable => 'Payment service not available';
+
+  @override
+  String paymentError(String error) {
+    return 'Payment error: $error';
+  }
+
+  @override
+  String get openingPaypal => 'Opening PayPal for payment...';
+
+  @override
+  String get failedToCreateOrder => 'Failed to create payment order';
+
+  @override
+  String get wechatNotInstalled => 'Please install WeChat to use WeChat Pay';
+
+  @override
+  String get alipayNotInstalled => 'Please install Alipay to use Alipay Pay';
+
+  @override
+  String get paymentSuccessful => 'Payment successful!';
+
+  @override
+  String get wechatPayFailed => 'WeChat Pay failed';
+
+  @override
+  String get alipayPayFailed => 'Alipay payment failed';
+
+  @override
+  String wechatPayError(String error) {
+    return 'WeChat Pay error: $error';
+  }
+
+  @override
+  String alipayError(String error) {
+    return 'Alipay error: $error';
+  }
+
+  @override
+  String get travelDetected => 'New Trip Detected';
+
+  @override
+  String get saveTravelQuestion => 'Would you like to save this trip?';
+
+  @override
+  String get saveTravel => 'Save Trip';
+
+  @override
+  String get ignore => 'Ignore';
+
+  @override
+  String get travelSaved => 'Trip saved';
+
+  @override
+  String get saveFailed => 'Failed to save';
+
+  @override
+  String get dismiss => 'Dismiss';
+
+  @override
+  String get noPendingTrips => 'No pending trips';
+
+  @override
+  String travelDetectedBanner(String city) {
+    return 'We noticed you recently visited $city';
+  }
+
+  @override
+  String get tapToSave => 'Tap to save this trip';
+
+  @override
+  String durationDays(String days) {
+    return '$days days';
+  }
+
+  @override
+  String distanceFromHome(String km) {
+    return '$km km from home';
+  }
+
+  @override
+  String get pendingConfirmation => 'Pending Confirmation';
+
+  @override
+  String get confirmedTrips => 'Trip Records';
+
+  @override
+  String get homeLocation => 'Home Location';
+
+  @override
+  String get setHomeLocation => 'Set Home Location';
+
+  @override
+  String get homeLocationSet => 'Home location set';
+
+  @override
+  String get setHomeFailed => 'Failed to set home location';
+
+  @override
+  String get locationUnavailable => 'Location unavailable';
+
+  @override
+  String get autoDetectionOn => 'Auto detection on';
+
+  @override
+  String get autoDetectionOff => 'Auto detection off';
+
+  @override
+  String get clearAllData => 'Clear All Data';
+
+  @override
+  String get confirmClear => 'Confirm Clear';
+
+  @override
+  String get clearAllDataWarning =>
+      'This will clear all travel detection data including location records, stay points and trip history. This action cannot be undone.';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get dataCleared => 'Data cleared';
+
+  @override
+  String get noTravelHistory => 'No travel history';
+
+  @override
+  String get travelHistoryEmptyHint =>
+      'Enable auto detection and we\'ll automatically identify your trips and remind you to save them';
+
+  @override
+  String get autoDetectionActive => 'Auto detection active';
+
+  @override
+  String get enableAutoDetection => 'Enable Auto Detection';
+
+  @override
+  String confidence(String percent) {
+    return 'Confidence: $percent%';
+  }
+
+  @override
+  String get synced => 'Synced';
+
+  @override
+  String get nights => 'nights';
+
+  @override
+  String get tip => 'Tip';
+
+  @override
+  String get travelHistoryNoCityLink =>
+      'This trip record is not linked to a city';
+
+  @override
+  String get syncCompleted => 'Sync completed';
+
+  @override
+  String get syncFailed => 'Sync failed';
+
+  @override
+  String get addHotel => 'Add Hotel';
+
+  @override
+  String get editHotel => 'Edit Hotel';
+
+  @override
+  String get hotelName => 'Hotel Name';
+
+  @override
+  String get hotelNameHint => 'Enter hotel name';
+
+  @override
+  String get hotelDescription => 'Description';
+
+  @override
+  String get hotelDescriptionHint => 'Describe this hotel for digital nomads';
+
+  @override
+  String get pricePerNightHint => 'e.g., 50';
+
+  @override
+  String get longStayDiscount => 'Long Stay Discount';
+
+  @override
+  String get longStayDiscountHint => 'Discount % for weekly/monthly stays';
+
+  @override
+  String get nomadFeatures => 'Nomad-Friendly Features';
+
+  @override
+  String get nomadFeaturesSubtitle => 'Features important for remote workers';
+
+  @override
+  String get workDesk => 'Work Desk';
+
+  @override
+  String get hasCoworkingSpace => 'Has Coworking Space';
+
+  @override
+  String get laundry => 'Laundry';
+
+  @override
+  String get pool => 'Pool';
+
+  @override
+  String get twentyFourHourReception => '24h Reception';
+
+  @override
+  String get submitHotel => 'Submit Hotel';
+
+  @override
+  String get hotelSubmittedSuccess => 'Hotel submitted successfully!';
+
+  @override
+  String get failedToSubmitHotel => 'Failed to submit hotel';
+
+  @override
+  String maxPhotosReached(int max) {
+    return 'Maximum $max photos allowed';
+  }
+
+  @override
+  String get addFirstHotel => 'Add First Hotel';
+
+  @override
+  String get noTeamMembersAdded => 'No team members added yet';
+
+  @override
+  String get addTeamMember => 'Add Team Member';
+
+  @override
+  String get editTeamMember => 'Edit Team Member';
+
+  @override
+  String get editProject => 'Edit Project';
+
+  @override
+  String get enterMemberName => 'Enter member name';
+
+  @override
+  String get enterMemberRole => 'Enter member role';
+
+  @override
+  String get enterMemberDescription => 'Enter member description (optional)';
+
+  @override
+  String get markAsFounder => 'Mark as Founder';
+
+  @override
+  String get pleaseEnterMemberName => 'Please enter member name';
+
+  @override
+  String get pleaseEnterMemberRole => 'Please enter member role';
+
+  @override
+  String get founder => 'Founder';
+
+  @override
+  String get role => 'Role';
+
+  @override
+  String get searchAddress => 'Search address or place';
+
+  @override
+  String get eventInvitation => 'Event Invitation';
+
+  @override
+  String get inviteYouToJoin => 'invites you to join';
+
+  @override
+  String get moderatorTransfer => 'Moderator Transfer';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get decline => 'Decline';
 }

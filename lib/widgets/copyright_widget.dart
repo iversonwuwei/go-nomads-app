@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 
 /// 统一版权信息组件
 /// 用于在各个页面底部显示版权信息，保持品牌一致性
@@ -34,13 +33,27 @@ class CopyrightWidget extends StatelessWidget {
         horizontal: 16.w,
       ),
       child: Center(
-        child: Text(
-          'All Rights Reserved by Walden',
-          style: TextStyle(
-            fontSize: fontSize?.sp ?? 10.sp,
-            color: textColor ?? AppColors.textTertiary,
-            letterSpacing: 0.5,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'All Rights Reserved by Walden',
+              style: TextStyle(
+                fontSize: fontSize?.sp ?? 10.sp,
+                color: textColor ?? AppColors.textTertiary,
+                letterSpacing: 0.5,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              '辽ICP备2026001591号',
+              style: TextStyle(
+                fontSize: fontSize?.sp ?? 10.sp,
+                color: textColor ?? AppColors.textTertiary,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
       ),
     );

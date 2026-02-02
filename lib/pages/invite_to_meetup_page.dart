@@ -1,14 +1,13 @@
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'create_meetup_page.dart';
+import 'create_meetup/create_meetup_page.dart';
 
 class InviteToMeetupPage extends StatelessWidget {
   final User user;
@@ -132,32 +131,55 @@ class InviteToMeetupPage extends StatelessWidget {
     );
   }
 
+  /// 检查被邀请用户是否可以被邀请到该 meetup
+  /// 返回 null 表示可以邀请，否则返回不可邀请的原因
+  String? _getCannotInviteReason(BuildContext context, Meetup meetup) {
+    final l10n = AppLocalizations.of(context)!;
+
+    // 检查被邀请用户是否是该 meetup 的创建者
+    if (meetup.organizer.id == user.id) {
+      return l10n.userIsOrganizer;
+    }
+
+    // 检查被邀请用户是否已经加入了该 meetup
+    if (meetup.attendeeIds.contains(user.id)) {
+      return l10n.userAlreadyJoined;
+    }
+
+    return null;
+  }
+
   // Meetup 邀请卡片
   Widget _buildMeetupInviteCard(
     BuildContext context,
     Meetup meetup,
   ) {
+    final cannotInviteReason = _getCannotInviteReason(context, meetup);
+    final canInvite = cannotInviteReason == null;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: canInvite ? Colors.white : const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
+          color: canInvite ? const Color(0xFFE5E7EB) : const Color(0xFFD1D5DB),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: canInvite
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: () => _inviteToMeetup(context, meetup),
+          onTap: canInvite ? () => _inviteToMeetup(context, meetup) : null,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -167,12 +189,14 @@ class InviteToMeetupPage extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    color: canInvite
+                        ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                        : const Color(0xFF9CA3AF).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     FontAwesomeIcons.calendarDays,
-                    color: Color(0xFF10B981),
+                    color: canInvite ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
                     size: 28,
                   ),
                 ),
@@ -233,15 +257,37 @@ class InviteToMeetupPage extends StatelessWidget {
                           ),
                         ],
                       ),
+                      // 不可邀请原因提示
+                      if (cannotInviteReason != null) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            cannotInviteReason,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFEF4444),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
 
-                // Arrow
-                const Icon(
-                  FontAwesomeIcons.arrowRight,
+                // Arrow or disabled icon
+                Icon(
+                  canInvite ? FontAwesomeIcons.arrowRight : FontAwesomeIcons.ban,
                   size: 16,
-                  color: Color(0xFF9ca3af),
+                  color: canInvite ? const Color(0xFF9ca3af) : const Color(0xFFD1D5DB),
                 ),
               ],
             ),
@@ -367,15 +413,24 @@ class InviteToMeetupPage extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        // TODO: 实现实际的邀请逻辑
+                      onPressed: () async {
+                        // 先关闭对话框
                         Navigator.pop(context);
-                        AppToast.success(
-                          '${user.name} ${l10n.sendInvitation}',
-                          title: l10n.success,
+
+                        // 获取 MeetupController 并发送邀请
+                        final meetupController = Get.find<MeetupStateController>();
+
+                        final success = await meetupController.inviteToMeetup(
+                          meetupId: meetup.id,
+                          inviteeId: user.id,
                         );
-                        // 返回上一页
-                        Navigator.pop(Get.context!);
+
+                        if (success) {
+                          // 返回上一页
+                          if (Get.context != null) {
+                            Navigator.pop(Get.context!);
+                          }
+                        }
                       },
                       icon: const Icon(FontAwesomeIcons.paperPlane, size: 18),
                       label: Text(l10n.sendInvitation),

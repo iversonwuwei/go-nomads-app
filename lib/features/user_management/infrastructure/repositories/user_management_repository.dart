@@ -1,8 +1,10 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/features/user_management/domain/entities/simple_user.dart';
-import 'package:df_admin_mobile/features/user_management/domain/repositories/iuser_management_repository.dart';
-import 'package:df_admin_mobile/features/user_management/infrastructure/models/simple_user_dto.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/user_management/domain/entities/simple_user.dart';
+import 'package:go_nomads_app/features/user_management/domain/repositories/iuser_management_repository.dart';
+import 'package:go_nomads_app/features/user_management/infrastructure/models/simple_user_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// User Management Repository Implementation
 class UserManagementRepository implements IUserManagementRepository {
@@ -16,7 +18,7 @@ class UserManagementRepository implements IUserManagementRepository {
     required int pageSize,
   }) async {
     try {
-      print(
+      log(
           '📡 [UserManagementRepo] getUsers 调用开始: page=$page, pageSize=$pageSize');
       
       final response = await _httpService.get(
@@ -27,48 +29,48 @@ class UserManagementRepository implements IUserManagementRepository {
         },
       );
 
-      print(
+      log(
           '📡 [UserManagementRepo] HTTP 响应: statusCode=${response.statusCode}');
-      print(
+      log(
           '📡 [UserManagementRepo] response.data type: ${response.data?.runtimeType}');
       
       if (response.statusCode == 200 && response.data != null) {
-        print(
+        log(
             '📡 [UserManagementRepo] response.data keys: ${response.data is Map ? (response.data as Map).keys.toList() : 'not a map'}');
 
         final dataMap = response.data as Map<String, dynamic>?;
         if (dataMap != null && dataMap['items'] != null) {
           final itemsList = dataMap['items'] as List?;
-          print(
+          log(
               '📡 [UserManagementRepo] items count: ${itemsList?.length ?? 0}');
 
           if (itemsList != null && itemsList.isNotEmpty) {
-            print('📡 [UserManagementRepo] 第一个用户原始数据: ${itemsList[0]}');
+            log('📡 [UserManagementRepo] 第一个用户原始数据: ${itemsList[0]}');
           }
 
           final items = itemsList?.map((json) {
                 try {
                   final dto = SimpleUserDto.fromJson(json);
-                  print(
+                  log(
                       '📡 [UserManagementRepo] DTO解析成功: id=${dto.id}, name=${dto.name}, role=${dto.roleName}');
                   return dto.toEntity();
                 } catch (e) {
-                  print('❌ [UserManagementRepo] DTO解析失败: $e, json=$json');
+                  log('❌ [UserManagementRepo] DTO解析失败: $e, json=$json');
                   rethrow;
                 }
               }).toList() ??
               [];
 
-          print('✅ [UserManagementRepo] 最终返回 ${items.length} 个用户');
+          log('✅ [UserManagementRepo] 最终返回 ${items.length} 个用户');
           return Result.success(items);
         }
       }
 
-      print('❌ [UserManagementRepo] 获取用户列表失败');
+      log('❌ [UserManagementRepo] 获取用户列表失败');
       return Result.failure(const ServerException('获取用户列表失败'));
     } catch (e, stackTrace) {
-      print('❌ [UserManagementRepo] 异常: $e');
-      print('❌ [UserManagementRepo] 堆栈: $stackTrace');
+      log('❌ [UserManagementRepo] 异常: $e');
+      log('❌ [UserManagementRepo] 堆栈: $stackTrace');
       return Result.failure(ServerException('获取用户列表失败: $e'));
     }
   }
@@ -111,6 +113,54 @@ class UserManagementRepository implements IUserManagementRepository {
       return Result.failure(const ServerException('搜索用户失败'));
     } catch (e) {
       return Result.failure(ServerException('搜索用户失败: $e'));
+    }
+  }
+
+  @override
+  Future<Result<List<ModeratorCandidate>>> getModeratorCandidates({
+    String? query,
+    required int page,
+    required int pageSize,
+  }) async {
+    try {
+      log('📡 [UserManagementRepo] getModeratorCandidates 调用开始: query=$query, page=$page, pageSize=$pageSize');
+
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'pageSize': pageSize,
+      };
+
+      if (query != null && query.isNotEmpty) {
+        queryParams['q'] = query;
+      }
+
+      final response = await _httpService.get(
+        '/users/moderator-candidates',
+        queryParameters: queryParams,
+      );
+
+      log('📡 [UserManagementRepo] moderator-candidates HTTP 响应: statusCode=${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final dataMap = response.data as Map<String, dynamic>?;
+        if (dataMap != null && dataMap['items'] != null) {
+          final itemsList = dataMap['items'] as List?;
+          log('📡 [UserManagementRepo] moderator-candidates items count: ${itemsList?.length ?? 0}');
+
+          final items =
+              itemsList?.map((json) => ModeratorCandidate.fromJson(json as Map<String, dynamic>)).toList() ?? [];
+
+          log('✅ [UserManagementRepo] 版主候选人返回 ${items.length} 个');
+          return Result.success(items);
+        }
+      }
+
+      log('❌ [UserManagementRepo] 获取版主候选人失败');
+      return Result.failure(const ServerException('获取版主候选人失败'));
+    } catch (e, stackTrace) {
+      log('❌ [UserManagementRepo] 版主候选人异常: $e');
+      log('❌ [UserManagementRepo] 堆栈: $stackTrace');
+      return Result.failure(ServerException('获取版主候选人失败: $e'));
     }
   }
 

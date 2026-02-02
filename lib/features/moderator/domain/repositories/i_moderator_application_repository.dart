@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_application.dart';
+import 'package:go_nomads_app/features/moderator/domain/entities/moderator_application.dart';
 
 /// 版主申请仓储接口
 abstract class IModeratorApplicationRepository {
@@ -32,4 +32,11 @@ abstract class IModeratorApplicationRepository {
 
   /// 撤销版主资格（管理员使用）
   Future<void> revokeModerator(String applicationId);
+
+  /// 发起版主转让
+  Future<void> initiateTransfer({
+    required String cityId,
+    required String toUserId,
+    String? message,
+  });
 }

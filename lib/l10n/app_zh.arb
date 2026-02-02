@@ -15,6 +15,8 @@
   "logout": "退出登录",
   "register": "注册",
   "email": "邮箱",
+  "invalidEmailFormat": "邮箱格式不正确",
+  "emailAlreadyExists": "该邮箱已被使用",
   "password": "密码",
   "confirmPassword": "确认密码",
   "username": "用户名",
@@ -52,6 +54,8 @@
   "inviteToMeetup": "邀请参加聚会",
   "selectMeetup": "选择聚会",
   "sendInvitation": "发送邀请",
+  "userIsOrganizer": "用户是活动创建者",
+  "userAlreadyJoined": "用户已加入",
   "date": "日期",
   "time": "时间",
   "location": "位置",
@@ -360,6 +364,7 @@
   "deleteSuccess": "删除成功",
   "saveSuccess": "保存成功",
   "updateSuccess": "更新成功",
+  "updateFailed": "更新失败",
   "uploadPhoto": "上传照片",
   "takePhoto": "拍照",
   "chooseFromGallery": "从相册选择",
@@ -479,6 +484,7 @@
   "photos": "照片",
   "weather": "天气",
   "neighborhoods": "附近",
+  "noNearbyCities": "暂无附近城市",
   "coworking": "共享办公",
   "loadingGuide": "加载指南...",
   "startRating": "开始评分",
@@ -683,6 +689,7 @@
   "reenterPassword": "重新输入密码",
   "confirmPasswordRequired": "请确认您的密码",
   "passwordsNotMatch": "密码不匹配",
+  "termsAndConditions": "服务条款",
   "agreeToTerms": "我同意",
   "and": "和",
   "communityGuidelines": "社区准则",
@@ -1467,6 +1474,7 @@
   "recenter": "回到中心",
   "startNavigation": "开始导航",
   "noMapAppAvailable": "未找到可用的地图应用",
+  "selectMapApp": "选择地图应用",
   "selectMapSource": "选择地图源",
   "switchedToMapSource": "已切换到 {mapSource}",
   "@switchedToMapSource": {
@@ -1691,6 +1699,8 @@
       }
     }
   },
+  "calendarPermissionDenied": "日历权限被拒绝，请在设置中开启。",
+  "noCalendarAvailable": "未找到可写入的日历。",
   "cityChats": "城市聊天",
   "onlineMembers": "在线成员",
   "online": "在线",
@@ -1871,6 +1881,8 @@
   "receiveUpdatesAndAlerts": "接收更新和提醒",
   "travelHistoryVisible": "旅行历史可见",
   "showTravelHistoryToOthers": "向其他用户展示您的旅行历史",
+  "autoTravelDetection": "自动旅行记录",
+  "autoTravelDetectionDescription": "自动检测并记录您的旅行足迹",
   "publicProfile": "公开资料",
   "makeProfileVisibleToEveryone": "让所有人都能看到您的资料",
   "currency": "货币",
@@ -1884,7 +1896,246 @@
   "privacySettingsComingSoon": "隐私设置功能即将推出",
   "deleteAccount": "删除账户",
   "deleteAccountConfirmation": "确定要删除您的账户吗？此操作无法撤销。",
-  "accountDeletionCancelled": "已取消删除账户"
+  "accountDeletionCancelled": "已取消删除账户",
+
+  "membershipPlans": "会员计划",
+  "currentPlan": "当前：{planName}",
+  "@currentPlan": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "daysRemaining": "剩余 {days} 天",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "upgradeToUnlock": "升级以解锁更多功能",
+  "selectPaymentMethod": "选择支付方式",
+  "upgradeTo": "升级到 {planName} - ${price}/年",
+  "@upgradeTo": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paypalPayment": "PayPal",
+  "paypalDescription": "快捷安全的国际支付",
+  "wechatPayment": "微信支付",
+  "wechatDescription": "使用微信支付",
+  "alipayPayment": "支付宝",
+  "alipayDescription": "使用支付宝支付",
+  "securePayment": "安全支付",
+  "allPaymentsSecure": "所有支付均安全处理，可随时取消。",
+  "allPaymentsEncrypted": "所有支付均安全加密",
+  "unableToLoadPlans": "无法加载会员计划",
+  "checkNetworkConnection": "请检查您的网络连接",
+  "currentPlanLabel": "当前计划",
+  "selectPlanLabel": "选择计划",
+  "popular": "热门",
+  "perYear": "/年",
+  "alreadyHavePlan": "您已拥有此计划或更高级别的计划",
+  "creatingPaypalOrder": "正在创建 PayPal 订单...",
+  "creatingWechatOrder": "正在创建微信支付订单...",
+  "creatingAlipayOrder": "正在创建支付宝订单...",
+  "priceForPlan": "${price} - {planName}",
+  "@priceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "cnyPriceForPlan": "¥{price} - {planName}",
+  "@cnyPriceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentServiceNotAvailable": "支付服务不可用",
+  "paymentError": "支付错误：{error}",
+  "@paymentError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "openingPaypal": "正在打开 PayPal 支付...",
+  "failedToCreateOrder": "创建支付订单失败",
+  "wechatNotInstalled": "请安装微信以使用微信支付",
+  "alipayNotInstalled": "请安装支付宝以使用支付宝支付",
+  "paymentSuccessful": "支付成功！",
+  "wechatPayFailed": "微信支付失败",
+  "alipayPayFailed": "支付宝支付失败",
+  "wechatPayError": "微信支付错误：{error}",
+  "@wechatPayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "alipayError": "支付宝错误：{error}",
+  "@alipayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "travelHistory": "旅行历史",
+  "travelDetected": "发现新旅行",
+  "saveTravelQuestion": "要保存这次旅行吗？",
+  "saveTravel": "保存旅行",
+  "ignore": "忽略",
+  "travelSaved": "旅行已保存",
+  "saveFailed": "保存失败",
+  "dismiss": "关闭",
+  "noPendingTrips": "暂无待确认的旅行",
+  "travelDetectedBanner": "我们发现您最近去过 {city}",
+  "@travelDetectedBanner": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "tapToSave": "点击保存这次旅行",
+  "durationDays": "{days} 天",
+  "@durationDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceFromHome": "距离常住地 {km} 公里",
+  "@distanceFromHome": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingConfirmation": "待确认",
+  "confirmedTrips": "旅行记录",
+  "homeLocation": "常住地",
+  "setHomeLocation": "设置常住地",
+  "homeLocationSet": "常住地已设置",
+  "setHomeFailed": "设置常住地失败",
+  "locationUnavailable": "无法获取位置信息",
+  "autoDetectionOn": "自动检测已开启",
+  "autoDetectionOff": "自动检测已关闭",
+  "clearAllData": "清除所有数据",
+  "confirmClear": "确认清除",
+  "clearAllDataWarning": "此操作将清除所有旅行检测数据，包括位置记录、停留点和旅行历史。此操作无法撤销。",
+  "clear": "清除",
+  "dataCleared": "数据已清除",
+  "noTravelHistory": "暂无旅行记录",
+  "travelHistoryEmptyHint": "开启自动检测后，我们会自动识别您的旅行并提醒您保存",
+  "autoDetectionActive": "自动检测已开启",
+  "enableAutoDetection": "开启自动检测",
+  "days": "天",
+  "locationCoordinates": "{lat}, {lon}",
+  "@locationCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "confidence": "置信度：{percent}%",
+  "@confidence": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "synced": "已同步",
+  "nights": "晚",
+  "tip": "提示",
+  "travelHistoryNoCityLink": "此旅行记录暂无关联城市",
+  "syncCompleted": "同步完成",
+  "syncFailed": "同步失败",
+
+  "addHotel": "添加酒店",
+  "editHotel": "编辑酒店",
+  "hotelName": "酒店名称",
+  "hotelNameHint": "请输入酒店名称",
+  "hotelDescription": "描述",
+  "hotelDescriptionHint": "为数字游民描述这家酒店",
+  "pricePerNight": "每晚价格",
+  "pricePerNightHint": "例如：50",
+  "longStayDiscount": "长住折扣",
+  "longStayDiscountHint": "周/月住折扣百分比",
+  "nomadFeatures": "游民友好设施",
+  "nomadFeaturesSubtitle": "对远程工作者重要的设施",
+  "wifiSpeed": "WiFi速度",
+  "wifiSpeedHint": "例如：100 Mbps",
+  "workDesk": "工作台",
+  "hasCoworkingSpace": "有共享办公空间",
+  "airConditioning": "空调",
+  "kitchen": "厨房",
+  "laundry": "洗衣",
+  "pool": "游泳池",
+  "gym": "健身房",
+  "twentyFourHourReception": "24小时前台",
+  "submitHotel": "提交酒店",
+  "hotelSubmittedSuccess": "酒店提交成功！",
+  "failedToSubmitHotel": "提交酒店失败",
+  "maxPhotosReached": "最多允许 {max} 张照片",
+  "@maxPhotosReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "addFirstHotel": "添加第一家酒店",
+  "noTeamMembersAdded": "暂无团队成员",
+  "addTeamMember": "添加团队成员",
+  "editTeamMember": "编辑团队成员",
+  "editProject": "编辑项目",
+  "enterMemberName": "请输入成员姓名",
+  "enterMemberRole": "请输入成员职位",
+  "enterMemberDescription": "请输入成员简介（可选）",
+  "markAsFounder": "标记为创始人",
+  "pleaseEnterMemberName": "请输入成员姓名",
+  "pleaseEnterMemberRole": "请输入成员职位",
+  "founder": "创始人",
+  "name": "姓名",
+  "role": "职位",
+  "searchAddress": "搜索地址或地点",
+  "noResults": "未找到结果",
+  "eventInvitation": "活动邀请",
+  "inviteYouToJoin": "邀请你参加",
+  "moderatorTransfer": "版主转让",
+  "accept": "接受",
+  "decline": "拒绝",
+  "from": "来自"
 }
 
 

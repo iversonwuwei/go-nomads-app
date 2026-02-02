@@ -15,7 +15,7 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
   @override
   Widget buildSkeleton(BuildContext context) {
     final isMobile = Get.width < 600;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -59,11 +59,10 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       children: [
         // 头像
         SkeletonCircle(
-          shimmerController: shimmerController,
           size: avatarSize,
         ),
         const SizedBox(width: 16),
-        
+
         // 用户信息
         Expanded(
           child: Column(
@@ -71,7 +70,6 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
             children: [
               // 用户名
               SkeletonBox(
-                shimmerController: shimmerController,
                 width: isMobile ? 120 : 180,
                 height: isMobile ? 20 : 28,
                 borderRadius: 4,
@@ -80,7 +78,6 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
 
               // 邮箱
               SkeletonBox(
-                shimmerController: shimmerController,
                 width: isMobile ? 150 : 220,
                 height: 14,
                 borderRadius: 4,
@@ -90,15 +87,13 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
               // 按钮行
               Row(
                 children: [
-                  SkeletonBox(
-                    shimmerController: shimmerController,
+                  const SkeletonBox(
                     width: 80,
                     height: 32,
                     borderRadius: 8,
                   ),
                   const SizedBox(width: 8),
-                  SkeletonBox(
-                    shimmerController: shimmerController,
+                  const SkeletonBox(
                     width: 80,
                     height: 32,
                     borderRadius: 8,
@@ -114,20 +109,16 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
 
   Widget _buildTravelPlansSection() {
     return SkeletonCard(
-      shimmerController: shimmerController,
       height: 120,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SkeletonCircle(
-              shimmerController: shimmerController,
+            const SkeletonCircle(
               size: 48,
             ),
             const SizedBox(height: 12),
-            SkeletonBox(
-              shimmerController: shimmerController,
-              width: 180,
+            const SkeletonBox(
               height: 16,
               borderRadius: 4,
             ),
@@ -145,25 +136,18 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       runSpacing: 12,
       children: List.generate(6, (index) {
         return SkeletonCard(
-          shimmerController: shimmerController,
           width: cardWidth,
           height: 100,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SkeletonBox(
-                shimmerController: shimmerController,
+              const SkeletonBox(
                 width: 40,
                 height: 24,
                 borderRadius: 4,
               ),
               const SizedBox(height: 8),
-              SkeletonBox(
-                shimmerController: shimmerController,
-                width: 80,
-                height: 14,
-                borderRadius: 4,
-              ),
+              const SkeletonBox(),
             ],
           ),
         );
@@ -176,8 +160,7 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section 标题
-        SkeletonBox(
-          shimmerController: shimmerController,
+        const SkeletonBox(
           width: 100,
           height: 20,
           borderRadius: 4,
@@ -190,19 +173,16 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
           runSpacing: 12,
           children: List.generate(4, (index) {
             return SkeletonCard(
-              shimmerController: shimmerController,
               width: 80,
               height: 100,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SkeletonCircle(
-                    shimmerController: shimmerController,
+                  const SkeletonCircle(
                     size: 40,
                   ),
                   const SizedBox(height: 8),
-                  SkeletonBox(
-                    shimmerController: shimmerController,
+                  const SkeletonBox(
                     width: 60,
                     height: 12,
                     borderRadius: 4,
@@ -221,8 +201,7 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Skills 部分
-        SkeletonBox(
-          shimmerController: shimmerController,
+        const SkeletonBox(
           width: 80,
           height: 20,
           borderRadius: 4,
@@ -234,19 +213,17 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
           runSpacing: 8,
           children: List.generate(5, (index) {
             return SkeletonBox(
-              shimmerController: shimmerController,
               width: 60 + (index * 10.0),
               height: 32,
               borderRadius: 16,
             );
           }),
         ),
-        
+
         const SizedBox(height: 24),
 
         // Interests 部分
-        SkeletonBox(
-          shimmerController: shimmerController,
+        const SkeletonBox(
           width: 80,
           height: 20,
           borderRadius: 4,
@@ -258,7 +235,6 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
           runSpacing: 8,
           children: List.generate(5, (index) {
             return SkeletonBox(
-              shimmerController: shimmerController,
               width: 70 + (index * 8.0),
               height: 32,
               borderRadius: 16,
@@ -274,8 +250,7 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section 标题
-        SkeletonBox(
-          shimmerController: shimmerController,
+        const SkeletonBox(
           width: 120,
           height: 20,
           borderRadius: 4,
@@ -287,12 +262,10 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: SkeletonCard(
-              shimmerController: shimmerController,
               height: 80,
               child: Row(
                 children: [
-                  SkeletonBox(
-                    shimmerController: shimmerController,
+                  const SkeletonBox(
                     width: 60,
                     height: 60,
                     borderRadius: 8,
@@ -303,15 +276,13 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SkeletonBox(
-                          shimmerController: shimmerController,
+                        const SkeletonBox(
                           width: 150,
                           height: 16,
                           borderRadius: 4,
                         ),
                         const SizedBox(height: 8),
-                        SkeletonBox(
-                          shimmerController: shimmerController,
+                        const SkeletonBox(
                           width: 100,
                           height: 14,
                           borderRadius: 4,
@@ -333,8 +304,7 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section 标题
-        SkeletonBox(
-          shimmerController: shimmerController,
+        const SkeletonBox(
           width: 100,
           height: 20,
           borderRadius: 4,
@@ -346,8 +316,7 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
           spacing: 12,
           runSpacing: 12,
           children: List.generate(4, (index) {
-            return SkeletonBox(
-              shimmerController: shimmerController,
+            return const SkeletonBox(
               width: 48,
               height: 48,
               borderRadius: 24,

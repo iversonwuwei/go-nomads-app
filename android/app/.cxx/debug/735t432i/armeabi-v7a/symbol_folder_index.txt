@@ -1,0 +1,1 @@
+E:\Workspaces\WaldenProjects\go-nomads-project\go-nomads-app\android\app\build\intermediates\cxx\debug\735t432i\obj\armeabi-v7a

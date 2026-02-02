@@ -1,4 +1,4 @@
-import 'package:df_admin_mobile/features/meetup/domain/entities/event_type.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/event_type.dart';
 
 /// 事件类型数据传输对象
 /// 用于与后端 API 进行数据交换

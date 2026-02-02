@@ -1,51 +1,31 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/controllers/city_search_page_controller.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 /// 城市搜索和筛选页面
-class CitySearchPage extends StatefulWidget {
+class CitySearchPage extends StatelessWidget {
   const CitySearchPage({super.key});
 
-  @override
-  State<CitySearchPage> createState() => _CitySearchPageState();
-}
+  static const String _tag = 'CitySearchPage';
 
-class _CitySearchPageState extends State<CitySearchPage> {
-  final TextEditingController _searchController = TextEditingController();
-
-  // 筛选条件
-  String _selectedRegion = 'All';
-  RangeValues _priceRange = const RangeValues(0, 5000);
-  double _minInternetSpeed = 0;
-  String _selectedClimate = 'All';
-
-  final List<String> _regions = [
-    'All',
-    'Asia',
-    'Europe',
-    'North America',
-    'South America',
-    'Africa',
-    'Oceania',
-  ];
-
-  final List<String> _climates = [
-    'All',
-    'Tropical',
-    'Dry',
-    'Temperate',
-    'Continental',
-    'Polar',
-  ];
+  CitySearchPageController get _controller {
+    if (!Get.isRegistered<CitySearchPageController>(tag: _tag)) {
+      Get.put(CitySearchPageController(), tag: _tag);
+    }
+    return Get.find<CitySearchPageController>(tag: _tag);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final controller = _controller;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0a0a0a),
@@ -76,8 +56,8 @@ class _CitySearchPageState extends State<CitySearchPage> {
                     color: Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
-                child: TextField(
-                  controller: _searchController,
+                child: Obx(() => TextField(
+                  controller: controller.searchController,
                   style: const TextStyle(color: Colors.white, fontSize: 16),
                   decoration: InputDecoration(
                     hintText: l10n.search,
@@ -88,15 +68,11 @@ class _CitySearchPageState extends State<CitySearchPage> {
                       FontAwesomeIcons.magnifyingGlass,
                       color: Colors.white.withValues(alpha: 0.6),
                     ),
-                    suffixIcon: _searchController.text.isNotEmpty
+                    suffixIcon: controller.searchController.text.isNotEmpty
                         ? IconButton(
                             icon:
                                 const Icon(FontAwesomeIcons.xmark, color: Colors.white54),
-                            onPressed: () {
-                              setState(() {
-                                _searchController.clear();
-                              });
-                            },
+                            onPressed: controller.clearSearch,
                           )
                         : null,
                     border: InputBorder.none,
@@ -105,8 +81,8 @@ class _CitySearchPageState extends State<CitySearchPage> {
                       vertical: 16,
                     ),
                   ),
-                  onChanged: (value) => setState(() {}),
-                ),
+                  onChanged: (_) {},
+                )),
               ),
             ),
           ),
@@ -140,18 +116,16 @@ class _CitySearchPageState extends State<CitySearchPage> {
                   _buildFilterSection(
                     l10n.region,
                     isMobile,
-                    child: Wrap(
+                    child: Obx(() => Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: _regions.map((region) {
-                        final isSelected = _selectedRegion == region;
+                      children: controller.regions.map((region) {
+                        final isSelected = controller.selectedRegion.value == region;
                         return FilterChip(
                           label: Text(region),
                           selected: isSelected,
                           onSelected: (selected) {
-                            setState(() {
-                              _selectedRegion = region;
-                            });
+                            controller.setRegion(region);
                           },
                           backgroundColor: const Color(0xFF1a1a1a),
                           selectedColor: Colors.orange.withValues(alpha: 0.3),
@@ -168,7 +142,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                           ),
                         );
                       }).toList(),
-                    ),
+                    )),
                   ),
 
                   const SizedBox(height: 24),
@@ -177,11 +151,11 @@ class _CitySearchPageState extends State<CitySearchPage> {
                   _buildFilterSection(
                     l10n.budget,
                     isMobile,
-                    child: Column(
+                    child: Obx(() => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '\$${_priceRange.start.round()} - \$${_priceRange.end.round()}',
+                          '\$${controller.priceRange.value.start.round()} - \$${controller.priceRange.value.end.round()}',
                           style: const TextStyle(
                             color: Colors.orange,
                             fontSize: 16,
@@ -189,20 +163,16 @@ class _CitySearchPageState extends State<CitySearchPage> {
                           ),
                         ),
                         RangeSlider(
-                          values: _priceRange,
+                          values: controller.priceRange.value,
                           min: 0,
                           max: 5000,
                           divisions: 50,
                           activeColor: Colors.orange,
                           inactiveColor: Colors.white.withValues(alpha: 0.2),
-                          onChanged: (values) {
-                            setState(() {
-                              _priceRange = values;
-                            });
-                          },
+                          onChanged: controller.setPriceRange,
                         ),
                       ],
-                    ),
+                    )),
                   ),
 
                   const SizedBox(height: 24),
@@ -211,11 +181,11 @@ class _CitySearchPageState extends State<CitySearchPage> {
                   _buildFilterSection(
                     l10n.internet,
                     isMobile,
-                    child: Column(
+                    child: Obx(() => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${_minInternetSpeed.round()} Mbps',
+                          '${controller.minInternetSpeed.value.round()} Mbps',
                           style: const TextStyle(
                             color: Colors.orange,
                             fontSize: 16,
@@ -223,20 +193,16 @@ class _CitySearchPageState extends State<CitySearchPage> {
                           ),
                         ),
                         Slider(
-                          value: _minInternetSpeed,
+                          value: controller.minInternetSpeed.value,
                           min: 0,
                           max: 300,
                           divisions: 30,
                           activeColor: Colors.orange,
                           inactiveColor: Colors.white.withValues(alpha: 0.2),
-                          onChanged: (value) {
-                            setState(() {
-                              _minInternetSpeed = value;
-                            });
-                          },
+                          onChanged: controller.setMinInternetSpeed,
                         ),
                       ],
-                    ),
+                    )),
                   ),
 
                   const SizedBox(height: 24),
@@ -245,18 +211,16 @@ class _CitySearchPageState extends State<CitySearchPage> {
                   _buildFilterSection(
                     l10n.climate,
                     isMobile,
-                    child: Wrap(
+                    child: Obx(() => Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: _climates.map((climate) {
-                        final isSelected = _selectedClimate == climate;
+                      children: controller.climates.map((climate) {
+                        final isSelected = controller.selectedClimate.value == climate;
                         return FilterChip(
                           label: Text(climate),
                           selected: isSelected,
                           onSelected: (selected) {
-                            setState(() {
-                              _selectedClimate = climate;
-                            });
+                            controller.setClimate(climate);
                           },
                           backgroundColor: const Color(0xFF1a1a1a),
                           selectedColor: Colors.orange.withValues(alpha: 0.3),
@@ -273,7 +237,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                           ),
                         );
                       }).toList(),
-                    ),
+                    )),
                   ),
 
                   const SizedBox(height: 32),
@@ -316,15 +280,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedRegion = 'All';
-                          _priceRange = const RangeValues(0, 5000);
-                          _minInternetSpeed = 0;
-                          _selectedClimate = 'All';
-                          _searchController.clear();
-                        });
-                      },
+                      onPressed: controller.resetFilters,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white70,
                         padding: EdgeInsets.symmetric(
@@ -377,11 +333,5 @@ class _CitySearchPageState extends State<CitySearchPage> {
         child,
       ],
     );
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 }

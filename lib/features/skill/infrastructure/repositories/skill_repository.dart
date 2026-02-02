@@ -1,9 +1,8 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-
-import 'package:df_admin_mobile/features/skill/domain/entities/skill.dart';
-import 'package:df_admin_mobile/features/skill/domain/repositories/i_skill_repository.dart';
-import 'package:df_admin_mobile/features/skill/infrastructure/models/skill_dto.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/skill/domain/entities/skill.dart';
+import 'package:go_nomads_app/features/skill/domain/repositories/i_skill_repository.dart';
+import 'package:go_nomads_app/features/skill/infrastructure/models/skill_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// Skill Repository Implementation - 技能仓储实现
 class SkillRepository implements ISkillRepository {
@@ -136,6 +135,10 @@ class SkillRepository implements ISkillRepository {
       await _httpService.delete('/skills/users/$userId/$skillId');
       return const Success(null);
     } on HttpException catch (e) {
+      // 404 表示技能不存在，对于删除操作来说这是可接受的结果
+      if (e.statusCode == 404) {
+        return const Success(null);
+      }
       return Failure(_convertHttpException(e));
     } catch (e) {
       return Failure(UnknownException('删除用户技能失败: $e'));

@@ -1,12 +1,13 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/ai/presentation/controllers/ai_state_controller.dart';
-import 'package:df_admin_mobile/features/travel_plan/domain/entities/travel_plan.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/async_task_progress_dialog.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
-import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
-import 'package:df_admin_mobile/widgets/share_button.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/async_task_progress_dialog.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
+import 'package:go_nomads_app/widgets/share_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -128,6 +129,15 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
   /// 流程: Flutter -> AIService(创建任务) -> RabbitMQ -> MessageService -> SignalR -> Flutter
   Future<void> _generatePlanAsync() async {
     final aiController = Get.find<AiStateController>();
+    
+    // 检查 AI 配额
+    final canUse = await AiQuotaService().checkAndUseAI(featureName: '旅行计划生成');
+    if (!canUse) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
 
     try {
       setState(() {
@@ -149,6 +159,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
         travelStyle: widget.travelStyle ?? 'culture',
         interests: widget.interests ?? [],
         departureLocation: widget.departureLocation,
+        departureDate: widget.departureDate,
       );
     } catch (e) {
       debugPrint('❌ 生成旅行计划失败: $e');
@@ -617,12 +628,14 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                   Builder(
                     builder: (context) {
                       final l10n = AppLocalizations.of(context)!;
+                      // 优先使用从数据库加载的 departureLocation，其次使用 widget 传入的
+                      final departureLocation = plan.departureLocation ?? widget.departureLocation;
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            if (widget.departureLocation != null && widget.departureLocation!.isNotEmpty) ...[
-                              _buildInfoChip(FontAwesomeIcons.plane, '${l10n.from}: ${widget.departureLocation}'),
+                            if (departureLocation != null && departureLocation.isNotEmpty) ...[
+                              _buildInfoChip(FontAwesomeIcons.plane, '${l10n.from}: $departureLocation'),
                               const SizedBox(width: 12),
                             ],
                             _buildInfoChip(FontAwesomeIcons.calendar, '${plan.metadata.duration} ${l10n.days}'),
@@ -1082,27 +1095,21 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                           ),
                           const SizedBox(height: 8),
                           // 价格和时长
-                          Row(
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 8,
                             children: [
-                              Icon(FontAwesomeIcons.dollarSign, size: 14, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(
-                                price,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey[800],
-                                ),
+                              _buildInfoTag(
+                                icon: FontAwesomeIcons.dollarSign,
+                                label: price,
+                                iconColor: Colors.green[600],
+                                backgroundColor: Colors.green.withValues(alpha: 0.08),
                               ),
-                              const SizedBox(width: 16),
-                              Icon(FontAwesomeIcons.clock, size: 14, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(
-                                duration,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[700],
-                                ),
+                              _buildInfoTag(
+                                icon: FontAwesomeIcons.clock,
+                                label: duration,
+                                iconColor: Colors.indigo[500],
+                                backgroundColor: Colors.indigo.withValues(alpha: 0.07),
                               ),
                             ],
                           ),
@@ -1201,6 +1208,36 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
       return Colors.purple;
     }
     return Colors.grey;
+  }
+
+  Widget _buildInfoTag({
+    required IconData icon,
+    required String label,
+    Color? iconColor,
+    Color? backgroundColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.grey[100],
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: iconColor ?? Colors.grey[700]),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildAccommodationCard(TravelPlan plan) {

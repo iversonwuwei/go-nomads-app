@@ -1,8 +1,10 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/community/domain/entities/trip_report.dart';
-import 'package:df_admin_mobile/features/community/domain/repositories/i_community_repository.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart';
+import 'package:go_nomads_app/features/community/domain/repositories/i_community_repository.dart';
 import 'package:get/get.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// Community State Controller - 社区功能状态控制器 (DDD 架构)
 /// 管理旅行报告、城市推荐、问答功能
@@ -117,7 +119,7 @@ class CommunityStateController extends GetxController {
         return true;
       },
       onFailure: (error) {
-        print('加载旅行报告失败: ${error.message}');
+        log('加载旅行报告失败: ${error.message}');
         return false;
       },
     );
@@ -135,7 +137,7 @@ class CommunityStateController extends GetxController {
         return true;
       },
       onFailure: (error) {
-        print('加载推荐失败: ${error.message}');
+        log('加载推荐失败: ${error.message}');
         return false;
       },
     );
@@ -153,7 +155,7 @@ class CommunityStateController extends GetxController {
         return true;
       },
       onFailure: (error) {
-        print('加载问题失败: ${error.message}');
+        log('加载问题失败: ${error.message}');
         return false;
       },
     );
@@ -173,7 +175,7 @@ class CommunityStateController extends GetxController {
         answers[questionId] = answerList;
       },
       onFailure: (error) {
-        print('加载答案失败: ${error.message}');
+        log('加载答案失败: ${error.message}');
         AppToast.error('加载答案失败: ${error.message}');
       },
     );

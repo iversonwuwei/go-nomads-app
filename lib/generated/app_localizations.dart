@@ -170,6 +170,18 @@ abstract class AppLocalizations {
   /// **'邮箱'**
   String get email;
 
+  /// No description provided for @invalidEmailFormat.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱格式不正确'**
+  String get invalidEmailFormat;
+
+  /// No description provided for @emailAlreadyExists.
+  ///
+  /// In zh, this message translates to:
+  /// **'该邮箱已被使用'**
+  String get emailAlreadyExists;
+
   /// No description provided for @password.
   ///
   /// In zh, this message translates to:
@@ -391,6 +403,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'发送邀请'**
   String get sendInvitation;
+
+  /// No description provided for @userIsOrganizer.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户是活动创建者'**
+  String get userIsOrganizer;
+
+  /// No description provided for @userAlreadyJoined.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户已加入'**
+  String get userAlreadyJoined;
 
   /// No description provided for @date.
   ///
@@ -1337,7 +1361,7 @@ abstract class AppLocalizations {
   /// No description provided for @noResults.
   ///
   /// In zh, this message translates to:
-  /// **'无结果'**
+  /// **'未找到结果'**
   String get noResults;
 
   /// No description provided for @tryAgain.
@@ -1976,6 +2000,12 @@ abstract class AppLocalizations {
   /// **'更新成功'**
   String get updateSuccess;
 
+  /// No description provided for @updateFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新失败'**
+  String get updateFailed;
+
   /// No description provided for @uploadPhoto.
   ///
   /// In zh, this message translates to:
@@ -2291,7 +2321,7 @@ abstract class AppLocalizations {
   /// No description provided for @termsAndConditions.
   ///
   /// In zh, this message translates to:
-  /// **'条款和条件'**
+  /// **'服务条款'**
   String get termsAndConditions;
 
   /// No description provided for @privacyPolicy.
@@ -2659,6 +2689,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'附近'**
   String get neighborhoods;
+
+  /// No description provided for @noNearbyCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无附近城市'**
+  String get noNearbyCities;
 
   /// No description provided for @loadingGuide.
   ///
@@ -5849,7 +5885,7 @@ abstract class AppLocalizations {
   /// No description provided for @from.
   ///
   /// In zh, this message translates to:
-  /// **'出发地'**
+  /// **'来自'**
   String get from;
 
   /// No description provided for @budgetBreakdown.
@@ -5915,7 +5951,7 @@ abstract class AppLocalizations {
   /// No description provided for @pricePerNight.
   ///
   /// In zh, this message translates to:
-  /// **'晚'**
+  /// **'每晚价格'**
   String get pricePerNight;
 
   /// No description provided for @bookingTips.
@@ -6209,7 +6245,7 @@ abstract class AppLocalizations {
   /// No description provided for @wifiSpeed.
   ///
   /// In zh, this message translates to:
-  /// **'WiFi 速度 (Mbps)'**
+  /// **'WiFi速度'**
   String get wifiSpeed;
 
   /// No description provided for @capacity.
@@ -6289,6 +6325,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'未找到可用的地图应用'**
   String get noMapAppAvailable;
+
+  /// No description provided for @selectMapApp.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择地图应用'**
+  String get selectMapApp;
 
   /// No description provided for @selectMapSource.
   ///
@@ -6386,11 +6428,11 @@ abstract class AppLocalizations {
   /// **'在地图上选择位置'**
   String get pickLocationOnMap;
 
-  /// 位置坐标
+  /// No description provided for @locationCoordinates.
   ///
   /// In zh, this message translates to:
-  /// **'位置：{lat}, {lng}'**
-  String locationCoordinates(String lat, String lng);
+  /// **'{lat}, {lon}'**
+  String locationCoordinates(String lat, String lon);
 
   /// No description provided for @contactInformation.
   ///
@@ -6473,7 +6515,7 @@ abstract class AppLocalizations {
   /// No description provided for @wifiSpeedHint.
   ///
   /// In zh, this message translates to:
-  /// **'500'**
+  /// **'例如：100 Mbps'**
   String get wifiSpeedHint;
 
   /// No description provided for @capacityHint.
@@ -6817,6 +6859,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'添加事件到日历失败：{error}'**
   String failedToAddEvent(String error);
+
+  /// No description provided for @calendarPermissionDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'日历权限被拒绝，请在设置中开启。'**
+  String get calendarPermissionDenied;
+
+  /// No description provided for @noCalendarAvailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到可写入的日历。'**
+  String get noCalendarAvailable;
 
   /// No description provided for @cityChats.
   ///
@@ -7388,6 +7442,18 @@ abstract class AppLocalizations {
   /// **'向其他用户展示您的旅行历史'**
   String get showTravelHistoryToOthers;
 
+  /// No description provided for @autoTravelDetection.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动旅行记录'**
+  String get autoTravelDetection;
+
+  /// No description provided for @autoTravelDetectionDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动检测并记录您的旅行足迹'**
+  String get autoTravelDetectionDescription;
+
   /// No description provided for @publicProfile.
   ///
   /// In zh, this message translates to:
@@ -7441,6 +7507,684 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已取消删除账户'**
   String get accountDeletionCancelled;
+
+  /// No description provided for @membershipPlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'会员计划'**
+  String get membershipPlans;
+
+  /// No description provided for @currentPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前：{planName}'**
+  String currentPlan(String planName);
+
+  /// No description provided for @daysRemaining.
+  ///
+  /// In zh, this message translates to:
+  /// **'剩余 {days} 天'**
+  String daysRemaining(int days);
+
+  /// No description provided for @upgradeToUnlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'升级以解锁更多功能'**
+  String get upgradeToUnlock;
+
+  /// No description provided for @selectPaymentMethod.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择支付方式'**
+  String get selectPaymentMethod;
+
+  /// No description provided for @upgradeTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'升级到 {planName} - \${price}/年'**
+  String upgradeTo(String planName, String price);
+
+  /// No description provided for @paypalPayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'PayPal'**
+  String get paypalPayment;
+
+  /// No description provided for @paypalDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷安全的国际支付'**
+  String get paypalDescription;
+
+  /// No description provided for @wechatPayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信支付'**
+  String get wechatPayment;
+
+  /// No description provided for @wechatDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用微信支付'**
+  String get wechatDescription;
+
+  /// No description provided for @alipayPayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付宝'**
+  String get alipayPayment;
+
+  /// No description provided for @alipayDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用支付宝支付'**
+  String get alipayDescription;
+
+  /// No description provided for @securePayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全支付'**
+  String get securePayment;
+
+  /// No description provided for @allPaymentsSecure.
+  ///
+  /// In zh, this message translates to:
+  /// **'所有支付均安全处理，可随时取消。'**
+  String get allPaymentsSecure;
+
+  /// No description provided for @allPaymentsEncrypted.
+  ///
+  /// In zh, this message translates to:
+  /// **'所有支付均安全加密'**
+  String get allPaymentsEncrypted;
+
+  /// No description provided for @unableToLoadPlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法加载会员计划'**
+  String get unableToLoadPlans;
+
+  /// No description provided for @checkNetworkConnection.
+  ///
+  /// In zh, this message translates to:
+  /// **'请检查您的网络连接'**
+  String get checkNetworkConnection;
+
+  /// No description provided for @currentPlanLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前计划'**
+  String get currentPlanLabel;
+
+  /// No description provided for @selectPlanLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择计划'**
+  String get selectPlanLabel;
+
+  /// No description provided for @perYear.
+  ///
+  /// In zh, this message translates to:
+  /// **'/年'**
+  String get perYear;
+
+  /// No description provided for @alreadyHavePlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'您已拥有此计划或更高级别的计划'**
+  String get alreadyHavePlan;
+
+  /// No description provided for @creatingPaypalOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在创建 PayPal 订单...'**
+  String get creatingPaypalOrder;
+
+  /// No description provided for @creatingWechatOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在创建微信支付订单...'**
+  String get creatingWechatOrder;
+
+  /// No description provided for @creatingAlipayOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在创建支付宝订单...'**
+  String get creatingAlipayOrder;
+
+  /// No description provided for @priceForPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'\${price} - {planName}'**
+  String priceForPlan(String price, String planName);
+
+  /// No description provided for @cnyPriceForPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'¥{price} - {planName}'**
+  String cnyPriceForPlan(String price, String planName);
+
+  /// No description provided for @paymentServiceNotAvailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付服务不可用'**
+  String get paymentServiceNotAvailable;
+
+  /// No description provided for @paymentError.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付错误：{error}'**
+  String paymentError(String error);
+
+  /// No description provided for @openingPaypal.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在打开 PayPal 支付...'**
+  String get openingPaypal;
+
+  /// No description provided for @failedToCreateOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建支付订单失败'**
+  String get failedToCreateOrder;
+
+  /// No description provided for @wechatNotInstalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'请安装微信以使用微信支付'**
+  String get wechatNotInstalled;
+
+  /// No description provided for @alipayNotInstalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'请安装支付宝以使用支付宝支付'**
+  String get alipayNotInstalled;
+
+  /// No description provided for @paymentSuccessful.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付成功！'**
+  String get paymentSuccessful;
+
+  /// No description provided for @wechatPayFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信支付失败'**
+  String get wechatPayFailed;
+
+  /// No description provided for @alipayPayFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付宝支付失败'**
+  String get alipayPayFailed;
+
+  /// No description provided for @wechatPayError.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信支付错误：{error}'**
+  String wechatPayError(String error);
+
+  /// No description provided for @alipayError.
+  ///
+  /// In zh, this message translates to:
+  /// **'支付宝错误：{error}'**
+  String alipayError(String error);
+
+  /// No description provided for @travelDetected.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现新旅行'**
+  String get travelDetected;
+
+  /// No description provided for @saveTravelQuestion.
+  ///
+  /// In zh, this message translates to:
+  /// **'要保存这次旅行吗？'**
+  String get saveTravelQuestion;
+
+  /// No description provided for @saveTravel.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存旅行'**
+  String get saveTravel;
+
+  /// No description provided for @ignore.
+  ///
+  /// In zh, this message translates to:
+  /// **'忽略'**
+  String get ignore;
+
+  /// No description provided for @travelSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行已保存'**
+  String get travelSaved;
+
+  /// No description provided for @saveFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败'**
+  String get saveFailed;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get dismiss;
+
+  /// No description provided for @noPendingTrips.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无待确认的旅行'**
+  String get noPendingTrips;
+
+  /// No description provided for @travelDetectedBanner.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们发现您最近去过 {city}'**
+  String travelDetectedBanner(String city);
+
+  /// No description provided for @tapToSave.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击保存这次旅行'**
+  String get tapToSave;
+
+  /// No description provided for @durationDays.
+  ///
+  /// In zh, this message translates to:
+  /// **'{days} 天'**
+  String durationDays(String days);
+
+  /// No description provided for @distanceFromHome.
+  ///
+  /// In zh, this message translates to:
+  /// **'距离常住地 {km} 公里'**
+  String distanceFromHome(String km);
+
+  /// No description provided for @pendingConfirmation.
+  ///
+  /// In zh, this message translates to:
+  /// **'待确认'**
+  String get pendingConfirmation;
+
+  /// No description provided for @confirmedTrips.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行记录'**
+  String get confirmedTrips;
+
+  /// No description provided for @homeLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'常住地'**
+  String get homeLocation;
+
+  /// No description provided for @setHomeLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置常住地'**
+  String get setHomeLocation;
+
+  /// No description provided for @homeLocationSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'常住地已设置'**
+  String get homeLocationSet;
+
+  /// No description provided for @setHomeFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置常住地失败'**
+  String get setHomeFailed;
+
+  /// No description provided for @locationUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法获取位置信息'**
+  String get locationUnavailable;
+
+  /// No description provided for @autoDetectionOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动检测已开启'**
+  String get autoDetectionOn;
+
+  /// No description provided for @autoDetectionOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动检测已关闭'**
+  String get autoDetectionOff;
+
+  /// No description provided for @clearAllData.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除所有数据'**
+  String get clearAllData;
+
+  /// No description provided for @confirmClear.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认清除'**
+  String get confirmClear;
+
+  /// No description provided for @clearAllDataWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'此操作将清除所有旅行检测数据，包括位置记录、停留点和旅行历史。此操作无法撤销。'**
+  String get clearAllDataWarning;
+
+  /// No description provided for @clear.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除'**
+  String get clear;
+
+  /// No description provided for @dataCleared.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据已清除'**
+  String get dataCleared;
+
+  /// No description provided for @noTravelHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无旅行记录'**
+  String get noTravelHistory;
+
+  /// No description provided for @travelHistoryEmptyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启自动检测后，我们会自动识别您的旅行并提醒您保存'**
+  String get travelHistoryEmptyHint;
+
+  /// No description provided for @autoDetectionActive.
+  ///
+  /// In zh, this message translates to:
+  /// **'自动检测已开启'**
+  String get autoDetectionActive;
+
+  /// No description provided for @enableAutoDetection.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启自动检测'**
+  String get enableAutoDetection;
+
+  /// No description provided for @confidence.
+  ///
+  /// In zh, this message translates to:
+  /// **'置信度：{percent}%'**
+  String confidence(String percent);
+
+  /// No description provided for @synced.
+  ///
+  /// In zh, this message translates to:
+  /// **'已同步'**
+  String get synced;
+
+  /// No description provided for @nights.
+  ///
+  /// In zh, this message translates to:
+  /// **'晚'**
+  String get nights;
+
+  /// No description provided for @tip.
+  ///
+  /// In zh, this message translates to:
+  /// **'提示'**
+  String get tip;
+
+  /// No description provided for @travelHistoryNoCityLink.
+  ///
+  /// In zh, this message translates to:
+  /// **'此旅行记录暂无关联城市'**
+  String get travelHistoryNoCityLink;
+
+  /// No description provided for @syncCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步完成'**
+  String get syncCompleted;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步失败'**
+  String get syncFailed;
+
+  /// No description provided for @addHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加酒店'**
+  String get addHotel;
+
+  /// No description provided for @editHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑酒店'**
+  String get editHotel;
+
+  /// No description provided for @hotelName.
+  ///
+  /// In zh, this message translates to:
+  /// **'酒店名称'**
+  String get hotelName;
+
+  /// No description provided for @hotelNameHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入酒店名称'**
+  String get hotelNameHint;
+
+  /// No description provided for @hotelDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'描述'**
+  String get hotelDescription;
+
+  /// No description provided for @hotelDescriptionHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'为数字游民描述这家酒店'**
+  String get hotelDescriptionHint;
+
+  /// No description provided for @pricePerNightHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：50'**
+  String get pricePerNightHint;
+
+  /// No description provided for @longStayDiscount.
+  ///
+  /// In zh, this message translates to:
+  /// **'长住折扣'**
+  String get longStayDiscount;
+
+  /// No description provided for @longStayDiscountHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'周/月住折扣百分比'**
+  String get longStayDiscountHint;
+
+  /// No description provided for @nomadFeatures.
+  ///
+  /// In zh, this message translates to:
+  /// **'游民友好设施'**
+  String get nomadFeatures;
+
+  /// No description provided for @nomadFeaturesSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'对远程工作者重要的设施'**
+  String get nomadFeaturesSubtitle;
+
+  /// No description provided for @workDesk.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作台'**
+  String get workDesk;
+
+  /// No description provided for @hasCoworkingSpace.
+  ///
+  /// In zh, this message translates to:
+  /// **'有共享办公空间'**
+  String get hasCoworkingSpace;
+
+  /// No description provided for @laundry.
+  ///
+  /// In zh, this message translates to:
+  /// **'洗衣'**
+  String get laundry;
+
+  /// No description provided for @pool.
+  ///
+  /// In zh, this message translates to:
+  /// **'游泳池'**
+  String get pool;
+
+  /// No description provided for @twentyFourHourReception.
+  ///
+  /// In zh, this message translates to:
+  /// **'24小时前台'**
+  String get twentyFourHourReception;
+
+  /// No description provided for @submitHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交酒店'**
+  String get submitHotel;
+
+  /// No description provided for @hotelSubmittedSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'酒店提交成功！'**
+  String get hotelSubmittedSuccess;
+
+  /// No description provided for @failedToSubmitHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交酒店失败'**
+  String get failedToSubmitHotel;
+
+  /// No description provided for @maxPhotosReached.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多允许 {max} 张照片'**
+  String maxPhotosReached(int max);
+
+  /// No description provided for @addFirstHotel.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加第一家酒店'**
+  String get addFirstHotel;
+
+  /// No description provided for @noTeamMembersAdded.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无团队成员'**
+  String get noTeamMembersAdded;
+
+  /// No description provided for @addTeamMember.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加团队成员'**
+  String get addTeamMember;
+
+  /// No description provided for @editTeamMember.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑团队成员'**
+  String get editTeamMember;
+
+  /// No description provided for @editProject.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑项目'**
+  String get editProject;
+
+  /// No description provided for @enterMemberName.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员姓名'**
+  String get enterMemberName;
+
+  /// No description provided for @enterMemberRole.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员职位'**
+  String get enterMemberRole;
+
+  /// No description provided for @enterMemberDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员简介（可选）'**
+  String get enterMemberDescription;
+
+  /// No description provided for @markAsFounder.
+  ///
+  /// In zh, this message translates to:
+  /// **'标记为创始人'**
+  String get markAsFounder;
+
+  /// No description provided for @pleaseEnterMemberName.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员姓名'**
+  String get pleaseEnterMemberName;
+
+  /// No description provided for @pleaseEnterMemberRole.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入成员职位'**
+  String get pleaseEnterMemberRole;
+
+  /// No description provided for @founder.
+  ///
+  /// In zh, this message translates to:
+  /// **'创始人'**
+  String get founder;
+
+  /// No description provided for @role.
+  ///
+  /// In zh, this message translates to:
+  /// **'职位'**
+  String get role;
+
+  /// No description provided for @searchAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索地址或地点'**
+  String get searchAddress;
+
+  /// No description provided for @eventInvitation.
+  ///
+  /// In zh, this message translates to:
+  /// **'活动邀请'**
+  String get eventInvitation;
+
+  /// No description provided for @inviteYouToJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'邀请你参加'**
+  String get inviteYouToJoin;
+
+  /// No description provided for @moderatorTransfer.
+  ///
+  /// In zh, this message translates to:
+  /// **'版主转让'**
+  String get moderatorTransfer;
+
+  /// No description provided for @accept.
+  ///
+  /// In zh, this message translates to:
+  /// **'接受'**
+  String get accept;
+
+  /// No description provided for @decline.
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get decline;
 }
 
 class _AppLocalizationsDelegate

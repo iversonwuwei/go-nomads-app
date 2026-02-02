@@ -1,9 +1,11 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart'
-    as models;
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/controllers/member_detail_page_controller.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -12,17 +14,93 @@ import 'direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
 
 class MemberDetailPage extends StatelessWidget {
-  final models.User user;
+  final models.User? user;
+  final String? userId;
+  final String _tag;
 
-  const MemberDetailPage({super.key, required this.user});
+  MemberDetailPage({
+    super.key,
+    this.user,
+    this.userId,
+  })  : assert(user != null || userId != null, 'Either user or userId must be provided'),
+        _tag = 'MemberDetailPage-${userId ?? user?.id ?? 'self'}';
+
+  MemberDetailPageController get _controller {
+    if (!Get.isRegistered<MemberDetailPageController>(tag: _tag)) {
+      Get.put(
+        MemberDetailPageController(
+          initialUser: user,
+          userId: userId,
+        ),
+        tag: _tag,
+      );
+    }
+    return Get.find<MemberDetailPageController>(tag: _tag);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: const AppBackButton(),
+          ),
+          body: const UserProfileSkeleton(),
+        );
+      }
+
+      if (controller.user.value == null) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: const AppBackButton(),
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  FontAwesomeIcons.circleExclamation,
+                  size: 48,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  controller.errorMessage.value ?? '用户信息不存在',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: controller.retry,
+                  child: const Text('重试'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      final user = controller.user.value!;
+      return _buildContent(context, controller, user);
+    });
+  }
+
+  Widget _buildContent(BuildContext context, MemberDetailPageController controller, models.User user) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          // App Bar with User Avatar
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
@@ -33,7 +111,6 @@ class MemberDetailPage extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // User Avatar
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -65,22 +142,16 @@ class MemberDetailPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: CircleAvatar(
+                          child: SafeCircleAvatar(
+                            imageUrl: user.avatarUrl,
                             radius: 73,
-                            backgroundImage: (user.avatarUrl != null &&
-                                    user.avatarUrl!.isNotEmpty)
-                                ? NetworkImage(user.avatarUrl!)
-                                : null,
-                            child: (user.avatarUrl == null ||
-                                    user.avatarUrl!.isEmpty)
-                                ? const Icon(FontAwesomeIcons.user, size: 40)
-                                : null,
+                            backgroundColor: Colors.grey[200],
+                            errorWidget: const Icon(FontAwesomeIcons.user, size: 40, color: Colors.grey),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  // Verified Badge (if verified)
                   if (user.isVerified)
                     Positioned(
                       top: 180,
@@ -127,15 +198,12 @@ class MemberDetailPage extends StatelessWidget {
               ),
             ),
           ),
-
-          // Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Name and Username
                   Center(
                     child: Column(
                       children: [
@@ -180,10 +248,7 @@ class MemberDetailPage extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Bio Section
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
                     _buildSectionTitle(AppLocalizations.of(context)!.about),
                     const SizedBox(height: 12),
@@ -208,24 +273,14 @@ class MemberDetailPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                   ],
-
-                  // Interests Section
-                  _buildInterestsSection(context),
+                  _buildInterestsSection(context, user),
                   const SizedBox(height: 24),
-
-                  // Skills Section
-                  _buildSkillsSection(context),
+                  _buildSkillsSection(context, user),
                   const SizedBox(height: 24),
-
-                  // Badges Section
-                  _buildBadgesSection(context),
+                  _buildBadgesSection(context, user),
                   const SizedBox(height: 24),
-
-                  // Travel History Section
-                  _buildTravelHistorySection(context),
+                  _buildTravelHistorySection(context, user),
                   const SizedBox(height: 24),
-
-                  // Stats Section
                   _buildSectionTitle(AppLocalizations.of(context)!.stats),
                   const SizedBox(height: 12),
                   Row(
@@ -258,83 +313,73 @@ class MemberDetailPage extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
-
-                  // Action Buttons
-                  Builder(
-                    builder: (context) {
-                      final l10n = AppLocalizations.of(context)!;
-                      return Row(
-                        children: [
-                          // Invite 按钮
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () =>
-                                  Get.to(() => InviteToMeetupPage(user: user)),
-                              icon: const Icon(FontAwesomeIcons.calendarDays),
-                              label: Text(l10n.inviteToMeetup),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                  if (!controller.isCurrentUser)
+                    Builder(
+                      builder: (context) {
+                        final l10n = AppLocalizations.of(context)!;
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => Get.to(() => InviteToMeetupPage(user: user)),
+                                icon: const Icon(FontAwesomeIcons.calendarDays),
+                                label: Text(l10n.inviteToMeetup),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF10B981),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
                                 ),
-                                elevation: 0,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Message 按钮
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                // 跳转到一对一聊天页面
-                                Get.to(() => DirectChatPage(user: user));
-                              },
-                              icon: const Icon(FontAwesomeIcons.message),
-                              label: Text(l10n.sendMessage),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF4458),
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Get.to(() => DirectChatPage(user: user));
+                                },
+                                icon: const Icon(FontAwesomeIcons.message),
+                                label: Text(l10n.sendMessage),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFF4458),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
                                 ),
-                                elevation: 0,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: const Color(0xFFE5E7EB),
+                            const SizedBox(width: 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: const Color(0xFFE5E7EB),
+                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              onPressed: () {
-                                // TODO: Add to favorites
-                                AppToast.success(
-                                  l10n.favoriteAdded,
-                                  title: l10n.favorites,
-                                );
-                              },
-                              icon: const Icon(
-                                FontAwesomeIcons.heart,
-                                color: Color(0xFFFF4458),
+                              child: IconButton(
+                                onPressed: () {
+                                  AppToast.success(
+                                    l10n.favoriteAdded,
+                                    title: l10n.favorites,
+                                  );
+                                },
+                                icon: const Icon(
+                                  FontAwesomeIcons.heart,
+                                  color: Color(0xFFFF4458),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-
+                          ],
+                        );
+                      },
+                    ),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -377,14 +422,11 @@ class MemberDetailPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Badge Icon
           Text(
             badge.icon,
             style: const TextStyle(fontSize: 32),
           ),
           const SizedBox(height: 8),
-
-          // Badge Name
           Text(
             badge.name,
             textAlign: TextAlign.center,
@@ -402,7 +444,7 @@ class MemberDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgesSection(BuildContext context) {
+  Widget _buildBadgesSection(BuildContext context, models.User user) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 768;
@@ -412,10 +454,10 @@ class MemberDetailPage extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [
-                const Color(0xFFFFF3E0),
-                const Color(0xFFFFE0B2),
+                Color(0xFFFFF3E0),
+                Color(0xFFFFE0B2),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -437,16 +479,16 @@ class MemberDetailPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                children: [
-                  const Icon(
+                children: const [
+                  Icon(
                     FontAwesomeIcons.trophy,
                     color: Color(0xFFFF6F00),
                     size: 24,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Text(
-                    AppLocalizations.of(context)!.badges,
-                    style: const TextStyle(
+                    'Badges',
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1a1a1a),
@@ -463,8 +505,7 @@ class MemberDetailPage extends StatelessWidget {
                           AppLocalizations.of(context)!.noBadgesYet,
                           style: TextStyle(
                             fontSize: 14,
-                            color:
-                                const Color(0xFFFF6F00).withValues(alpha: 0.6),
+                            color: const Color(0xFFFF6F00).withValues(alpha: 0.6),
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -491,19 +532,17 @@ class MemberDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTravelHistorySection(BuildContext context) {
-    // 显示最多 5 条记录
-    final displayedHistory = user.travelHistory.take(5).toList();
-    final hasMore = user.travelHistory.length > 5;
+  Widget _buildTravelHistorySection(BuildContext context, models.User user) {
+    final latestTravel = user.latestTravelHistory;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFFE3F2FD),
-            const Color(0xFFBBDEFB),
+            Color(0xFFE3F2FD),
+            Color(0xFFBBDEFB),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -525,16 +564,16 @@ class MemberDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const Icon(
+            children: const [
+              Icon(
                 FontAwesomeIcons.earthAmericas,
                 color: Color(0xFF1976D2),
                 size: 24,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
-                AppLocalizations.of(context)!.travelHistory,
-                style: const TextStyle(
+                'Travel History',
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
@@ -543,7 +582,7 @@ class MemberDetailPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          user.travelHistory.isEmpty
+          latestTravel == null
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -557,63 +596,20 @@ class MemberDetailPage extends StatelessWidget {
                     ),
                   ),
                 )
-              : Column(
-                  children: [
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: displayedHistory.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return _buildTravelHistoryCard(
-                            displayedHistory[index], context);
-                      },
-                    ),
-                    if (hasMore) ...[
-                      const SizedBox(height: 16),
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            // TODO: Navigate to full travel history page
-                          },
-                          icon: const Icon(
-                            FontAwesomeIcons.arrowRight,
-                            size: 18,
-                          ),
-                          label: Text(
-                            AppLocalizations.of(context)!.viewAllTrips,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF1976D2),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+              : _buildLatestTravelHistoryCard(latestTravel, context),
         ],
       ),
     );
   }
 
-  Widget _buildTravelHistoryCard(
-      models.TravelHistory travel, BuildContext context) {
+  Widget _buildLatestTravelHistoryCard(models.LatestTravelHistory travel, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFFFFF8E1),
-            const Color(0xFFFFF3CD),
+            Color(0xFFFFF8E1),
+            Color(0xFFFFF3CD),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -633,15 +629,14 @@ class MemberDetailPage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Country Flag
           Container(
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [
-                  const Color(0xFFFFE082),
-                  const Color(0xFFFFD54F),
+                  Color(0xFFFFE082),
+                  Color(0xFFFFD54F),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -654,21 +649,18 @@ class MemberDetailPage extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                _getCountryFlag(travel.countryName ?? ''),
+                _getCountryFlag(travel.country),
                 style: const TextStyle(fontSize: 32),
               ),
             ),
           ),
           const SizedBox(width: 16),
-
-          // City and Country Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // City Name
                 Text(
-                  travel.cityName,
+                  travel.city,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -676,33 +668,50 @@ class MemberDetailPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-
-                // Country
                 Text(
-                  travel.countryName ?? 'Unknown',
+                  travel.country,
                   style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF6b7280),
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // Date Range
                 Row(
                   children: [
                     const Icon(
                       FontAwesomeIcons.calendar,
                       size: 14,
-                      color: Color(0xFFFF6F00),
+                      color: Color(0xFF9ca3af),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDate(travel.visitDate),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF9ca3af),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        _formatTravelDate(travel.arrivalTime, travel.departureTime),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF9ca3af),
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    if (travel.isOngoing) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.currentLocation,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -713,11 +722,20 @@ class MemberDetailPage extends StatelessWidget {
     );
   }
 
+  String _formatTravelDate(DateTime arrivalTime, DateTime? departureTime) {
+    final arrival = '${arrivalTime.year}/${arrivalTime.month}/${arrivalTime.day}';
+    if (departureTime == null) {
+      return '$arrival - 至今';
+    }
+    final departure = '${departureTime.year}/${departureTime.month}/${departureTime.day}';
+    return '$arrival - $departure';
+  }
+
   String _getCountryFlag(String country) {
     final flagMap = {
       'Thailand': '🇹🇭',
       'Portugal': '🇵🇹',
-      'Indonesia': '🇮🇩',
+      'Indonesia': '��🇩',
       'Mexico': '🇲🇽',
       'Spain': '🇪🇸',
       'Vietnam': '🇻🇳',
@@ -727,9 +745,9 @@ class MemberDetailPage extends StatelessWidget {
       'United Kingdom': '🇬🇧',
       'UK': '🇬🇧',
       'France': '🇫🇷',
-      'Germany': '🇩🇪',
+      'Germany': '🇩��',
       'Italy': '🇮🇹',
-      'Netherlands': '🇳🇱',
+      'Netherlands': '��🇱',
       'Canada': '🇨🇦',
       'Australia': '🇦🇺',
       'New Zealand': '🇳🇿',
@@ -742,29 +760,7 @@ class MemberDetailPage extends StatelessWidget {
     return flagMap[country] ?? '🌍';
   }
 
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-
-    final month = months[date.month - 1];
-    final year = date.year;
-    return '$month $year';
-  }
-
-  Widget _buildStatCard(
-      String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -803,15 +799,15 @@ class MemberDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInterestsSection(BuildContext context) {
+  Widget _buildInterestsSection(BuildContext context, models.User user) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFFFCE4EC),
-            const Color(0xFFF8BBD0),
+            Color(0xFFFCE4EC),
+            Color(0xFFF8BBD0),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -833,16 +829,16 @@ class MemberDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const Icon(
+            children: const [
+              Icon(
                 FontAwesomeIcons.heart,
                 color: Color(0xFFC2185B),
                 size: 24,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
-                AppLocalizations.of(context)!.interests,
-                style: const TextStyle(
+                'Interests',
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
@@ -870,13 +866,12 @@ class MemberDetailPage extends StatelessWidget {
                   runSpacing: 8,
                   children: user.interests.map((interest) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            const Color(0xFFFF4458),
-                            const Color(0xFFE91E63),
+                            Color(0xFFFF4458),
+                            Color(0xFFE91E63),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -884,8 +879,7 @@ class MemberDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                const Color(0xFFFF4458).withValues(alpha: 0.3),
+                            color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -912,15 +906,15 @@ class MemberDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSkillsSection(BuildContext context) {
+  Widget _buildSkillsSection(BuildContext context, models.User user) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [
-            const Color(0xFFE3F2FD),
-            const Color(0xFFBBDEFB),
+            Color(0xFFE3F2FD),
+            Color(0xFFBBDEFB),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -942,16 +936,16 @@ class MemberDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const Icon(
+            children: const [
+              Icon(
                 FontAwesomeIcons.star,
                 color: Color(0xFF1976D2),
                 size: 24,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
-                AppLocalizations.of(context)!.skills,
-                style: const TextStyle(
+                'Skills',
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
@@ -979,13 +973,12 @@ class MemberDetailPage extends StatelessWidget {
                   runSpacing: 8,
                   children: user.skills.map((skill) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            const Color(0xFF3B82F6),
-                            const Color(0xFF1976D2),
+                            Color(0xFF3B82F6),
+                            Color(0xFF1976D2),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -993,8 +986,7 @@ class MemberDetailPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),

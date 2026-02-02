@@ -1,11 +1,14 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/city/presentation/controllers/city_rating_controller.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_rating_controller.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-class ManageCityRatingsPage extends StatefulWidget {
+class ManageCityRatingsPage extends StatelessWidget {
   final String cityId;
   final String cityName;
 
@@ -15,27 +18,11 @@ class ManageCityRatingsPage extends StatefulWidget {
     required this.cityName,
   });
 
-  @override
-  State<ManageCityRatingsPage> createState() => _ManageCityRatingsPageState();
-}
+  CityRatingController get _controller => Get.find<CityRatingController>();
 
-class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
-  late final CityRatingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    // 确保 Controller 已初始化
-    _controller = Get.find<CityRatingController>();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
-  }
-
-  Future<void> _loadData() async {
-    print('🔍 [ManageCityRatingsPage] 加载评分项数据: cityId=${widget.cityId}');
-    await _controller.loadCityRatings(widget.cityId);
+  void _loadData() {
+    log('🔍 [ManageCityRatingsPage] 加载评分项数据: cityId=$cityId');
+    _controller.loadCityRatings(cityId);
   }
 
   Future<void> _addRating() async {
@@ -77,7 +64,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: selectedIcon,
+                initialValue: selectedIcon,
                 decoration: const InputDecoration(labelText: '图标'),
                 items: const [
                   DropdownMenuItem(value: 'star', child: Text('星星')),
@@ -168,13 +155,18 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 初始化时加载数据
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+
     return PopScope(
       canPop: true,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.cityPrimary,
           foregroundColor: Colors.white,
-          title: Text('${widget.cityName} - 评分数据'),
+          title: Text('$cityName - 评分数据'),
           leading: AppBackButton(
             color: Colors.white,
             onPressed: _finish,
@@ -188,13 +180,13 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
           ],
         ),
         body: Obx(() {
-          print('📊 [ManageCityRatingsPage] 渲染UI:');
-          print('  - isLoading: ${_controller.isLoading.value}');
-          print('  - categories: ${_controller.categories.length} 项');
-          print('  - statistics: ${_controller.statistics.length} 项');
+          log('📊 [ManageCityRatingsPage] 渲染UI:');
+          log('  - isLoading: ${_controller.isLoading.value}');
+          log('  - categories: ${_controller.categories.length} 项');
+          log('  - statistics: ${_controller.statistics.length} 项');
 
           if (_controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
+            return const ManageListSkeleton();
           }
 
           if (_controller.categories.isEmpty) {
@@ -253,8 +245,7 @@ class _ManageCityRatingsPageState extends State<ManageCityRatingsPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FontAwesomeIcons.star,
-                size: 72, color: Colors.grey.withValues(alpha: 0.4)),
+            Icon(FontAwesomeIcons.star, size: 72, color: Colors.grey.withValues(alpha: 0.4)),
             const SizedBox(height: 16),
             const Text(
               '暂无评分项',

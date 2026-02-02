@@ -2,19 +2,25 @@
 /// 聊天消息实体
 class ChatMessage {
   final String id;
+  final String? roomId; // 消息所属房间ID，用于私聊消息过滤
   final MessageAuthor author;
   final String message;
   final DateTime timestamp;
   final MessageReply? replyTo;
   final List<String> mentions;
+  final MessageType type;
+  final MessageAttachment? attachment;
 
   ChatMessage({
     required this.id,
+    this.roomId,
     required this.author,
     required this.message,
     required this.timestamp,
     this.replyTo,
     this.mentions = const [],
+    this.type = MessageType.text,
+    this.attachment,
   });
 
   // === 业务逻辑方法 ===
@@ -35,9 +41,7 @@ class ChatMessage {
   /// 是否是今天的消息
   bool get isToday {
     final now = DateTime.now();
-    return timestamp.year == now.year &&
-        timestamp.month == now.month &&
-        timestamp.day == now.day;
+    return timestamp.year == now.year && timestamp.month == now.month && timestamp.day == now.day;
   }
 
   /// 获取格式化的时间戳
@@ -82,6 +86,69 @@ class MessageReply {
   });
 }
 
+/// 消息类型枚举
+enum MessageType {
+  text,
+  image,
+  file,
+  location,
+  voice,
+  video,
+}
+
+/// 消息附件
+class MessageAttachment {
+  final String url;
+  final String? fileName;
+  final int? fileSize;
+  final String? mimeType;
+  final double? latitude;
+  final double? longitude;
+  final String? locationName;
+  final int? duration; // 语音/视频时长(秒)
+  final int? width;
+  final int? height;
+  final String? localPath; // 本地文件路径（用于优先显示本地图片，避免闪烁）
+
+  MessageAttachment({
+    required this.url,
+    this.fileName,
+    this.fileSize,
+    this.mimeType,
+    this.latitude,
+    this.longitude,
+    this.locationName,
+    this.duration,
+    this.width,
+    this.height,
+    this.localPath,
+  });
+
+  /// 是否是位置消息
+  bool get isLocation => latitude != null && longitude != null;
+
+  /// 是否是图片
+  bool get isImage => mimeType?.startsWith('image/') ?? false;
+
+  /// 是否是视频
+  bool get isVideo => mimeType?.startsWith('video/') ?? false;
+
+  /// 格式化文件大小
+  String get formattedFileSize {
+    if (fileSize == null) return '';
+    if (fileSize! < 1024) return '$fileSize B';
+    if (fileSize! < 1024 * 1024) return '${(fileSize! / 1024).toStringAsFixed(1)} KB';
+    return '${(fileSize! / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+}
+
+/// 聊天室类型
+enum ChatRoomType {
+  city, // 城市聊天室
+  meetup, // 聚会活动聊天室
+  direct, // 私聊
+}
+
 /// ChatRoom 聚合根
 /// 聊天室聚合根
 class ChatRoom {
@@ -89,15 +156,24 @@ class ChatRoom {
   final RoomLocation location;
   final RoomStats stats;
   final ChatMessage? lastMessage;
+  final ChatRoomType roomType;
+  final String? meetupId;
+  final String? meetupTitle;
 
   ChatRoom({
     required this.id,
     required this.location,
     required this.stats,
     this.lastMessage,
+    this.roomType = ChatRoomType.city,
+    this.meetupId,
+    this.meetupTitle,
   });
 
   // === 业务逻辑方法 ===
+
+  /// 是否是 Meetup 聊天室
+  bool get isMeetupRoom => roomType == ChatRoomType.meetup;
 
   /// 是否有活跃用户
   bool get hasActiveUsers => stats.onlineUsers > 0;
@@ -115,7 +191,12 @@ class ChatRoom {
   bool get isLargeRoom => stats.totalMembers > 100;
 
   /// 房间显示名称
-  String get displayName => '${location.city}, ${location.country}';
+  String get displayName {
+    if (isMeetupRoom && meetupTitle != null) {
+      return meetupTitle!;
+    }
+    return '${location.city}, ${location.country}';
+  }
 
   /// 是否有最近消息
   bool get hasRecentActivity => lastMessage != null && lastMessage!.isRecent;
@@ -154,6 +235,7 @@ class OnlineUser {
   final String id;
   final String name;
   final String? avatar;
+  final String role; // 角色: owner, admin, member
   final bool isOnline;
   final DateTime? lastSeen;
 
@@ -161,11 +243,18 @@ class OnlineUser {
     required this.id,
     required this.name,
     this.avatar,
+    this.role = 'member',
     required this.isOnline,
     this.lastSeen,
   });
 
   // === 业务逻辑方法 ===
+
+  /// 是否是创建者/群主（兼容 owner 和 organizer 角色）
+  bool get isOwner => role == 'owner' || role == 'organizer';
+
+  /// 是否是管理员
+  bool get isAdmin => role == 'admin' || isOwner;
 
   /// 是否有头像
   bool get hasAvatar => avatar != null && avatar!.isNotEmpty;

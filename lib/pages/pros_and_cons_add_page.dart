@@ -1,12 +1,12 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/city/application/state_controllers/pros_cons_state_controller.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/pros_and_cons_add_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 /// Pros & Cons 添加页面
+/// 注意: 由于 TabController 需要 TickerProvider，保持 StatefulWidget 结构
+/// 但业务逻辑已移至 ProsAndConsAddPageController
 class ProsAndConsAddPage extends StatefulWidget {
   final String cityId;
   final String cityName;
@@ -23,95 +23,47 @@ class ProsAndConsAddPage extends StatefulWidget {
   State<ProsAndConsAddPage> createState() => _ProsAndConsAddPageState();
 }
 
-class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
-    with SingleTickerProviderStateMixin {
+class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTickerProviderStateMixin {
+  static const String _tag = 'ProsAndConsAddPage';
   late TabController _tabController;
-  late final ProsConsStateController _prosConsController;
-
-  // 本地状态管理
-  final TextEditingController prosTextController = TextEditingController();
-  final TextEditingController consTextController = TextEditingController();
-  final RxBool isAddingPros = false.obs;
-  final RxBool isAddingCons = false.obs;
-  final RxBool canDelete = false.obs;
-
-  bool get hasChanges =>
-      prosTextController.text.isNotEmpty ||
-      consTextController.text.isNotEmpty ||
-      _prosConsController.prosList.isNotEmpty ||
-      _prosConsController.consList.isNotEmpty;
+  late ProsAndConsAddPageController _controller;
 
   @override
   void initState() {
     super.initState();
-    _prosConsController = Get.find<ProsConsStateController>();
     _tabController = TabController(
       length: 2,
       vsync: this,
-      initialIndex: widget.initialTab, // 设置初始 tab
+      initialIndex: widget.initialTab,
     );
-    _checkPermissions();
-    // 延迟到首帧之后再加载，避免在构建阶段触发 setState/Obx
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
+    _controller = _useController();
   }
 
-  /// 检查用户权限
-  Future<void> _checkPermissions() async {
-    final isAdmin = await TokenStorageService().isAdmin();
-    canDelete.value = isAdmin;
-  }
-
-  /// 加载已有数据
-  Future<void> _loadData() async {
-    // 直接调用 controller 加载数据，不需要同步到本地列表
-    await _prosConsController.loadCityProsCons(widget.cityId);
+  ProsAndConsAddPageController _useController() {
+    if (Get.isRegistered<ProsAndConsAddPageController>(tag: _tag)) {
+      return Get.find<ProsAndConsAddPageController>(tag: _tag);
+    }
+    return Get.put(
+      ProsAndConsAddPageController(
+        cityId: widget.cityId,
+        cityName: widget.cityName,
+      ),
+      tag: _tag,
+    );
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    prosTextController.dispose();
-    consTextController.dispose();
     super.dispose();
   }
 
-  /// 添加优点
-  Future<void> addPros() async {
-    if (prosTextController.text.trim().isEmpty) return;
-
-    isAddingPros.value = true;
-    try {
-      // 调用后端 API 保存数据
-      final success = await _prosConsController.addPros(
-        cityId: widget.cityId,
-        text: prosTextController.text.trim(),
-      );
-
-      if (success) {
-        prosTextController.clear();
-        AppToast.success('优点已添加');
-
-        // 重新加载数据
-        await _loadData();
-      } else {
-        AppToast.error('添加优点失败，请重试');
-      }
-    } catch (e) {
-      AppToast.error('添加失败: $e');
-    } finally {
-      isAddingPros.value = false;
-    }
-  }
-
-  /// 删除优点
-  Future<void> deletePros(String id) async {
-    // 确认对话框
+  /// 显示删除确认对话框
+  Future<bool> _showDeleteConfirmDialog(String title, String content) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条优点吗？'),
+        title: Text(title),
+        content: Text(content),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
@@ -125,155 +77,22 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
         ],
       ),
     );
+    return confirmed ?? false;
+  }
 
-    if (confirmed != true) return;
-
-    try {
-      final success =
-          await _prosConsController.deleteProsCons(widget.cityId, id, true);
-
-      if (success) {
-        AppToast.success('优点已删除');
-        await _loadData();
-      } else {
-        AppToast.error('删除失败，请重试');
-      }
-    } catch (e) {
-      AppToast.error('删除失败: $e');
+  /// 删除优点
+  Future<void> _deletePros(String id) async {
+    final confirmed = await _showDeleteConfirmDialog('确认删除', '确定要删除这条优点吗？');
+    if (confirmed) {
+      await _controller.deletePros(id);
     }
   }
 
   /// 删除挑战
-  Future<void> deleteCons(String id) async {
-    // 确认对话框
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条挑战吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    try {
-      final success =
-          await _prosConsController.deleteProsCons(widget.cityId, id, false);
-
-      if (success) {
-        AppToast.success('挑战已删除');
-        await _loadData();
-      } else {
-        AppToast.error('删除失败，请重试');
-      }
-    } catch (e) {
-      AppToast.error('删除失败: $e');
-    }
-  }
-
-  Future<void> _handleVote(String id, bool isPro) async {
-    if (id.isEmpty) return;
-
-    // Flutter 只需要传 isUpvote=true 给后端
-    // 后端会自动判断：没投过就创建，投过就删除（取消）
-    final success = await _prosConsController.upvote(id, isPro);
-    if (success) {
-      await _loadData(); // 重新加载数据以获取最新的投票状态和投票数
-    } else {
-      final message = _prosConsController.error.value ?? '操作失败，请稍后再试';
-      AppToast.error(message);
-    }
-  }
-
-  Widget _buildVoteChip({
-    required int count,
-    required VoidCallback? onTap,
-    bool? currentUserVoted, // null=未登录/未投票, true=已点赞, false=已点踩
-  }) {
-    // 如果是点赞按钮且用户已点赞，则显示激活状态
-    final bool isActive = currentUserVoted == true;
-    final Color activeColor = const Color(0xFFFF4458);
-    final Color inactiveColor = Colors.grey;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFFFFEEF2) : Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isActive
-                  ? activeColor.withOpacity(0.4)
-                  : inactiveColor.withOpacity(0.2),
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                FontAwesomeIcons.thumbsUp,
-                size: 18,
-                color: isActive ? activeColor : inactiveColor,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '$count',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: activeColor,
-                ),
-              ),
-              Text(
-                '投票',
-                style: TextStyle(fontSize: 10, color: activeColor),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 添加挑战
-  Future<void> addCons() async {
-    if (consTextController.text.trim().isEmpty) return;
-
-    isAddingCons.value = true;
-    try {
-      // 调用后端 API 保存数据
-      final success = await _prosConsController.addCons(
-        cityId: widget.cityId,
-        text: consTextController.text.trim(),
-      );
-
-      if (success) {
-        consTextController.clear();
-        AppToast.success('挑战已添加');
-
-        // 重新加载数据
-        await _loadData();
-      } else {
-        AppToast.error('添加挑战失败，请重试');
-      }
-    } catch (e) {
-      AppToast.error('添加失败: $e');
-    } finally {
-      isAddingCons.value = false;
+  Future<void> _deleteCons(String id) async {
+    final confirmed = await _showDeleteConfirmDialog('确认删除', '确定要删除这条挑战吗？');
+    if (confirmed) {
+      await _controller.deleteCons(id);
     }
   }
 
@@ -288,9 +107,9 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
           icon: const Icon(FontAwesomeIcons.xmark),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop(hasChanges);
+              Navigator.of(context).pop(_controller.hasChanges);
             } else {
-              Get.back(result: hasChanges, closeOverlays: false);
+              Get.back(result: _controller.hasChanges, closeOverlays: false);
             }
           },
         ),
@@ -333,9 +152,61 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
     );
   }
 
+  Widget _buildVoteChip({
+    required int count,
+    required VoidCallback? onTap,
+    bool? currentUserVoted,
+  }) {
+    final bool isActive = currentUserVoted == true;
+    final Color activeColor = const Color(0xFFFF4458);
+    final Color inactiveColor = Colors.grey;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFFFFEEF2) : Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isActive ? activeColor.withValues(alpha: 0.4) : inactiveColor.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                FontAwesomeIcons.thumbsUp,
+                size: 18,
+                color: isActive ? activeColor : inactiveColor,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: activeColor,
+                ),
+              ),
+              Text(
+                '投票',
+                style: TextStyle(fontSize: 10, color: activeColor),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // 优点标签页
   Widget _buildProsTab() {
     return Obx(() {
+      final prosConsController = _controller.prosConsController;
       return Column(
         children: [
           // 输入框区域 - 现代化设计
@@ -347,7 +218,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -359,7 +230,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                 // 输入框
                 Expanded(
                   child: TextField(
-                    controller: prosTextController,
+                    controller: _controller.prosTextController,
                     decoration: InputDecoration(
                       hintText: '分享这个城市的优点...',
                       hintStyle: TextStyle(
@@ -383,7 +254,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                 ),
                 const SizedBox(width: 12),
                 // 添加按钮
-                isAddingPros.value
+                _controller.isAddingPros.value
                     ? Container(
                         width: 44,
                         height: 44,
@@ -401,8 +272,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           ),
                         ),
@@ -410,7 +280,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                     : Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: () => addPros(),
+                          onTap: () => _controller.addPros(),
                           borderRadius: BorderRadius.circular(12),
                           child: Ink(
                             width: 44,
@@ -424,8 +294,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      const Color(0xFFFF4458).withOpacity(0.3),
+                                  color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -445,29 +314,27 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
           // 列表区域
           Expanded(
-            child: _prosConsController.isLoadingPros.value
+            child: prosConsController.isLoadingPros.value
                 ? const Center(child: CircularProgressIndicator())
-                : _prosConsController.prosList.isEmpty
+                : prosConsController.prosList.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(FontAwesomeIcons.circleCheck,
-                                size: 64, color: Colors.grey[300]),
+                            Icon(FontAwesomeIcons.circleCheck, size: 64, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
                               '暂无优点',
-                              style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[600]),
+                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                             ),
                           ],
                         ),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: _prosConsController.prosList.length,
+                        itemCount: prosConsController.prosList.length,
                         itemBuilder: (context, index) {
-                          final item = _prosConsController.prosList[index];
+                          final item = prosConsController.prosList[index];
                           final itemId = item.id;
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -489,17 +356,14 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   ),
                                   _buildVoteChip(
                                     count: item.upvotes,
-                                    onTap: itemId.isEmpty
-                                        ? null
-                                        : () => _handleVote(itemId, true),
+                                    onTap: itemId.isEmpty ? null : () => _controller.handleVote(itemId, true),
                                     currentUserVoted: item.currentUserVoted,
                                   ),
-                                  if (canDelete.value) const SizedBox(width: 8),
-                                  if (canDelete.value)
+                                  if (_controller.canDelete.value) const SizedBox(width: 8),
+                                  if (_controller.canDelete.value)
                                     IconButton(
-                                      icon: const Icon(FontAwesomeIcons.trash,
-                                          color: Colors.red, size: 20),
-                                      onPressed: () => deletePros(item.id),
+                                      icon: const Icon(FontAwesomeIcons.trash, color: Colors.red, size: 20),
+                                      onPressed: () => _deletePros(item.id),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
                                     ),
@@ -518,6 +382,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
   // 挑战标签页
   Widget _buildConsTab() {
     return Obx(() {
+      final prosConsController = _controller.prosConsController;
       return Column(
         children: [
           // 输入框区域 - 现代化设计
@@ -529,7 +394,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -541,7 +406,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                 // 输入框
                 Expanded(
                   child: TextField(
-                    controller: consTextController,
+                    controller: _controller.consTextController,
                     decoration: InputDecoration(
                       hintText: '分享这个城市的挑战...',
                       hintStyle: TextStyle(
@@ -565,7 +430,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                 ),
                 const SizedBox(width: 12),
                 // 添加按钮
-                isAddingCons.value
+                _controller.isAddingCons.value
                     ? Container(
                         width: 44,
                         height: 44,
@@ -583,8 +448,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           ),
                         ),
@@ -592,7 +456,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                     : Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: () => addCons(),
+                          onTap: () => _controller.addCons(),
                           borderRadius: BorderRadius.circular(12),
                           child: Ink(
                             width: 44,
@@ -606,8 +470,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      const Color(0xFFFF4458).withOpacity(0.3),
+                                  color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -627,29 +490,27 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
 
           // 列表区域
           Expanded(
-            child: _prosConsController.isLoadingCons.value
+            child: prosConsController.isLoadingCons.value
                 ? const Center(child: CircularProgressIndicator())
-                : _prosConsController.consList.isEmpty
+                : prosConsController.consList.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(FontAwesomeIcons.ban,
-                                size: 64, color: Colors.grey[300]),
+                            Icon(FontAwesomeIcons.ban, size: 64, color: Colors.grey[300]),
                             const SizedBox(height: 16),
                             Text(
                               '暂无挑战',
-                              style: TextStyle(
-                                  fontSize: 16, color: Colors.grey[600]),
+                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                             ),
                           ],
                         ),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: _prosConsController.consList.length,
+                        itemCount: prosConsController.consList.length,
                         itemBuilder: (context, index) {
-                          final item = _prosConsController.consList[index];
+                          final item = prosConsController.consList[index];
                           final itemId = item.id;
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -671,17 +532,14 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage>
                                   ),
                                   _buildVoteChip(
                                     count: item.upvotes,
-                                    onTap: itemId.isEmpty
-                                        ? null
-                                        : () => _handleVote(itemId, false),
+                                    onTap: itemId.isEmpty ? null : () => _controller.handleVote(itemId, false),
                                     currentUserVoted: item.currentUserVoted,
                                   ),
-                                  if (canDelete.value) const SizedBox(width: 8),
-                                  if (canDelete.value)
+                                  if (_controller.canDelete.value) const SizedBox(width: 8),
+                                  if (_controller.canDelete.value)
                                     IconButton(
-                                      icon: const Icon(FontAwesomeIcons.trash,
-                                          color: Colors.red, size: 20),
-                                      onPressed: () => deleteCons(item.id),
+                                      icon: const Icon(FontAwesomeIcons.trash, color: Colors.red, size: 20),
+                                      onPressed: () => _deleteCons(item.id),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
                                     ),

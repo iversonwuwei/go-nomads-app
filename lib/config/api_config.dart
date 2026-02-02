@@ -2,6 +2,42 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+/// 后端部署环境类型
+enum DeploymentEnvironment {
+  /// Docker Compose / 本地容器部署
+  docker,
+
+  /// Kubernetes 部署
+  kubernetes,
+}
+
+/// 部署环境端口配置
+class DeploymentConfig {
+  final int gatewayPort;
+  final int messageServicePort;
+  final int coworkingServicePort;
+
+  const DeploymentConfig({
+    required this.gatewayPort,
+    required this.messageServicePort,
+    required this.coworkingServicePort,
+  });
+
+  /// Docker 部署配置
+  static const docker = DeploymentConfig(
+    gatewayPort: 80,
+    messageServicePort: 5005,
+    coworkingServicePort: 8006,
+  );
+
+  /// Kubernetes 部署配置
+  static const kubernetes = DeploymentConfig(
+    gatewayPort: 30080,
+    messageServicePort: 8010, // 通过 Gateway 路由，此端口仅作参考
+    coworkingServicePort: 8003, // 通过 Gateway 路由，此端口仅作参考
+  );
+}
+
 /// API 配置
 class ApiConfig {
   // ============================================================
@@ -10,22 +46,44 @@ class ApiConfig {
   static const bool kIsProduction = false;
 
   // ============================================================
-  // 端口配置
+  // 部署环境配置
+  // ============================================================
+  /// 当前后端部署环境
+  /// ⚠️ 切换后端部署方式时修改此配置：
+  /// - docker: 使用 deploy-services-local.ps1 脚本部署
+  /// - kubernetes: 使用 kubectl apply -f k8s/ 部署
+  static const DeploymentEnvironment deploymentEnvironment = DeploymentEnvironment.docker;
+
+  /// 获取当前部署配置
+  static DeploymentConfig get _deploymentConfig {
+    switch (deploymentEnvironment) {
+      case DeploymentEnvironment.docker:
+        return DeploymentConfig.docker;
+      case DeploymentEnvironment.kubernetes:
+        return DeploymentConfig.kubernetes;
+    }
+  }
+
+  // ============================================================
+  // 端口配置 (动态获取)
   // ============================================================
   /// Gateway 端口 (所有服务统一通过 Gateway 访问)
-  static const int gatewayPort = 5000;
+  static int get gatewayPort => _deploymentConfig.gatewayPort;
 
-  /// Message Service 端口 (SignalR Hub 需要直连)
-  static const int messageServicePort = 5005;
+  /// Message Service 端口 (SignalR Hub)
+  static int get messageServicePort => _deploymentConfig.messageServicePort;
+
+  /// Coworking Service 端口 (SignalR Hub)
+  static int get coworkingServicePort => _deploymentConfig.coworkingServicePort;
 
   // ============================================================
   // 主机地址配置
   // ============================================================
 
   /// 生产环境主机
-  static const String productionHost = 'api.yourapp.com';
+  static const String productionHost = 'api.go-nomads.com';
 
-  /// 真机测试主机 - 使用电脑局域网 IP
+  /// 真机测试主机 - 使用电脑局域网 IP 39.96.201.126
   /// 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
   /// ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
   static const String physicalDeviceHost = '192.168.110.67';
@@ -54,6 +112,12 @@ class ApiConfig {
   /// ⚠️ Android 官方模拟器用户请设置为 false
   static const bool usePhysicalDevice = true;
 
+  /// 是否启用 HTTP 方法重写
+  /// ⚠️ 当服务器/网络环境不支持 PUT/DELETE 方法时启用此选项
+  /// 启用后，PUT/DELETE 请求会转换为 POST 请求 + X-HTTP-Method-Override 头
+  /// 需要 Gateway 端配合支持 HttpMethodOverrideMiddleware
+  static const bool useHttpMethodOverride = true;
+
   // ============================================================
   // URL 组装
   // ============================================================
@@ -70,7 +134,7 @@ class ApiConfig {
   }
 
   /// 生产环境基础 URL
-  static String get productionUrl => 'https://$productionHost';
+  static String get productionUrl => 'http://$productionHost';
 
   /// 开发环境基础 URL
   static String get developmentUrl => 'http://$developmentHost:$gatewayPort';
@@ -89,14 +153,25 @@ class ApiConfig {
     return developmentUrl;
   }
 
-  /// Message Service 地址 (SignalR Hub 需要直连,不经过 Gateway)
-  /// SignalR WebSocket 连接需要保持长连接,因此直连 MessageService
+  /// Message Service 地址 (SignalR Hub)
+  /// K8s 环境下通过 Gateway 路由，Gateway 会代理 WebSocket 连接到 MessageService
   static String get messageServiceBaseUrl {
     if (kIsProduction) {
       return productionUrl; // 生产环境通过专用域名
     }
-    final host = usePhysicalDevice ? physicalDeviceHost : developmentHost;
-    return 'http://$host:$messageServicePort';
+    // K8s 环境下，SignalR 也通过 Gateway 路由
+    // Gateway 配置了 /hubs/chat -> message-service 的路由
+    return baseUrl; // 使用 Gateway 地址
+  }
+
+  /// Coworking Service 地址 (SignalR Hub)
+  /// K8s 环境下通过 Gateway 路由
+  static String get coworkingServiceBaseUrl {
+    if (kIsProduction) {
+      return productionUrl; // 生产环境通过专用域名
+    }
+    // K8s 环境下，SignalR 也通过 Gateway 路由
+    return baseUrl; // 使用 Gateway 地址
   }
 
   // API 版本
@@ -114,6 +189,14 @@ class ApiConfig {
   static const String authTokenKey = 'auth_token';
   static const String refreshTokenKey = 'refresh_token';
 
+  // 第三方平台配置
+  // 支付宝 AppId，用于唤起和鉴权
+  static const String alipayAppId = '2021006115624759';
+
+  // QQ 互联配置
+  static const String qqAppId = '102822014';
+  static const String qqAppKey = 'Ut68vSr2ye4FJ9j6';
+
   // ============================================================
   // Authentication Endpoints - /api/v1/auth
   // ============================================================
@@ -122,6 +205,7 @@ class ApiConfig {
   static const String logoutEndpoint = '/auth/logout';
   static const String refreshTokenEndpoint = '/auth/refresh';
   static const String changePasswordEndpoint = '/auth/change-password';
+  static const String socialLoginEndpoint = '/auth/social-login';
 
   // ============================================================
   // User Endpoints - /api/v1/users
@@ -144,6 +228,7 @@ class ApiConfig {
   // City Endpoints - /api/v1/cities
   // ============================================================
   static const String citiesEndpoint = '/cities';
+  static const String cityListEndpoint = '/cities/list'; // 轻量级城市列表（不含天气数据）
   static const String cityDetailEndpoint = '/cities/{id}';
   static const String cityRecommendedEndpoint = '/cities/recommended';
   static const String citySearchEndpoint = '/cities/search';
@@ -235,6 +320,21 @@ class ApiConfig {
   static const String meetupsEndpoint = '/meetups';
   static const String meetupDetailEndpoint = '/meetups/{id}';
   static const String meetupJoinEndpoint = '/meetups/{id}/join';
+  static const String meetupLeaveEndpoint = '/meetups/{id}/leave';
+  static const String meetupParticipantsEndpoint = '/meetups/{id}/participants';
+
+  // ============================================================
+  // SignalR Hub Endpoints
+  // ============================================================
+
+  /// Chat Hub URL (通过 Gateway 路由)
+  static String get chatHubUrl => '$baseUrl/hubs/chat';
+
+  /// Meetup/Event Hub URL (通过 Gateway 路由)
+  static String get meetupHubUrl => '$baseUrl/hubs/meetup';
+
+  /// Notification Hub URL (通过 Gateway 路由)
+  static String get notificationHubUrl => '$baseUrl/hubs/notification';
 
   // ============================================================
   // Chat Endpoints - /api/v1/chats (待后端实现)
@@ -244,6 +344,7 @@ class ApiConfig {
   static const String chatMessagesEndpoint = '/chats/{id}/messages';
   static const String chatSendMessageEndpoint = '/chats/{id}/messages';
   static const String chatParticipantsEndpoint = '/chats/{id}/participants';
+  static const String chatMeetupEndpoint = '/chats/meetup';
 
   // ============================================================
   // Notification Endpoints - /api/v1/notifications
@@ -257,6 +358,27 @@ class ApiConfig {
   static const String notificationDeleteEndpoint = '/notifications/{id}';
   static const String notificationSendEndpoint = '/notifications';
   static const String notificationSendToAdminsEndpoint = '/notifications/admins';
+
+  // ============================================================
+  // AI Chat Endpoints - /api/v1/ai
+  // ============================================================
+  static const String aiConversationsEndpoint = '/ai/conversations';
+  static const String aiMessagesEndpoint = '/ai/conversations/{conversationId}/messages';
+  static const String aiMessageStreamEndpoint = '/ai/conversations/{conversationId}/messages/stream';
+  static const String aiMessageSignalRStreamEndpoint = '/ai/conversations/{conversationId}/messages/signalr-stream';
+
+  // ============================================================
+  // Travel History Endpoints - /api/v1/travel-history
+  // ============================================================
+  static const String travelHistoryEndpoint = '/travel-history';
+  static const String travelHistoryDetailEndpoint = '/travel-history/{id}';
+  static const String travelHistoryConfirmedEndpoint = '/travel-history/confirmed';
+  static const String travelHistoryUnconfirmedEndpoint = '/travel-history/unconfirmed';
+  static const String travelHistoryBatchEndpoint = '/travel-history/batch';
+  static const String travelHistoryConfirmEndpoint = '/travel-history/{id}/confirm';
+  static const String travelHistoryConfirmBatchEndpoint = '/travel-history/confirm/batch';
+  static const String travelHistoryStatsEndpoint = '/travel-history/stats';
+  static const String travelHistoryUserEndpoint = '/travel-history/user/{userId}';
 
   // 环境判断
   static bool get isDevelopment => !kIsProduction;
@@ -328,7 +450,8 @@ class ApiConfig {
 📡 API 配置信息:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🌍 环境: ${kIsProduction ? '生产环境 🚀' : '开发环境 🔧'}
-💻 平台: ${kIsWeb ? 'Web 🌐' : Platform.operatingSystem}
+� 部署: ${deploymentEnvironment == DeploymentEnvironment.kubernetes ? 'Kubernetes ☸️' : 'Docker 🐳'}
+�💻 平台: ${kIsWeb ? 'Web 🌐' : Platform.operatingSystem}
 🏠 当前主机: $currentHost
 🔌 Gateway 端口: $gatewayPort
 📍 基础地址: $currentBaseUrl

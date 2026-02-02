@@ -1,7 +1,9 @@
+import 'dart:developer';
+
 import 'package:get/get.dart';
 
-import 'package:df_admin_mobile/services/database_service.dart';
-import 'package:df_admin_mobile/services/notification_service.dart';
+import 'package:go_nomads_app/services/database_service.dart';
+import 'package:go_nomads_app/services/notification_service.dart';
 
 /// 后台任务状态
 enum TaskStatus {
@@ -142,7 +144,7 @@ class BackgroundTaskService extends GetxService {
     if (notificationService != null) {
       await notificationService.showGuideGenerating(cityName, progress: 0);
     } else {
-      print('⚠️ 通知服务未初始化,跳过通知');
+      log('⚠️ 通知服务未初始化,跳过通知');
     }
 
     // 在后台执行任务
@@ -170,7 +172,7 @@ class BackgroundTaskService extends GetxService {
               progress: clampedProgress,
             );
           }
-          print('📊 任务 $taskId 进度更新: $clampedProgress%');
+          log('📊 任务 $taskId 进度更新: $clampedProgress%');
         }
       });
 
@@ -282,11 +284,11 @@ class BackgroundTaskService extends GetxService {
       final pendingTasks = await DatabaseService().loadPendingBackgroundTasks();
 
       if (pendingTasks.isEmpty) {
-        print('✅ 没有需要恢复的任务');
+        log('✅ 没有需要恢复的任务');
         return;
       }
 
-      print('🔄 发现 ${pendingTasks.length} 个未完成的任务,将标记为失败');
+      log('🔄 发现 ${pendingTasks.length} 个未完成的任务,将标记为失败');
 
       for (final taskData in pendingTasks) {
         final taskId = taskData['id'];
@@ -308,13 +310,13 @@ class BackgroundTaskService extends GetxService {
           );
         }
 
-        print('⚠️ 任务 $taskId 已标记为失败');
+        log('⚠️ 任务 $taskId 已标记为失败');
       }
 
       // 清理旧任务
       await DatabaseService().cleanupOldBackgroundTasks();
     } catch (e) {
-      print('❌ 恢复任务失败: $e');
+      log('❌ 恢复任务失败: $e');
     }
   }
 }

@@ -1,9 +1,10 @@
+import 'dart:developer';
 import 'dart:io';
 
-import 'package:df_admin_mobile/config/supabase_config.dart';
-import 'package:df_admin_mobile/features/coworking/infrastructure/repositories/coworking_review_repository.dart';
-import 'package:df_admin_mobile/services/image_upload_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/config/supabase_config.dart';
+import 'package:go_nomads_app/features/coworking/infrastructure/repositories/coworking_review_repository.dart';
+import 'package:go_nomads_app/services/image_upload_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -21,8 +22,7 @@ class AddCoworkingCommentPage extends StatefulWidget {
   });
 
   @override
-  State<AddCoworkingCommentPage> createState() =>
-      _AddCoworkingCommentPageState();
+  State<AddCoworkingCommentPage> createState() => _AddCoworkingCommentPageState();
 }
 
 class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
@@ -53,7 +53,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
         }
       });
     } catch (e) {
-      print('选择图片失败: $e');
+      log('选择图片失败: $e');
     }
   }
 
@@ -110,8 +110,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           final imageUploadService = ImageUploadService();
 
           // 转换 XFile 为 File
-          final imageFiles =
-              _selectedImages.map((xFile) => File(xFile.path)).toList();
+          final imageFiles = _selectedImages.map((xFile) => File(xFile.path)).toList();
 
           // 显示上传提示
           AppToast.info('正在上传 ${imageFiles.length} 张图片...');
@@ -255,9 +254,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                         ? '选择您的访问日期'
                         : '${_visitDate!.year}-${_visitDate!.month.toString().padLeft(2, '0')}-${_visitDate!.day.toString().padLeft(2, '0')}',
                     style: TextStyle(
-                      color: _visitDate == null
-                          ? Colors.grey[600]
-                          : Colors.black87,
+                      color: _visitDate == null ? Colors.grey[600] : Colors.black87,
                     ),
                   ),
                 ),
@@ -340,15 +337,13 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                     ? null
                     : (details) {
                         // 通过点击位置判断是半星还是整星
-                        final RenderBox box =
-                            context.findRenderObject() as RenderBox;
+                        final RenderBox box = context.findRenderObject() as RenderBox;
                         final starSize = 40.0;
                         final padding = 4.0;
                         final totalWidth = starSize + padding * 2;
 
                         // 计算相对于整个Row的x坐标
-                        final localX =
-                            box.globalToLocal(details.globalPosition).dx;
+                        final localX = box.globalToLocal(details.globalPosition).dx;
 
                         // 计算点击的是哪颗星
                         final clickedIndex = (localX / totalWidth).floor();
@@ -381,8 +376,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
               child: Row(
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFA000), // 深黄色背景
                       borderRadius: BorderRadius.circular(12),
@@ -440,7 +434,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       color = const Color(0xFFFFA000); // 深黄色/橙黄色
     } else if (index == fullStars && hasHalfStar) {
       // 半星 - 黄色
-      iconData = FontAwesomeIcons.starHalfAlt;
+      iconData = FontAwesomeIcons.starHalfStroke;
       color = const Color(0xFFFFA000); // 深黄色/橙黄色
     } else {
       // 空星 - 浅灰色边框
@@ -474,27 +468,44 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
 
   /// 构建图片网格
   Widget _buildImageGrid() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        // 已选择的图片
-        ..._selectedImages.asMap().entries.map((entry) {
-          final index = entry.key;
-          final image = entry.value;
-          return _buildImageItem(image, index);
-        }),
-        // 添加图片按钮
-        if (_selectedImages.length < 5) _buildAddImageButton(),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+
+        // 如果没有图片，显示占满宽度的添加按钮
+        if (_selectedImages.isEmpty) {
+          return _buildFullWidthAddButton(availableWidth);
+        }
+
+        // 有图片时，固定每行显示5个图片
+        const itemCount = 5;
+        const spacing = 8.0;
+        final itemSize = (availableWidth - (itemCount - 1) * spacing) / itemCount;
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(itemCount, (index) {
+            if (index < _selectedImages.length) {
+              // 显示已选择的图片
+              return _buildImageItem(_selectedImages[index], index, itemSize);
+            } else if (index == _selectedImages.length && _selectedImages.length < 5) {
+              // 显示添加按钮
+              return _buildAddImageButton(itemSize);
+            } else {
+              // 显示占位框
+              return _buildPlaceholder(itemSize);
+            }
+          }),
+        );
+      },
     );
   }
 
   /// 构建单个图片项
-  Widget _buildImageItem(XFile image, int index) {
+  Widget _buildImageItem(XFile image, int index, double size) {
     return Container(
-      width: 100,
-      height: 100,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[300]!),
@@ -506,8 +517,8 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
             child: Image.file(
               File(image.path),
               fit: BoxFit.cover,
-              width: 100,
-              height: 100,
+              width: size,
+              height: size,
             ),
           ),
           if (!_isSubmitting)
@@ -536,12 +547,12 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
   }
 
   /// 构建添加图片按钮
-  Widget _buildAddImageButton() {
+  Widget _buildAddImageButton(double size) {
     return GestureDetector(
       onTap: _isSubmitting ? null : _pickImages,
       child: Container(
-        width: 100,
-        height: 100,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
@@ -555,14 +566,69 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           children: [
             Icon(
               FontAwesomeIcons.photoFilm,
-              size: 32,
+              size: 24,
               color: Colors.grey[600],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
+            Text(
+              '添加',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建占位框
+  Widget _buildPlaceholder(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          style: BorderStyle.solid,
+        ),
+      ),
+    );
+  }
+
+  /// 构建占满宽度的添加按钮（无图片时显示）
+  Widget _buildFullWidthAddButton(double width) {
+    return GestureDetector(
+      onTap: _isSubmitting ? null : _pickImages,
+      child: Container(
+        width: width,
+        height: 120,
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey[300]!,
+            width: 2,
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              FontAwesomeIcons.photoFilm,
+              size: 40,
+              color: Colors.grey[600],
+            ),
+            const SizedBox(height: 8),
             Text(
               '添加图片',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
               ),
             ),

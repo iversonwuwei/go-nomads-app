@@ -1,4 +1,6 @@
-import 'package:df_admin_mobile/services/database_service.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/services/database_service.dart';
 
 /// Token数据访问对象
 ///
@@ -16,20 +18,24 @@ class TokenDao {
     required String userName,
     required String userEmail,
   }) async {
+    log('💾 [TokenDao] 开始保存 Token 到 SQLite...');
+    log('   userId: $userId');
+    log('   expiresIn: $expiresIn 秒');
+    
     final db = await _dbService.database;
     final now = DateTime.now().toIso8601String();
-    final expiresAt =
-        DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
+    final expiresAt = DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
 
     // 先删除该用户的旧token
-    await db.delete(
+    final deletedCount = await db.delete(
       'tokens',
       where: 'user_id = ?',
       whereArgs: [userId],
     );
+    log('   删除旧 Token 数量: $deletedCount');
 
     // 插入新token
-    await db.insert('tokens', {
+    final insertId = await db.insert('tokens', {
       'user_id': userId,
       'access_token': accessToken,
       'refresh_token': refreshToken,
@@ -41,10 +47,12 @@ class TokenDao {
       'created_at': now,
       'updated_at': now,
     });
+    log('✅ [TokenDao] Token 已保存到 SQLite, insertId: $insertId');
   }
 
   /// 获取最新的token
   Future<Map<String, dynamic>?> getLatestToken() async {
+    log('🔍 [TokenDao] 从 SQLite 获取最新 Token...');
     final db = await _dbService.database;
     final results = await db.query(
       'tokens',
@@ -53,9 +61,11 @@ class TokenDao {
     );
 
     if (results.isEmpty) {
+      log('⚠️ [TokenDao] SQLite 中没有找到任何 Token');
       return null;
     }
 
+    log('✅ [TokenDao] 找到 Token: userId=${results.first['user_id']}, expiresAt=${results.first['expires_at']}');
     return results.first;
   }
 
@@ -103,6 +113,31 @@ class TokenDao {
     final db = await _dbService.database;
     await db.delete(
       'tokens',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  /// 更新指定用户的token（刷新token后使用）
+  Future<void> updateToken({
+    required String userId,
+    required String accessToken,
+    required String refreshToken,
+    required int expiresIn,
+  }) async {
+    final db = await _dbService.database;
+    final now = DateTime.now().toIso8601String();
+    final expiresAt = DateTime.now().add(Duration(seconds: expiresIn)).toIso8601String();
+
+    await db.update(
+      'tokens',
+      {
+        'access_token': accessToken,
+        'refresh_token': refreshToken,
+        'expires_in': expiresIn,
+        'expires_at': expiresAt,
+        'updated_at': now,
+      },
       where: 'user_id = ?',
       whereArgs: [userId],
     );

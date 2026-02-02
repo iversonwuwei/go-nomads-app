@@ -1,21 +1,27 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/features/meetup/infrastructure/models/meetup_dto.dart';
-import 'package:df_admin_mobile/features/meetup/presentation/controllers/meetup_state_controller.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/pages/create_meetup_page.dart';
-import 'package:df_admin_mobile/routes/app_routes.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
-import 'package:df_admin_mobile/widgets/share_bottom_sheet.dart';
-import 'package:df_admin_mobile/widgets/share_button.dart';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/models/meetup_dto.dart';
+import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/edit_button.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
+import 'package:go_nomads_app/widgets/share_button.dart';
 import 'package:intl/intl.dart';
 
 import 'direct_chat_page.dart';
@@ -36,10 +42,16 @@ class MeetupDetailPage extends StatefulWidget {
 
 class _MeetupDetailPageState extends State<MeetupDetailPage> {
   late Rx<Meetup> _meetup;
-  final IMeetupRepository _meetupRepository = Get.find();
   final _meetupController = Get.find<MeetupStateController>();
   final RxBool _isLoading = true.obs;
   final RxList<Map<String, dynamic>> _participants = <Map<String, dynamic>>[].obs;
+
+  // 数据变更标记 - 用于返回时通知列表页面更新缓存
+  bool _hasDataChanged = false;
+
+  // 图片轮播相关
+  final PageController _imagePageController = PageController();
+  final RxInt _currentImageIndex = 0.obs;
 
   // 检查当前用户是否已加入活动 - 使用 controller 的 isRsvped 方法
   bool get _isJoined => _meetupController.isRsvped(_meetup.value.id);
@@ -50,8 +62,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     // 直接使用实体中的 isOrganizer 字段
     final result = _meetup.value.isOrganizer;
 
-    print('🔍 组织者判断 - meetup.isOrganizer: $result');
-    print('🔍 组织者判断 - 活动组织者ID: ${_meetup.value.organizer.id}');
+    log('🔍 组织者判断 - meetup.isOrganizer: $result');
+    log('🔍 组织者判断 - 活动组织者ID: ${_meetup.value.organizer.id}');
 
     return result;
   }
@@ -64,6 +76,12 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     Future.microtask(() => _loadEventDetails());
   }
 
+  @override
+  void dispose() {
+    _imagePageController.dispose();
+    super.dispose();
+  }
+
   /// 从后端加载活动详情
   Future<void> _loadEventDetails() async {
     try {
@@ -74,135 +92,225 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       final response = await httpService.get('/events/${widget.meetup.id}');
       final data = response.data as Map<String, dynamic>;
 
-      // 提取 participants 列表
+      // 提取 participants 列表（直接使用后端返回的数据，不做过滤）
       if (data['participants'] != null) {
         final participantsList = data['participants'] as List<dynamic>;
         _participants.value = participantsList.map((p) => p as Map<String, dynamic>).toList();
-        print('✅ 成功加载 ${_participants.length} 位参与者');
+        log('✅ 成功加载 ${_participants.length} 位参与者');
       }
 
       // 映射为 Meetup 实体
       final dto = MeetupDto.fromJson(data);
       final meetup = dto.toDomain();
 
+      // 调试：打印解析后的数据
+      log('🔍 解析后 - capacity.currentAttendees: ${meetup.capacity.currentAttendees}');
+
+      // 先触发刷新，确保 Obx 重新构建
       _meetup.value = meetup;
-      print('✅ 成功加载活动详情: ${meetup.title}');
+      _meetup.refresh(); // 强制触发更新
+      log('✅ 成功加载活动详情: ${meetup.title}, 参与者: ${meetup.capacity.currentAttendees}');
     } catch (e) {
-      print('❌ 加载活动详情失败: $e');
+      log('❌ 加载活动详情失败: $e');
       AppToast.error('加载活动详情失败');
     } finally {
       _isLoading.value = false;
     }
   }
 
+  /// 统一处理返回逻辑
+  void _handleBack() {
+    NavigationUtil.backFromDetail<Meetup>(
+      entity: _meetup.value,
+      hasChanged: _hasDataChanged,
+      context: context,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          // 顶部图片和AppBar
-          SliverAppBar(
-            expandedHeight: 300.h,
-            pinned: true,
-            backgroundColor: Colors.white,
-            leading: const SliverBackButton(),
-            actions: [
-              // 编辑按钮 - 只有组织者可见
-              if (_isOrganizer)
-                IconButton(
-                  onPressed: () async {
-                    final result = await Get.to(() => CreateMeetupPage(editingMeetup: _meetup.value));
-                    if (result == true) {
-                      // 编辑成功，刷新数据
-                      await _loadEventDetails();
-                    }
-                  },
-                  icon: Icon(
-                    FontAwesomeIcons.penToSquare,
-                    size: 18.sp,
-                    color: Colors.white,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _handleBack();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: CustomScrollView(
+          slivers: [
+            // 顶部图片和AppBar
+            SliverAppBar(
+              expandedHeight: 300.h,
+              pinned: true,
+              backgroundColor: Colors.white,
+              leading: SliverBackButton(
+                onPressed: _handleBack,
+              ),
+              actions: [
+                // 编辑按钮 - 只有组织者可见
+                if (_isOrganizer)
+                  SliverEditButton(
+                    onPressed: () async {
+                      await NavigationUtil.toWithCallback<Meetup>(
+                        page: () => CreateMeetupPage(editingMeetup: _meetup.value),
+                        onResult: (result) async {
+                          if (result.needsRefresh) {
+                            // 编辑成功，刷新数据并标记变更
+                            await _loadEventDetails();
+                            _hasDataChanged = true;
+                          }
+                        },
+                      );
+                    },
+                    size: 18,
                   ),
-                ),
-              SliverShareButton(onPressed: _shareMeetup),
-              SizedBox(width: 8.w),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: _meetup.value.images.isNotEmpty
-                  ? Image.network(
-                      _meetup.value.images.first,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: AppColors.borderLight,
-                          child: Icon(
-                            FontAwesomeIcons.imagePortrait,
-                            size: 64.sp,
-                            color: AppColors.textTertiary,
+                SliverShareButton(onPressed: _shareMeetup),
+                SizedBox(width: 8.w),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Obx(() => _meetup.value.images.isNotEmpty
+                    ? Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // 图片轮播
+                          PageView.builder(
+                            controller: _imagePageController,
+                            itemCount: _meetup.value.images.length,
+                            onPageChanged: (index) {
+                              _currentImageIndex.value = index;
+                            },
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                _meetup.value.images[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: AppColors.borderLight,
+                                    child: Icon(
+                                      FontAwesomeIcons.imagePortrait,
+                                      size: 64.sp,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: AppColors.borderLight,
-                      child: Icon(
-                        FontAwesomeIcons.calendarDays,
-                        size: 64.sp,
-                        color: AppColors.textTertiary,
+                          // 图片指示器 - 只有多张图片时显示
+                          if (_meetup.value.images.length > 1)
+                            Positioned(
+                              bottom: 16.h,
+                              left: 0,
+                              right: 0,
+                              child: Obx(() => Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(
+                                      _meetup.value.images.length,
+                                      (index) => Container(
+                                        width: _currentImageIndex.value == index ? 24.w : 8.w,
+                                        height: 8.h,
+                                        margin: EdgeInsets.symmetric(horizontal: 4.w),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(4.r),
+                                          color: _currentImageIndex.value == index
+                                              ? Colors.white
+                                              : Colors.white.withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                    ),
+                                  )),
+                            ),
+                          // 图片计数器
+                          if (_meetup.value.images.length > 1)
+                            Positioned(
+                              top: 100.h,
+                              right: 16.w,
+                              child: Obx(() => Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    child: Text(
+                                      '${_currentImageIndex.value + 1} / ${_meetup.value.images.length}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  )),
+                            ),
+                        ],
+                      )
+                    : Container(
+                        color: AppColors.borderLight,
+                        child: Icon(
+                          FontAwesomeIcons.calendarDays,
+                          size: 64.sp,
+                          color: AppColors.textTertiary,
+                        ),
+                      )),
+              ),
+            ),
+
+            // 内容区域
+            SliverToBoxAdapter(
+              child: Obx(() {
+                // 触发对 _meetup 的监听，确保数据变化时能重新构建
+                // 通过访问 capacity 属性来确保 GetX 追踪到 _meetup 的变化
+                final currentAttendees = _meetup.value.capacity.currentAttendees;
+                log('🔄 Obx 重建 - currentAttendees: $currentAttendees');
+
+                // 显示加载指示器
+                if (_isLoading.value) {
+                  return Container(
+                    padding: EdgeInsets.all(40.w),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: const Color(0xFFFF4458),
                       ),
                     ),
-            ),
-          ),
+                  );
+                }
 
-          // 内容区域
-          SliverToBoxAdapter(
-            child: Obx(() {
-              // 显示加载指示器
-              if (_isLoading.value) {
-                return Container(
-                  padding: EdgeInsets.all(40.w),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: const Color(0xFFFF4458),
-                    ),
-                  ),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 基本信息
+                    _buildBasicInfo(),
+
+                    SizedBox(height: 16.h),
+
+                    // 时间地点
+                    _buildTimeLocationInfo(),
+
+                    SizedBox(height: 16.h),
+
+                    // 描述
+                    _buildDescription(),
+
+                    SizedBox(height: 16.h),
+
+                    // 组织者信息
+                    _buildOrganizerInfo(),
+
+                    SizedBox(height: 16.h),
+
+                    // 参与者列表
+                    _buildAttendeesList(),
+
+                    SizedBox(height: 100.h),
+                  ],
                 );
-              }
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 基本信息
-                  _buildBasicInfo(),
-
-                  SizedBox(height: 16.h),
-
-                  // 时间地点
-                  _buildTimeLocationInfo(),
-
-                  SizedBox(height: 16.h),
-
-                  // 描述
-                  _buildDescription(),
-
-                  SizedBox(height: 16.h),
-
-                  // 组织者信息
-                  _buildOrganizerInfo(),
-
-                  SizedBox(height: 16.h),
-
-                  // 参与者列表
-                  _buildAttendeesList(),
-
-                  SizedBox(height: 100.h),
-                ],
-              );
-            }),
-          ),
-        ],
+              }),
+            ),
+          ],
+        ),
+        bottomNavigationBar: _buildBottomBar(),
       ),
-      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -297,6 +405,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             subtitle: _meetup.value.venue.address,
           ),
           SizedBox(height: 20.h),
+          // 使用后端返回的 capacity 数据显示参与者数量
           _buildInfoRow(
             FontAwesomeIcons.users,
             l10n.attendees,
@@ -370,12 +479,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   );
                   Get.to(() => MemberDetailPage(user: organizerUser));
                 },
-                child: CircleAvatar(
+                child: SafeCircleAvatar(
+                  imageUrl: _meetup.value.organizer.avatarUrl,
                   radius: 30.r,
-                  backgroundImage:
-                      (_meetup.value.organizer.avatarUrl != null && _meetup.value.organizer.avatarUrl!.isNotEmpty)
-                          ? NetworkImage(_meetup.value.organizer.avatarUrl!)
-                          : null,
                 ),
               ),
               SizedBox(width: 16.w),
@@ -402,24 +508,26 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   ],
                 ),
               ),
-              OutlinedButton(
-                onPressed: _contactOrganizer,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFFF4458),
-                  side: BorderSide(color: const Color(0xFFFF4458), width: 1.5.w),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20.r),
+              // 如果当前用户是组织者，不显示消息按钮（不能给自己发消息）
+              if (!_isOrganizer)
+                OutlinedButton(
+                  onPressed: _contactOrganizer,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFFF4458),
+                    side: BorderSide(color: const Color(0xFFFF4458), width: 1.5.w),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                ),
-                child: Text(
-                  l10n.message,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
+                  child: Text(
+                    l10n.message,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ],
@@ -435,31 +543,35 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.attendeesCount('${_meetup.value.capacity.currentAttendees}'),
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              if (_meetup.value.capacity.currentAttendees > 0)
-                TextButton(
-                  onPressed: _showAllAttendees,
-                  child: Text(
-                    l10n.viewAll,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: const Color(0xFFFF4458),
-                      fontWeight: FontWeight.w600,
-                    ),
+          // 使用 Obx 监听 _participants 的变化来显示真实参与者数量
+          Obx(() {
+            final attendeesCount = _meetup.value.capacity.currentAttendees;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.attendeesCount('$attendeesCount'),
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-            ],
-          ),
+                if (attendeesCount > 0)
+                  TextButton(
+                    onPressed: _showAllAttendees,
+                    child: Text(
+                      l10n.viewAll,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: const Color(0xFFFF4458),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }),
           SizedBox(height: 16.h),
           Obx(() {
             if (_participants.isEmpty) {
@@ -505,13 +617,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       },
                       child: Tooltip(
                         message: userName,
-                        child: CircleAvatar(
+                        child: SafeCircleAvatar(
+                          imageUrl: userAvatar,
                           radius: 20.r,
-                          backgroundImage:
-                              (userAvatar != null && userAvatar.isNotEmpty) ? NetworkImage(userAvatar) : null,
-                          child: (userAvatar == null || userAvatar.isEmpty)
-                              ? Icon(FontAwesomeIcons.user, size: 20.r)
-                              : null,
                         ),
                       ),
                     ),
@@ -529,9 +637,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     // 添加调试输出
-    print('🎨 构建底部按钮栏 - _isOrganizer: $_isOrganizer');
-    print('🎨 构建底部按钮栏 - _isJoined: $_isJoined');
-    print('🎨 构建底部按钮栏 - meetup status: ${_meetup.value.status}');
+    log('🎨 构建底部按钮栏 - _isOrganizer: $_isOrganizer');
+    log('🎨 构建底部按钮栏 - _isJoined: $_isJoined');
+    log('🎨 构建底部按钮栏 - meetup status: ${_meetup.value.status}');
 
     return Obx(() => Container(
           padding: EdgeInsets.all(20.w),
@@ -548,22 +656,51 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           child: SafeArea(
             child: Row(
               children: [
-                // 如果是组织者，显示取消活动按钮
+                // 如果是组织者，显示聊天按钮 + 取消活动按钮
                 if (_isOrganizer) ...[
+                  // Chat Button - 组织者始终可用
+                  OutlinedButton.icon(
+                    onPressed: _openChat,
+                    icon: Icon(FontAwesomeIcons.message, size: 20.sp),
+                    label: Text(
+                      l10n.chat,
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                      side: BorderSide(
+                        color: Colors.blue,
+                        width: 1.5.w,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  // 取消活动按钮
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _meetup.value.status == 'cancelled' || _meetup.value.isEnded ? null : _cancelMeetup,
+                      onPressed: _meetup.value.status == MeetupStatus.cancelled || _meetup.value.isEnded
+                          ? null
+                          : _cancelMeetup,
                       icon: Icon(FontAwesomeIcons.ban, size: 20.sp),
                       label: Text(
-                        _meetup.value.status == 'cancelled' ? '已取消' : '取消活动',
+                        _meetup.value.status == MeetupStatus.cancelled ? '已取消' : '取消活动',
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _meetup.value.status == 'cancelled' ? AppColors.borderLight : Colors.red,
-                        foregroundColor: _meetup.value.status == 'cancelled' ? AppColors.textSecondary : Colors.white,
+                        backgroundColor:
+                            _meetup.value.status == MeetupStatus.cancelled ? AppColors.borderLight : Colors.red,
+                        foregroundColor:
+                            _meetup.value.status == MeetupStatus.cancelled ? AppColors.textSecondary : Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -601,13 +738,14 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  // Join Button
+                  // Join Button - 使用后端返回的 capacity.isFull 判断
                   Expanded(
                     child: ElevatedButton(
-                      onPressed:
-                          _meetup.value.isEnded || _meetup.value.capacity.isFull || _meetup.value.status == 'cancelled'
-                              ? null
-                              : _toggleJoin,
+                      onPressed: _meetup.value.isEnded ||
+                              (_meetup.value.capacity.isFull && !_isJoined) ||
+                              _meetup.value.status == MeetupStatus.cancelled
+                          ? null
+                          : _toggleJoin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
                         foregroundColor: _isJoined ? AppColors.textSecondary : Colors.white,
@@ -619,11 +757,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         disabledBackgroundColor: AppColors.borderLight,
                       ),
                       child: Text(
-                        _meetup.value.status == 'cancelled'
+                        _meetup.value.status == MeetupStatus.cancelled
                             ? '已取消'
                             : _meetup.value.isEnded
                                 ? l10n.ended
-                                : _meetup.value.capacity.isFull
+                                : (_meetup.value.capacity.isFull && !_isJoined)
                                     ? l10n.full
                                     : _isJoined
                                         ? l10n.leaveMeetup
@@ -757,44 +895,84 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Future<void> _toggleJoin() async {
-    final l10n = AppLocalizations.of(context)!;
-
     try {
       // 判断是加入还是退出
       final isJoining = !_isJoined;
 
-      // 调用 Repository
+      // 使用 MeetupStateController 的方法，已实现单点更新列表
+      bool success;
       if (isJoining) {
-        await _meetupRepository.rsvpToMeetup(_meetup.value.id);
-        print('✅ 成功加入活动: ${_meetup.value.title}');
-        // 更新 Controller 的 rsvpedMeetupIds
-        if (!_meetupController.rsvpedMeetupIds.contains(_meetup.value.id)) {
-          _meetupController.rsvpedMeetupIds.add(_meetup.value.id);
-        }
+        success = await _meetupController.rsvpToMeetup(_meetup.value.id);
+        log('✅ 成功加入活动: ${_meetup.value.title}');
       } else {
-        await _meetupRepository.cancelRsvp(_meetup.value.id);
-        print('✅ 成功退出活动: ${_meetup.value.title}');
-        // 更新 Controller 的 rsvpedMeetupIds
-        _meetupController.rsvpedMeetupIds.remove(_meetup.value.id);
+        success = await _meetupController.cancelRsvp(_meetup.value.id);
+        log('✅ 成功退出活动: ${_meetup.value.title}');
       }
 
-      // API 调用成功后，重新加载活动详情以获取最新数据
-      await _loadEventDetails();
+      if (success) {
+        // 本地单点更新详情页数据，而不是重新加载整个详情
+        final currentMeetup = _meetup.value;
+        final newCount = isJoining
+            ? currentMeetup.capacity.currentAttendees + 1
+            : (currentMeetup.capacity.currentAttendees - 1).clamp(0, currentMeetup.capacity.maxAttendees);
+        final newCapacity = Capacity(
+          maxAttendees: currentMeetup.capacity.maxAttendees,
+          currentAttendees: newCount,
+        );
 
-      // 显示成功消息
-      if (isJoining) {
-        AppToast.success(
-          l10n.joinedSuccessfully,
-          title: l10n.joined,
+        // 创建新的 Meetup 对象，只更新参与人数和加入状态
+        _meetup.value = Meetup(
+          id: currentMeetup.id,
+          title: currentMeetup.title,
+          type: currentMeetup.type,
+          eventType: currentMeetup.eventType,
+          description: currentMeetup.description,
+          location: currentMeetup.location,
+          venue: currentMeetup.venue,
+          schedule: currentMeetup.schedule,
+          capacity: newCapacity,
+          organizer: currentMeetup.organizer,
+          images: currentMeetup.images,
+          attendeeIds: currentMeetup.attendeeIds,
+          status: currentMeetup.status,
+          createdAt: currentMeetup.createdAt,
+          isJoined: isJoining,
+          isOrganizer: currentMeetup.isOrganizer,
         );
-      } else {
-        AppToast.info(
-          l10n.youLeftMeetup,
-          title: l10n.leftMeetup,
-        );
+
+        // 本地更新参与者列表
+        if (isJoining) {
+          // 获取当前用户信息并添加到参与者列表
+          final authController = Get.find<AuthStateController>();
+          final currentUser = authController.currentUser.value;
+          if (currentUser != null) {
+            _participants.add({
+              'id': currentUser.id,
+              'name': currentUser.name,
+              'avatarUrl': currentUser.avatar,
+            });
+          }
+        } else {
+          // 从参与者列表移除当前用户
+          final authController = Get.find<AuthStateController>();
+          final currentUserId = authController.currentUser.value?.id;
+          if (currentUserId != null) {
+            _participants.removeWhere((p) => p['id'] == currentUserId);
+          }
+        }
+
+        // 强制刷新 UI
+        _meetup.refresh();
+
+        // 打印更新后的数据用于调试
+        log('📊 更新后数据 - currentAttendees: ${_meetup.value.capacity.currentAttendees}, participants: ${_participants.length}');
+
+        // 标记数据已变更，返回时通知列表页面更新缓存
+        _hasDataChanged = true;
+        // 无需调用 refreshMeetups()，rsvpToMeetup/cancelRsvp 已经单点更新了列表
       }
     } catch (e) {
-      print('❌ 加入/退出活动失败: $e');
+      log('❌ 加入/退出活动失败: $e');
       AppToast.error(
         _isJoined ? '退出活动失败' : '加入活动失败',
       );
@@ -830,7 +1008,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
     try {
       await meetupRepository.cancelMeetup(_meetup.value.id);
-      print('✅ 成功取消活动: ${_meetup.value.title}');
+      log('✅ 成功取消活动: ${_meetup.value.title}');
 
       // 显示成功消息
       AppToast.success(
@@ -838,17 +1016,41 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         title: '成功',
       );
 
-      // 如果成功,重新加载活动详情以更新 UI
-      await _loadEventDetails();
+      // 本地单点更新状态，而不是重新加载整个详情
+      final currentMeetup = _meetup.value;
+      _meetup.value = Meetup(
+        id: currentMeetup.id,
+        title: currentMeetup.title,
+        type: currentMeetup.type,
+        eventType: currentMeetup.eventType,
+        description: currentMeetup.description,
+        location: currentMeetup.location,
+        venue: currentMeetup.venue,
+        schedule: currentMeetup.schedule,
+        capacity: currentMeetup.capacity,
+        organizer: currentMeetup.organizer,
+        images: currentMeetup.images,
+        attendeeIds: currentMeetup.attendeeIds,
+        status: MeetupStatus.cancelled,
+        createdAt: currentMeetup.createdAt,
+        isJoined: currentMeetup.isJoined,
+        isOrganizer: currentMeetup.isOrganizer,
+      );
+      _meetup.refresh();
+      log('📊 更新后状态 - status: ${_meetup.value.status.value}');
+
+      // 标记数据已变更，返回时通知列表页面更新缓存
+      _hasDataChanged = true;
     } catch (e) {
-      print('❌ 取消活动失败: $e');
+      log('❌ 取消活动失败: $e');
       AppToast.error('取消活动失败');
     }
   }
 
   void _openChat() {
     final l10n = AppLocalizations.of(context)!;
-    if (!_isJoined) {
+    // 组织者或已加入的成员都可以访问聊天室
+    if (!_isJoined && !_isOrganizer) {
       AppToast.warning(
         l10n.joinToAccessChat,
         title: l10n.joinRequired,
@@ -962,9 +1164,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     Get.back(); // 关闭对话框
                     Get.to(() => MemberDetailPage(user: participantUser));
                   },
-                  leading: CircleAvatar(
-                    backgroundImage: (userAvatar != null && userAvatar.isNotEmpty) ? NetworkImage(userAvatar) : null,
-                    child: (userAvatar == null || userAvatar.isEmpty) ? const Icon(FontAwesomeIcons.user) : null,
+                  leading: SafeCircleAvatar(
+                    imageUrl: userAvatar,
+                    radius: 20,
                   ),
                   title: Text(userName, style: TextStyle(fontSize: 14.sp)),
                   subtitle: Text(

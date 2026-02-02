@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:df_admin_mobile/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'base_skeleton.dart';
 
 /// 数据服务页面骨架屏组件 - 匹配实际页面结构
@@ -114,15 +114,13 @@ class _DataServiceListSkeletonState
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SkeletonBox(
-                    shimmerController: shimmerController,
+                  const SkeletonBox(
                     width: 56,
                     height: 56,
                     borderRadius: 12,
                   ),
                   const SizedBox(width: 16),
                   SkeletonBox(
-                    shimmerController: shimmerController,
                     width: 150,
                     height: isMobile ? 32 : 42,
                     borderRadius: 8,
@@ -134,14 +132,12 @@ class _DataServiceListSkeletonState
 
               // 副标题骨架
               SkeletonBox(
-                shimmerController: shimmerController,
                 width: isMobile ? 280 : 400,
                 height: isMobile ? 18 : 22,
                 borderRadius: 4,
               ),
               const SizedBox(height: 8),
               SkeletonBox(
-                shimmerController: shimmerController,
                 width: isMobile ? 240 : 350,
                 height: isMobile ? 18 : 22,
                 borderRadius: 4,
@@ -167,21 +163,21 @@ class _DataServiceListSkeletonState
       // 2x2 网格
       return Container(
         constraints: const BoxConstraints(maxWidth: 600),
-        child: Column(
+        child: const Column(
           children: [
             Row(
               children: [
-                Expanded(child: _buildCompactCardSkeleton()),
-                const SizedBox(width: 12),
-                Expanded(child: _buildCompactCardSkeleton()),
+                Expanded(child: _CompactCardSkeleton()),
+                SizedBox(width: 12),
+                Expanded(child: _CompactCardSkeleton()),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildCompactCardSkeleton()),
-                const SizedBox(width: 12),
-                Expanded(child: _buildCompactCardSkeleton()),
+                Expanded(child: _CompactCardSkeleton()),
+                SizedBox(width: 12),
+                Expanded(child: _CompactCardSkeleton()),
               ],
             ),
           ],
@@ -191,28 +187,19 @@ class _DataServiceListSkeletonState
       // 1x4 横向布局
       return Container(
         constraints: const BoxConstraints(maxWidth: 900),
-        child: Row(
+        child: const Row(
           children: [
-            Expanded(child: _buildCompactCardSkeleton()),
-            const SizedBox(width: 12),
-            Expanded(child: _buildCompactCardSkeleton()),
-            const SizedBox(width: 12),
-            Expanded(child: _buildCompactCardSkeleton()),
-            const SizedBox(width: 12),
-            Expanded(child: _buildCompactCardSkeleton()),
+            Expanded(child: _CompactCardSkeleton()),
+            SizedBox(width: 12),
+            Expanded(child: _CompactCardSkeleton()),
+            SizedBox(width: 12),
+            Expanded(child: _CompactCardSkeleton()),
+            SizedBox(width: 12),
+            Expanded(child: _CompactCardSkeleton()),
           ],
         ),
       );
     }
-  }
-
-  // 紧凑型服务卡片骨架
-  Widget _buildCompactCardSkeleton() {
-    return SkeletonBox(
-      shimmerController: shimmerController,
-      height: 140,
-      borderRadius: 16,
-    );
   }
 
   // 搜索栏骨架
@@ -224,25 +211,22 @@ class _DataServiceListSkeletonState
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.borderLight, width: 1),
       ),
-      child: Row(
+      child: const Row(
         children: [
           SkeletonBox(
-            shimmerController: shimmerController,
             width: 20,
             height: 20,
             borderRadius: 4,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: SkeletonBox(
-              shimmerController: shimmerController,
               height: 14,
               borderRadius: 4,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           SkeletonBox(
-            shimmerController: shimmerController,
             width: 34,
             height: 34,
             borderRadius: 17,
@@ -254,11 +238,10 @@ class _DataServiceListSkeletonState
 
   // 工具栏骨架
   Widget _buildToolbarSkeleton() {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SkeletonBox(
-          shimmerController: shimmerController,
           width: 80,
           height: 14,
           borderRadius: 4,
@@ -266,21 +249,18 @@ class _DataServiceListSkeletonState
         Row(
           children: [
             SkeletonBox(
-              shimmerController: shimmerController,
               width: 40,
               height: 40,
               borderRadius: 8,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             SkeletonBox(
-              shimmerController: shimmerController,
               width: 40,
               height: 40,
               borderRadius: 8,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             SkeletonBox(
-              shimmerController: shimmerController,
               width: 40,
               height: 40,
               borderRadius: 8,
@@ -304,12 +284,11 @@ class _DataServiceListSkeletonState
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          return SkeletonBox(
-            shimmerController: shimmerController,
+          return const SkeletonBox(
             borderRadius: 8,
           );
         },
-        childCount: 6,
+        childCount: isMobile ? 4 : 8,
       ),
     );
   }
@@ -323,20 +302,18 @@ class _DataServiceListSkeletonState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonBox(
-                  shimmerController: shimmerController,
                   width: 180,
                   height: 28,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 SkeletonBox(
-                  shimmerController: shimmerController,
                   width: 120,
-                  height: 14,
+                  height: 16,
                   borderRadius: 4,
                 ),
               ],
@@ -344,15 +321,13 @@ class _DataServiceListSkeletonState
             Row(
               children: [
                 SkeletonBox(
-                  shimmerController: shimmerController,
                   width: isMobile ? 80 : 140,
                   height: isMobile ? 36 : 44,
                   borderRadius: 8,
                 ),
                 if (!isMobile) const SizedBox(width: 12),
                 if (!isMobile)
-                  SkeletonBox(
-                    shimmerController: shimmerController,
+                  const SkeletonBox(
                     width: 140,
                     height: 44,
                     borderRadius: 8,
@@ -374,7 +349,6 @@ class _DataServiceListSkeletonState
               return Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: SkeletonBox(
-                  shimmerController: shimmerController,
                   width: isMobile ? 280 : 340,
                   borderRadius: 12,
                 ),
@@ -386,9 +360,8 @@ class _DataServiceListSkeletonState
         // 移动端的 View all 按钮骨架
         if (isMobile) ...[
           const SizedBox(height: 16),
-          Center(
+          const Center(
             child: SkeletonBox(
-              shimmerController: shimmerController,
               width: 160,
               height: 44,
               borderRadius: 8,
@@ -406,22 +379,20 @@ class _DataServiceListSkeletonState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(5, (index) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+          return const Padding(
+            padding: EdgeInsets.only(bottom: 12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonBox(
-                  shimmerController: shimmerController,
                   width: 24,
                   height: 24,
                   borderRadius: 12,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: SkeletonBox(
-                    shimmerController: shimmerController,
-                    height: isMobile ? 15 : 16,
+                    height: 16,
                     borderRadius: 4,
                   ),
                 ),
@@ -430,6 +401,19 @@ class _DataServiceListSkeletonState
           );
         }),
       ),
+    );
+  }
+}
+
+// 紧凑型服务卡片骨架
+class _CompactCardSkeleton extends StatelessWidget {
+  const _CompactCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SkeletonBox(
+      height: 140,
+      borderRadius: 16,
     );
   }
 }

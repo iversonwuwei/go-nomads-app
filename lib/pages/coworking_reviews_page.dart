@@ -1,19 +1,18 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_review.dart';
-import 'package:df_admin_mobile/features/coworking/domain/repositories/icoworking_review_repository.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/coworking_reviews_page_controller.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_review.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
 
-import 'add_coworking_review_page.dart';
+import 'add_coworking_review/add_coworking_review_page.dart';
 
 /// Coworking Review 列表页面 - 无限滚动
-class CoworkingReviewsPage extends StatefulWidget {
+class CoworkingReviewsPage extends StatelessWidget {
   final String coworkingId;
   final String coworkingName;
 
@@ -23,123 +22,25 @@ class CoworkingReviewsPage extends StatefulWidget {
     required this.coworkingName,
   });
 
-  @override
-  State<CoworkingReviewsPage> createState() => _CoworkingReviewsPageState();
-}
+  String get _tag => 'CoworkingReviewsPage_$coworkingId';
 
-class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
-  final ScrollController _scrollController = ScrollController();
-  final RxList<CoworkingReview> _reviews = <CoworkingReview>[].obs;
-  final RxBool _isLoading = false.obs;
-  final RxBool _isLoadingMore = false.obs; // 加载更多状态
-  final RxBool _hasMore = true.obs;
-  final RxBool _isAdmin = false.obs;
-  int _currentPage = 1;
-  final int _pageSize = 10;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-    // 异步加载数据,不阻塞页面显示
-    Future.microtask(() {
-      _checkAdminStatus();
-      _loadReviews();
-    });
-  }
-
-  /// 检查当前用户是否是管理员
-  Future<void> _checkAdminStatus() async {
-    final tokenService = Get.find<TokenStorageService>();
-    final role = await tokenService.getUserRole();
-    _isAdmin.value = role == 'admin';
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  /// 滚动监听
-  void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
-        !_isLoading.value &&
-        !_isLoadingMore.value &&
-        _hasMore.value) {
-      _loadMore();
-    }
-  }
-
-  /// 首次加载评论
-  Future<void> _loadReviews() async {
-    if (_isLoading.value) return;
-
-    _isLoading.value = true;
-    _currentPage = 1;
-    _hasMore.value = true;
-
-    try {
-      final repository = Get.find<ICoworkingReviewRepository>();
-      final reviews = await repository.getCoworkingReviews(
-        coworkingId: widget.coworkingId,
-        page: _currentPage,
-        pageSize: _pageSize,
+  CoworkingReviewsPageController get _controller {
+    if (!Get.isRegistered<CoworkingReviewsPageController>(tag: _tag)) {
+      Get.put(
+        CoworkingReviewsPageController(
+          coworkingId: coworkingId,
+          coworkingName: coworkingName,
+        ),
+        tag: _tag,
       );
-
-      _reviews.assignAll(reviews);
-      _hasMore.value = reviews.length >= _pageSize;
-    } catch (e) {
-      print('❌ 加载评论失败: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载评论失败: $e')),
-        );
-      }
-    } finally {
-      _isLoading.value = false;
     }
-  }
-
-  /// 加载更多
-  Future<void> _loadMore() async {
-    if (_isLoadingMore.value || !_hasMore.value) return;
-
-    _isLoadingMore.value = true;
-    _currentPage++;
-
-    try {
-      final repository = Get.find<ICoworkingReviewRepository>();
-      final reviews = await repository.getCoworkingReviews(
-        coworkingId: widget.coworkingId,
-        page: _currentPage,
-        pageSize: _pageSize,
-      );
-
-      _reviews.addAll(reviews);
-      _hasMore.value = reviews.length >= _pageSize;
-    } catch (e) {
-      print('❌ 加载更多评论失败: $e');
-      // 加载失败时回退页码
-      _currentPage--;
-    } finally {
-      _isLoadingMore.value = false;
-    }
-  }
-
-  /// 刷新
-  Future<void> _refresh() async {
-    await _loadReviews();
-  }
-
-  /// 格式化日期
-  String _formatDate(DateTime date) {
-    return DateFormat('yyyy-MM-dd').format(date);
+    return Get.find<CoworkingReviewsPageController>(tag: _tag);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final controller = _controller;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -159,7 +60,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
               ),
             ),
             Text(
-              widget.coworkingName,
+              coworkingName,
               style: const TextStyle(
                 fontSize: 12,
                 color: Color(0xFF8E8E93),
@@ -172,15 +73,17 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
           IconButton(
             icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
             onPressed: () async {
-              final result = await Get.to<bool>(
-                () => AddCoworkingReviewPage(
-                  coworkingId: widget.coworkingId,
-                  coworkingName: widget.coworkingName,
+              await NavigationUtil.toWithCallback<bool>(
+                page: () => AddCoworkingReviewPage(
+                  coworkingId: coworkingId,
+                  coworkingName: coworkingName,
                 ),
+                onResult: (result) {
+                  if (result.needsRefresh) {
+                    controller.refresh();
+                  }
+                },
               );
-              if (result == true) {
-                _refresh();
-              }
             },
             tooltip: '添加评论',
           ),
@@ -188,7 +91,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
       ),
       body: Obx(() {
         // 首次加载时显示中间加载指示器
-        if (_isLoading.value && _reviews.isEmpty) {
+        if (controller.isLoading.value && controller.reviews.isEmpty) {
           return const Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
@@ -197,9 +100,9 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
           );
         }
 
-        if (_reviews.isEmpty) {
+        if (controller.reviews.isEmpty) {
           return RefreshIndicator(
-            onRefresh: _refresh,
+            onRefresh: controller.refresh,
             color: const Color(0xFF007AFF),
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -207,7 +110,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: _buildEmptyState(l10n),
+                    child: _buildEmptyState(l10n, controller),
                   ),
                 );
               },
@@ -216,19 +119,19 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
         }
 
         return RefreshIndicator(
-          onRefresh: _refresh,
+          onRefresh: controller.refresh,
           color: const Color(0xFF007AFF),
           child: ListView.builder(
-            controller: _scrollController,
+            controller: controller.scrollController,
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: _reviews.length + (_hasMore.value || _isLoadingMore.value ? 1 : 0),
+            itemCount: controller.reviews.length + (controller.hasMore.value || controller.isLoadingMore.value ? 1 : 0),
             itemBuilder: (context, index) {
-              if (index == _reviews.length) {
+              if (index == controller.reviews.length) {
                 return _buildLoadingIndicator();
               }
 
-              final review = _reviews[index];
-              return _buildReviewCard(review, index, l10n);
+              final review = controller.reviews[index];
+              return _buildReviewCard(review, index, l10n, controller);
             },
           ),
         );
@@ -237,7 +140,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
   }
 
   /// 空状态
-  Widget _buildEmptyState(AppLocalizations l10n) {
+  Widget _buildEmptyState(AppLocalizations l10n, CoworkingReviewsPageController controller) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -277,15 +180,17 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
           const SizedBox(height: 32),
           TextButton(
             onPressed: () async {
-              final result = await Get.to<bool>(
-                () => AddCoworkingReviewPage(
-                  coworkingId: widget.coworkingId,
-                  coworkingName: widget.coworkingName,
+              await NavigationUtil.toWithCallback<bool>(
+                page: () => AddCoworkingReviewPage(
+                  coworkingId: coworkingId,
+                  coworkingName: coworkingName,
                 ),
+                onResult: (result) {
+                  if (result.needsRefresh) {
+                    controller.refresh();
+                  }
+                },
               );
-              if (result == true) {
-                _refresh();
-              }
             },
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xFF007AFF),
@@ -327,10 +232,11 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
     CoworkingReview review,
     int index,
     AppLocalizations l10n,
+    CoworkingReviewsPageController controller,
   ) {
     return Obx(() {
       // 只有管理员才能滑动删除
-      if (_isAdmin.value) {
+      if (controller.isAdmin.value) {
         return Dismissible(
           key: Key(review.id),
           direction: DismissDirection.endToStart,
@@ -384,18 +290,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                 ) ??
                 false;
           },
-          onDismissed: (direction) async {
-            try {
-              final repository = Get.find<ICoworkingReviewRepository>();
-              await repository.deleteReview(review.id);
-              _reviews.removeAt(index);
-              AppToast.success('Review deleted');
-            } catch (e) {
-              AppToast.error('Failed to delete: $e');
-              // 删除失败，刷新列表恢复
-              _refresh();
-            }
-          },
+          onDismissed: (direction) => controller.deleteReview(review.id, index),
           background: Container(
             color: const Color(0xFFFF3B30),
             alignment: Alignment.centerRight,
@@ -406,12 +301,12 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
               size: 28,
             ),
           ),
-          child: _buildReviewCardContent(review, l10n),
+          child: _buildReviewCardContent(review, l10n, controller),
         );
       }
 
       // 非管理员直接显示卡片
-      return _buildReviewCardContent(review, l10n);
+      return _buildReviewCardContent(review, l10n, controller);
     });
   }
 
@@ -419,6 +314,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
   Widget _buildReviewCardContent(
     CoworkingReview review,
     AppLocalizations l10n,
+    CoworkingReviewsPageController controller,
   ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -442,31 +338,26 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                 Row(
                   children: [
                     // 用户头像
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF2F2F7),
-                        shape: BoxShape.circle,
-                        image: review.userAvatar != null && review.userAvatar!.isNotEmpty
-                            ? DecorationImage(
-                                image: NetworkImage(review.userAvatar!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
+                    SafeCircleAvatar(
+                      imageUrl: review.userAvatar,
+                      radius: 20,
+                      backgroundColor: const Color(0xFFF2F2F7),
+                      placeholder: Text(
+                        review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
+                        style: const TextStyle(
+                          color: Color(0xFF8E8E93),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      child: review.userAvatar == null || review.userAvatar!.isEmpty
-                          ? Center(
-                              child: Text(
-                                review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
-                                style: const TextStyle(
-                                  color: Color(0xFF8E8E93),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            )
-                          : null,
+                      errorWidget: Text(
+                        review.username.isNotEmpty ? review.username.substring(0, 1).toUpperCase() : '?',
+                        style: const TextStyle(
+                          color: Color(0xFF8E8E93),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     // 用户名和访问日期
@@ -485,7 +376,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                           ),
                           if (review.visitDate != null)
                             Text(
-                              'Visited ${_formatDate(review.visitDate!)}',
+                              'Visited ${controller.formatDate(review.visitDate!)}',
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFF8E8E93),
@@ -593,9 +484,9 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                           color: const Color(0xFFE8F5E9),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(
                               FontAwesomeIcons.circleCheck,
                               size: 12,
@@ -624,9 +515,9 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                           color: const Color(0xFFFFF4E5),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(
                               FontAwesomeIcons.clock,
                               size: 12,
@@ -648,7 +539,7 @@ class _CoworkingReviewsPageState extends State<CoworkingReviewsPage> {
                     const Spacer(),
                     // 发布时间
                     Text(
-                      _formatDate(review.createdAt),
+                      controller.formatDate(review.createdAt),
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFFAEAEB2),

@@ -1,9 +1,13 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_application.dart';
-import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
-import 'package:df_admin_mobile/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/moderator/domain/entities/moderator_application.dart';
+import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
+import 'package:go_nomads_app/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -18,12 +22,10 @@ class ModeratorApplicationDetailPage extends StatefulWidget {
   });
 
   @override
-  State<ModeratorApplicationDetailPage> createState() =>
-      _ModeratorApplicationDetailPageState();
+  State<ModeratorApplicationDetailPage> createState() => _ModeratorApplicationDetailPageState();
 }
 
-class _ModeratorApplicationDetailPageState
-    extends State<ModeratorApplicationDetailPage> {
+class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDetailPage> {
   late IModeratorApplicationRepository _repository;
   ModeratorApplication? _application;
   bool _isLoading = true;
@@ -33,8 +35,8 @@ class _ModeratorApplicationDetailPageState
   @override
   void initState() {
     super.initState();
-    print('📝 ModeratorApplicationDetailPage initState');
-    print('   applicationId: "${widget.applicationId}"');
+    log('📝 ModeratorApplicationDetailPage initState');
+    log('   applicationId: "${widget.applicationId}"');
     _initRepository();
     _loadApplication();
   }
@@ -47,23 +49,22 @@ class _ModeratorApplicationDetailPageState
   }
 
   Future<void> _loadApplication() async {
-    print('📝 _loadApplication called with id: "${widget.applicationId}"');
-    
+    log('📝 _loadApplication called with id: "${widget.applicationId}"');
+
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final application =
-          await _repository.getApplicationById(widget.applicationId);
-      print('📝 Application loaded: ${application.id}');
+      final application = await _repository.getApplicationById(widget.applicationId);
+      log('📝 Application loaded: ${application.id}');
       setState(() {
         _application = application;
         _isLoading = false;
       });
     } catch (e) {
-      print('❌ _loadApplication error: $e');
+      log('❌ _loadApplication error: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -96,12 +97,12 @@ class _ModeratorApplicationDetailPageState
 
   Future<void> _handleReject() async {
     String? rejectionReason;
-    
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         final reasonController = TextEditingController();
-        
+
         return AlertDialog(
           title: const Text('拒绝申请'),
           content: SizedBox(
@@ -188,8 +189,7 @@ class _ModeratorApplicationDetailPageState
     }
   }
 
-  Future<void> _processApplication(String action,
-      {String? rejectionReason}) async {
+  Future<void> _processApplication(String action, {String? rejectionReason}) async {
     setState(() => _isProcessing = true);
 
     try {
@@ -225,9 +225,9 @@ class _ModeratorApplicationDetailPageState
     );
   }
 
-  Widget _buildBody() { 
+  Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const UserProfileSkeleton();
     }
 
     if (_error != null) {
@@ -400,15 +400,11 @@ class _ModeratorApplicationDetailPageState
             const SizedBox(height: 12),
             Row(
               children: [
-                CircleAvatar(
+                SafeCircleAvatar(
+                  imageUrl: app.userAvatar,
                   radius: 28,
-                  backgroundImage: app.userAvatar != null &&
-                          app.userAvatar!.isNotEmpty
-                      ? NetworkImage(app.userAvatar!)
-                      : null,
-                  child: app.userAvatar == null || app.userAvatar!.isEmpty
-                      ? const FaIcon(FontAwesomeIcons.user, size: 24)
-                      : null,
+                  placeholder: const FaIcon(FontAwesomeIcons.user, size: 24),
+                  errorWidget: const FaIcon(FontAwesomeIcons.user, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -520,8 +516,7 @@ class _ModeratorApplicationDetailPageState
                 app.reason.isNotEmpty ? app.reason : '未填写申请理由',
                 style: TextStyle(
                   fontSize: 15,
-                  color:
-                      app.reason.isNotEmpty ? Colors.black87 : Colors.grey[500],
+                  color: app.reason.isNotEmpty ? Colors.black87 : Colors.grey[500],
                   height: 1.5,
                 ),
               ),

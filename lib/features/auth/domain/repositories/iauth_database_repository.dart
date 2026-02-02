@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_token.dart';
-import 'package:df_admin_mobile/features/auth/domain/entities/auth_user.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_token.dart';
+import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
 
 /// Token 数据库数据
 class TokenDatabaseData {
@@ -9,6 +9,7 @@ class TokenDatabaseData {
   final String refreshToken;
   final String tokenType;
   final int expiresIn;
+  final DateTime? expiresAt;
   final String userName;
   final String userEmail;
 
@@ -18,9 +19,16 @@ class TokenDatabaseData {
     required this.refreshToken,
     required this.tokenType,
     required this.expiresIn,
+    this.expiresAt,
     required this.userName,
     required this.userEmail,
   });
+
+  /// 检查 token 是否已过期
+  bool get isExpired {
+    if (expiresAt == null) return true; // 没有过期时间视为需要刷新
+    return DateTime.now().isAfter(expiresAt!);
+  }
 }
 
 /// 认证数据库仓储接口
@@ -57,6 +65,13 @@ abstract class IAuthDatabaseRepository {
   ///
   /// 返回: true=已过期, false=未过期
   Future<Result<bool>> isTokenExpired(String userId);
+
+  /// 更新指定用户的 Token
+  ///
+  /// 参数:
+  /// - userId: 用户ID
+  /// - token: 新的认证令牌
+  Future<Result<void>> updateTokenByUserId(String userId, AuthToken token);
 
   /// 删除所有 Token
   Future<Result<void>> deleteAllTokens();

@@ -1,6 +1,7 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer';
 
-import 'package:df_admin_mobile/config/api_config.dart';
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Token 持久化服务
 /// 使用 SharedPreferences 保存与清除认证信息
@@ -14,6 +15,10 @@ class TokenStorageService {
   static const String _userNameKey = 'user_name';
   static const String _userEmailKey = 'user_email';
   static const String _tokenExpiresAtKey = 'token_expires_at';
+
+  // 记住我相关的 key
+  static const String _rememberMeKey = 'remember_me';
+  static const String _savedEmailKey = 'saved_email';
 
   /// 保存访问令牌和刷新令牌
   Future<void> saveTokens({
@@ -97,7 +102,7 @@ class TokenStorageService {
     try {
       return DateTime.parse(expiresAtString);
     } catch (e) {
-      print('⚠️ 解析 token 过期时间失败: $e');
+      log('⚠️ 解析 token 过期时间失败: $e');
       return null;
     }
   }
@@ -106,6 +111,18 @@ class TokenStorageService {
   Future<bool> isAdmin() async {
     final role = await getUserRole();
     return role == 'admin';
+  }
+
+  /// 检查用户是否为版主
+  Future<bool> isModerator() async {
+    final role = await getUserRole();
+    return role == 'moderator' || role == 'admin';
+  }
+
+  /// 检查用户是否为管理员或版主
+  Future<bool> isAdminOrModerator() async {
+    final role = await getUserRole();
+    return role == 'admin' || role == 'moderator';
   }
 
   /// 清除本地保存的令牌和用户信息
@@ -118,5 +135,44 @@ class TokenStorageService {
     await prefs.remove(_userIdKey);
     await prefs.remove(_userNameKey);
     await prefs.remove(_userEmailKey);
+  }
+
+  // ==================== 记住我功能 ====================
+
+  /// 保存「记住我」状态和邮箱
+  Future<void> saveRememberMe({
+    required bool rememberMe,
+    String? email,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_rememberMeKey, rememberMe);
+
+    if (rememberMe && email != null && email.isNotEmpty) {
+      await prefs.setString(_savedEmailKey, email);
+      log('✅ 已保存登录邮箱: $email');
+    } else {
+      // 不记住时清除保存的邮箱
+      await prefs.remove(_savedEmailKey);
+      log('🗑️ 已清除保存的登录邮箱');
+    }
+  }
+
+  /// 读取「记住我」状态
+  Future<bool> getRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_rememberMeKey) ?? false;
+  }
+
+  /// 读取保存的邮箱
+  Future<String?> getSavedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_savedEmailKey);
+  }
+
+  /// 清除「记住我」数据
+  Future<void> clearRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_rememberMeKey);
+    await prefs.remove(_savedEmailKey);
   }
 }

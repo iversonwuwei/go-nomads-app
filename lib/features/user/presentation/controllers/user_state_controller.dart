@@ -1,35 +1,35 @@
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:df_admin_mobile/features/interest/presentation/controllers/interest_state_controller.dart';
-import 'package:df_admin_mobile/features/skill/presentation/controllers/skill_state_controller.dart';
-import 'package:df_admin_mobile/features/user/application/use_cases/favorite_city_use_cases.dart';
-import 'package:df_admin_mobile/features/user/application/use_cases/user_use_cases.dart'
-    as user_use_cases;
-import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:get/get.dart';
+import 'dart:developer';
 
-/// 用户状态控制器 (重构版 - DDD)
+import 'package:get/get.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:go_nomads_app/features/skill/presentation/controllers/skill_state_controller.dart';
+import 'package:go_nomads_app/features/travel_history/presentation/controllers/travel_history_controller.dart';
+import 'package:go_nomads_app/features/user/application/use_cases/favorite_city_use_cases.dart';
+import 'package:go_nomads_app/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
+import 'package:go_nomads_app/features/user/domain/entities/nomad_stats.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+
+/// 用户状态控制器 V2 (优化版)
 ///
-/// 职责:
-/// - 管理UI状态
-/// - 调用Use Cases
-/// - 处理UI交互
+/// 改进点：
+/// 1. 使用 DataEventBus 通知其他组件用户数据的变更
+/// 2. 自动响应其他组件的数据变更事件
+/// 3. 智能缓存策略
+/// 4. 保留所有原有功能
 class UserStateController extends GetxController {
-  // Use Cases注入 - 基础用户操作
+  // ==================== Dependencies ====================
   final user_use_cases.GetUserProfileUseCase _getCurrentUserUseCase;
   final user_use_cases.GetUserUseCase _getUserUseCase;
   final user_use_cases.UpdateUserUseCase _updateUserUseCase;
-
-  // Use Cases注入 - 收藏城市
   final AddFavoriteCityUseCase _addFavoriteCityUseCase;
   final RemoveFavoriteCityUseCase _removeFavoriteCityUseCase;
   final IsCityFavoritedUseCase _isCityFavoritedUseCase;
   final GetFavoriteCityIdsUseCase _getFavoriteCityIdsUseCase;
   final ToggleFavoriteCityUseCase _toggleFavoriteCityUseCase;
-
-  // Use Cases注入 - 用户统计数据
   final user_use_cases.GetCurrentUserStatsUseCase _getCurrentUserStatsUseCase;
 
   UserStateController({
@@ -52,81 +52,205 @@ class UserStateController extends GetxController {
         _toggleFavoriteCityUseCase = toggleFavoriteCityUseCase,
         _getCurrentUserStatsUseCase = getCurrentUserStatsUseCase;
 
-  // 状态
+  // ==================== 状态 ====================
   final Rx<User?> currentUser = Rx<User?>(null);
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
-
-  // 收藏城市状态
   final RxSet<String> favoriteCityIds = <String>{}.obs;
-
-  // 用户统计数据状态
   final Rx<NomadStats?> nomadStats = Rx<NomadStats?>(null);
   final RxBool isLoadingStats = false.obs;
-
-  // 编辑模式状态 (从 UserProfileController 合并)
   final RxBool isEditMode = false.obs;
-
-  // 登录状态变化通知 (用于监听)
   final RxBool loginStateChanged = false.obs;
+
+  // 缓存控制
+  DateTime? _lastUserLoadTime;
+  DateTime? _lastStatsLoadTime;
+  DateTime? _lastFavoritesLoadTime;
+  static const _cacheDuration = Duration(minutes: 5);
+
+  // ==================== Getters ====================
+  bool get isLoggedIn => currentUser.value != null;
+  bool get hasCompletedProfile => currentUser.value?.hasCompletedProfile ?? false;
+  bool get isActiveNomad => currentUser.value?.isActiveNomad ?? false;
+  int get experienceLevel => currentUser.value?.experienceLevel ?? 1;
+
+  // ==================== 生命周期 ====================
 
   @override
   void onInit() {
     super.onInit();
-    // 延迟初始化，等待 AuthStateController 准备好
+    log('🎬 UserStateController 初始化...');
     Future.microtask(() => _initializeIfLoggedIn());
-
-    // 监听登录状态变化
     _setupAuthStateListener();
+    _setupDataChangeListeners();
   }
 
-  /// 设置认证状态监听器
+  @override
+  void onClose() {
+    log('👋 UserStateController 关闭');
+    currentUser.value = null;
+    isLoading.value = false;
+    errorMessage.value = '';
+    favoriteCityIds.clear();
+    nomadStats.value = null;
+    isLoadingStats.value = false;
+    isEditMode.value = false;
+    loginStateChanged.value = false;
+    super.onClose();
+  }
+
+  // ==================== 初始化方法 ====================
+
   void _setupAuthStateListener() {
     try {
       final authController = Get.find<AuthStateController>();
-
-      // 监听认证状态变化
       ever(authController.isAuthenticated, (isAuthenticated) {
-        print('🔔 UserStateController: 认证状态变化 -> $isAuthenticated');
-
+        log('🔔 UserStateController: 认证状态变化 -> $isAuthenticated');
         if (isAuthenticated) {
-          // 登录成功，加载用户数据
-          print('✅ 用户已登录，加载用户数据...');
+          log('✅ 用户已登录，加载用户数据...');
           loadCurrentUser();
           loadFavoriteCityIds();
-          loadNomadStats(); // 加载统计数据
+          loadNomadStats();
+          _syncTravelHistory();
         } else {
-          // 退出登录，清除用户数据
-          print('⚠️ 用户已退出，清除用户数据');
-          currentUser.value = null;
-          favoriteCityIds.clear();
-          nomadStats.value = null;
+          log('⚠️ 用户已退出，清除用户数据');
+          _clearAllData();
         }
       });
     } catch (e) {
-      print('⚠️ AuthStateController 未就绪，无法设置监听器');
+      log('⚠️ AuthStateController 未就绪，无法设置监听器');
     }
   }
 
-  /// 如果用户已登录，则初始化数据
+  void _setupDataChangeListeners() {
+    // 监听用户相关数据变更
+    DataEventBus.instance.on('user', _handleUserDataChanged);
+    DataEventBus.instance.on('user_profile', _handleUserDataChanged);
+    DataEventBus.instance.on('favorite_city', _handleFavoriteChanged);
+    // 同时监听 city_favorite 事件（由城市详情页发送）
+    DataEventBus.instance.on('city_favorite', _handleFavoriteChanged);
+    DataEventBus.instance.on('skill', _handleSkillInterestChanged);
+    DataEventBus.instance.on('interest', _handleSkillInterestChanged);
+    // 监听 meetup 变更（影响用户统计数据）
+    DataEventBus.instance.on('meetup', _handleMeetupChanged);
+    // 监听 meetup RSVP 变更（加入/退出活动）
+    DataEventBus.instance.on('meetup_rsvp', _handleMeetupRsvpChanged);
+  }
+
+  void _handleUserDataChanged(DataChangedEvent event) {
+    log('🔔 收到用户数据变更通知: ${event.changeType}');
+    if (event.entityId == currentUser.value?.id || event.entityId == null) {
+      _invalidateUserCache();
+      loadCurrentUser(forceRefresh: true);
+    }
+  }
+
+  void _handleFavoriteChanged(DataChangedEvent event) {
+    log('🔔 收到收藏数据变更通知: ${event.changeType}');
+    _invalidateFavoritesCache();
+    loadFavoriteCityIds(forceRefresh: true);
+    // 收藏变更也会影响统计数据
+    _invalidateStatsCache();
+    loadNomadStats(forceRefresh: true);
+  }
+
+  void _handleSkillInterestChanged(DataChangedEvent event) {
+    log('🔔 收到技能/兴趣变更通知');
+    // 技能或兴趣变更后刷新用户数据
+    _invalidateUserCache();
+    loadCurrentUser(forceRefresh: true);
+  }
+
+  void _handleMeetupChanged(DataChangedEvent event) {
+    log('🔔 收到 Meetup 变更通知: ${event.changeType}');
+    // Meetup 创建/删除会影响用户统计数据
+    if (event.changeType == DataChangeType.created || event.changeType == DataChangeType.deleted) {
+      _invalidateStatsCache();
+      // 立即重新加载统计数据
+      loadNomadStats(forceRefresh: true);
+    }
+  }
+
+  void _handleMeetupRsvpChanged(DataChangedEvent event) {
+    log('🔔 收到 Meetup RSVP 变更通知: ${event.changeType}');
+    // 加入/退出活动会影响用户统计数据
+    _invalidateStatsCache();
+    // 立即重新加载统计数据
+    loadNomadStats(forceRefresh: true);
+  }
+
+  void _invalidateStatsCache() {
+    _lastStatsLoadTime = null;
+  }
+
   void _initializeIfLoggedIn() {
     try {
       final authController = Get.find<AuthStateController>();
       if (authController.isAuthenticated.value) {
-        // ❌ 不在这里自动加载任何需要 API 请求的数据
-        // 避免 token 过期时发送 401 请求并触发全局跳转登录
-        // 由各个页面根据需要手动调用：
-        // - loadCurrentUser() - 加载用户信息
-        // - loadFavoriteCityIds() - 加载收藏列表
+        // 延迟加载，避免 token 过期时立即发送请求
       }
     } catch (e) {
-      // AuthStateController 未初始化，跳过
-      print('⚠️ AuthStateController 未就绪，跳过用户数据加载');
+      log('⚠️ AuthStateController 未就绪，跳过用户数据加载');
     }
   }
 
+  Future<void> _syncTravelHistory() async {
+    try {
+      if (Get.isRegistered<TravelHistoryController>()) {
+        final travelHistoryController = Get.find<TravelHistoryController>();
+        await travelHistoryController.syncWithBackend();
+        log('✅ 旅行历史数据同步完成');
+      }
+    } catch (e) {
+      log('⚠️ 同步旅行历史失败: $e');
+    }
+  }
+
+  // ==================== 缓存控制 ====================
+
+  bool _isUserCacheValid() {
+    if (_lastUserLoadTime == null) return false;
+    return DateTime.now().difference(_lastUserLoadTime!) < _cacheDuration;
+  }
+
+  bool _isStatsCacheValid() {
+    if (_lastStatsLoadTime == null) return false;
+    return DateTime.now().difference(_lastStatsLoadTime!) < _cacheDuration;
+  }
+
+  bool _isFavoritesCacheValid() {
+    if (_lastFavoritesLoadTime == null) return false;
+    return DateTime.now().difference(_lastFavoritesLoadTime!) < _cacheDuration;
+  }
+
+  void _invalidateUserCache() {
+    _lastUserLoadTime = null;
+  }
+
+  void _invalidateFavoritesCache() {
+    _lastFavoritesLoadTime = null;
+  }
+
+  void _clearAllData() {
+    currentUser.value = null;
+    favoriteCityIds.clear();
+    nomadStats.value = null;
+    _lastUserLoadTime = null;
+    _lastStatsLoadTime = null;
+    _lastFavoritesLoadTime = null;
+    loginStateChanged.toggle();
+  }
+
+  // ==================== 用户数据加载 ====================
+
   /// 加载当前用户信息
-  Future<void> loadCurrentUser() async {
+  Future<void> loadCurrentUser({bool forceRefresh = false}) async {
+    // 检查缓存
+    if (!forceRefresh && _isUserCacheValid() && currentUser.value != null) {
+      log('📦 使用缓存的用户数据');
+      return;
+    }
+
     isLoading.value = true;
     errorMessage.value = '';
 
@@ -135,23 +259,17 @@ class UserStateController extends GetxController {
     result.fold(
       onSuccess: (user) {
         currentUser.value = user;
-        // 触发登录状态变化通知
+        _lastUserLoadTime = DateTime.now();
         loginStateChanged.toggle();
+        log('✅ 用户数据加载成功: ${user.name}');
       },
       onFailure: (exception) {
         errorMessage.value = exception.message;
-
-        // 如果是未授权错误，清除用户数据并静默处理
         if (exception is UnauthorizedException) {
-          print('⚠️ 加载用户数据失败: Token 无效或过期');
-          print('   清除用户状态...');
-          currentUser.value = null; // 清除无效的用户数据
-          favoriteCityIds.clear();
-          loginStateChanged.toggle();
-          // 静默处理,不显示Snackbar
+          log('⚠️ 加载用户数据失败: Token 无效或过期');
+          _clearAllData();
           _handleException(exception, silent: true);
         } else {
-          // 其他错误显示提示
           _handleException(exception, silent: false);
         }
       },
@@ -160,23 +278,33 @@ class UserStateController extends GetxController {
     isLoading.value = false;
   }
 
-  /// 加载用户资料 (从 UserProfileController 合并的别名方法)
+  /// 加载用户资料 (别名方法)
   Future<void> loadUserProfile() => loadCurrentUser();
 
-  /// 加载当前用户的游牧统计数据
-  Future<void> loadNomadStats() async {
+  /// 刷新用户信息
+  @override
+  Future<void> refresh() => loadCurrentUser(forceRefresh: true);
+
+  /// 加载用户统计数据
+  Future<void> loadNomadStats({bool forceRefresh = false}) async {
+    if (!forceRefresh && _isStatsCacheValid() && nomadStats.value != null) {
+      log('📦 使用缓存的统计数据');
+      return;
+    }
+
     isLoadingStats.value = true;
+    log('📊 开始加载用户统计数据 (forceRefresh: $forceRefresh)');
 
     final result = await _getCurrentUserStatsUseCase(const NoParams());
 
     result.fold(
       onSuccess: (stats) {
         nomadStats.value = stats;
-        print('✅ 成功加载用户统计数据');
+        _lastStatsLoadTime = DateTime.now();
+        log('✅ 成功加载用户统计数据: countries=${stats.countriesVisited}, cities=${stats.citiesLived}, meetups=${stats.meetupsCreated}, favorites=${stats.favoriteCitiesCount}');
       },
       onFailure: (exception) {
-        print('⚠️ 加载用户统计数据失败: ${exception.message}');
-        // 如果加载失败，使用空的统计数据
+        log('⚠️ 加载用户统计数据失败: ${exception.message}');
         if (currentUser.value != null) {
           nomadStats.value = NomadStats.empty(currentUser.value!.id);
         }
@@ -186,9 +314,26 @@ class UserStateController extends GetxController {
     isLoadingStats.value = false;
   }
 
-  /// 切换编辑模式 (从 UserProfileController 合并)
+  // ==================== 用户操作 ====================
+
   void toggleEditMode() {
     isEditMode.value = !isEditMode.value;
+  }
+
+  /// 只更新头像URL
+  Future<void> updateAvatarOnly(String avatarUrl) async {
+    final user = currentUser.value;
+    if (user == null) return;
+
+    await _updateUserUseCase(user_use_cases.UpdateUserParams(
+      userId: user.id,
+      updates: {'avatarUrl': avatarUrl},
+    ));
+
+    currentUser.value = user.copyWith(avatarUrl: avatarUrl);
+
+    // 通知其他组件
+    _notifyUserChanged();
   }
 
   /// 更新用户信息
@@ -212,7 +357,12 @@ class UserStateController extends GetxController {
     return result.fold(
       onSuccess: (updatedUser) {
         currentUser.value = updatedUser;
+        _lastUserLoadTime = DateTime.now();
         _showSnackbar('成功', '用户信息已更新');
+
+        // 通知其他组件
+        _notifyUserChanged();
+
         return true;
       },
       onFailure: (exception) {
@@ -223,18 +373,11 @@ class UserStateController extends GetxController {
     );
   }
 
-  /// 刷新用户信息
-  @override
-  Future<void> refresh() => loadCurrentUser();
-
-  /// 按ID获取用户信息（用于查看其他用户资料）
+  /// 按ID获取用户信息
   Future<User?> getUserById(String userId) async {
-    if (userId.isEmpty) {
-      return null;
-    }
+    if (userId.isEmpty) return null;
 
-    final result =
-        await _getUserUseCase(user_use_cases.GetUserParams(userId: userId));
+    final result = await _getUserUseCase(user_use_cases.GetUserParams(userId: userId));
 
     return result.fold(
       onSuccess: (user) => user,
@@ -247,40 +390,40 @@ class UserStateController extends GetxController {
 
   /// 清除用户状态
   void clearUser() {
-    currentUser.value = null;
-    errorMessage.value = '';
-    favoriteCityIds.clear();
-    nomadStats.value = null;
+    _clearAllData();
     isEditMode.value = false;
-    // 触发登录状态变化通知
-    loginStateChanged.toggle();
   }
 
-  // ==================== 收藏城市相关方法 ====================
+  // ==================== 收藏城市 ====================
 
   /// 加载用户收藏的城市ID列表
-  Future<void> loadFavoriteCityIds() async {
+  Future<void> loadFavoriteCityIds({bool forceRefresh = false}) async {
+    if (!forceRefresh && _isFavoritesCacheValid() && favoriteCityIds.isNotEmpty) {
+      log('📦 使用缓存的收藏城市数据');
+      return;
+    }
+
     final result = await _getFavoriteCityIdsUseCase(const NoParams());
 
     result.fold(
       onSuccess: (ids) {
         favoriteCityIds.clear();
         favoriteCityIds.addAll(ids);
+        _lastFavoritesLoadTime = DateTime.now();
+        log('✅ 收藏城市加载成功: ${ids.length} 个');
       },
       onFailure: (exception) {
-        print('加载收藏列表失败: ${exception.message}');
+        log('加载收藏列表失败: ${exception.message}');
       },
     );
   }
 
   /// 检查城市是否已收藏
   Future<bool> isCityFavorited(String cityId) async {
-    // 先从本地缓存检查
     if (favoriteCityIds.contains(cityId)) {
       return true;
     }
 
-    // 从服务器检查
     final result = await _isCityFavoritedUseCase(IsCityFavoritedParams(cityId));
 
     return result.fold(
@@ -303,6 +446,9 @@ class UserStateController extends GetxController {
         if (success) {
           favoriteCityIds.add(cityId);
           _showSnackbar('成功', '已添加到收藏');
+
+          // 通知其他组件
+          _notifyFavoriteChanged(cityId, true);
         }
         return success;
       },
@@ -315,14 +461,16 @@ class UserStateController extends GetxController {
 
   /// 移除收藏城市
   Future<bool> removeFavoriteCity(String cityId) async {
-    final result =
-        await _removeFavoriteCityUseCase(RemoveFavoriteCityParams(cityId));
+    final result = await _removeFavoriteCityUseCase(RemoveFavoriteCityParams(cityId));
 
     return result.fold(
       onSuccess: (success) {
         if (success) {
           favoriteCityIds.remove(cityId);
           _showSnackbar('成功', '已取消收藏');
+
+          // 通知其他组件
+          _notifyFavoriteChanged(cityId, false);
         }
         return success;
       },
@@ -335,17 +483,20 @@ class UserStateController extends GetxController {
 
   /// 切换收藏状态
   Future<bool> toggleFavoriteCity(String cityId) async {
-    final result =
-        await _toggleFavoriteCityUseCase(ToggleFavoriteCityParams(cityId));
+    final result = await _toggleFavoriteCityUseCase(ToggleFavoriteCityParams(cityId));
 
     return result.fold(
       onSuccess: (success) {
         if (success) {
-          if (favoriteCityIds.contains(cityId)) {
-            favoriteCityIds.remove(cityId);
-          } else {
+          final wasAdded = !favoriteCityIds.contains(cityId);
+          if (wasAdded) {
             favoriteCityIds.add(cityId);
+          } else {
+            favoriteCityIds.remove(cityId);
           }
+
+          // 通知其他组件
+          _notifyFavoriteChanged(cityId, wasAdded);
         }
         return success;
       },
@@ -356,7 +507,92 @@ class UserStateController extends GetxController {
     );
   }
 
-  /// 统一异常处理
+  // ==================== 技能和兴趣管理 ====================
+
+  /// 移除用户技能（乐观更新）
+  Future<bool> removeSkill(String skillId) async {
+    final user = currentUser.value;
+    if (user == null) {
+      errorMessage.value = '用户未登录';
+      return false;
+    }
+
+    try {
+      final skillController = Get.find<SkillStateController>();
+      final success = await skillController.removeUserSkill(user.id, skillId);
+
+      if (success) {
+        // 乐观更新：立即从本地状态移除，无需等待网络刷新
+        final updatedSkills = user.skills.where((s) => s.id != skillId).toList();
+        currentUser.value = user.copyWith(skills: updatedSkills);
+        log('✅ 技能已从本地状态移除: $skillId');
+      }
+
+      return success;
+    } catch (e) {
+      errorMessage.value = '移除技能失败: $e';
+      AppToast.error('移除技能失败');
+      return false;
+    }
+  }
+
+  /// 移除用户兴趣（乐观更新）
+  Future<bool> removeInterest(String interestId) async {
+    final user = currentUser.value;
+    if (user == null) {
+      errorMessage.value = '用户未登录';
+      return false;
+    }
+
+    try {
+      final interestController = Get.find<InterestStateController>();
+      final success = await interestController.removeUserInterest(user.id, interestId);
+
+      if (success) {
+        // 乐观更新：立即从本地状态移除，无需等待网络刷新
+        final updatedInterests = user.interests.where((i) => i.id != interestId).toList();
+        currentUser.value = user.copyWith(interests: updatedInterests);
+        log('✅ 兴趣已从本地状态移除: $interestId');
+      }
+
+      return success;
+    } catch (e) {
+      errorMessage.value = '移除兴趣失败: $e';
+      AppToast.error('移除兴趣失败');
+      return false;
+    }
+  }
+
+  // ==================== 事件通知 ====================
+
+  void _notifyUserChanged() {
+    DataEventBus.instance.emit(DataChangedEvent(
+      entityType: 'user',
+      entityId: currentUser.value?.id,
+      version: DateTime.now().millisecondsSinceEpoch,
+      changeType: DataChangeType.updated,
+    ));
+  }
+
+  void _notifyFavoriteChanged(String cityId, bool isAdded) {
+    DataEventBus.instance.emit(DataChangedEvent(
+      entityType: 'favorite_city',
+      entityId: cityId,
+      version: DateTime.now().millisecondsSinceEpoch,
+      changeType: isAdded ? DataChangeType.created : DataChangeType.deleted,
+    ));
+
+    // 同时通知城市列表可能需要更新
+    DataEventBus.instance.emit(DataChangedEvent(
+      entityType: 'city',
+      entityId: cityId,
+      version: DateTime.now().millisecondsSinceEpoch,
+      changeType: DataChangeType.updated,
+    ));
+  }
+
+  // ==================== 异常处理 ====================
+
   void _handleException(DomainException exception, {bool silent = false}) {
     String title = '错误';
     String message = exception.message;
@@ -364,7 +600,6 @@ class UserStateController extends GetxController {
     switch (exception) {
       case UnauthorizedException():
         title = '未授权';
-        // 可以在这里触发跳转到登录页
         break;
       case NetworkException():
         title = '网络错误';
@@ -379,102 +614,16 @@ class UserStateController extends GetxController {
         title = '未知错误';
     }
 
-    // 如果是静默模式，或者 Get context 还不可用，则不显示 Snackbar
     if (!silent) {
       try {
         _showSnackbar(title, message);
       } catch (e) {
-        print('⚠️ 显示 Snackbar 失败: $e');
-        print('   错误: $title - $message');
+        log('⚠️ 显示 Snackbar 失败: $e');
+        log('   错误: $title - $message');
       }
     }
   }
 
-  // ==================== 技能和兴趣管理方法 ====================
-
-  /// 移除用户技能
-  /// 这是一个便捷方法,委托给 SkillStateController
-  Future<bool> removeSkill(String skillId) async {
-    final user = currentUser.value;
-    if (user == null) {
-      errorMessage.value = '用户未登录';
-      return false;
-    }
-
-    try {
-      final skillController = Get.find<SkillStateController>();
-      final success = await skillController.removeUserSkill(user.id, skillId);
-
-      if (success) {
-        // 刷新用户信息以更新技能列表
-        await loadCurrentUser();
-      }
-
-      return success;
-    } catch (e) {
-      errorMessage.value = '移除技能失败: $e';
-      AppToast.error('移除技能失败');
-      return false;
-    }
-  }
-
-  /// 移除用户兴趣
-  /// 这是一个便捷方法,委托给 InterestStateController
-  Future<bool> removeInterest(String interestId) async {
-    final user = currentUser.value;
-    if (user == null) {
-      errorMessage.value = '用户未登录';
-      return false;
-    }
-
-    try {
-      final interestController = Get.find<InterestStateController>();
-      final success =
-          await interestController.removeUserInterest(user.id, interestId);
-
-      if (success) {
-        // 刷新用户信息以更新兴趣列表
-        await loadCurrentUser();
-      }
-
-      return success;
-    } catch (e) {
-      errorMessage.value = '移除兴趣失败: $e';
-      AppToast.error('移除兴趣失败');
-      return false;
-    }
-  }
-
-  // Getters - 业务逻辑委托给领域实体
-  bool get isLoggedIn => currentUser.value != null;
-  bool get hasCompletedProfile =>
-      currentUser.value?.hasCompletedProfile ?? false;
-  bool get isActiveNomad => currentUser.value?.isActiveNomad ?? false;
-  int get experienceLevel => currentUser.value?.experienceLevel ?? 1;
-
-  @override
-  void onClose() {
-    // 清空所有响应式变量
-    currentUser.value = null;
-    isLoading.value = false;
-    errorMessage.value = '';
-
-    // 清空收藏城市状态
-    favoriteCityIds.clear();
-
-    // 清空统计数据
-    nomadStats.value = null;
-    isLoadingStats.value = false;
-
-    // 重置编辑模式状态
-    isEditMode.value = false;
-    loginStateChanged.value = false;
-
-    super.onClose();
-  }
-
-  /// Safely displays a toast message.
-  /// 根据title判断是成功还是失败消息
   void _showSnackbar(String title, String message) {
     if (title == '成功') {
       AppToast.success(message);

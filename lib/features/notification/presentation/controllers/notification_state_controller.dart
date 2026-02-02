@@ -1,6 +1,8 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/notification/domain/entities/app_notification.dart';
-import 'package:df_admin_mobile/features/notification/domain/repositories/i_notification_repository.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
+import 'package:go_nomads_app/features/notification/domain/repositories/i_notification_repository.dart';
 import 'package:get/get.dart';
 
 /// 通知状态控制器
@@ -24,7 +26,7 @@ class NotificationStateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print('🔔 NotificationStateController.onInit() 被调用');
+    log('🔔 NotificationStateController.onInit() 被调用');
     // 不在这里自动加载，等页面显示时再加载
     // 这样可以确保用户已经登录
   }
@@ -34,7 +36,7 @@ class NotificationStateController extends GetxController {
     bool? isRead,
     NotificationType? type,
   }) async {
-    print('🔔 开始加载通知列表: isRead=$isRead');
+    log('🔔 开始加载通知列表: isRead=$isRead');
     isLoading.value = true;
     errorMessage.value = '';
 
@@ -46,12 +48,12 @@ class NotificationStateController extends GetxController {
 
     result.fold(
       onSuccess: (response) {
-        print('✅ 加载成功: ${response.notifications.length} 条通知, 未读: ${response.unreadCount}');
+        log('✅ 加载成功: ${response.notifications.length} 条通知, 未读: ${response.unreadCount}');
         notifications.value = response.notifications;
         unreadCount.value = response.unreadCount;
       },
       onFailure: (error) {
-        print('❌ 加载失败: ${error.message}');
+        log('❌ 加载失败: ${error.message}');
         errorMessage.value = error.message;
       },
     );
@@ -61,16 +63,16 @@ class NotificationStateController extends GetxController {
 
   /// 刷新未读数量（单独调用，用于更新徽章）
   Future<void> refreshUnreadCount() async {
-    print('🔔 刷新未读数量');
+    log('🔔 刷新未读数量');
     final result = await _repository.getUnreadCount();
     
     result.fold(
       onSuccess: (count) {
-        print('✅ 未读数量: $count');
+        log('✅ 未读数量: $count');
         unreadCount.value = count;
       },
       onFailure: (failure) {
-        print('❌ 刷新未读数量失败: ${failure.message}');
+        log('❌ 刷新未读数量失败: ${failure.message}');
         // 静默失败
       },
     );
@@ -148,7 +150,7 @@ class NotificationStateController extends GetxController {
     String? relatedId,
     Map<String, dynamic>? metadata,
   }) async {
-    print('🔔 Controller.sendToAdmins 开始: title=$title');
+    log('🔔 Controller.sendToAdmins 开始: title=$title');
     
     final result = await _repository.sendToAdmins(
       title: title,
@@ -160,11 +162,81 @@ class NotificationStateController extends GetxController {
 
     return result.fold(
       onSuccess: (notifications) {
-        print('✅ Controller.sendToAdmins 成功: 发送给 ${notifications.length} 位管理员');
+        log('✅ Controller.sendToAdmins 成功: 发送给 ${notifications.length} 位管理员');
         return true;
       },
       onFailure: (failure) {
-        print('❌ Controller.sendToAdmins 失败: ${failure.message}');
+        log('❌ Controller.sendToAdmins 失败: ${failure.message}');
+        return false;
+      },
+    );
+  }
+
+  /// 响应活动邀请
+  Future<bool> respondToEventInvitation({
+    required String notificationId,
+    required String invitationId,
+    required bool accepted,
+  }) async {
+    log('🔔 响应活动邀请: invitationId=$invitationId, accepted=$accepted');
+    
+    final result = await _repository.respondToEventInvitation(
+      notificationId: notificationId,
+      invitationId: invitationId,
+      accepted: accepted,
+    );
+
+    return result.fold(
+      onSuccess: (_) {
+        log('✅ 响应活动邀请成功');
+        // 更新本地通知状态
+        final index = notifications.indexWhere((n) => n.id == notificationId);
+        if (index != -1) {
+          notifications[index] = notifications[index].markAsRead();
+          notifications.refresh();
+        }
+        if (unreadCount.value > 0) {
+          unreadCount.value--;
+        }
+        return true;
+      },
+      onFailure: (failure) {
+        log('❌ 响应活动邀请失败: ${failure.message}');
+        return false;
+      },
+    );
+  }
+
+  /// 响应版主转让请求
+  Future<bool> respondToModeratorTransfer({
+    required String notificationId,
+    required String transferId,
+    required bool accepted,
+  }) async {
+    log('🔔 响应版主转让: transferId=$transferId, accepted=$accepted');
+    
+    final result = await _repository.respondToModeratorTransfer(
+      notificationId: notificationId,
+      transferId: transferId,
+      accepted: accepted,
+    );
+
+    return result.fold(
+      onSuccess: (_) {
+        log('✅ 响应版主转让成功');
+        // 更新本地通知状态
+        final index = notifications.indexWhere((n) => n.id == notificationId);
+        if (index != -1) {
+          notifications[index] = notifications[index].markAsRead();
+          notifications.refresh();
+        }
+        if (unreadCount.value > 0) {
+          unreadCount.value--;
+        }
+        return true;
+      },
+      onFailure: (failure) {
+        log('❌ 响应版主转让失败: ${failure.message}');
         return false;
       },
     );
@@ -179,7 +251,7 @@ class NotificationStateController extends GetxController {
 
   /// 清除所有通知数据（用户登出时调用）
   void clearNotifications() {
-    print('🔔 清除通知数据');
+    log('🔔 清除通知数据');
     notifications.clear();
     unreadCount.value = 0;
     errorMessage.value = '';

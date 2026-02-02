@@ -1,6 +1,6 @@
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/nomad_stats.dart';
-import 'package:df_admin_mobile/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/user/domain/entities/nomad_stats.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 
 /// 用户仓储接口
 ///

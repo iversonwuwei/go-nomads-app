@@ -1,14 +1,16 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import 'package:df_admin_mobile/services/token_storage_service.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/manage_reviews_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/city_detail/widgets/tabs/reviews_tab.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 import 'add_review_page.dart';
 
-/// Reviews 数据管理列表页面
+/// Reviews 数据管理列表页面 - 使用独立数据集
 class ManageReviewsPage extends StatefulWidget {
   final String cityId;
   final String cityName;
@@ -24,32 +26,27 @@ class ManageReviewsPage extends StatefulWidget {
 }
 
 class _ManageReviewsPageState extends State<ManageReviewsPage> {
-  final RxBool canDelete = false.obs;
-  final RxBool isLoading = false.obs;
+  late final String _tag;
+  late final ManageReviewsPageController _controller;
 
   @override
   void initState() {
     super.initState();
-    // 异步加载数据,不阻塞页面显示
-    Future.microtask(() {
-      _checkPermissions();
-      _loadData();
+    _tag = 'ManageReviewsPage_${widget.cityId}';
+    _controller = Get.put(
+      ManageReviewsPageController(cityId: widget.cityId, cityName: widget.cityName),
+      tag: _tag,
+    );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isRegistered<ManageReviewsPageController>(tag: _tag)) {
+        Get.delete<ManageReviewsPageController>(tag: _tag);
+      }
     });
-  }
-
-  Future<void> _checkPermissions() async {
-    final isAdmin = await TokenStorageService().isAdmin();
-    canDelete.value = isAdmin;
-  }
-
-  Future<void> _loadData() async {
-    isLoading.value = true;
-    try {
-      final controller = Get.find<UserCityContentStateController>();
-      await controller.loadCityReviews(widget.cityId);
-    } finally {
-      isLoading.value = false;
-    }
+    super.dispose();
   }
 
   Future<void> _deleteReview(String reviewId) async {
@@ -72,26 +69,12 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
     );
 
     if (confirmed != true) return;
-
-    try {
-      final controller = Get.find<UserCityContentStateController>();
-      // 注意: 当前API只能删除自己的review,需要后端添加admin删除接口
-      final success = await controller.deleteMyReview(widget.cityId);
-
-      if (success) {
-        AppToast.success('评论已删除');
-        await _loadData();
-      } else {
-        AppToast.error('删除失败,请重试');
-      }
-    } catch (e) {
-      AppToast.error('删除失败: $e');
-    }
+    await _controller.deleteReview(reviewId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<UserCityContentStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -102,30 +85,33 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus),
             onPressed: () async {
-              final result = await Get.to(() => AddReviewPage(
-                    cityId: widget.cityId,
-                    cityName: widget.cityName,
-                  ));
-              if (result != null && result['success'] == true) {
-                await _loadData();
-              }
+              await NavigationUtil.toWithCallback<Map<String, dynamic>>(
+                page: () => AddReviewPage(
+                  cityId: widget.cityId,
+                  cityName: widget.cityName,
+                ),
+                onResult: (result) async {
+                  if (result.needsRefresh) {
+                    await _controller.loadData();
+                  }
+                },
+              );
             },
             tooltip: '添加评论',
           ),
         ],
       ),
       body: Obx(() {
-        if (isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+        if (_controller.isLoading.value) {
+          return const ManageListSkeleton();
         }
 
-        if (controller.reviews.isEmpty) {
+        if (_controller.reviews.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(FontAwesomeIcons.commentDots,
-                    size: 80, color: Colors.grey[300]),
+                Icon(FontAwesomeIcons.commentDots, size: 80, color: Colors.grey[300]),
                 const SizedBox(height: 16),
                 Text(
                   '暂无评论数据',
@@ -134,13 +120,17 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: () async {
-                    final result = await Get.to(() => AddReviewPage(
-                          cityId: widget.cityId,
-                          cityName: widget.cityName,
-                        ));
-                    if (result != null && result['success'] == true) {
-                      await _loadData();
-                    }
+                    await NavigationUtil.toWithCallback<Map<String, dynamic>>(
+                      page: () => AddReviewPage(
+                        cityId: widget.cityId,
+                        cityName: widget.cityName,
+                      ),
+                      onResult: (result) async {
+                        if (result.needsRefresh) {
+                          await _controller.loadData();
+                        }
+                      },
+                    );
                   },
                   icon: const Icon(FontAwesomeIcons.plus),
                   label: const Text('添加第一条评论'),
@@ -151,87 +141,43 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
         }
 
         return ListView.builder(
+          controller: _controller.scrollController,
           padding: const EdgeInsets.all(16),
-          itemCount: controller.reviews.length,
+          itemCount: _controller.reviews.length + 1,
           itemBuilder: (context, index) {
-            final review = controller.reviews[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              elevation: 2,
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.orange,
-                  child: Text(
-                    '${review.rating}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+            // 底部加载指示器
+            if (index == _controller.reviews.length) {
+              return Obx(() {
+                if (_controller.isLoadingMore.value) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (!_controller.hasMore.value) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Center(
+                      child: Text(
+                        '已加载全部 ${_controller.reviews.length} 条评论',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                      ),
                     ),
-                  ),
-                ),
-                title: Text(
-                  review.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    Text(
-                      review.content,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(FontAwesomeIcons.star,
-                            size: 14, color: Colors.orange[700]),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${review.rating}/5',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Icon(FontAwesomeIcons.calendar,
-                            size: 12, color: Colors.grey[600]),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatDate(review.createdAt),
-                          style:
-                              TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                isThreeLine: true,
-                trailing: canDelete.value
-                    ? IconButton(
-                        icon: const Icon(FontAwesomeIcons.trash,
-                            color: Colors.red),
-                        onPressed: () => _deleteReview(review.id),
-                        tooltip: '删除',
-                      )
-                    : null,
-              ),
+                  );
+                }
+                return const SizedBox.shrink();
+              });
+            }
+
+            final review = _controller.reviews[index];
+            return ReviewCard(
+              review: review,
+              l10n: l10n,
+              onDelete: _controller.canDelete.value ? () => _deleteReview(review.id) : null,
             );
           },
         );
       }),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 }

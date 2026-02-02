@@ -1,5 +1,7 @@
-import 'package:df_admin_mobile/features/user_profile/infrastructure/models/user_profile_dto.dart';
-import 'package:df_admin_mobile/services/database_service.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:go_nomads_app/services/database_service.dart';
 
 /// 用户资料模块数据访问对象
 class UserProfileDao {
@@ -140,7 +142,7 @@ class UserProfileDao {
       )
     ''');
 
-    print('✅ 用户资料模块表创建完成');
+    log('✅ 用户资料模块表创建完成');
   }
 
   // ==================== 基本信息模块 ====================
@@ -249,7 +251,7 @@ class UserProfileDao {
     try {
       return await db.insert('user_skills', skill.toMap());
     } catch (e) {
-      print('技能已存在或添加失败: $e');
+      log('技能已存在或添加失败: $e');
       return -1;
     }
   }
@@ -285,7 +287,7 @@ class UserProfileDao {
     try {
       return await db.insert('user_interests', interest.toMap());
     } catch (e) {
-      print('兴趣已存在或添加失败: $e');
+      log('兴趣已存在或添加失败: $e');
       return -1;
     }
   }
@@ -435,7 +437,7 @@ class UserProfileDao {
     try {
       return await db.insert('user_badges', badge.toMap());
     } catch (e) {
-      print('徽章已存在或添加失败: $e');
+      log('徽章已存在或添加失败: $e');
       return -1;
     }
   }
@@ -515,6 +517,6 @@ class UserProfileDao {
       updatedAt: now,
     ));
 
-    print('✅ 用户资料初始化完成: $name (账户ID: $accountId)');
+    log('✅ 用户资料初始化完成: $name (账户ID: $accountId)');
   }
 }

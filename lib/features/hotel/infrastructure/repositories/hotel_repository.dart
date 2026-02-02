@@ -1,26 +1,63 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'dart:developer';
 
-import 'package:df_admin_mobile/features/hotel/domain/entities/hotel.dart';
-import 'package:df_admin_mobile/features/hotel/domain/repositories/i_hotel_repository.dart';
-import 'package:df_admin_mobile/features/hotel/infrastructure/models/hotel_dto.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_repository.dart';
+import 'package:go_nomads_app/features/hotel/infrastructure/models/hotel_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
+/// Hotel Repository - 酒店数据仓储
+/// 对接后端 AccommodationService API
 class HotelRepository implements IHotelRepository {
   final HttpService _httpService;
+
+  /// API 基础路径（通过 Gateway 路由到 AccommodationService）
+  static const String _basePath = '/hotels';
 
   HotelRepository(this._httpService);
 
   @override
-  Future<Result<List<Hotel>>> getHotels() async {
+  Future<Result<List<Hotel>>> getHotels({
+    int page = 1,
+    int pageSize = 20,
+    String? cityId,
+    String? search,
+    bool? hasWifi,
+    bool? hasCoworkingSpace,
+    double? minPrice,
+    double? maxPrice,
+  }) async {
     try {
-      final response = await _httpService.get('/hotels');
-      final List<dynamic> data = response.data;
-      final hotels =
-          data.map((json) => HotelDto.fromMap(json).toDomain()).toList();
+      // 构建查询参数
+      final queryParams = <String, String>{
+        'page': page.toString(),
+        'pageSize': pageSize.toString(),
+      };
+      if (cityId != null) queryParams['cityId'] = cityId;
+      if (search != null && search.isNotEmpty) queryParams['search'] = search;
+      if (hasWifi != null) queryParams['hasWifi'] = hasWifi.toString();
+      if (hasCoworkingSpace != null) queryParams['hasCoworkingSpace'] = hasCoworkingSpace.toString();
+      if (minPrice != null) queryParams['minPrice'] = minPrice.toString();
+      if (maxPrice != null) queryParams['maxPrice'] = maxPrice.toString();
+
+      final queryString = queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      final url = queryString.isNotEmpty ? '$_basePath?$queryString' : _basePath;
+
+      log('🏨 HotelRepository.getHotels: $url');
+
+      final response = await _httpService.get(url);
+
+      // 后端返回 { hotels: [...], totalCount, page, pageSize, totalPages }
+      final List<dynamic> hotelsData = response.data['hotels'] ?? [];
+      final hotels = hotelsData.map((json) => HotelDto.fromMap(json).toDomain()).toList();
+
+      log('🏨 获取到 ${hotels.length} 个酒店');
       return Success(hotels);
     } on HttpException catch (e) {
+      log('❌ HotelRepository.getHotels 失败: ${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e) {
+      log('❌ HotelRepository.getHotels 异常: $e');
       return Failure(NetworkException(e.toString()));
     }
   }
@@ -28,12 +65,15 @@ class HotelRepository implements IHotelRepository {
   @override
   Future<Result<Hotel>> getHotelById(String id) async {
     try {
-      final response = await _httpService.get('/hotels/$id');
+      log('🏨 HotelRepository.getHotelById: $id');
+      final response = await _httpService.get('$_basePath/$id');
       final hotel = HotelDto.fromMap(response.data).toDomain();
       return Success(hotel);
     } on HttpException catch (e) {
+      log('❌ HotelRepository.getHotelById 失败: ${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e) {
+      log('❌ HotelRepository.getHotelById 异常: $e');
       return Failure(NetworkException(e.toString()));
     }
   }
@@ -41,14 +81,20 @@ class HotelRepository implements IHotelRepository {
   @override
   Future<Result<List<Hotel>>> getHotelsByCity(String cityId) async {
     try {
-      final response = await _httpService.get('/hotels/city/$cityId');
-      final List<dynamic> data = response.data;
-      final hotels =
-          data.map((json) => HotelDto.fromMap(json).toDomain()).toList();
+      log('🏨 HotelRepository.getHotelsByCity: $cityId');
+      final response = await _httpService.get('$_basePath/city/$cityId');
+
+      // 后端直接返回数组 List<HotelDto>
+      final List<dynamic> hotelsData = response.data is List ? response.data : [];
+      final hotels = hotelsData.map((json) => HotelDto.fromMap(json).toDomain()).toList();
+
+      log('🏨 城市 $cityId 有 ${hotels.length} 个酒店');
       return Success(hotels);
     } on HttpException catch (e) {
+      log('❌ HotelRepository.getHotelsByCity 失败: ${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e) {
+      log('❌ HotelRepository.getHotelsByCity 异常: $e');
       return Failure(NetworkException(e.toString()));
     }
   }
@@ -56,10 +102,12 @@ class HotelRepository implements IHotelRepository {
   @override
   Future<Result<List<Hotel>>> searchHotels(String query) async {
     try {
-      final response = await _httpService.get('/hotels/search?q=$query');
-      final List<dynamic> data = response.data;
-      final hotels =
-          data.map((json) => HotelDto.fromMap(json).toDomain()).toList();
+      log('🏨 HotelRepository.searchHotels: $query');
+      final response = await _httpService.get('$_basePath?search=$query');
+
+      final List<dynamic> hotelsData = response.data['hotels'] ?? [];
+      final hotels = hotelsData.map((json) => HotelDto.fromMap(json).toDomain()).toList();
+
       return Success(hotels);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -71,26 +119,33 @@ class HotelRepository implements IHotelRepository {
   @override
   Future<Result<Hotel>> createHotel(Map<String, dynamic> data) async {
     try {
-      final response = await _httpService.post('/hotels', data: data);
+      log('🏨 HotelRepository.createHotel: $data');
+      final response = await _httpService.post(_basePath, data: data);
       final hotel = HotelDto.fromMap(response.data).toDomain();
+      log('✅ 酒店创建成功: ${hotel.id}');
       return Success(hotel);
     } on HttpException catch (e) {
+      log('❌ HotelRepository.createHotel 失败: ${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e) {
+      log('❌ HotelRepository.createHotel 异常: $e');
       return Failure(NetworkException(e.toString()));
     }
   }
 
   @override
-  Future<Result<Hotel>> updateHotel(
-      String id, Map<String, dynamic> data) async {
+  Future<Result<Hotel>> updateHotel(String id, Map<String, dynamic> data) async {
     try {
-      final response = await _httpService.put('/hotels/$id', data: data);
+      log('🏨 HotelRepository.updateHotel: $id');
+      final response = await _httpService.put('$_basePath/$id', data: data);
       final hotel = HotelDto.fromMap(response.data).toDomain();
+      log('✅ 酒店更新成功: ${hotel.id}');
       return Success(hotel);
     } on HttpException catch (e) {
+      log('❌ HotelRepository.updateHotel 失败: ${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e) {
+      log('❌ HotelRepository.updateHotel 异常: $e');
       return Failure(NetworkException(e.toString()));
     }
   }
@@ -98,11 +153,35 @@ class HotelRepository implements IHotelRepository {
   @override
   Future<Result<void>> deleteHotel(String id) async {
     try {
-      await _httpService.delete('/hotels/$id');
+      log('🏨 HotelRepository.deleteHotel: $id');
+      await _httpService.delete('$_basePath/$id');
+      log('✅ 酒店删除成功: $id');
       return const Success(null);
     } on HttpException catch (e) {
+      log('❌ HotelRepository.deleteHotel 失败: ${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e) {
+      log('❌ HotelRepository.deleteHotel 异常: $e');
+      return Failure(NetworkException(e.toString()));
+    }
+  }
+
+  /// 获取当前用户创建的酒店列表
+  Future<Result<List<Hotel>>> getMyHotels() async {
+    try {
+      log('🏨 HotelRepository.getMyHotels');
+      final response = await _httpService.get('$_basePath/my');
+
+      final List<dynamic> hotelsData = response.data['hotels'] ?? [];
+      final hotels = hotelsData.map((json) => HotelDto.fromMap(json).toDomain()).toList();
+
+      log('🏨 我的酒店: ${hotels.length} 个');
+      return Success(hotels);
+    } on HttpException catch (e) {
+      log('❌ HotelRepository.getMyHotels 失败: ${e.message}');
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      log('❌ HotelRepository.getMyHotels 异常: $e');
       return Failure(NetworkException(e.toString()));
     }
   }
@@ -110,11 +189,8 @@ class HotelRepository implements IHotelRepository {
   @override
   Future<Result<List<Hotel>>> getFeaturedHotels() async {
     try {
-      final response = await _httpService.get('/hotels/featured');
-      final List<dynamic> data = response.data;
-      final hotels =
-          data.map((json) => HotelDto.fromMap(json).toDomain()).toList();
-      return Success(hotels);
+      // 暂时使用普通列表，后端可以添加 featured 过滤
+      return getHotels();
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
     } catch (e) {
@@ -125,11 +201,8 @@ class HotelRepository implements IHotelRepository {
   @override
   Future<Result<List<Hotel>>> getHotelsByCategory(String category) async {
     try {
-      final response = await _httpService.get('/hotels/category/$category');
-      final List<dynamic> data = response.data;
-      final hotels =
-          data.map((json) => HotelDto.fromMap(json).toDomain()).toList();
-      return Success(hotels);
+      // 暂时使用普通列表，后端可以添加 category 过滤
+      return getHotels();
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
     } catch (e) {
@@ -140,10 +213,9 @@ class HotelRepository implements IHotelRepository {
   @override
   Future<Result<List<RoomType>>> getRoomTypes(String hotelId) async {
     try {
-      final response = await _httpService.get('/hotels/$hotelId/rooms');
+      final response = await _httpService.get('$_basePath/$hotelId/rooms');
       final List<dynamic> data = response.data;
-      final rooms =
-          data.map((json) => RoomTypeDto.fromMap(json).toDomain()).toList();
+      final rooms = data.map((json) => RoomTypeDto.fromMap(json).toDomain()).toList();
       return Success(rooms);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -170,8 +242,7 @@ class HotelRepository implements IHotelRepository {
     try {
       final response = await _httpService.get('/hotel-bookings/user/$userId');
       final List<dynamic> data = response.data;
-      final bookings =
-          data.map((json) => HotelBookingDto.fromMap(json).toDomain()).toList();
+      final bookings = data.map((json) => HotelBookingDto.fromMap(json).toDomain()).toList();
       return Success(bookings);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));

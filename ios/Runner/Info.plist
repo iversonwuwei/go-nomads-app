@@ -1,68 +1,164 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-<string>行途</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-<string>行途</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-<!-- 允许 HTTP 请求（地图瓦片加载） -->
-<key>NSAppTransportSecurity</key>
-<dict>
-	<key>NSAllowsArbitraryLoads</key>
-	<true/>
-</dict>
-<!-- 位置权限描述 -->
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>我们需要访问您的位置以提供基于位置的城市推荐服务</string>
-<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-<string>我们需要访问您的位置以提供更好的服务体验</string>
-<key>NSLocationAlwaysUsageDescription</key>
-<string>我们需要访问您的位置以提供持续的位置服务</string>
-<!-- 日历权限描述 -->
-<key>NSCalendarsUsageDescription</key>
-<string>We need access to your calendar to add meetup events</string>
-<!-- 通知权限描述 -->
-<key>NSUserNotificationsUsageDescription</key>
-<string>我们需要发送通知以告知您旅游指南生成完成</string>
-</dict>
+	<dict>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>行途</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>行途</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<!-- 允许 HTTP 请求（地图瓦片加载） -->
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true/>
+		</dict>
+		<!-- 位置权限描述 -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>我们需要访问您的位置以提供基于位置的城市推荐服务</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>我们需要访问您的位置以提供更好的服务体验</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>我们需要访问您的位置以提供持续的位置服务</string>
+		<!-- 支持 canLaunchUrl 检测第三方App -->
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>fb</string>
+			<string>twitter</string>
+			<string>whatsapp</string>
+			<string>tg</string>
+			<string>linkedin</string>
+			<string>mqq</string>
+			<string>mqqzone</string>
+			<string>weixin</string>
+			<string>sinaweibo</string>
+			<string>dingtalk</string>
+			<!-- 地图应用 -->
+			<string>comgooglemaps</string>
+			<string>iosamap</string>
+			<string>baidumap</string>
+			<string>qqmap</string>
+		</array>
+		<!-- 日历权限描述 -->
+		<key>NSCalendarsUsageDescription</key>
+		<string>We need access to your calendar to add meetup events</string>
+		<!-- iOS 17+ 日历完整访问权限 -->
+		<key>NSCalendarsFullAccessUsageDescription</key>
+		<string>We need full access to your calendar to add and manage meetup events</string>
+		<!-- 联系人权限 (日历位置自动完成需要) -->
+		<key>NSContactsUsageDescription</key>
+		<string>We need access to contacts for calendar event location autocomplete</string>
+		<!-- 通知权限描述 -->
+		<key>NSUserNotificationsUsageDescription</key>
+		<string>我们需要发送通知以告知您旅游指南生成完成</string>
+		<!-- Deep Link URL Schemes -->
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>com.gonomads.app</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>gonomads</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>alipay</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>alipay2021006115624759</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>gonomads-share</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>gonomads</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>tencent</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>tencent102822014</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>weixin</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>wx3b333eed7c75a444</string>
+				</array>
+			</dict>
+		</array>
+		<!-- Universal Links 配置 -->
+		<key>com.apple.developer.associated-domains</key>
+		<array>
+			<string>applinks:go-nomads.com</string>
+		</array>
+		<!-- 支付宝白名单 -->
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>alipay</string>
+			<string>alipays</string>
+			<string>paypal</string>
+			<string>paypalme</string>
+		</array>
+		<key>UIStatusBarHidden</key>
+		<true/>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<false/>
+	</dict>
 </plist>

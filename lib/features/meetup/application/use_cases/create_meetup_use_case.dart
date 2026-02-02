@@ -1,5 +1,7 @@
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 
 /// 创建活动 Use Case
 class CreateMeetupUseCase {
@@ -24,10 +26,10 @@ class CreateMeetupUseCase {
     List<String>? tags,
   }) async {
     try {
-      print('🎯 执行 CreateMeetupUseCase...');
-      print('   活动标题: $title');
-      print('   城市ID: $cityId');
-      print('   开始时间: $startTime');
+      log('🎯 执行 CreateMeetupUseCase...');
+      log('   活动标题: $title');
+      log('   城市ID: $cityId');
+      log('   开始时间: $startTime');
 
       // 验证输入
       _validateInput(
@@ -56,10 +58,10 @@ class CreateMeetupUseCase {
         tags: tags,
       );
 
-      print('✅ 活动创建成功: ${meetup.id}');
+      log('✅ 活动创建成功: ${meetup.id}');
       return meetup;
     } catch (e) {
-      print('❌ CreateMeetupUseCase 执行失败: $e');
+      log('❌ CreateMeetupUseCase 执行失败: $e');
       rethrow;
     }
   }
@@ -106,6 +108,6 @@ class CreateMeetupUseCase {
       throw ArgumentError('活动开始时间不能早于当前时间');
     }
 
-    print('✅ 输入验证通过');
+    log('✅ 输入验证通过');
   }
 }

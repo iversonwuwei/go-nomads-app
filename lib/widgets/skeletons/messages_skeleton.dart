@@ -29,14 +29,12 @@ class _MessagesSkeletonState extends BaseSkeletonState<MessagesSkeleton> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment:
-            isLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
+        mainAxisAlignment: isLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (isLeft) ...[
             // 左侧消息（他人）
-            SkeletonCircle(
-              shimmerController: shimmerController,
+            const SkeletonCircle(
               size: 32,
             ),
             const SizedBox(width: 8),
@@ -46,15 +44,12 @@ class _MessagesSkeletonState extends BaseSkeletonState<MessagesSkeleton> {
               maxWidth: 250,
             ),
             child: Column(
-              crossAxisAlignment: isLeft
-                  ? CrossAxisAlignment.start
-                  : CrossAxisAlignment.end,
+              crossAxisAlignment: isLeft ? CrossAxisAlignment.start : CrossAxisAlignment.end,
               children: [
                 if (isLeft)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 4),
                     child: SkeletonBox(
-                      shimmerController: shimmerController,
                       width: 80,
                       height: 12,
                       borderRadius: 4,
@@ -63,9 +58,7 @@ class _MessagesSkeletonState extends BaseSkeletonState<MessagesSkeleton> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isLeft
-                        ? Colors.grey[100]
-                        : const Color(0xFFFF4458).withValues(alpha: 0.1),
+                    color: isLeft ? Colors.grey[100] : const Color(0xFFFF4458).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(isLeft ? 4 : 16),
                       topRight: Radius.circular(isLeft ? 16 : 4),
@@ -77,15 +70,13 @@ class _MessagesSkeletonState extends BaseSkeletonState<MessagesSkeleton> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SkeletonBox(
-                        shimmerController: shimmerController,
                         width: index % 2 == 0 ? 180.0 : 120.0,
                         height: 14,
                         borderRadius: 4,
                       ),
                       if (index % 4 == 0) ...[
                         const SizedBox(height: 8),
-                        SkeletonBox(
-                          shimmerController: shimmerController,
+                        const SkeletonBox(
                           width: 150,
                           height: 14,
                           borderRadius: 4,
@@ -94,10 +85,9 @@ class _MessagesSkeletonState extends BaseSkeletonState<MessagesSkeleton> {
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                const Padding(
+                  padding: EdgeInsets.only(top: 4),
                   child: SkeletonBox(
-                    shimmerController: shimmerController,
                     width: 60,
                     height: 10,
                     borderRadius: 4,
@@ -108,8 +98,7 @@ class _MessagesSkeletonState extends BaseSkeletonState<MessagesSkeleton> {
           ),
           if (!isLeft) ...[
             const SizedBox(width: 8),
-            SkeletonCircle(
-              shimmerController: shimmerController,
+            const SkeletonCircle(
               size: 32,
             ),
           ],

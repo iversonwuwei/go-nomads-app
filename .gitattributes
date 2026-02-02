@@ -1,0 +1,51 @@
+# Git 属性配置 - 防止编码问题
+# https://git-scm.com/docs/gitattributes
+
+# 自动检测文本文件并规范化行尾
+* text=auto
+
+# Dart 源文件 - 强制使用 UTF-8 和 LF 行尾
+*.dart text encoding=utf-8 eol=lf
+
+# 配置文件
+*.yaml text encoding=utf-8 eol=lf
+*.yml text encoding=utf-8 eol=lf
+*.json text encoding=utf-8 eol=lf
+*.xml text encoding=utf-8 eol=lf
+
+# Markdown
+*.md text encoding=utf-8 eol=lf
+
+# 脚本文件
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件 - 不做转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.jar binary
+*.so binary
+*.dll binary
+*.dylib binary
+*.keystore binary
+*.jks binary
+
+# 安卓特定
+*.apk binary
+*.aab binary
+*.dex binary
+
+# iOS 特定
+*.ipa binary
+*.mobileprovision binary

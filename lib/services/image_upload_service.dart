@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:go_nomads_app/config/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:df_admin_mobile/config/api_config.dart';
 import 'token_storage_service.dart';
 
 /// 图片上传服务
@@ -101,8 +101,7 @@ class ImageUploadService {
       final filePath = '$uploadFolder/$fileName';
 
       debugPrint('📤 开始上传图片: $filePath');
-      debugPrint(
-          '📦 文件大小: ${(fileToUpload.lengthSync() / 1024).toStringAsFixed(2)} KB');
+      debugPrint('📦 文件大小: ${(fileToUpload.lengthSync() / 1024).toStringAsFixed(2)} KB');
 
       // 4. 上传到 Supabase
       final storageResponse = await client.storage.from(bucket).upload(
@@ -136,6 +135,74 @@ class ImageUploadService {
       debugPrint('❌ 图片上传失败: $e');
       rethrow;
     }
+  }
+
+  /// 上传任意文件到 Supabase Storage
+  ///
+  /// [file] 要上传的文件
+  /// [bucket] 存储桶名称，默认 'user-uploads'
+  /// [folder] 文件夹路径
+  /// [fileName] 指定文件名（可选，默认使用原始文件名）
+  ///
+  /// 返回文件的公开访问 URL
+  Future<String> uploadFile({
+    required File file,
+    String bucket = 'user-uploads',
+    String? folder,
+    String? fileName,
+  }) async {
+    try {
+      // 验证文件
+      if (!file.existsSync()) {
+        throw Exception('文件不存在');
+      }
+
+      // 检查文件大小（限制 100MB）
+      final fileSize = file.lengthSync();
+      if (fileSize > 100 * 1024 * 1024) {
+        throw Exception('文件过大，请选择小于 100MB 的文件');
+      }
+
+      // 生成文件路径
+      final userId = await _getUserId();
+      final uploadFolder = folder ?? userId;
+      final uploadFileName = fileName ?? _generateUniqueFileName(file);
+      final filePath = '$uploadFolder/$uploadFileName';
+
+      debugPrint('📤 开始上传文件: $filePath');
+      debugPrint('📦 文件大小: ${(fileSize / 1024).toStringAsFixed(2)} KB');
+
+      // 上传到 Supabase
+      final storageResponse = await client.storage.from(bucket).upload(
+            filePath,
+            file,
+            fileOptions: FileOptions(
+              cacheControl: '3600',
+              upsert: false,
+              contentType: _getMimeType(file),
+            ),
+          );
+
+      debugPrint('✅ 文件上传成功: $storageResponse');
+
+      // 获取公开 URL
+      final publicUrl = client.storage.from(bucket).getPublicUrl(filePath);
+
+      debugPrint('🔗 文件 URL: $publicUrl');
+
+      return publicUrl;
+    } catch (e) {
+      debugPrint('❌ 文件上传失败: $e');
+      rethrow;
+    }
+  }
+
+  /// 生成唯一文件名（保留原扩展名）
+  String _generateUniqueFileName(File file) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final ext = path.extension(file.path);
+    final random = DateTime.now().microsecondsSinceEpoch % 10000;
+    return 'file_${timestamp}_$random$ext';
   }
 
   /// 上传多张图片
@@ -205,8 +272,7 @@ class ImageUploadService {
     String bucket = 'user-uploads',
   }) async {
     try {
-      final filePaths =
-          imageUrls.map((url) => _extractFilePathFromUrl(url, bucket)).toList();
+      final filePaths = imageUrls.map((url) => _extractFilePathFromUrl(url, bucket)).toList();
 
       debugPrint('🗑️ 批量删除 ${filePaths.length} 张图片');
 
@@ -249,8 +315,7 @@ class ImageUploadService {
 
       final originalSize = file.lengthSync();
       final compressedSize = File(result.path).lengthSync();
-      final ratio =
-          ((1 - compressedSize / originalSize) * 100).toStringAsFixed(1);
+      final ratio = ((1 - compressedSize / originalSize) * 100).toStringAsFixed(1);
 
       debugPrint('🗜️ 图片压缩完成:');
       debugPrint('   原始: ${(originalSize / 1024).toStringAsFixed(2)} KB');
@@ -279,14 +344,7 @@ class ImageUploadService {
 
     // 检查文件类型
     final ext = path.extension(file.path).toLowerCase();
-    const allowedExtensions = [
-      '.jpg',
-      '.jpeg',
-      '.png',
-      '.gif',
-      '.webp',
-      '.heic'
-    ];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic'];
     if (!allowedExtensions.contains(ext)) {
       throw Exception('不支持的图片格式，仅支持: ${allowedExtensions.join(", ")}');
     }
@@ -302,7 +360,29 @@ class ImageUploadService {
 
   /// 获取 MIME 类型
   String? _getMimeType(File file) {
-    return lookupMimeType(file.path);
+    final ext = path.extension(file.path).toLowerCase();
+
+    // 音频文件 MIME 类型映射
+    switch (ext) {
+      case '.m4a':
+        return 'audio/mp4'; // M4A 是 MP4 容器中的 AAC 音频
+      case '.aac':
+        return 'audio/aac';
+      case '.mp3':
+        return 'audio/mpeg';
+      case '.wav':
+        return 'audio/wav';
+      case '.ogg':
+        return 'audio/ogg';
+      case '.flac':
+        return 'audio/flac';
+      case '.webm':
+        return 'audio/webm';
+      case '.opus':
+        return 'audio/opus';
+      default:
+        return lookupMimeType(file.path);
+    }
   }
 
   /// 获取压缩格式

@@ -1,10 +1,10 @@
-import 'package:df_admin_mobile/core/domain/result.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/coworking_space.dart';
-import 'package:df_admin_mobile/features/coworking/domain/entities/verification_eligibility.dart';
-import 'package:df_admin_mobile/features/coworking/presentation/controllers/coworking_state_controller.dart';
-import 'package:df_admin_mobile/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/verification_eligibility.dart';
+import 'package:go_nomads_app/features/coworking/presentation/controllers/coworking_state_controller.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -15,16 +15,16 @@ class CoworkingVerificationBadge extends StatelessWidget {
     required this.space,
     this.onVerified,
     this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    this.darkTheme = false,
   });
 
   final CoworkingSpace space;
   final void Function(CoworkingSpace updatedSpace)? onVerified;
   final EdgeInsetsGeometry padding;
+  final bool darkTheme;
 
-  final CoworkingStateController _coworkingController =
-      Get.find<CoworkingStateController>();
-  final UserStateController _userStateController =
-      Get.find<UserStateController>();
+  final CoworkingStateController _coworkingController = Get.find<CoworkingStateController>();
+  final UserStateController _userStateController = Get.find<UserStateController>();
 
   bool get _isCreator {
     if (space.isOwner) {
@@ -134,9 +134,7 @@ class CoworkingVerificationBadge extends StatelessWidget {
         onVerified?.call(data);
         AppToast.success(l10n.coworkingVerifySuccess);
       case Failure(:final exception):
-        final message = exception.message.isNotEmpty
-            ? exception.message
-            : l10n.coworkingVerifyFailed;
+        final message = exception.message.isNotEmpty ? exception.message : l10n.coworkingVerifyFailed;
         AppToast.error(message);
     }
   }
@@ -146,16 +144,22 @@ class CoworkingVerificationBadge extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Obx(() {
-      final isVerifying =
-          _coworkingController.verifyingCoworkingIds.contains(space.id);
+      final isVerifying = _coworkingController.verifyingCoworkingIds.contains(space.id);
       // 未验证的空间允许点击（包括创建者，点击时会显示提示）
       final bool canTap = !space.isVerified && !isVerifying;
 
-      final Color backgroundColor =
-          space.isVerified ? Colors.blue : Colors.grey;
-      final IconData iconData = space.isVerified
-          ? FontAwesomeIcons.solidCircleCheck
-          : FontAwesomeIcons.circleCheck;
+      // 获取实时验证人数（优先使用实时数据）
+      final int verificationVotes = _coworkingController.getVerificationVotes(space);
+
+      // 深色主题样式（用于图片上层显示）
+      Color backgroundColor;
+      if (darkTheme) {
+        backgroundColor = space.isVerified ? Colors.blue.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.3);
+      } else {
+        backgroundColor = space.isVerified ? Colors.blue : Colors.grey;
+      }
+      
+      final IconData iconData = space.isVerified ? FontAwesomeIcons.solidCircleCheck : FontAwesomeIcons.circleCheck;
       final String label = space.isVerified ? l10n.verified : l10n.unverified;
 
       final badge = Container(
@@ -163,6 +167,12 @@ class CoworkingVerificationBadge extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(12),
+          border: darkTheme
+              ? Border.all(
+                  color: space.isVerified ? Colors.blue.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.3),
+                  width: 1,
+                )
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -187,6 +197,25 @@ class CoworkingVerificationBadge extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
+            // 显示验证人数（未验证时显示）
+            if (!space.isVerified) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$verificationVotes',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       );

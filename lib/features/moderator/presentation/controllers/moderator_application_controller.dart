@@ -1,5 +1,7 @@
-import 'package:df_admin_mobile/features/moderator/domain/entities/moderator_application.dart';
-import 'package:df_admin_mobile/features/moderator/domain/repositories/i_moderator_application_repository.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/moderator/domain/entities/moderator_application.dart';
+import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
 import 'package:get/get.dart';
 
 /// 版主申请控制器
@@ -8,8 +10,11 @@ class ModeratorApplicationController extends GetxController {
 
   ModeratorApplicationController(this._repository);
 
-  // 加载状态
+  // 提交申请的加载状态
   final RxBool isLoading = false.obs;
+
+  // 加载列表的状态（与提交分离）
+  final RxBool isLoadingList = false.obs;
 
   // 我的申请列表
   final RxList<ModeratorApplication> myApplications = <ModeratorApplication>[].obs;
@@ -34,7 +39,7 @@ class ModeratorApplicationController extends GetxController {
   }) async {
     try {
       isLoading.value = true;
-      
+
       await _repository.applyForModerator(
         cityId: cityId,
         reason: reason,
@@ -53,29 +58,29 @@ class ModeratorApplicationController extends GetxController {
   /// 加载我的申请列表
   Future<void> loadMyApplications() async {
     try {
-      isLoading.value = true;
+      isLoadingList.value = true;
       final applications = await _repository.getMyApplications();
       myApplications.value = applications;
     } catch (e) {
-      print('❌ 加载我的申请失败: $e');
+      log('❌ 加载我的申请失败: $e');
     } finally {
-      isLoading.value = false;
+      isLoadingList.value = false;
     }
   }
 
   /// 加载待处理申请（管理员使用）
   Future<void> loadPendingApplications({int page = 1, int pageSize = 20}) async {
     try {
-      isLoading.value = true;
+      isLoadingList.value = true;
       final applications = await _repository.getPendingApplications(
         page: page,
         pageSize: pageSize,
       );
       pendingApplications.value = applications;
     } catch (e) {
-      print('❌ 加载待处理申请失败: $e');
+      log('❌ 加载待处理申请失败: $e');
     } finally {
-      isLoading.value = false;
+      isLoadingList.value = false;
     }
   }
 
@@ -107,7 +112,7 @@ class ModeratorApplicationController extends GetxController {
       final stats = await _repository.getStatistics();
       statistics.value = stats;
     } catch (e) {
-      print('❌ 加载统计数据失败: $e');
+      log('❌ 加载统计数据失败: $e');
     }
   }
 }

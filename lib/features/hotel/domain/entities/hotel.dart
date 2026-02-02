@@ -4,6 +4,7 @@ class Hotel {
   final String name;
   final String cityId;
   final String cityName;
+  final String? country;
   final String address;
   final double latitude;
   final double longitude;
@@ -13,18 +14,47 @@ class Hotel {
   final List<String> amenities;
   final List<String> images;
   final String category;
+  final int? starRating;
   final double pricePerNight;
   final String currency;
   final bool isFeatured;
   final List<RoomType> roomTypes;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
+
+  // 创建者信息
+  final String? createdBy;
+
+  // 联系方式
+  final String? phone;
+  final String? email;
+  final String? website;
+
+  // 数字游民特性
+  final int? wifiSpeed;
+  final bool hasWifi;
+  final bool hasWorkDesk;
+  final bool hasCoworkingSpace;
+  final bool hasAirConditioning;
+  final bool hasKitchen;
+  final bool hasLaundry;
+  final bool hasParking;
+  final bool hasPool;
+  final bool hasGym;
+  final bool has24HReception;
+  final bool hasLongStayDiscount;
+  final double? longStayDiscountPercent;
+  final bool isPetFriendly;
+
+  // 计算字段
+  final int nomadScore;
 
   Hotel({
     required this.id,
     required this.name,
     required this.cityId,
     required this.cityName,
+    this.country,
     required this.address,
     required this.latitude,
     required this.longitude,
@@ -34,12 +64,32 @@ class Hotel {
     required this.amenities,
     required this.images,
     required this.category,
+    this.starRating,
     required this.pricePerNight,
     required this.currency,
     required this.isFeatured,
     required this.roomTypes,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
+    this.createdBy,
+    this.phone,
+    this.email,
+    this.website,
+    this.wifiSpeed,
+    this.hasWifi = false,
+    this.hasWorkDesk = false,
+    this.hasCoworkingSpace = false,
+    this.hasAirConditioning = false,
+    this.hasKitchen = false,
+    this.hasLaundry = false,
+    this.hasParking = false,
+    this.hasPool = false,
+    this.hasGym = false,
+    this.has24HReception = false,
+    this.hasLongStayDiscount = false,
+    this.longStayDiscountPercent,
+    this.isPetFriendly = false,
+    this.nomadScore = 0,
   });
 
   // Business logic methods
@@ -53,15 +103,19 @@ class Hotel {
   bool get isBudget => category.toLowerCase() == 'budget';
   bool get isHostel => category.toLowerCase() == 'hostel';
 
+  /// 是否适合数字游民
+  bool get isNomadFriendly => hasWifi && (hasWorkDesk || hasCoworkingSpace);
+
+  /// 是否有良好的 WiFi（>= 50 Mbps）
+  bool get hasGoodWifi => hasWifi && (wifiSpeed ?? 0) >= 50;
+
   int get availableRoomCount => roomTypes.where((r) => r.isAvailable).length;
 
-  bool hasAmenity(String amenity) =>
-      amenities.any((a) => a.toLowerCase() == amenity.toLowerCase());
+  bool hasAmenity(String amenity) => amenities.any((a) => a.toLowerCase() == amenity.toLowerCase());
 
   RoomType? get cheapestRoom {
     if (roomTypes.isEmpty) return null;
-    return roomTypes
-        .reduce((a, b) => a.pricePerNight < b.pricePerNight ? a : b);
+    return roomTypes.reduce((a, b) => a.pricePerNight < b.pricePerNight ? a : b);
   }
 
   double get lowestPrice => cheapestRoom?.pricePerNight ?? pricePerNight;
@@ -108,8 +162,7 @@ class RoomType {
 
   bool canAccommodate(int guests) => guests <= maxOccupancy;
 
-  bool hasAmenity(String amenity) =>
-      amenities.any((a) => a.toLowerCase() == amenity.toLowerCase());
+  bool hasAmenity(String amenity) => amenities.any((a) => a.toLowerCase() == amenity.toLowerCase());
 }
 
 /// HotelBooking Domain Entity - 酒店预订
@@ -163,9 +216,7 @@ class HotelBooking {
 
   bool get isOngoing {
     final now = DateTime.now();
-    return now.isAfter(checkInDate) &&
-        now.isBefore(checkOutDate) &&
-        isConfirmed;
+    return now.isAfter(checkInDate) && now.isBefore(checkOutDate) && isConfirmed;
   }
 
   bool get isPast {
@@ -175,6 +226,5 @@ class HotelBooking {
 
   double get pricePerNight => totalPrice / numberOfNights;
 
-  bool get hasSpecialRequests =>
-      specialRequests != null && specialRequests!.isNotEmpty;
+  bool get hasSpecialRequests => specialRequests != null && specialRequests!.isNotEmpty;
 }

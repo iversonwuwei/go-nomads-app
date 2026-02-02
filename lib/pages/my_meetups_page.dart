@@ -1,145 +1,29 @@
-import 'package:df_admin_mobile/config/app_colors.dart';
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
-import 'package:df_admin_mobile/generated/app_localizations.dart';
-import 'package:df_admin_mobile/routes/app_routes.dart';
-import 'package:df_admin_mobile/widgets/app_toast.dart';
-import 'package:df_admin_mobile/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/my_meetups_page_controller.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:intl/intl.dart';
 
-import 'meetup_detail_page.dart';
-
 /// 我的 Meetups 页面 - 显示用户创建的活动
-class MyMeetupsPage extends StatefulWidget {
+class MyMeetupsPage extends StatelessWidget {
   const MyMeetupsPage({super.key});
 
-  @override
-  State<MyMeetupsPage> createState() => _MyMeetupsPageState();
-}
+  static const String _tag = 'MyMeetupsPage';
 
-class _MyMeetupsPageState extends State<MyMeetupsPage> {
-  final IMeetupRepository _meetupRepository = Get.find();
-
-  final RxList<Meetup> _meetups = <Meetup>[].obs;
-  final RxBool _isLoading = true.obs;
-  final RxString _errorMessage = ''.obs;
-  final RxBool _isLoadingMore = false.obs;
-
-  final List<Meetup> _createdMeetups = [];
-  final List<Meetup> _joinedMeetups = [];
-  late final ScrollController _scrollController;
-
-  int _joinedPage = 1;
-  final int _pageSize = 20;
-  bool _hasMoreJoined = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController()..addListener(_onScroll);
-    _loadInitialData();
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadInitialData() async {
-    _isLoading.value = true;
-    await _refreshAll();
-    _isLoading.value = false;
-  }
-
-  Future<void> _refreshAll() async {
-    _errorMessage.value = '';
-    _joinedPage = 1;
-    _hasMoreJoined = true;
-    _createdMeetups.clear();
-    _joinedMeetups.clear();
-
-    try {
-      final createdFuture = _meetupRepository.getMyCreatedMeetups();
-      final joinedFuture = _meetupRepository.getJoinedMeetups(
-        page: _joinedPage,
-        pageSize: _pageSize,
-      );
-
-      final created = await createdFuture;
-      final joined = await joinedFuture;
-
-      _createdMeetups.addAll(created);
-      _joinedMeetups.addAll(joined);
-
-      if (joined.length < _pageSize) {
-        _hasMoreJoined = false;
-      } else {
-        _joinedPage += 1;
-      }
-
-      _mergeMeetups();
-    } catch (e) {
-      _errorMessage.value = e.toString();
+  MyMeetupsPageController get _controller {
+    if (!Get.isRegistered<MyMeetupsPageController>(tag: _tag)) {
+      Get.put(MyMeetupsPageController(), tag: _tag);
     }
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients || _isLoading.value) return;
-    final position = _scrollController.position;
-    if (position.pixels >= position.maxScrollExtent - 200) {
-      _loadMoreJoined();
-    }
-  }
-
-  Future<void> _loadMoreJoined() async {
-    if (_isLoadingMore.value || !_hasMoreJoined) return;
-    _isLoadingMore.value = true;
-
-    try {
-      final nextPageMeetups = await _meetupRepository.getJoinedMeetups(
-        page: _joinedPage,
-        pageSize: _pageSize,
-      );
-
-      if (nextPageMeetups.isEmpty) {
-        _hasMoreJoined = false;
-        return;
-      }
-
-      _joinedMeetups.addAll(nextPageMeetups);
-
-      if (nextPageMeetups.length < _pageSize) {
-        _hasMoreJoined = false;
-      } else {
-        _joinedPage += 1;
-      }
-
-      _mergeMeetups();
-    } catch (_) {
-      final l10n = AppLocalizations.of(context);
-      if (l10n != null) {
-        AppToast.error(l10n.pleaseTryAgain);
-      }
-    } finally {
-      _isLoadingMore.value = false;
-    }
-  }
-
-  void _mergeMeetups() {
-    final Map<String, Meetup> map = {};
-    for (final meetup in [..._createdMeetups, ..._joinedMeetups]) {
-      map[meetup.id] = meetup;
-    }
-
-    final merged = map.values.toList()
-      ..sort((a, b) => a.schedule.startTime.compareTo(b.schedule.startTime));
-
-    _meetups.assignAll(merged);
+    return Get.find<MyMeetupsPageController>(tag: _tag);
   }
 
   @override
@@ -147,6 +31,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final controller = _controller;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0a0a0a),
@@ -154,66 +39,70 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
         backgroundColor: const Color(0xFF1a1a1a),
         elevation: 0,
         title: Obx(() => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.myMeetups,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 20 : 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '${_meetups.length} ${l10n.meetups}',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: isMobile ? 12 : 14,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ],
-        )),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.myMeetups,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isMobile ? 20 : 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${controller.meetups.length} ${l10n.meetups}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: isMobile ? 12 : 14,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ],
+            )),
         leading: const AppBackButton(color: AppColors.backButtonLight),
         actions: [
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus, color: Colors.white, size: 20),
-            onPressed: () => Get.toNamed(AppRoutes.createMeetup),
+            onPressed: () async {
+              // 使用接口自动处理刷新
+              await NavigationUtil.toNamedAndRefresh<Meetup>(
+                route: AppRoutes.createMeetup,
+                refresher: controller,
+              );
+            },
           ),
         ],
       ),
       body: Obx(() {
-        if (_isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.orange),
-          );
+        if (controller.isLoading.value) {
+          return const MyMeetupsSkeleton();
         }
 
-        if (_errorMessage.value.isNotEmpty) {
-          return _buildErrorState(isMobile);
+        if (controller.errorMessage.value.isNotEmpty) {
+          return _buildErrorState(isMobile, controller);
         }
 
-        if (_meetups.isEmpty) {
-          return _buildEmptyState(isMobile, l10n);
+        if (controller.meetups.isEmpty) {
+          return _buildEmptyState(isMobile, l10n, controller);
         }
 
-        final showFooter = _isLoadingMore.value && _hasMoreJoined;
+        final showFooter = controller.showFooter;
 
         return RefreshIndicator(
-          onRefresh: _refreshAll,
+          onRefresh: controller.refreshAll,
           color: Colors.orange,
           child: ListView.builder(
-            controller: _scrollController,
+            controller: controller.scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.all(isMobile ? 16 : 24),
-            itemCount: _meetups.length + (showFooter ? 1 : 0),
+            itemCount: controller.meetups.length + (showFooter ? 1 : 0),
             itemBuilder: (context, index) {
-              if (index >= _meetups.length) {
+              if (index >= controller.meetups.length) {
                 return _buildLoadingFooter();
               }
 
-              final meetup = _meetups[index];
-              return _buildMeetupCard(meetup, isMobile, l10n);
+              final meetup = controller.meetups[index];
+              return _buildMeetupCard(meetup, isMobile, l10n, controller);
             },
           ),
         );
@@ -221,7 +110,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     );
   }
 
-  Widget _buildErrorState(bool isMobile) {
+  Widget _buildErrorState(bool isMobile, MyMeetupsPageController controller) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -243,17 +132,17 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
               ),
             ),
             const SizedBox(height: 12),
-            Text(
-              _errorMessage.value,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: isMobile ? 14 : 16,
-              ),
-            ),
+            Obx(() => Text(
+                  controller.errorMessage.value,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: isMobile ? 14 : 16,
+                  ),
+                )),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _refreshAll,
+              onPressed: controller.refreshAll,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
@@ -266,7 +155,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     );
   }
 
-  Widget _buildEmptyState(bool isMobile, AppLocalizations l10n) {
+  Widget _buildEmptyState(bool isMobile, AppLocalizations l10n, MyMeetupsPageController controller) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -298,7 +187,13 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: () => Get.toNamed(AppRoutes.createMeetup),
+              onPressed: () async {
+                // 使用接口自动处理刷新
+                await NavigationUtil.toNamedAndRefresh<Meetup>(
+                  route: AppRoutes.createMeetup,
+                  refresher: controller,
+                );
+              },
               icon: const Icon(FontAwesomeIcons.plus, size: 16),
               label: Text(
                 l10n.createMeetup,
@@ -325,9 +220,9 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     );
   }
 
-  Widget _buildMeetupCard(Meetup meetup, bool isMobile, AppLocalizations l10n) {
+  Widget _buildMeetupCard(Meetup meetup, bool isMobile, AppLocalizations l10n, MyMeetupsPageController controller) {
     final dateFormat = DateFormat('MMM d, yyyy • HH:mm');
-    final statusColor = _getStatusColor(meetup.status);
+    final statusColor = controller.getStatusColor(meetup.status);
     final imageUrl = meetup.images.isNotEmpty ? meetup.images.first : null;
 
     return Container(
@@ -340,7 +235,14 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
         ),
       ),
       child: InkWell(
-        onTap: () => _navigateToDetail(meetup),
+        onTap: () async {
+          // 使用接口自动处理刷新
+          await NavigationUtil.toAndRefresh<Meetup>(
+            page: () => MeetupDetailPage(meetup: meetup),
+            refresher: controller,
+            binding: MeetupDetailBinding(),
+          );
+        },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -393,7 +295,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
                                 border: Border.all(color: statusColor),
                               ),
                               child: Text(
-                                _getStatusText(meetup.status, l10n),
+                                controller.getStatusText(meetup.status, l10n),
                                 style: TextStyle(
                                   color: statusColor,
                                   fontSize: 10,
@@ -448,7 +350,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(
+                            const Icon(
                               FontAwesomeIcons.users,
                               color: Colors.orange,
                               size: 12,
@@ -470,7 +372,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
                 ],
               ),
               const SizedBox(height: 16),
-              _buildActionButtons(meetup, l10n),
+              _buildActionButtons(meetup, l10n, controller),
             ],
           ),
         ),
@@ -491,44 +393,14 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     );
   }
 
-  Color _getStatusColor(MeetupStatus status) {
-    switch (status) {
-      case MeetupStatus.upcoming:
-        return Colors.green;
-      case MeetupStatus.ongoing:
-        return Colors.blue;
-      case MeetupStatus.completed:
-        return Colors.grey;
-      case MeetupStatus.cancelled:
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _getStatusText(MeetupStatus status, AppLocalizations l10n) {
-    switch (status) {
-      case MeetupStatus.upcoming:
-        return l10n.upcoming;
-      case MeetupStatus.ongoing:
-        return l10n.statusOngoing;
-      case MeetupStatus.completed:
-        return l10n.past;
-      case MeetupStatus.cancelled:
-        return l10n.statusCancelled;
-      default:
-        return l10n.past;
-    }
-  }
-
-  Widget _buildActionButtons(Meetup meetup, AppLocalizations l10n) {
+  Widget _buildActionButtons(Meetup meetup, AppLocalizations l10n, MyMeetupsPageController controller) {
     if (meetup.isOrganizer) {
       return Align(
         alignment: Alignment.centerRight,
         child: _buildPrimaryButton(
           label: l10n.cancel,
           color: Colors.red,
-          onPressed: meetup.canCancelEvent ? () => _confirmCancelMeetup(meetup, l10n) : null,
+          onPressed: meetup.canCancelEvent ? () => _confirmCancelMeetup(meetup, l10n, controller) : null,
         ),
       );
     }
@@ -551,7 +423,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
           child: _buildPrimaryButton(
             label: l10n.leaveMeetup,
             color: Colors.orange,
-            onPressed: meetup.canLeave ? () => _confirmLeaveMeetup(meetup, l10n) : null,
+            onPressed: meetup.canLeave ? () => _confirmLeaveMeetup(meetup, l10n, controller) : null,
           ),
         ),
       ],
@@ -598,11 +470,11 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
   }
 
   Widget _buildLoadingFooter() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           SizedBox(
             width: 24,
             height: 24,
@@ -613,7 +485,7 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     );
   }
 
-  Future<void> _confirmCancelMeetup(Meetup meetup, AppLocalizations l10n) async {
+  Future<void> _confirmCancelMeetup(Meetup meetup, AppLocalizations l10n, MyMeetupsPageController controller) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: Text(l10n.confirmCancelMeetupTitle),
@@ -632,17 +504,10 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     );
 
     if (confirmed != true) return;
-
-    try {
-      await _meetupRepository.cancelMeetup(meetup.id);
-      AppToast.success(l10n.cancelMeetupSuccess);
-      await _refreshAll();
-    } catch (_) {
-      AppToast.error(l10n.cancelMeetupFailed);
-    }
+    await controller.cancelMeetup(meetup.id, l10n);
   }
 
-  Future<void> _confirmLeaveMeetup(Meetup meetup, AppLocalizations l10n) async {
+  Future<void> _confirmLeaveMeetup(Meetup meetup, AppLocalizations l10n, MyMeetupsPageController controller) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: Text(l10n.confirmLeaveMeetupTitle),
@@ -661,34 +526,25 @@ class _MyMeetupsPageState extends State<MyMeetupsPage> {
     );
 
     if (confirmed != true) return;
-
-    try {
-      await _meetupRepository.cancelRsvp(meetup.id);
-      AppToast.success(l10n.youLeftMeetup, title: l10n.leftMeetup);
-      await _refreshAll();
-    } catch (_) {
-      AppToast.error(l10n.leaveMeetupFailed);
-    }
+    await controller.leaveMeetup(meetup.id, l10n);
   }
 
   void _openChat(Meetup meetup, AppLocalizations l10n) {
-    if (!meetup.isJoined) {
+    // 组织者或已加入的成员都可以访问聊天室
+    if (!meetup.isJoined && !meetup.isOrganizer) {
       AppToast.warning(l10n.joinToAccessChat, title: l10n.chat);
       return;
     }
 
+    // 跳转到群聊页面
     Get.toNamed(
       AppRoutes.cityChat,
       arguments: {
-        'city': meetup.location.cityName ?? meetup.location.city,
-        'country': meetup.location.country,
+        'city': meetup.title,
+        'country': '${meetup.type} Meetup',
         'meetupId': meetup.id,
         'isMeetupChat': true,
       },
     );
-  }
-
-  void _navigateToDetail(Meetup meetup) {
-    Get.to(() => MeetupDetailPage(meetup: meetup));
   }
 }

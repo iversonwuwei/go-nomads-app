@@ -1,10 +1,11 @@
-import 'package:df_admin_mobile/config/api_config.dart';
-import 'package:df_admin_mobile/core/core.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city.dart';
-import 'package:df_admin_mobile/features/city/domain/entities/city_detail.dart';
-import 'package:df_admin_mobile/features/city/domain/repositories/i_city_repository.dart';
-import 'package:df_admin_mobile/features/city/infrastructure/models/city_detail_dto.dart' as dto;
-import 'package:df_admin_mobile/services/http_service.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
+import 'package:go_nomads_app/features/city/infrastructure/models/city_detail_dto.dart' as dto;
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:dio/dio.dart';
 
 /// 城市仓储实现 (Infrastructure Layer)
@@ -49,7 +50,7 @@ class CityRepository implements ICityRepository {
   }) async {
     try {
       final queryParameters = <String, dynamic>{
-        'page': page,
+        'pageNumber': page,
         'pageSize': pageSize,
       };
 
@@ -61,12 +62,56 @@ class CityRepository implements ICityRepository {
         queryParameters['countryId'] = countryId;
       }
 
+      // 使用轻量级城市列表 API（不含天气数据，性能更优）
       final response = await _httpService.get(
-        _baseUrl,
+        '$_baseUrl/list',
         queryParameters: queryParameters,
       );
 
       // API 返回格式: { items: [...], totalCount: 100 }
+      final data = response.data as Map<String, dynamic>;
+      final items = data['items'] as List<dynamic>? ?? [];
+
+      // 调试：打印第一个城市的原始 JSON 数据
+      if (items.isNotEmpty) {
+        final firstItem = items.first as Map<String, dynamic>;
+        log('🔍 [getCities] First city raw JSON keys: ${firstItem.keys.toList()}');
+        log('🔍 [getCities] First city overallScore: ${firstItem['overallScore']}');
+        log('🔍 [getCities] First city name: ${firstItem['name']}');
+      }
+
+      final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
+
+      return Success(cities);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取城市列表失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<List<City>>> getCitiesBasic({
+    int page = 1,
+    int pageSize = 20,
+    String? search,
+  }) async {
+    try {
+      final queryParameters = <String, dynamic>{
+        'pageNumber': page,
+        'pageSize': pageSize,
+      };
+
+      if (search != null && search.isNotEmpty) {
+        queryParameters['search'] = search;
+      }
+
+      // 使用轻量级 API，不包含聚合数据（meetup count, coworking count 等）
+      final response = await _httpService.get(
+        '$_baseUrl/list-basic',
+        queryParameters: queryParameters,
+      );
+
       final data = response.data as Map<String, dynamic>;
       final items = data['items'] as List<dynamic>? ?? [];
 
@@ -76,7 +121,53 @@ class CityRepository implements ICityRepository {
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
     } catch (e) {
-      return Failure(UnknownException('获取城市列表失败: ${e.toString()}'));
+      return Failure(UnknownException('获取城市基础列表失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, CityCountsData>>> getCityCountsBatch(List<String> cityIds) async {
+    try {
+      if (cityIds.isEmpty) {
+        return const Success({});
+      }
+
+      final response = await _httpService.post(
+        '$_baseUrl/counts',
+        data: {'cityIds': cityIds},
+      );
+
+      final responseData = response.data as Map<String, dynamic>;
+      final countsMap = <String, CityCountsData>{};
+
+      // 解析 ApiResponse<Dictionary<Guid, CityCountsDto>> 格式
+      // 后端返回: { "success": true, "data": { "guid-1": {...}, "guid-2": {...} } }
+      Map<String, dynamic> countsData;
+      if (responseData.containsKey('data') && responseData['data'] != null) {
+        countsData = responseData['data'] as Map<String, dynamic>;
+      } else {
+        // 直接是数据（非 ApiResponse 包装）
+        countsData = responseData;
+      }
+
+      for (final entry in countsData.entries) {
+        final cityId = entry.key;
+        if (entry.value is Map<String, dynamic>) {
+          final countData = entry.value as Map<String, dynamic>;
+          countsMap[cityId] = CityCountsData.fromJson({
+            'cityId': cityId,
+            ...countData,
+          });
+        }
+      }
+
+      log('✅ [getCityCountsBatch] 解析了 ${countsMap.length} 个城市的聚合数据');
+      return Success(countsMap);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      log('❌ [getCityCountsBatch] 解析失败: $e');
+      return Failure(UnknownException('获取城市聚合数据失败: ${e.toString()}'));
     }
   }
 
@@ -91,26 +182,26 @@ class CityRepository implements ICityRepository {
       if (response.data is Map<String, dynamic>) {
         final responseData = response.data as Map<String, dynamic>;
 
-        print('🔍 [getCityById] 原始响应数据: ${responseData.keys.toList()}');
+        log('🔍 [getCityById] 原始响应数据: ${responseData.keys.toList()}');
 
         // 检查是否是 ApiResponse 包装格式: { success, message, data }
         if (responseData.containsKey('data') && responseData['data'] != null) {
           cityData = responseData['data'] as Map<String, dynamic>;
-          print('✅ [getCityById] 使用 data 字段');
-          print('🔍 [getCityById] cityData 包含字段: ${cityData.keys.toList()}');
-          print('🔍 [getCityById] moderatorId: ${cityData['moderatorId']}');
-          print('🔍 [getCityById] moderator: ${cityData['moderator']}');
+          log('✅ [getCityById] 使用 data 字段');
+          log('🔍 [getCityById] cityData 包含字段: ${cityData.keys.toList()}');
+          log('🔍 [getCityById] moderatorId: ${cityData['moderatorId']}');
+          log('🔍 [getCityById] moderator: ${cityData['moderator']}');
         } else {
           // 直接就是城市数据
           cityData = responseData;
-          print('⚠️ [getCityById] 直接使用 responseData');
+          log('⚠️ [getCityById] 直接使用 responseData');
         }
       } else {
         throw Exception('Invalid response format');
       }
 
       final city = City.fromJson(cityData);
-      print('🏙️ [getCityById] 解析后城市版主: moderatorId=${city.moderatorId}, moderator=${city.moderator?.name}');
+      log('🏙️ [getCityById] 解析后城市版主: moderatorId=${city.moderatorId}, moderator=${city.moderator?.name}');
       return Success(city);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -207,7 +298,7 @@ class CityRepository implements ICityRepository {
   Future<Result<void>> favoriteCity(String cityId) async {
     try {
       await _httpService.post(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities',
+        '/user-favorite-cities',
         data: {'cityId': cityId},
       );
       return const Success(null);
@@ -221,7 +312,8 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<void>> unfavoriteCity(String cityId) async {
     try {
-      await _httpService.delete('${ApiConfig.apiBaseUrl}/user-favorite-cities/$cityId');
+      // 使用 POST 方法代替 DELETE，兼容某些不支持 DELETE 方法的网络环境
+      await _httpService.post('/user-favorite-cities/$cityId/remove');
       return const Success(null);
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
@@ -233,7 +325,7 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<bool>> isCityFavorited(String cityId) async {
     try {
-      final response = await _httpService.get('${ApiConfig.apiBaseUrl}/user-favorite-cities/check/$cityId');
+      final response = await _httpService.get('/user-favorite-cities/check/$cityId');
       final data = response.data as Map<String, dynamic>;
       final isFavorited = data['isFavorited'] as bool? ?? false;
       return Success(isFavorited);
@@ -249,7 +341,7 @@ class CityRepository implements ICityRepository {
     try {
       // 使用新的 /details 端点获取完整城市信息
       final response = await _httpService.get(
-        '${ApiConfig.apiBaseUrl}/user-favorite-cities/details',
+        '/user-favorite-cities/details',
         queryParameters: {'page': 1, 'pageSize': 100},
       );
 
@@ -270,7 +362,7 @@ class CityRepository implements ICityRepository {
   Future<Result<List<String>>> getUserFavoriteCityIds() async {
     try {
       // 使用正确的 user-favorite-cities API 路径
-      final response = await _httpService.get('${ApiConfig.apiBaseUrl}/user-favorite-cities/ids');
+      final response = await _httpService.get('/user-favorite-cities/ids');
 
       final ids = (response.data as List<dynamic>?)?.map((id) => id.toString()).toList() ?? [];
 
@@ -458,6 +550,38 @@ class CityRepository implements ICityRepository {
   }
 
   @override
+  Future<Result<List<City>>> getCitiesWithCoworking({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final queryParameters = <String, dynamic>{
+        'page': page,
+        'pageSize': pageSize,
+      };
+
+      final response = await _httpService.get(
+        '/cities/with-coworking',
+        queryParameters: queryParameters,
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final items = data['items'] as List<dynamic>? ?? [];
+
+      final cities = items.map((item) {
+        final cityData = item as Map<String, dynamic>;
+        return City.fromJson(cityData);
+      }).toList();
+
+      return Success(cities);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取有Coworking空间的城市列表失败: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Result<Map<String, dynamic>?>> getCityWeather(
     String cityId, {
     bool includeForecast = true,
@@ -509,7 +633,7 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<bool>> assignModerator(String cityId, String userId) async {
     try {
-      print('🔄 [CityRepository] 调用指定版主 API: cityId=$cityId, userId=$userId');
+      log('🔄 [CityRepository] 调用指定版主 API: cityId=$cityId, userId=$userId');
 
       final response = await _httpService.post(
         '$_baseUrl/moderator/assign',
@@ -519,14 +643,14 @@ class CityRepository implements ICityRepository {
         },
       );
 
-      print('✅ [CityRepository] 指定版主成功: response=$response');
+      log('✅ [CityRepository] 指定版主成功: response=$response');
       return const Success(true);
     } on HttpException catch (e) {
-      print('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
+      log('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e, stackTrace) {
-      print('💥 [CityRepository] 未知异常: $e');
-      print('📚 [CityRepository] StackTrace: $stackTrace');
+      log('💥 [CityRepository] 未知异常: $e');
+      log('📚 [CityRepository] StackTrace: $stackTrace');
       return Failure(UnknownException('指定版主失败: ${e.toString()}'));
     }
   }
@@ -534,7 +658,7 @@ class CityRepository implements ICityRepository {
   @override
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
     try {
-      print('🖼️ [CityRepository] 调用生成城市图片 API (异步模式): cityId=$cityId');
+      log('🖼️ [CityRepository] 调用生成城市图片 API (异步模式): cityId=$cityId');
 
       // 使用新的异步接口，立即返回任务ID，不等待图片生成完成
       // 图片生成完成后会通过 SignalR 推送通知
@@ -547,11 +671,11 @@ class CityRepository implements ICityRepository {
         ),
       );
 
-      print('✅ [CityRepository] 图片生成任务已创建');
+      log('✅ [CityRepository] 图片生成任务已创建');
 
       final data = response.data;
       if (data is Map<String, dynamic>) {
-        print('📋 [CityRepository] 任务详情: taskId=${data['data']?['taskId']}, status=${data['data']?['status']}');
+        log('📋 [CityRepository] 任务详情: taskId=${data['data']?['taskId']}, status=${data['data']?['status']}');
         return Success(data);
       }
       if (data is Map) {
@@ -559,12 +683,31 @@ class CityRepository implements ICityRepository {
       }
       return Failure(UnknownException('响应格式错误'));
     } on HttpException catch (e) {
-      print('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
+      log('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e, stackTrace) {
-      print('💥 [CityRepository] 未知异常: $e');
-      print('📚 [CityRepository] StackTrace: $stackTrace');
+      log('💥 [CityRepository] 未知异常: $e');
+      log('📚 [CityRepository] StackTrace: $stackTrace');
       return Failure(UnknownException('创建图片生成任务失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<bool>> deleteCity(String cityId) async {
+    try {
+      log('🗑️ [CityRepository] 删除城市: cityId=$cityId');
+
+      await _httpService.delete('$_baseUrl/$cityId');
+
+      log('✅ [CityRepository] 城市删除成功: cityId=$cityId');
+      return const Success(true);
+    } on HttpException catch (e) {
+      log('❌ [CityRepository] HTTP异常: statusCode=${e.statusCode}, message=${e.message}');
+      return Failure(_convertHttpException(e));
+    } catch (e, stackTrace) {
+      log('💥 [CityRepository] 未知异常: $e');
+      log('📚 [CityRepository] StackTrace: $stackTrace');
+      return Failure(UnknownException('删除城市失败: ${e.toString()}'));
     }
   }
 }

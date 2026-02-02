@@ -1,5 +1,7 @@
-import 'package:df_admin_mobile/features/meetup/domain/entities/meetup.dart';
-import 'package:df_admin_mobile/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 
 /// 获取活动列表 Use Case
 class GetMeetupsUseCase {
@@ -15,8 +17,8 @@ class GetMeetupsUseCase {
     int pageSize = 20,
   }) async {
     try {
-      print('🎯 执行 GetMeetupsUseCase...');
-      print('   筛选条件: status=$status, cityId=$cityId');
+      log('🎯 执行 GetMeetupsUseCase...');
+      log('   筛选条件: status=$status, cityId=$cityId');
 
       final meetups = await _repository.getMeetups(
         status: status,
@@ -25,10 +27,10 @@ class GetMeetupsUseCase {
         pageSize: pageSize,
       );
 
-      print('✅ 获取到 ${meetups.length} 个活动');
+      log('✅ 获取到 ${meetups.length} 个活动');
       return meetups;
     } catch (e) {
-      print('❌ GetMeetupsUseCase 执行失败: $e');
+      log('❌ GetMeetupsUseCase 执行失败: $e');
       rethrow;
     }
   }

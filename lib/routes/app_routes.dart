@@ -1,57 +1,69 @@
-import 'package:df_admin_mobile/features/moderator/presentation/pages/moderator_application_detail_page.dart';
-import 'package:df_admin_mobile/layouts/bottom_nav_layout.dart';
-import 'package:df_admin_mobile/middlewares/auth_middleware.dart';
-import 'package:df_admin_mobile/pages/add_cost_page.dart';
-import 'package:df_admin_mobile/pages/add_coworking_page.dart';
-import 'package:df_admin_mobile/pages/add_innovation_page.dart';
-import 'package:df_admin_mobile/pages/add_review_page.dart';
-import 'package:df_admin_mobile/pages/ai_chat_page.dart';
-import 'package:df_admin_mobile/pages/amap_global_page.dart';
-import 'package:df_admin_mobile/pages/city_chat_page.dart';
-import 'package:df_admin_mobile/pages/city_detail_page.dart';
-import 'package:df_admin_mobile/pages/city_list_page.dart';
-import 'package:df_admin_mobile/pages/city_search_page.dart';
-import 'package:df_admin_mobile/pages/community_page.dart';
-import 'package:df_admin_mobile/pages/coworking_detail_page.dart';
-import 'package:df_admin_mobile/pages/coworking_home_page.dart';
-import 'package:df_admin_mobile/pages/coworking_list_page.dart';
-import 'package:df_admin_mobile/pages/create_meetup_page.dart';
-import 'package:df_admin_mobile/pages/create_travel_plan_page.dart';
-import 'package:df_admin_mobile/pages/data_service_page.dart';
-import 'package:df_admin_mobile/pages/direct_chat_page.dart';
-import 'package:df_admin_mobile/pages/edit_basic_info_page.dart';
-import 'package:df_admin_mobile/pages/edit_interests_page.dart';
-import 'package:df_admin_mobile/pages/edit_skills_page.dart';
-import 'package:df_admin_mobile/pages/edit_social_links_page.dart';
-import 'package:df_admin_mobile/pages/favorites_page.dart';
-import 'package:df_admin_mobile/pages/global_map_page.dart';
-import 'package:df_admin_mobile/pages/hotel_detail_page.dart';
-import 'package:df_admin_mobile/pages/hotel_list_page.dart';
-import 'package:df_admin_mobile/pages/innovation_detail_page.dart';
-import 'package:df_admin_mobile/pages/innovation_list_page.dart';
-import 'package:df_admin_mobile/pages/invite_to_meetup_page.dart';
-import 'package:df_admin_mobile/pages/meetup_detail_page.dart';
-import 'package:df_admin_mobile/pages/meetups_list_page.dart';
-import 'package:df_admin_mobile/pages/member_detail_page.dart';
-import 'package:df_admin_mobile/pages/my_meetups_page.dart';
-import 'package:df_admin_mobile/pages/nomads_login_page.dart';
-import 'package:df_admin_mobile/pages/notifications_page.dart';
-import 'package:df_admin_mobile/pages/profile_edit_page.dart';
-import 'package:df_admin_mobile/pages/profile_page.dart';
-import 'package:df_admin_mobile/pages/pros_and_cons_add_page.dart';
-import 'package:df_admin_mobile/pages/register_page.dart';
-import 'package:df_admin_mobile/pages/skills_interests_page.dart';
-import 'package:df_admin_mobile/pages/travel_plan_page.dart';
-import 'package:df_admin_mobile/pages/user_profile_page.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/features/city_list/city_list.dart';
+import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
+import 'package:go_nomads_app/features/membership/presentation/pages/membership_plan_page.dart';
+import 'package:go_nomads_app/features/moderator/presentation/pages/moderator_application_detail_page.dart';
+import 'package:go_nomads_app/features/travel_history/travel_history.dart';
+import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav.dart';
+import 'package:go_nomads_app/middlewares/auth_middleware.dart';
+import 'package:go_nomads_app/pages/add_cost/add_cost_page.dart';
+import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
+import 'package:go_nomads_app/pages/add_hotel_page.dart';
+import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
+import 'package:go_nomads_app/pages/add_review_page.dart';
+import 'package:go_nomads_app/pages/ai_chat/ai_chat_binding.dart';
+import 'package:go_nomads_app/pages/ai_chat/ai_chat_page.dart';
+import 'package:go_nomads_app/pages/city_chat_page.dart';
+import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
+import 'package:go_nomads_app/pages/city_search_page.dart';
+import 'package:go_nomads_app/pages/community_page.dart';
+import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_page.dart';
+import 'package:go_nomads_app/pages/coworking_home_page.dart';
+import 'package:go_nomads_app/pages/coworking_list_page.dart';
+import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
+import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
+import 'package:go_nomads_app/pages/direct_chat_page.dart';
+import 'package:go_nomads_app/pages/edit_basic_info_page.dart';
+import 'package:go_nomads_app/pages/edit_interests_page.dart';
+import 'package:go_nomads_app/pages/edit_skills_page.dart';
+import 'package:go_nomads_app/pages/edit_social_links_page.dart';
+import 'package:go_nomads_app/pages/favorites_page.dart';
+import 'package:go_nomads_app/pages/global_map_page.dart';
+import 'package:go_nomads_app/pages/home/home.dart';
+import 'package:go_nomads_app/pages/hotel_detail_page.dart';
+import 'package:go_nomads_app/pages/hotel_list/hotel_list_page.dart';
+import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_page.dart';
+import 'package:go_nomads_app/pages/innovation_list/innovation_list_page.dart';
+import 'package:go_nomads_app/pages/invite_to_meetup_page.dart';
+import 'package:go_nomads_app/pages/legal/community_guidelines_page.dart';
+import 'package:go_nomads_app/pages/legal/terms_of_service_page.dart';
+import 'package:go_nomads_app/pages/login/login.dart';
+import 'package:go_nomads_app/pages/meetup_list/meetup_list.dart';
+import 'package:go_nomads_app/pages/member_detail_page.dart';
+import 'package:go_nomads_app/pages/my_meetups_page.dart';
+import 'package:go_nomads_app/pages/notifications_page.dart';
+import 'package:go_nomads_app/pages/profile_edit_page.dart';
+import 'package:go_nomads_app/pages/profile_page.dart';
+import 'package:go_nomads_app/pages/pros_and_cons_add_page.dart';
+import 'package:go_nomads_app/pages/register/register.dart';
+import 'package:go_nomads_app/pages/skills_interests_page.dart';
+import 'package:go_nomads_app/pages/travel_plan/travel_plan_page.dart';
+import 'package:go_nomads_app/pages/user_profile_page.dart';
 
 class AppRoutes {
   // ============================================================================
+  // 启动页路由（内部使用）
+  // ============================================================================
+  static const String splash = '/';
+
+  // ============================================================================
   // 白名单路由 - 不需要认证
   // ============================================================================
-  static const String home = '/';
+  static const String home = '/home';
   static const String login = '/login';
   static const String register = '/register';
+  static const String termsOfService = '/terms-of-service';
+  static const String communityGuidelinesPage = '/community-guidelines';
 
   // ============================================================================
   // 城市相关路由
@@ -62,7 +74,6 @@ class AppRoutes {
   static const String cityChat = '/city-chat';
   static const String favorites = '/favorites';
   static const String globalMap = '/global-map';
-  static const String amapGlobal = '/amap-global';
   static const String addReview = '/add-review';
   static const String addCost = '/add-cost';
   static const String prosConsAdd = '/pros-cons-add';
@@ -89,12 +100,14 @@ class AppRoutes {
   // ============================================================================
   static const String hotelList = '/hotel-list';
   static const String hotelDetail = '/hotel-detail';
+  static const String addHotel = '/add-hotel';
 
   // ============================================================================
   // 旅行计划相关路由
   // ============================================================================
   static const String travelPlan = '/travel-plan';
   static const String createTravelPlan = '/create-travel-plan';
+  static const String travelHistory = '/travel-history';
 
   // ============================================================================
   // 创新项目相关路由
@@ -115,6 +128,11 @@ class AppRoutes {
   static const String editSkills = '/edit-skills';
   static const String editInterests = '/edit-interests';
   static const String editSocialLinks = '/edit-social-links';
+
+  // ============================================================================
+  // 会员相关路由
+  // ============================================================================
+  static const String membershipPlan = '/membership-plan';
 
   // ============================================================================
   // AI 和聊天相关路由
@@ -147,13 +165,25 @@ class AppRoutes {
     // ============================================================================
     GetPage(
       name: login,
-      page: () => const NomadsLoginPage(),
+      page: () => const LoginPage(),
+      binding: LoginBinding(),
       // 🚫 无 middleware - 登录页
     ),
     GetPage(
       name: register,
       page: () => const RegisterPage(),
+      binding: RegisterBinding(),
       // 🚫 无 middleware - 注册页
+    ),
+    GetPage(
+      name: termsOfService,
+      page: () => const TermsOfServicePage(),
+      // 🚫 无 middleware - 服务条款
+    ),
+    GetPage(
+      name: communityGuidelinesPage,
+      page: () => const CommunityGuidelinesPage(),
+      // 🚫 无 middleware - 社区准则
     ),
 
     // ============================================================================
@@ -161,7 +191,8 @@ class AppRoutes {
     // ============================================================================
     GetPage(
       name: home,
-      page: () => const BottomNavLayout(child: DataServicePage()),
+      page: () => const BottomNavLayout(child: HomePage()),
+      binding: HomePageBinding(),
       middlewares: [AuthMiddleware()],
     ),
 
@@ -171,6 +202,7 @@ class AppRoutes {
     GetPage(
       name: cityList,
       page: () => const CityListPage(),
+      binding: CityListBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
@@ -180,11 +212,13 @@ class AppRoutes {
         return CityDetailPage(
           cityId: args['cityId'] ?? '',
           cityName: args['cityName'] ?? '',
+          cityImages: (args['imageUrls'] as List?)?.whereType<String>().toList() ?? [],
           cityImage: args['cityImage'] ?? '',
           overallScore: args['overallScore'] ?? 0.0,
           reviewCount: args['reviewCount'] ?? 0,
         );
       },
+      binding: CityDetailBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
@@ -194,7 +228,9 @@ class AppRoutes {
     ),
     GetPage(
       name: cityChat,
-      page: () => const BottomNavLayout(child: CityChatPage()),
+      page: () => const CityChatPage(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 200),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
@@ -205,11 +241,6 @@ class AppRoutes {
     GetPage(
       name: globalMap,
       page: () => const GlobalMapPage(),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: amapGlobal,
-      page: () => const AmapGlobalPage(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
@@ -252,12 +283,15 @@ class AppRoutes {
     // ============================================================================
     GetPage(
       name: meetupsList,
-      page: () => const MeetupsListPage(),
+      page: () => const MeetupListPage(),
+      binding: MeetupListBinding(),
       middlewares: [AuthMiddleware()],
+      preventDuplicates: false, // 允许重复进入，确保每次都重新加载数据
     ),
     GetPage(
       name: meetupDetail,
       page: () => MeetupDetailPage(meetup: Get.arguments),
+      binding: MeetupDetailBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
@@ -295,6 +329,7 @@ class AppRoutes {
         );
       },
       middlewares: [AuthMiddleware()],
+      preventDuplicates: false, // 允许重复进入，确保每次都重新加载数据
     ),
     GetPage(
       name: coworkingDetail,
@@ -333,6 +368,18 @@ class AppRoutes {
       page: () => HotelDetailPage(hotelId: Get.arguments),
       middlewares: [AuthMiddleware()],
     ),
+    GetPage(
+      name: addHotel,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        return AddHotelPage(
+          cityId: args?['cityId'],
+          cityName: args?['cityName'],
+          countryName: args?['countryName'],
+        );
+      },
+      middlewares: [AuthMiddleware()],
+    ),
 
     // ============================================================================
     // 🔒 旅行计划相关路由 - 需要认证
@@ -358,6 +405,19 @@ class AppRoutes {
           cityName: args['cityName'],
         );
       },
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: travelHistory,
+      page: () => const TravelHistoryPage(),
+      binding: TravelHistoryBinding(),
+      middlewares: [AuthMiddleware()],
+    ),
+    // 访问地点路由
+    GetPage(
+      name: TravelHistoryRoutes.visitedPlaces,
+      page: () => const VisitedPlacesPage(),
+      binding: VisitedPlacesBinding(),
       middlewares: [AuthMiddleware()],
     ),
 
@@ -395,7 +455,7 @@ class AppRoutes {
     ),
     GetPage(
       name: userProfile,
-      page: () => const UserProfilePage(),
+      page: () => UserProfilePage(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
@@ -430,11 +490,21 @@ class AppRoutes {
     ),
 
     // ============================================================================
+    // 🔒 会员相关路由 - 需要认证
+    // ============================================================================
+    GetPage(
+      name: membershipPlan,
+      page: () => const MembershipPlanPage(),
+      middlewares: [AuthMiddleware()],
+    ),
+
+    // ============================================================================
     // 🔒 AI 和聊天相关路由 - 需要认证
     // ============================================================================
     GetPage(
       name: aiChat,
       page: () => const AiChatPage(),
+      binding: AiChatBinding(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
