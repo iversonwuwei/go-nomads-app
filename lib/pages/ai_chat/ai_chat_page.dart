@@ -8,7 +8,9 @@ import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_hero_card.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_input_bar.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_message_list.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_streaming_status.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 import 'package:intl/intl.dart';
 
 /// AI Chat 页面
@@ -60,46 +62,59 @@ class AiChatPage extends GetView<AiChatController> {
     );
   }
 
-  void _showHistorySheet(BuildContext context) {
-    controller.loadConversationList();
+  Future<void> _showHistorySheet(BuildContext context) async {
+    // 显示优雅的加载对话框
+    AppLoadingDialog.show(
+      title: '加载历史对话...',
+      subtitle: '请稍候',
+    );
+
+    try {
+      // 加载历史对话
+      await controller.loadConversationList();
+    } finally {
+      // 关闭加载对话框
+      AppLoadingDialog.hide();
+    }
+
+    // 如果没有历史对话，直接提示
+    if (controller.historyConversations.isEmpty) {
+      AppToast.info('暂无历史对话，直接开始新对话吧');
+      return;
+    }
+
+    // 有历史对话才显示底部抽屉
+    if (!context.mounted) return;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       backgroundColor: Colors.white,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.6,
+      ),
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 6),
                 const Text(
                   '历史对话',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
-                const SizedBox(height: 12),
-                Flexible(
-                  child: Obx(() {
-                    if (controller.isHistoryLoading.value) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+                const SizedBox(height: 16),
+                Obx(() {
+                  final items = controller.historyConversations;
 
-                    final items = controller.historyConversations;
-                    if (items.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Text(
-                          '暂无历史对话',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      );
-                    }
-
-                    return ListView.separated(
+                  return ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(sheetContext).size.height * 0.45,
+                    ),
+                    child: ListView.separated(
                       shrinkWrap: true,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: EdgeInsets.zero,
                       itemCount: items.length,
                       separatorBuilder: (_, __) => const Divider(height: 1),
                       itemBuilder: (context, index) {
@@ -131,9 +146,9 @@ class AiChatPage extends GetView<AiChatController> {
                           },
                         );
                       },
-                    );
-                  }),
-                ),
+                    ),
+                  );
+                }),
               ],
             ),
           ),

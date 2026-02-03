@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:ui';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/application/use_case.dart';
 import 'package:go_nomads_app/core/auth/token_manager.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
@@ -15,7 +16,6 @@ import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// 认证状态控制器
 class AuthStateController extends GetxController {

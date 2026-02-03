@@ -62,25 +62,17 @@ class AiChatController extends GetxController {
       isInitializing.value = true;
       hasInitError.value = false;
       initErrorMessage.value = '';
-      await loadConversationList();
-      if (historyConversations.isEmpty) {
-        conversation.value = null;
-        messages.clear();
-        return;
-      }
-      await _startNewConversation();
-      await loadHistory();
+
+      // 初始化为空状态，不预加载历史对话
+      // 用户可以直接开始新对话，或点击历史图标查看历史
+      conversation.value = null;
+      messages.clear();
     } catch (e, stack) {
       log('❌ 初始化 AI Chat 失败: $e\n$stack');
       hasInitError.value = true;
       initErrorMessage.value = 'AI 服务暂时不可用，请稍后重试';
-      // 不显示 Toast，让 UI 显示错误状态
     } finally {
       isInitializing.value = false;
-      // 初始化完成后，确保滚动到底部显示最新消息
-      if (messages.isNotEmpty) {
-        _scrollToBottom(delay: const Duration(milliseconds: 300), animate: false);
-      }
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 
 import 'app_toast.dart';
 
@@ -82,21 +83,13 @@ class AdminDeleteButton extends StatelessWidget {
     if (confirmed != true) return;
 
     // 显示加载指示器
-    Get.dialog(
-      const PopScope(
-        canPop: false,
-        child: Center(child: CircularProgressIndicator()),
-      ),
-      barrierDismissible: false,
-    );
+    AppLoadingDialog.showSimple();
 
     try {
       final success = await onDelete();
 
       // 关闭加载指示器
-      if (Get.isDialogOpen == true) {
-        Get.back();
-      }
+      AppLoadingDialog.hide();
 
       if (success) {
         AppToast.success('$entityName已删除');
@@ -109,9 +102,7 @@ class AdminDeleteButton extends StatelessWidget {
       }
     } catch (e) {
       // 关闭加载指示器
-      if (Get.isDialogOpen == true) {
-        Get.back();
-      }
+      AppLoadingDialog.hide();
       AppToast.error('删除失败: $e');
     }
   }

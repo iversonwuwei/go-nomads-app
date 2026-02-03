@@ -1,10 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 
 /// 活动邀请响应对话框
 class EventInvitationDialog extends StatelessWidget {
@@ -174,10 +175,7 @@ class EventInvitationDialog extends StatelessWidget {
     final notificationController = Get.find<NotificationStateController>();
 
     // 显示加载指示器
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
+    AppLoadingDialog.showSimple();
 
     final success = await notificationController.respondToEventInvitation(
       notificationId: notification.id,
@@ -186,7 +184,7 @@ class EventInvitationDialog extends StatelessWidget {
     );
 
     // 关闭加载指示器
-    Get.back();
+    AppLoadingDialog.hide();
 
     if (success) {
       AppToast.success(accepted ? '已接受邀请' : '已拒绝邀请');
@@ -375,10 +373,7 @@ class ModeratorTransferDialog extends StatelessWidget {
     final notificationController = Get.find<NotificationStateController>();
 
     // 显示加载指示器
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
+    AppLoadingDialog.showSimple();
 
     final success = await notificationController.respondToModeratorTransfer(
       notificationId: notification.id,
@@ -387,7 +382,7 @@ class ModeratorTransferDialog extends StatelessWidget {
     );
 
     // 关闭加载指示器
-    Get.back();
+    AppLoadingDialog.hide();
 
     if (success) {
       AppToast.success(accepted ? '已接受版主转让' : '已拒绝版主转让');

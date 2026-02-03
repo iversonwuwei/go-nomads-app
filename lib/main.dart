@@ -245,11 +245,13 @@ class _AppWrapperState extends State<AppWrapper> {
     // 如果初始化已经完成，立即导航
     if (_initCompleter.value) {
       log('📱 初始化已完成，立即导航');
-      _navigateToTargetPage();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToTargetPage();
+      });
     }
 
-    // 添加超时保护：5秒后如果还没导航，强制导航
-    Future.delayed(const Duration(seconds: 5), () {
+    // 添加超时保护：3秒后如果还没导航，强制导航
+    Future.delayed(const Duration(seconds: 3), () {
       if (!_hasNavigatedFromAppWrapper && mounted) {
         log('⏰ 超时保护触发，强制导航');
         _navigateToTargetPage();
@@ -266,7 +268,10 @@ class _AppWrapperState extends State<AppWrapper> {
   void _onInitComplete() {
     log('📱 _onInitComplete 被调用 - value=${_initCompleter.value}, hasNavigated=$_hasNavigatedFromAppWrapper');
     if (_initCompleter.value && !_hasNavigatedFromAppWrapper && mounted) {
-      _navigateToTargetPage();
+      // 使用 addPostFrameCallback 确保在当前帧结束后执行
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToTargetPage();
+      });
     }
   }
 
@@ -278,35 +283,27 @@ class _AppWrapperState extends State<AppWrapper> {
     _hasNavigatedFromAppWrapper = true;
     log('📱 _navigateToTargetPage 执行导航...');
 
-    // 延迟一帧后导航，确保 UI 已完全构建
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        log('📱 postFrameCallback: widget 已销毁');
-        return;
-      }
-
-      // 检查认证状态来决定目标页面
-      String targetRoute;
-      try {
-        final authController = Get.find<AuthStateController>();
-        log('📱 AuthStateController found: isAuthenticated=${authController.isAuthenticated.value}');
-        if (authController.isAuthenticated.value &&
-            authController.currentToken.value != null &&
-            !authController.currentToken.value!.isExpired) {
-          targetRoute = AppRoutes.home;
-          log('🚀 已认证，导航到首页...');
-        } else {
-          targetRoute = AppRoutes.login;
-          log('🚀 未认证，导航到登录页...');
-        }
-      } catch (e) {
+    // 检查认证状态来决定目标页面
+    String targetRoute;
+    try {
+      final authController = Get.find<AuthStateController>();
+      log('📱 AuthStateController found: isAuthenticated=${authController.isAuthenticated.value}');
+      if (authController.isAuthenticated.value &&
+          authController.currentToken.value != null &&
+          !authController.currentToken.value!.isExpired) {
+        targetRoute = AppRoutes.home;
+        log('🚀 已认证，导航到首页...');
+      } else {
         targetRoute = AppRoutes.login;
-        log('🚀 认证状态检查失败($e)，导航到登录页...');
+        log('🚀 未认证，导航到登录页...');
       }
+    } catch (e) {
+      targetRoute = AppRoutes.login;
+      log('🚀 认证状态检查失败($e)，导航到登录页...');
+    }
 
-      log('📱 执行 Get.offNamed($targetRoute)');
-      Get.offNamed(targetRoute);
-    });
+    log('📱 执行 Get.offNamed($targetRoute)');
+    Get.offNamed(targetRoute);
   }
 
   @override

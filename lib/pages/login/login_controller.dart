@@ -12,6 +12,7 @@ import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 
 /// 登录模式
 enum LoginMode { email, phone }
@@ -323,7 +324,7 @@ class LoginController extends GetxController {
 
     try {
       final authController = Get.find<AuthStateController>();
-      
+
       // 调用社交登录，传入回调：授权成功后才显示加载状态
       final success = await authController.socialLogin(
         type,
@@ -335,9 +336,7 @@ class LoginController extends GetxController {
       );
 
       // 关闭加载对话框
-      if (Get.isDialogOpen ?? false) {
-        Get.back();
-      }
+      AppLoadingDialog.hide();
       isLoading.value = false;
 
       if (success) {
@@ -347,9 +346,7 @@ class LoginController extends GetxController {
       }
     } catch (e) {
       // 关闭加载对话框
-      if (Get.isDialogOpen ?? false) {
-        Get.back();
-      }
+      AppLoadingDialog.hide();
       isLoading.value = false;
 
       log('❌ $platformName 登录异常: $e');
@@ -359,57 +356,10 @@ class LoginController extends GetxController {
 
   /// 显示社交登录加载对话框
   void _showSocialLoginLoadingDialog(String platformName) {
-    Get.dialog(
-      PopScope(
-        canPop: false,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            margin: const EdgeInsets.symmetric(horizontal: 40),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(
-                  color: LoginConstants.primaryColor,
-                  strokeWidth: 3,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  '正在$platformName登录...',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '请稍候',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-      barrierColor: Colors.black54,
+    AppLoadingDialog.show(
+      title: '正在$platformName登录...',
+      subtitle: '请稍候',
+      indicatorColor: LoginConstants.primaryColor,
     );
   }
 
