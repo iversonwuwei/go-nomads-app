@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:go_nomads_app/core/application/use_case.dart';
 import 'package:go_nomads_app/core/auth/token_manager.dart';
@@ -350,15 +351,13 @@ class AuthStateController extends GetxController {
 
   /// 社交登录 (微信、支付宝、QQ 等)
   /// [type] 社交平台类型
-  Future<bool> socialLogin(SocialLoginType type) async {
-    isLoading.value = true;
-
+  /// [onAuthSuccess] 可选回调，在第三方授权成功后、调用后端 API 前触发
+  Future<bool> socialLogin(SocialLoginType type, {VoidCallback? onAuthSuccess}) async {
     try {
-      // 1. 调用 SDK 获取授权码
+      // 1. 调用 SDK 获取授权码（此时会跳转到微信/QQ等APP）
       final sdkResult = await _socialLoginService.login(type);
 
       if (!sdkResult.success) {
-        isLoading.value = false;
         if (sdkResult.isCancelled) {
           // 用户取消授权，使用普通提示
           AppToast.info('用户取消授权');
@@ -368,6 +367,10 @@ class AuthStateController extends GetxController {
         }
         return false;
       }
+
+      // ⭐ 授权成功，触发回调（此时才显示加载状态）
+      onAuthSuccess?.call();
+      isLoading.value = true;
 
       // 2. 将授权信息发送给后端换取 token
       final provider = _mapSocialLoginTypeToProvider(type);

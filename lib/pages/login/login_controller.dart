@@ -68,7 +68,7 @@ class LoginController extends GetxController {
     passwordController = TextEditingController();
     phoneController = TextEditingController();
     smsCodeController = TextEditingController();
-    
+
     _loadRememberMe();
     // 监听输入变化，实时验证
     ever(showValidationErrors, (_) {
@@ -323,7 +323,22 @@ class LoginController extends GetxController {
 
     try {
       final authController = Get.find<AuthStateController>();
-      final success = await authController.socialLogin(type);
+      
+      // 调用社交登录，传入回调：授权成功后才显示加载状态
+      final success = await authController.socialLogin(
+        type,
+        onAuthSuccess: () {
+          log('✅ $platformName 授权成功，开始登录...');
+          isLoading.value = true;
+          _showSocialLoginLoadingDialog(platformName);
+        },
+      );
+
+      // 关闭加载对话框
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+      isLoading.value = false;
 
       if (success) {
         log('✅ $platformName 登录成功');
@@ -331,9 +346,71 @@ class LoginController extends GetxController {
         Get.offAllNamed(AppRoutes.home);
       }
     } catch (e) {
+      // 关闭加载对话框
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+      isLoading.value = false;
+
       log('❌ $platformName 登录异常: $e');
       AppToast.error('$platformName 登录失败，请稍后重试', title: '登录失败');
     }
+  }
+
+  /// 显示社交登录加载对话框
+  void _showSocialLoginLoadingDialog(String platformName) {
+    Get.dialog(
+      PopScope(
+        canPop: false,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(
+                  color: LoginConstants.primaryColor,
+                  strokeWidth: 3,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '正在$platformName登录...',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '请稍候',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+    );
   }
 
   void _showLoadingDialog(BuildContext context) {
