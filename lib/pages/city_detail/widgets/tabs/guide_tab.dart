@@ -1,13 +1,13 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// Guide Tab - AI 数字游民指南
 /// 使用 GetView 绑定 CityDetailController
@@ -214,6 +214,7 @@ class _GuideActionBar extends StatelessWidget {
     );
 
     if (!canUse) return;
+    if (!context.mounted) return;
     _showAIGenerateProgressDialog(context);
   }
 
@@ -277,7 +278,9 @@ class _GuideActionBar extends StatelessWidget {
     );
 
     aiController.generateDigitalNomadGuideStream(cityId: cityId, cityName: cityName).then((_) {
-      Navigator.pop(context);
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
     });
   }
 }

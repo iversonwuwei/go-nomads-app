@@ -1868,14 +1868,17 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
     return GestureDetector(
       onTap: () => _showFullScreenImage(imageUrl!),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          constraints: const BoxConstraints(
-            maxWidth: 200,
-            maxHeight: 200,
+      child: Hero(
+        tag: 'image_$imageUrl',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            constraints: const BoxConstraints(
+              maxWidth: 200,
+              maxHeight: 200,
+            ),
+            child: _buildNetworkImage(imageUrl),
           ),
-          child: _buildNetworkImage(imageUrl),
         ),
       ),
     );
@@ -2170,93 +2173,158 @@ class _FullScreenImageViewer extends StatefulWidget {
   State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
 }
 
-class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
+class _FullScreenImageViewerState extends State<_FullScreenImageViewer> with SingleTickerProviderStateMixin {
   final TransformationController _transformationController = TransformationController();
+  late AnimationController _animationController;
+  Animation<Matrix4>? _animation;
   double _currentScale = 1.0;
+  bool _showControls = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _animationController.addListener(() {
+      if (_animation != null) {
+        _transformationController.value = _animation!.value;
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _transformationController.dispose();
     super.dispose();
+  }
+
+  /// 双击缩放
+  void _handleDoubleTap(TapDownDetails details) {
+    final position = details.localPosition;
+    final endScale = _currentScale > 1.0 ? 1.0 : 2.5;
+
+    final Matrix4 endMatrix;
+    if (endScale == 1.0) {
+      endMatrix = Matrix4.identity();
+    } else {
+      final tx = -position.dx * (endScale - 1);
+      final ty = -position.dy * (endScale - 1);
+      endMatrix = Matrix4.identity()
+        ..setEntry(0, 3, tx)
+        ..setEntry(1, 3, ty)
+        ..setEntry(0, 0, endScale)
+        ..setEntry(1, 1, endScale);
+    }
+
+    _animation = Matrix4Tween(
+      begin: _transformationController.value,
+      end: endMatrix,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _animationController.forward(from: 0);
+    setState(() => _currentScale = endScale);
+  }
+
+  /// 切换控制栏显示
+  void _toggleControls() {
+    setState(() => _showControls = !_showControls);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white, size: 28),
-          onPressed: () => Get.back(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.download, color: Colors.white, size: 20),
-            onPressed: () {
-              AppToast.info('保存功能即将推出');
-            },
-          ),
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.share, color: Colors.white, size: 20),
-            onPressed: () {
-              AppToast.info('分享功能即将推出');
-            },
-          ),
-        ],
-      ),
+      extendBodyBehindAppBar: true,
+      appBar: _showControls
+          ? AppBar(
+              backgroundColor: Colors.black.withValues(alpha: 0.5),
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                onPressed: () => Get.back(),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(FontAwesomeIcons.download, color: Colors.white, size: 20),
+                  onPressed: () {
+                    AppToast.info('保存功能即将推出');
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(FontAwesomeIcons.share, color: Colors.white, size: 20),
+                  onPressed: () {
+                    AppToast.info('分享功能即将推出');
+                  },
+                ),
+              ],
+            )
+          : null,
       body: GestureDetector(
-        onTap: () => Get.back(),
-        child: Center(
-          child: InteractiveViewer(
-            transformationController: _transformationController,
-            minScale: 0.5,
-            maxScale: 4.0,
-            onInteractionEnd: (details) {
-              setState(() {
-                _currentScale = _transformationController.value.getMaxScaleOnAxis();
-              });
-            },
-            child: _buildFullScreenImage(),
+        onTap: _toggleControls,
+        onDoubleTapDown: _handleDoubleTap,
+        child: Container(
+          color: Colors.black,
+          child: Center(
+            child: Hero(
+              tag: 'image_${widget.imagePath}',
+              child: InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 4.0,
+                onInteractionEnd: (details) {
+                  setState(() {
+                    _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                  });
+                },
+                child: _buildFullScreenImage(),
+              ),
+            ),
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        color: Colors.black,
-        padding: const EdgeInsets.all(16),
-        child: SafeArea(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.magnifyingGlassMinus, color: Colors.white54, size: 20),
-                onPressed: () {
-                  _transformationController.value = Matrix4.identity();
-                  setState(() => _currentScale = 1.0);
-                },
+      bottomNavigationBar: _showControls
+          ? Container(
+              color: Colors.black.withValues(alpha: 0.5),
+              padding: const EdgeInsets.all(16),
+              child: SafeArea(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(FontAwesomeIcons.magnifyingGlassMinus, color: Colors.white54, size: 20),
+                      onPressed: () {
+                        _transformationController.value = Matrix4.identity();
+                        setState(() => _currentScale = 1.0);
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      '${(_currentScale * 100).toInt()}%',
+                      style: const TextStyle(color: Colors.white54, fontSize: 14),
+                    ),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      icon: const Icon(FontAwesomeIcons.magnifyingGlassPlus, color: Colors.white54, size: 20),
+                      onPressed: () {
+                        final currentScale = _transformationController.value.getMaxScaleOnAxis();
+                        if (currentScale < 4.0) {
+                          final newScale = currentScale + 0.5;
+                          _transformationController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
+                          setState(() => _currentScale = newScale);
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 16),
-              Text(
-                '${(_currentScale * 100).toInt()}%',
-                style: const TextStyle(color: Colors.white54, fontSize: 14),
-              ),
-              const SizedBox(width: 16),
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.magnifyingGlassPlus, color: Colors.white54, size: 20),
-                onPressed: () {
-                  final currentScale = _transformationController.value.getMaxScaleOnAxis();
-                  if (currentScale < 4.0) {
-                    final newScale = currentScale + 0.5;
-                    _transformationController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
-                    setState(() => _currentScale = newScale);
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+            )
+          : null,
     );
   }
 

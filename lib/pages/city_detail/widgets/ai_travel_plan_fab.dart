@@ -1,11 +1,11 @@
 import 'dart:developer';
 
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
-import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
+import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
 
 /// AI 旅行计划浮动按钮
 class AiTravelPlanFab extends StatelessWidget {
@@ -89,6 +89,7 @@ class AiTravelPlanFab extends StatelessWidget {
 
       if (!check.canUse) {
         // 显示配额用尽提示对话框
+        if (!context.mounted) return;
         _showQuotaExhaustedDialog(context, check);
         return;
       }

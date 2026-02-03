@@ -1,9 +1,9 @@
-import 'package:go_nomads_app/controllers/edit_basic_info_page_controller.dart';
-import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/edit_basic_info_page_controller.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 基本信息编辑页面
 class EditBasicInfoPage extends StatelessWidget {
@@ -37,7 +37,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   ? null
                   : () async {
                       final success = await controller.saveBasicInfo(formKey);
-                      if (success) {
+                      if (success && context.mounted) {
                         Navigator.pop(context, true);
                       }
                     },

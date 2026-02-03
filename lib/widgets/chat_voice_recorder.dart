@@ -59,6 +59,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
   final AudioRecorder _recorder = AudioRecorder();
   bool _isRecording = false;
   bool _isCancelArea = false;
+  bool _isLongPressing = false; // 跟踪长按状态
   int _recordDuration = 0;
   Timer? _recordTimer;
   String? _recordingPath;
@@ -90,7 +91,16 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
 
   Future<void> _startRecording() async {
     try {
-      if (await _recorder.hasPermission()) {
+      // 检查权限，如果没有权限会触发请求
+      final hasPermission = await _recorder.hasPermission();
+
+      // 权限请求是异步的，用户可能已经松开了手指
+      // 只有在用户仍然按住的情况下才开始录制
+      if (!_isLongPressing) {
+        return;
+      }
+
+      if (hasPermission) {
         final dir = await getTemporaryDirectory();
         _recordingPath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
@@ -199,6 +209,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
 
     return GestureDetector(
       onLongPressStart: (details) {
+        _isLongPressing = true;
         _startY = details.globalPosition.dy;
         _startRecording();
       },
@@ -213,6 +224,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
         });
       },
       onLongPressEnd: (details) {
+        _isLongPressing = false;
         if (_isCancelArea) {
           _cancelRecording();
         } else {
@@ -220,6 +232,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
         }
       },
       onLongPressCancel: () {
+        _isLongPressing = false;
         _cancelRecording();
       },
       child: AnimatedBuilder(
@@ -335,6 +348,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
   final AudioRecorder _recorder = AudioRecorder();
   bool _isRecording = false;
   bool _isCancelArea = false;
+  bool _isLongPressing = false; // 跟踪长按状态
   int _recordDuration = 0;
   Timer? _recordTimer;
   String? _recordingPath;
@@ -361,7 +375,16 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
 
   Future<void> _startRecording() async {
     try {
-      if (await _recorder.hasPermission()) {
+      // 检查权限，如果没有权限会触发请求
+      final hasPermission = await _recorder.hasPermission();
+
+      // 权限请求是异步的，用户可能已经松开了手指
+      // 只有在用户仍然按住的情况下才开始录制
+      if (!_isLongPressing) {
+        return;
+      }
+
+      if (hasPermission) {
         final dir = await getTemporaryDirectory();
         _recordingPath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
@@ -414,6 +437,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
       });
 
       if (send && path != null && _recordDuration >= widget.config.minDuration) {
+        if (!mounted) return;
         Navigator.of(context).pop();
         widget.onSendVoice(path, _recordDuration);
       } else if (_recordDuration < widget.config.minDuration) {
@@ -541,6 +565,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
               padding: const EdgeInsets.only(bottom: 20),
               child: GestureDetector(
                 onLongPressStart: (details) {
+                  _isLongPressing = true;
                   _startY = details.globalPosition.dy;
                   _startRecording();
                 },
@@ -551,6 +576,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                   });
                 },
                 onLongPressEnd: (details) {
+                  _isLongPressing = false;
                   if (_isCancelArea) {
                     _cancelRecording();
                   } else {
@@ -558,6 +584,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                   }
                 },
                 onLongPressCancel: () {
+                  _isLongPressing = false;
                   _cancelRecording();
                 },
                 child: Container(

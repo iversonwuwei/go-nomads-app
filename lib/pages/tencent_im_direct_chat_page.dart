@@ -1,17 +1,18 @@
 import 'dart:async';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
-import 'package:tencent_cloud_chat_sdk/enum/message_elem_type.dart';
-import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
-import 'package:go_nomads_app/features/chat/presentation/controllers/tencent_im_chat_controller.dart';
 import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im.dart';
-import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/features/chat/presentation/controllers/tencent_im_chat_controller.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/chat_voice.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tencent_cloud_chat_sdk/enum/message_elem_type.dart';
+import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 
 /// 腾讯云IM私聊页面
 class TencentIMDirectChatPage extends StatefulWidget {
@@ -269,16 +270,13 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
 
       case MessageElemType.V2TIM_ELEM_TYPE_SOUND:
         final duration = message.soundElem?.duration ?? 0;
-        return GestureDetector(
-          onTap: () => _playVoice(message),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(FontAwesomeIcons.microphone, size: 14, color: textColor),
-              const SizedBox(width: 8),
-              Text('$duration"', style: TextStyle(color: textColor)),
-            ],
-          ),
+        final soundUrl = message.soundElem?.url ?? '';
+        return ChatVoiceMessageSimple(
+          voiceUrl: soundUrl,
+          duration: duration,
+          isMe: isSelf,
+          textColor: textColor,
+          iconColor: isSelf ? Colors.white70 : const Color(0xFFFF3838),
         );
 
       case MessageElemType.V2TIM_ELEM_TYPE_FILE:
@@ -539,11 +537,6 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       final file = result.files.single;
       await _controller.sendFileMessage(file.path!, file.name);
     }
-  }
-
-  void _playVoice(V2TimMessage message) {
-    // TODO: 实现语音播放
-    AppToast.info('播放语音');
   }
 
   void _openFile(V2TimMessage message) {

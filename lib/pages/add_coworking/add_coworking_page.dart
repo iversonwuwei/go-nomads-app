@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/add_coworking_page_controller.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -9,8 +11,6 @@ import 'package:go_nomads_app/pages/add_coworking/add_coworking_location_section
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_pricing_section.dart';
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_specs_section.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class AddCoworkingPage extends StatelessWidget {
   final String? cityId;
@@ -103,7 +103,7 @@ class AddCoworkingPage extends StatelessWidget {
                       l10n.saveSuccess,
                       (e) => e,
                     );
-                    if (success) {
+                    if (success && context.mounted) {
                       // 使用 NavigationUtil 确保在 iOS 上也能正确返回并传递结果
                       await NavigationUtil.popAfterSuccess(result: true, context: context);
                     }

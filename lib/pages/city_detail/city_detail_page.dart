@@ -484,7 +484,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
               (completed) {
                 if (completed) {
                   Future.delayed(const Duration(milliseconds: 800), () {
-                    if (Navigator.of(dialogContext).canPop()) {
+                    if (dialogContext.mounted && Navigator.of(dialogContext).canPop()) {
                       Navigator.of(dialogContext).pop();
                       statusWorker?.dispose();
                       statusWorker = null;

@@ -197,7 +197,7 @@ class CalendarService {
       ),
     );
 
-    if (shouldAdd == true) {
+    if (shouldAdd == true && context.mounted) {
       final result = await addMeetupToCalendar(
         context: context,
         title: title,

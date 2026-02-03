@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/add_cost_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -5,9 +8,6 @@ import 'package:go_nomads_app/pages/add_cost/cost_categories_section.dart';
 import 'package:go_nomads_app/pages/add_cost/currency_section.dart';
 import 'package:go_nomads_app/pages/add_cost/total_and_notes_section.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 添加费用页面
 class AddCostPage extends StatefulWidget {
@@ -57,73 +57,73 @@ class _AddCostPageState extends State<AddCostPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.cityPrimary,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(FontAwesomeIcons.xmark, color: Colors.white),
-            onPressed: () => Get.back(),
-          ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.monthlyCost,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                widget.cityName,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.cityPrimary,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(FontAwesomeIcons.xmark, color: Colors.white),
+          onPressed: () => Get.back(),
         ),
-        body: Form(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.monthlyCost,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              widget.cityName,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: Form(
         key: _controller.formKey,
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Currency Selector
-                      CurrencySection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Currency Selector
+                    CurrencySection(controllerTag: _tag),
+                    const SizedBox(height: 24),
 
-                      // Cost Categories
-                      CostCategoriesSection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+                    // Cost Categories
+                    CostCategoriesSection(controllerTag: _tag),
+                    const SizedBox(height: 24),
 
-                      // Total Display
-                      TotalDisplaySection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+                    // Total Display
+                    TotalDisplaySection(controllerTag: _tag),
+                    const SizedBox(height: 24),
 
-                      // Notes Section
-                      NotesSection(controllerTag: _tag),
-                      const SizedBox(height: 100), // Space for submit button
-                    ],
-                  ),
+                    // Notes Section
+                    NotesSection(controllerTag: _tag),
+                    const SizedBox(height: 100), // Space for submit button
+                  ],
                 ),
               ),
+            ),
 
-              // Submit Button (Fixed at bottom)
-              SubmitButton(
-                controllerTag: _tag,
+            // Submit Button (Fixed at bottom)
+            SubmitButton(
+              controllerTag: _tag,
               onSubmit: () => _handleSubmit(context, l10n),
-              ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -139,7 +139,7 @@ class _AddCostPageState extends State<AddCostPage> {
       costShared: l10n.costShared,
     );
 
-    if (success && mounted) {
+    if (success && context.mounted) {
       NavigationUtil.popAfterSuccess(
         result: {'success': true},
         context: context,

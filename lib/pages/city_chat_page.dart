@@ -2732,6 +2732,7 @@ class _MessageBubble extends StatelessWidget {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
+      if (!context.mounted) return;
       _showMapError(context, 'Apple 地图');
     }
   }
@@ -2743,6 +2744,7 @@ class _MessageBubble extends StatelessWidget {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
+      if (!context.mounted) return;
       _showMapError(context, 'Google 地图');
     }
   }
@@ -2754,7 +2756,10 @@ class _MessageBubble extends StatelessWidget {
         'iosamap://viewMap?sourceApplication=GoNomads&poiname=${Uri.encodeComponent(name)}&lat=$latitude&lon=$longitude&dev=0');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
-    } else {
+    }
+    if (!context.mounted)
+      return;
+    else {
       _showMapError(context, '高德地图');
     }
   }
@@ -2766,7 +2771,10 @@ class _MessageBubble extends StatelessWidget {
         'baidumap://map/marker?location=$latitude,$longitude&title=${Uri.encodeComponent(name)}&coord_type=gcj02&src=GoNomads');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
-    } else {
+    }
+    if (!context.mounted)
+      return;
+    else {
       _showMapError(context, '百度地图');
     }
   }
@@ -2777,7 +2785,10 @@ class _MessageBubble extends StatelessWidget {
     final url = Uri.parse('qqmap://map/marker?marker=coord:$latitude,$longitude;title:${Uri.encodeComponent(name)}');
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
-    } else {
+    }
+    if (!context.mounted)
+      return;
+    else {
       _showMapError(context, '腾讯地图');
     }
   }

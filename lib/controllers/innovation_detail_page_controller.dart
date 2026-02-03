@@ -215,6 +215,7 @@ class InnovationDetailPageController extends GetxController {
             metadata: {'isFollowed': isLiked, 'source': 'detail'},
           ));
           isToggling.value = false;
+          if (!context.mounted) return;
           _showSnackBar(
             context,
             isLiked ? '已关注项目' : '已取消关注',
@@ -225,12 +226,14 @@ class InnovationDetailPageController extends GetxController {
           // API 失败，回滚状态
           isFollowed.value = previousState;
           isToggling.value = false;
+          if (!context.mounted) return;
           _showSnackBar(context, '操作失败: ${error.message}', Colors.red[700]!);
       }
     } catch (e) {
       // 异常处理，回滚状态
       isFollowed.value = previousState;
       isToggling.value = false;
+      if (!context.mounted) return;
       _showSnackBar(context, '操作失败: $e', Colors.red[700]!);
     }
   }

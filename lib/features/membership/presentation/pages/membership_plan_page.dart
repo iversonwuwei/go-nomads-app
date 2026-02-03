@@ -357,7 +357,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     // 显示支付方式选择底部弹窗
     final selectedMethod = await _showPaymentMethodSheet(context, plan);
 
-    if (selectedMethod != null) {
+    if (selectedMethod != null && context.mounted) {
       await _processPayment(context, plan, targetLevel, selectedMethod);
     }
   }
@@ -604,6 +604,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     // 处理结果
     if (errorMessage != null) {
       AppToast.error(l10n.paymentError(errorMessage));
+      if (!context.mounted) return;
       _retryPaymentMethodSelection(context, plan, targetLevel);
     } else if (success) {
       AppToast.info(l10n.openingPaypal);
@@ -611,6 +612,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       // 用户完成支付后会通过 deep link 返回
     } else {
       AppToast.error(l10n.failedToCreateOrder);
+      if (!context.mounted) return;
       _retryPaymentMethodSelection(context, plan, targetLevel);
     }
   }
@@ -637,6 +639,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     // 检查微信是否已安装
     if (!await wechatService.isWeChatInstalled) {
       AppToast.error(l10n.wechatNotInstalled);
+      if (!context.mounted) return;
       _retryPaymentMethodSelection(context, plan, targetLevel);
       return;
     }
@@ -719,9 +722,10 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     // 稍微延迟一下，让用户看清错误提示
     await Future.delayed(const Duration(milliseconds: 500));
 
+    if (!context.mounted) return;
     // 重新显示支付方式选择底部弹窗
     final selectedMethod = await _showPaymentMethodSheet(context, plan);
-    if (selectedMethod != null) {
+    if (selectedMethod != null && context.mounted) {
       await _processPayment(context, plan, targetLevel, selectedMethod);
     }
   }
