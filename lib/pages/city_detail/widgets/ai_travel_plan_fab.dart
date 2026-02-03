@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// AI 旅行计划浮动按钮
 class AiTravelPlanFab extends StatelessWidget {
@@ -151,7 +152,7 @@ class AiTravelPlanFab extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              Get.toNamed('/membership-plans');
+              Get.toNamed(AppRoutes.membershipPlan);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.cityPrimary,

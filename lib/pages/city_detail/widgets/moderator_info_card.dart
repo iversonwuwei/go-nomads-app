@@ -1,15 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
-import 'package:go_nomads_app/features/membership/presentation/pages/membership_plan_page.dart';
 import 'package:go_nomads_app/pages/apply_moderator/apply_moderator.dart';
 import 'package:go_nomads_app/pages/assign_moderator/assign_moderator.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 版主信息卡片 - 显示在城市详情页的版主区域
 ///
@@ -337,7 +337,7 @@ class ModeratorInfoCard extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () {
               Get.back();
-              Get.to(() => const MembershipPlanPage());
+              Get.toNamed(AppRoutes.membershipPlan);
             },
             icon: const Icon(FontAwesomeIcons.arrowUp, size: 14),
             label: const Text('立即升级'),
