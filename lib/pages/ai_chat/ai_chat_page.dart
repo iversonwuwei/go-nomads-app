@@ -105,15 +105,10 @@ class AiChatPage extends GetView<AiChatController> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 16),
-                Obx(() {
-                  final items = controller.historyConversations;
-
-                  return ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(sheetContext).size.height * 0.45,
-                    ),
-                    child: ListView.separated(
-                      shrinkWrap: true,
+                Expanded(
+                  child: Obx(() {
+                    final items = controller.historyConversations;
+                    return ListView.separated(
                       padding: EdgeInsets.zero,
                       itemCount: items.length,
                       separatorBuilder: (_, __) => const Divider(height: 1),
@@ -122,7 +117,6 @@ class AiChatPage extends GetView<AiChatController> {
                         final currentId = controller.conversation.value?.id;
                         final time = item.updatedAt ?? item.createdAt;
                         final timeLabel = time == null ? '' : DateFormat('yyyy-MM-dd HH:mm').format(time);
-
                         return ListTile(
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -146,9 +140,9 @@ class AiChatPage extends GetView<AiChatController> {
                           },
                         );
                       },
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ],
             ),
           ),
