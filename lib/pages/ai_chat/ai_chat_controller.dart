@@ -151,15 +151,6 @@ class AiChatController extends GetxController {
     }
   }
 
-  Future<void> _startNewConversation() async {
-    final conv = await _createNewConversation();
-    if (conv == null) {
-      throw Exception('无法初始化 AI 对话');
-    }
-    conversation.value = conv;
-    messages.clear();
-  }
-
   Future<AiConversation?> _createNewConversation() async {
     try {
       return await _aiChatService.createConversation(
