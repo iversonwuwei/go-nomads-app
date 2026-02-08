@@ -105,7 +105,23 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
   }
 
   Widget _buildBackgroundWithOverlay() {
-    final images = widget.cityImages.isNotEmpty ? widget.cityImages : const [''];
+    // 优先从响应式 currentCity 获取最新图片（支持 SignalR 实时更新）
+    // 回退到导航时传入的静态 cityImages
+    final cityController = Get.find<CityDetailStateController>();
+    final currentCity = cityController.currentCity.value;
+    final List<String> liveImages;
+    if (currentCity != null &&
+        currentCity.landscapeImageUrls != null &&
+        currentCity.landscapeImageUrls!.isNotEmpty) {
+      liveImages = currentCity.landscapeImageUrls!;
+    } else if (currentCity != null &&
+        currentCity.imageUrl != null &&
+        currentCity.imageUrl!.isNotEmpty) {
+      liveImages = [currentCity.imageUrl!];
+    } else {
+      liveImages = widget.cityImages.isNotEmpty ? widget.cityImages : const [''];
+    }
+    final images = liveImages;
 
     return Stack(
       fit: StackFit.expand,

@@ -30,6 +30,7 @@ class CityDetailStateController extends GetxController {
   StreamSubscription<DataChangedEvent>? _ratingChangedSubscription;
   StreamSubscription<Map<String, dynamic>>? _signalRRatingSubscription;
   StreamSubscription<Map<String, dynamic>>? _signalRReviewSubscription;
+  StreamSubscription<Map<String, dynamic>>? _signalRImageSubscription;
 
   CityDetailStateController({
     required GetCityByIdUseCase getCityByIdUseCase,
@@ -82,6 +83,11 @@ class CityDetailStateController extends GetxController {
       _handleSignalRReviewUpdated(data);
     });
 
+    // 监听城市图片更新事件 (来自 SignalR)
+    _signalRImageSubscription = signalRService.cityImageUpdatedStream.listen((data) {
+      _handleSignalRImageUpdated(data);
+    });
+
     log('✅ [CityDetailStateController] SignalR 监听器已设置');
   }
 
@@ -122,6 +128,54 @@ class CityDetailStateController extends GetxController {
     currentCity.value = updatedCity;
 
     log('✅ [城市详情] SignalR 静默更新 Header 评论数据完成');
+  }
+
+  /// 处理 SignalR 城市图片更新事件 (用于详情页顶部图片实时更新)
+  void _handleSignalRImageUpdated(Map<String, dynamic> data) {
+    final cityId = data['cityId'] as String?;
+    final success = data['success'] as bool? ?? false;
+
+    log('📡 [城市详情] 收到 SignalR 图片更新: cityId=$cityId, success=$success, currentCityId=${currentCity.value?.id}');
+
+    if (!success || currentCity.value == null || cityId != currentCity.value!.id) {
+      return;
+    }
+
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch.toString();
+
+    // 提取竖屏图片 URL
+    String? portraitUrl = data['portraitImageUrl'] as String?;
+    if (portraitUrl != null && portraitUrl.isNotEmpty) {
+      portraitUrl = portraitUrl.contains('?')
+          ? '$portraitUrl&v=$cacheBuster'
+          : '$portraitUrl?v=$cacheBuster';
+    }
+
+    // 提取横屏图片 URL 列表
+    List<String>? landscapeUrls;
+    final landscapeImages = data['landscapeImageUrls'];
+    if (landscapeImages is List && landscapeImages.isNotEmpty) {
+      landscapeUrls = landscapeImages.cast<String>().map((url) {
+        return url.contains('?') ? '$url&v=$cacheBuster' : '$url?v=$cacheBuster';
+      }).toList();
+    }
+
+    if (portraitUrl == null && (landscapeUrls == null || landscapeUrls.isEmpty)) {
+      log('⚠️ [城市详情] 未解析到图片URL，跳过更新');
+      return;
+    }
+
+    var updatedCity = currentCity.value!.copyWith(
+      portraitImageUrl: portraitUrl ?? currentCity.value!.portraitImageUrl,
+      landscapeImageUrls: landscapeUrls ?? currentCity.value!.landscapeImageUrls,
+      imageUrl: portraitUrl ?? currentCity.value!.imageUrl,
+    );
+
+    // 强制触发 GetX 更新
+    currentCity.value = null;
+    currentCity.value = updatedCity;
+
+    log('✅ [城市详情] SignalR 城市图片已更新: portrait=${portraitUrl != null}, landscape=${landscapeUrls?.length ?? 0}');
   }
 
   /// 处理 SignalR 城市评分更新事件 (用于 Header 数据同步)
@@ -514,6 +568,8 @@ class CityDetailStateController extends GetxController {
     _signalRRatingSubscription = null;
     _signalRReviewSubscription?.cancel();
     _signalRReviewSubscription = null;
+    _signalRImageSubscription?.cancel();
+    _signalRImageSubscription = null;
 
     // 清理所有状态
     currentCity.value = null;

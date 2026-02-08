@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
-import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// AI 旅行计划浮动按钮
 class AiTravelPlanFab extends StatelessWidget {
@@ -84,14 +83,13 @@ class AiTravelPlanFab extends StatelessWidget {
   }
 
   void _onTap(BuildContext context) async {
-    // 在进入创建页面前先检查配额是否足够（只检查不扣减）
+    // 使用统一的 AiQuotaService 检查配额（只检查不扣减，配额不足时显示升级对话框）
     try {
       final check = await AiQuotaService().checkQuota();
 
       if (!check.canUse) {
-        // 显示配额用尽提示对话框
-        if (!context.mounted) return;
-        _showQuotaExhaustedDialog(context, check);
+        // 通过 AiQuotaService 统一显示配额用尽对话框
+        AiQuotaService().showQuotaExhaustedDialog(check, 'AI 旅行计划');
         return;
       }
     } catch (e) {
@@ -104,64 +102,5 @@ class AiTravelPlanFab extends StatelessWidget {
           cityId: cityId,
           cityName: cityName,
         ));
-  }
-
-  /// 显示配额用尽对话框
-  void _showQuotaExhaustedDialog(BuildContext context, dynamic check) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
-            const SizedBox(width: 8),
-            const Text('AI 配额已用完'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '您本月的 AI 使用次数已达上限 (${check.used}/${check.limit})。',
-              style: const TextStyle(fontSize: 15),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                check.upgradeMessage ?? '升级会员获得更多 AI 使用次数',
-                style: TextStyle(
-                  color: Colors.blue[700],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('稍后再说'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Get.toNamed(AppRoutes.membershipPlan);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.cityPrimary,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('升级会员'),
-          ),
-        ],
-      ),
-    );
   }
 }

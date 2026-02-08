@@ -72,6 +72,11 @@ class AiQuotaService {
   /// 是否可以使用 AI
   bool get canUseAI => _membershipController.canUseAI;
 
+  /// 显示配额用尽对话框（公开方法，供外部直接调用）
+  void showQuotaExhaustedDialog(AiUsageCheck check, [String? featureName]) {
+    _showQuotaExhaustedDialog(check, featureName);
+  }
+
   /// 显示配额用尽对话框
   void _showQuotaExhaustedDialog(AiUsageCheck check, String? featureName) {
     final feature = featureName ?? 'AI 功能';

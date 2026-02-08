@@ -9,7 +9,7 @@ import 'package:go_nomads_app/utils/navigation_util.dart';
 import '../../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../../features/city/application/state_controllers/pros_cons_state_controller.dart';
 import '../../features/city/presentation/controllers/city_detail_state_controller.dart';
-import '../../features/membership/presentation/controllers/membership_state_controller.dart';
+import '../../features/membership/presentation/services/ai_quota_service.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/app_toast.dart';
 import '../add_coworking/add_coworking_page.dart';
@@ -399,42 +399,19 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
   Future<bool> _checkGeneratePermission() async {
     log('🔐 [权限检查] 开始检查生成权限...');
 
-    // 检查是否是管理员
-    try {
-      final cityDetailController = Get.find<CityDetailStateController>();
-      final city = cityDetailController.currentCity.value;
+    // 使用统一的 AiQuotaService 检查配额并显示升级对话框
+    final canUse = await AiQuotaService().checkAndUseAI(
+      featureName: '附近城市生成',
+      showUpgradeDialog: true,
+    );
 
-      if (city != null && city.isCurrentUserAdmin) {
-        log('✅ [权限检查] 当前用户是管理员，允许生成');
-        return true;
-      }
-    } catch (e) {
-      log('⚠️ [权限检查] 获取城市信息失败: $e');
-    }
-
-    // 检查会员权限
-    try {
-      final membershipController = Get.find<MembershipStateController>();
-      final membership = membershipController.membership;
-
-      if (membership == null) {
-        AppToast.error('请先登录');
-        return false;
-      }
-
-      final remaining = membership.aiUsageRemaining;
-      if (remaining <= 0) {
-        AppToast.error('AI 使用次数已用完，请升级会员');
-        return false;
-      }
-
-      log('✅ [权限检查] 会员权限检查通过，剩余次数: $remaining');
-      return true;
-    } catch (e) {
-      log('⚠️ [权限检查] 会员检查失败: $e');
-      AppToast.error('权限检查失败，请稍后再试');
+    if (!canUse) {
+      log('❌ [权限检查] AI 配额不足');
       return false;
     }
+
+    log('✅ [权限检查] 权限检查通过');
+    return true;
   }
 
   void _showNearbyCitiesGenerateDialog(BuildContext context) {
