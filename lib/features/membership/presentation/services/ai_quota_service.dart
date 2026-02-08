@@ -1,9 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/ai_usage_check.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// AI 配额检查服务
 /// 
@@ -28,6 +29,12 @@ class AiQuotaService {
     bool showUpgradeDialog = true,
   }) async {
     try {
+      // Admin 用户无限制，直接允许
+      final isAdmin = await TokenStorageService().isAdmin();
+      if (isAdmin) {
+        return true;
+      }
+
       // 检查配额
       final check = await _membershipController.checkAiQuota();
       

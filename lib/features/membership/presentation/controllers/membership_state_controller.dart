@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/ai_usage_check.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
@@ -7,7 +8,7 @@ import 'package:go_nomads_app/features/membership/domain/entities/membership_pla
 import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
 import 'package:go_nomads_app/features/membership/domain/repositories/membership_repository.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 
 /// 会员状态控制器
 ///
@@ -314,6 +315,20 @@ class MembershipStateController extends GetxController {
 
   /// 检查 AI 配额（从后端获取最新状态）
   Future<AiUsageCheck> checkAiQuota() async {
+    // Admin 用户直接返回无限制
+    final isAdmin = await TokenStorageService().isAdmin();
+    if (isAdmin) {
+      log('✅ Admin 用户，AI 无限制');
+      return const AiUsageCheck(
+        canUse: true,
+        level: MembershipLevel.premium,
+        limit: -1,
+        used: 0,
+        remaining: -1,
+        isUnlimited: true,
+      );
+    }
+
     final result = await _repository.checkAiUsage();
     return result.fold(
       onSuccess: (check) {
@@ -327,6 +342,12 @@ class MembershipStateController extends GetxController {
   /// 尝试使用 AI（检查配额并记录使用）
   /// 返回 true 表示可以继续，false 表示配额不足
   Future<bool> tryUseAI() async {
+    // Admin 用户无限制
+    final isAdmin = await TokenStorageService().isAdmin();
+    if (isAdmin) {
+      return true;
+    }
+
     // 先检查配额
     final check = await checkAiQuota();
 
