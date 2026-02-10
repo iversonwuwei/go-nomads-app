@@ -195,6 +195,8 @@ class UserStateController extends GetxController {
     DataEventBus.instance.on('meetup', _handleMeetupChanged);
     // 监听 meetup RSVP 变更（加入/退出活动）
     DataEventBus.instance.on('meetup_rsvp', _handleMeetupRsvpChanged);
+    // 监听旅行历史变更（影响 countries/cities/days/trips 统计）
+    DataEventBus.instance.on('travel_history', _handleTravelHistoryChanged);
   }
 
   void _handleUserDataChanged(DataChangedEvent event) {
@@ -236,6 +238,13 @@ class UserStateController extends GetxController {
     // 加入/退出活动会影响用户统计数据
     _invalidateStatsCache();
     // 立即重新加载统计数据
+    loadNomadStats(forceRefresh: true);
+  }
+
+  void _handleTravelHistoryChanged(DataChangedEvent event) {
+    log('🔔 收到旅行历史变更通知: ${event.changeType}');
+    // 旅行历史变更会影响 countries/cities/days/trips 统计
+    _invalidateStatsCache();
     loadNomadStats(forceRefresh: true);
   }
 

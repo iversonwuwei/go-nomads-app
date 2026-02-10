@@ -1,10 +1,11 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import '../../data/dao/travel_history_dao.dart';
 import '../../domain/entities/entities.dart';
@@ -247,13 +248,21 @@ class TravelHistoryController extends GetxController {
 
       log('✅ 旅行已确认: ${trip.displayName}');
 
-      // 异步同步到后端（不阻塞 UI）
+      // 异步同步到后端，同步完成后再通知刷新统计数据
       _syncService.confirmAndSync(confirmedTrip).then((synced) {
         if (synced) {
           log('✅ 旅行已同步到后端: ${trip.displayName}');
         } else {
           log('⚠️ 旅行未能同步到后端，将在下次同步时重试: ${trip.displayName}');
         }
+        // 无论同步是否成功，都通知刷新统计数据
+        // 同步成功时后端有最新数据；失败时至少触发一次刷新尝试
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'travel_history',
+          entityId: trip.id?.toString(),
+          version: 1,
+          changeType: DataChangeType.created,
+        ));
       });
     } catch (e) {
       log('❌ 确认旅行失败: $e');
@@ -328,6 +337,14 @@ class TravelHistoryController extends GetxController {
   Future<void> deleteTripHistory(CandidateTrip trip) async {
     // TODO: 实现删除功能
     confirmedTrips.removeWhere((t) => t.id == trip.id);
+
+    // 通知其他组件旅行历史已变更
+    DataEventBus.instance.emit(DataChangedEvent(
+      entityType: 'travel_history',
+      entityId: trip.id?.toString(),
+      version: 1,
+      changeType: DataChangeType.deleted,
+    ));
   }
 
   /// 清除所有数据
