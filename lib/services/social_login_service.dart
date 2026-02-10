@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:tencent_kit/tencent_kit.dart';
 import 'package:tobias/tobias.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -384,9 +385,46 @@ class SocialLoginService {
   /// Google 登录
   Future<SocialLoginResult> loginWithGoogle() async {
     try {
-      log('📱 [SocialLogin] Google 登录功能开发中...');
-      // 需要使用 google_sign_in 插件
-      return const SocialLoginResult.failure('Google 登录功能开发中');
+      log('📱 [SocialLogin] 开始 Google 登录...');
+
+      // 初始化 GoogleSignIn
+      // Android: 使用 web client ID 作为 serverClientId（后端验证用）
+      // iOS: 使用 iOS client ID 作为 clientId，web client ID 作为 serverClientId
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: Platform.isIOS ? '856428781735-al5ljiii3u1i3dk3jj60sfsbntusc5of.apps.googleusercontent.com' : null,
+        serverClientId: '856428781735-fpunl6qfqeajp9a5ol7lkpk6485u765c.apps.googleusercontent.com',
+        scopes: ['email', 'profile'],
+      );
+
+      // 先尝试静默登录
+      GoogleSignInAccount? account = await googleSignIn.signInSilently();
+      account ??= await googleSignIn.signIn();
+
+      if (account == null) {
+        // 用户取消了登录
+        return const SocialLoginResult.cancelled();
+      }
+
+      log('✅ [SocialLogin] Google 授权成功: ${account.email}');
+
+      // 获取认证信息
+      final GoogleSignInAuthentication auth = await account.authentication;
+      final String? idToken = auth.idToken;
+      final String? accessToken = auth.accessToken;
+
+      if (idToken == null && accessToken == null) {
+        return const SocialLoginResult.failure('获取 Google 授权令牌失败');
+      }
+
+      log('✅ [SocialLogin] Google 登录成功, idToken=${idToken != null ? '已获取' : '无'}, accessToken=${accessToken != null ? '已获取' : '无'}');
+
+      return SocialLoginResult.success(
+        code: idToken, // idToken 发送给后端验证
+        accessToken: accessToken,
+        openId: account.id,
+        nickname: account.displayName,
+        avatarUrl: account.photoUrl,
+      );
     } catch (e) {
       log('❌ [SocialLogin] Google 登录异常: $e');
       return SocialLoginResult.failure('Google 登录失败: $e');

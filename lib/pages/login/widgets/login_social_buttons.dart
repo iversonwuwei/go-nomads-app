@@ -92,7 +92,7 @@ class _InternationalSocialButtons extends GetView<LoginController> {
         Row(
           children: [
             _SocialButton(
-              onPressed: () => AppToast.info('Google Sign In coming soon', title: 'Google'),
+              onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
               icon: FontAwesomeIcons.google,
               color: LoginConstants.googleRed,
               label: 'Google',

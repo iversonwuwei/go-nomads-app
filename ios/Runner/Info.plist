@@ -106,6 +106,16 @@
 				<key>CFBundleTypeRole</key>
 				<string>Editor</string>
 				<key>CFBundleURLName</key>
+				<string>google-sign-in</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.856428781735-al5ljiii3u1i3dk3jj60sfsbntusc5of</string>
+				</array>
+			</dict>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
 				<string>alipay</string>
 				<key>CFBundleURLSchemes</key>
 				<array>
