@@ -48,13 +48,18 @@ class BottomNavLayout extends GetView<BottomNavController> {
               icon: FontAwesomeIcons.house,
               label: l10n.home,
             ),
+            NavBarItem(
+              icon: FontAwesomeIcons.solidCommentDots,
+              label: '消息',
+              badge: controller.imUnreadCount.value,
+            ),
             const NavBarItem(
               icon: FontAwesomeIcons.user,
               label: 'Profile',
             ),
             NavBarItem(
               icon: FontAwesomeIcons.solidBell,
-              label: '消息',
+              label: '通知',
               badge: controller.unreadCount.value,
             ),
           ],

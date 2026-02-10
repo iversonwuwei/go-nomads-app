@@ -41,6 +41,7 @@ import 'package:go_nomads_app/pages/login/login.dart';
 import 'package:go_nomads_app/pages/meetup_list/meetup_list.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
 import 'package:go_nomads_app/pages/my_meetups_page.dart';
+import 'package:go_nomads_app/pages/conversations/conversation_list_page.dart';
 import 'package:go_nomads_app/pages/notifications_page.dart';
 import 'package:go_nomads_app/pages/profile_edit_page.dart';
 import 'package:go_nomads_app/pages/profile_page.dart';
@@ -139,6 +140,7 @@ class AppRoutes {
   // ============================================================================
   static const String aiChat = '/ai-chat';
   static const String directChat = '/direct-chat';
+  static const String conversations = '/conversations';
   static const String notifications = '/notifications';
 
   // ============================================================================
@@ -510,6 +512,11 @@ class AppRoutes {
     GetPage(
       name: directChat,
       page: () => TencentIMDirectChatPage(user: Get.arguments),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: conversations,
+      page: () => const BottomNavLayout(child: ConversationListPage()),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
