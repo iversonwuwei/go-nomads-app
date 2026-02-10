@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:app_links/app_links.dart';
-import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
-import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
+import 'package:go_nomads_app/services/social_login_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// Deep Link 处理器
 /// 处理应用的 deep link，包括支付回调
@@ -67,6 +68,9 @@ class DeepLinkHandler {
       case 'payment':
         await _handlePaymentCallback(uri);
         break;
+      case 'twitter-callback':
+        _handleTwitterCallback(uri);
+        break;
       case 'city':
         await _handleCityDeepLink(uri);
         break;
@@ -79,6 +83,18 @@ class DeepLinkHandler {
       default:
         // 处理路径格式的深链 (如 gonomads:///city/detail?id=123)
         await _handlePathBasedDeepLink(uri);
+    }
+  }
+
+  /// 处理 Twitter OAuth 回调
+  /// deep link: gonomads://twitter-callback?code=xxx&state=xxx
+  static void _handleTwitterCallback(Uri uri) {
+    log('🐦 处理 Twitter OAuth 回调: $uri');
+    try {
+      final socialLoginService = Get.find<SocialLoginService>();
+      socialLoginService.handleTwitterCallback(uri);
+    } catch (e) {
+      log('❌ 处理 Twitter 回调失败: $e');
     }
   }
 

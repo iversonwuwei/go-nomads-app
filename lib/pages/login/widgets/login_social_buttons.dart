@@ -98,27 +98,10 @@ class _InternationalSocialButtons extends GetView<LoginController> {
               label: 'Google',
             ),
             _SocialButton(
-              onPressed: () => AppToast.info('Apple Sign In coming soon', title: 'Apple'),
-              icon: FontAwesomeIcons.apple,
-              color: Colors.black,
-              label: 'Apple',
-            ),
-            _SocialButton(
-              onPressed: () => AppToast.info('Twitter Sign In coming soon', title: 'Twitter'),
+              onPressed: () => controller.handleSocialLogin(SocialLoginType.twitter, 'Twitter'),
               icon: FontAwesomeIcons.xTwitter,
               color: Colors.black,
               label: 'Twitter',
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            _SocialButton(
-              onPressed: () => controller.setLoginMode(LoginMode.phone),
-              icon: FontAwesomeIcons.mobile,
-              color: LoginConstants.phoneGreen,
-              label: 'Phone',
             ),
             _SocialButton(
               onPressed: () => AppToast.info('Facebook Sign In coming soon', title: 'Facebook'),
@@ -126,11 +109,17 @@ class _InternationalSocialButtons extends GetView<LoginController> {
               color: LoginConstants.facebookBlue,
               label: 'Facebook',
             ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             _SocialButton(
-              onPressed: () => AppToast.info('TikTok Sign In coming soon', title: 'TikTok'),
-              icon: FontAwesomeIcons.tiktok,
-              color: Colors.black,
-              label: 'TikTok',
+              onPressed: () => controller.setLoginMode(LoginMode.phone),
+              icon: FontAwesomeIcons.mobile,
+              color: LoginConstants.phoneGreen,
+              label: 'Phone',
             ),
           ],
         ),

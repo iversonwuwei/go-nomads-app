@@ -582,6 +582,8 @@ class AuthStateController extends GetxController {
         return SocialAuthProvider.apple;
       case SocialLoginType.google:
         return SocialAuthProvider.google;
+      case SocialLoginType.twitter:
+        return SocialAuthProvider.twitter;
     }
   }
 

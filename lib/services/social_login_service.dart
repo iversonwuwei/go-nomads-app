@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' as math;
 
+import 'package:crypto/crypto.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -19,6 +22,7 @@ enum SocialLoginType {
   qq,
   apple,
   google,
+  twitter,
 }
 
 /// 社交登录结果
@@ -444,6 +448,137 @@ class SocialLoginService {
         return loginWithApple();
       case SocialLoginType.google:
         return loginWithGoogle();
+      case SocialLoginType.twitter:
+        return loginWithTwitter();
     }
+  }
+
+  // ==================== Twitter OAuth 2.0 PKCE ====================
+
+  /// Twitter OAuth 2.0 配置
+  static const String _twitterClientId = 'IS69TLExRq4TnkQNx3BELNHmq';
+  static const String _twitterRedirectUri = 'gonomads://twitter-callback';
+  static const String _twitterAuthUrl = 'https://twitter.com/i/oauth2/authorize';
+  static const String _twitterScopes = 'tweet.read%20users.read%20offline.access';
+
+  /// 临时存储 PKCE code_verifier，在回调时使用
+  String? _twitterCodeVerifier;
+
+  /// Twitter 登录
+  /// 使用 OAuth 2.0 Authorization Code with PKCE 流程
+  Future<SocialLoginResult> loginWithTwitter() async {
+    try {
+      log('📦 [SocialLogin] 开始 Twitter 登录 (OAuth 2.0 PKCE)...');
+
+      // 1. 生成 PKCE 参数
+      final codeVerifier = _generateCodeVerifier();
+      final codeChallenge = _generateCodeChallenge(codeVerifier);
+      _twitterCodeVerifier = codeVerifier;
+
+      // 2. 生成 state 参数（防止 CSRF）
+      final state = 'gonomads_twitter_${DateTime.now().millisecondsSinceEpoch}';
+
+      // 3. 构建授权 URL
+      final authorizationUrl = Uri.parse(
+        '$_twitterAuthUrl'
+        '?response_type=code'
+        '&client_id=$_twitterClientId'
+        '&redirect_uri=${Uri.encodeComponent(_twitterRedirectUri)}'
+        '&scope=$_twitterScopes'
+        '&state=$state'
+        '&code_challenge=$codeChallenge'
+        '&code_challenge_method=S256',
+      );
+
+      log('📦 [SocialLogin] Twitter 授权 URL: $authorizationUrl');
+
+      // 4. 打开浏览器进行授权
+      if (!await launchUrl(authorizationUrl, mode: LaunchMode.externalApplication)) {
+        return const SocialLoginResult.failure('Failed to open Twitter authorization page');
+      }
+
+      // 5. 等待回调（通过 deep link 返回）
+      // 回调将通过 handleTwitterCallback 处理
+      // 创建 Completer 等待回调结果
+      _twitterAuthCompleter = Completer<SocialLoginResult>();
+
+      final result = await _twitterAuthCompleter!.future.timeout(
+        const Duration(minutes: 3),
+        onTimeout: () {
+          _twitterCodeVerifier = null;
+          _twitterAuthCompleter = null;
+          return const SocialLoginResult.failure('Twitter 授权超时');
+        },
+      );
+
+      return result;
+    } catch (e) {
+      log('❌ [SocialLogin] Twitter 登录异常: $e');
+      _twitterCodeVerifier = null;
+      _twitterAuthCompleter = null;
+      return SocialLoginResult.failure('Twitter 登录失败: $e');
+    }
+  }
+
+  /// Twitter OAuth 回调 Completer
+  Completer<SocialLoginResult>? _twitterAuthCompleter;
+
+  /// 处理 Twitter OAuth 回调
+  /// 当 app 通过 deep link 收到 gonomads://twitter-callback?code=xxx&state=xxx 时调用
+  void handleTwitterCallback(Uri uri) {
+    log('📦 [SocialLogin] Twitter 回调: $uri');
+
+    if (_twitterAuthCompleter == null || _twitterAuthCompleter!.isCompleted) {
+      log('⚠️ [SocialLogin] Twitter 回调无效: Completer 不存在或已完成');
+      return;
+    }
+
+    final code = uri.queryParameters['code'];
+    final error = uri.queryParameters['error'];
+
+    if (error != null) {
+      log('❌ [SocialLogin] Twitter 授权失败: $error');
+      if (error == 'access_denied') {
+        _twitterAuthCompleter!.complete(const SocialLoginResult.cancelled());
+      } else {
+        _twitterAuthCompleter!.complete(SocialLoginResult.failure('Twitter 授权失败: $error'));
+      }
+      _twitterCodeVerifier = null;
+      _twitterAuthCompleter = null;
+      return;
+    }
+
+    if (code == null || code.isEmpty) {
+      _twitterAuthCompleter!.complete(const SocialLoginResult.failure('未获取到 Twitter 授权码'));
+      _twitterCodeVerifier = null;
+      _twitterAuthCompleter = null;
+      return;
+    }
+
+    log('✅ [SocialLogin] Twitter 授权码获取成功');
+
+    // code 放在 code 字段，code_verifier 放在 accessToken 字段
+    // 后端会用 code + code_verifier 换取 access_token 并获取用户信息
+    _twitterAuthCompleter!.complete(SocialLoginResult.success(
+      code: code,
+      accessToken: _twitterCodeVerifier, // 复用 accessToken 字段传递 code_verifier
+    ));
+
+    _twitterCodeVerifier = null;
+    _twitterAuthCompleter = null;
+  }
+
+  /// 生成 PKCE code_verifier (43-128 字符的随机字符串)
+  String _generateCodeVerifier() {
+    final random = math.Random.secure();
+    final bytes = List<int>.generate(32, (_) => random.nextInt(256));
+    return base64UrlEncode(bytes).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+  }
+
+  /// 生成 PKCE code_challenge (S256)
+  String _generateCodeChallenge(String verifier) {
+    final bytes = utf8.encode(verifier);
+    final digest = sha256.convert(bytes);
+    return base64UrlEncode(digest.bytes).replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
   }
 }

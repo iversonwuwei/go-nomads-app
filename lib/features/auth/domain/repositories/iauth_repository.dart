@@ -9,6 +9,7 @@ enum SocialAuthProvider {
   qq,
   apple,
   google,
+  twitter,
 }
 
 /// 认证仓储接口
