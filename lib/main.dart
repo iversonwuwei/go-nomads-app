@@ -15,6 +15,7 @@ import 'features/chat/infrastructure/services/tencent_im/tencent_im.dart';
 import 'generated/app_localizations.dart';
 import 'layouts/bottom_nav/bottom_nav.dart';
 import 'routes/app_routes.dart';
+import 'routes/bottom_nav_route_observer.dart';
 import 'routes/keyboard_dismiss_observer.dart';
 import 'routes/route_refresh_observer.dart';
 import 'services/amap_native_location_service.dart';
@@ -211,7 +212,7 @@ class MyApp extends StatelessWidget {
               // 使用 AppWrapper 来控制启动页和主内容的切换
               home: const AppWrapper(),
               getPages: AppRoutes.getPages,
-              navigatorObservers: [appRouteObserver, keyboardDismissObserver],
+              navigatorObservers: [appRouteObserver, keyboardDismissObserver, BottomNavRouteObserver()],
             ));
       },
     );

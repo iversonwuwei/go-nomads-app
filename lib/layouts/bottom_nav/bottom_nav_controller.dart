@@ -4,12 +4,12 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/chat/presentation/controllers/conversation_list_controller.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:go_nomads_app/features/chat/presentation/controllers/conversation_list_controller.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 
@@ -193,7 +193,8 @@ class BottomNavController extends GetxController {
       currentIndex.value = 0;
     } else if (currentRoute == AppRoutes.conversations) {
       currentIndex.value = 1;
-    } else if (currentRoute == AppRoutes.profile) {
+    } else if (currentRoute == AppRoutes.profile ||
+        currentRoute == AppRoutes.profileEdit) {
       currentIndex.value = 2;
     } else if (currentRoute == AppRoutes.notifications) {
       currentIndex.value = 3;

@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:get/get.dart';
-import 'package:tencent_cloud_chat_sdk/models/v2_tim_conversation.dart';
-import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im_service.dart';
-import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im_api_service.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im_api_service.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im_service.dart';
+import 'package:tencent_cloud_chat_sdk/models/v2_tim_conversation.dart';
 
 /// 会话列表控制器 — 微信风格消息列表
 /// 通过腾讯云IM的会话管理API获取所有C2C会话
@@ -115,27 +115,26 @@ class ConversationListController extends GetxController {
 
   // ==================== 数据加载 ====================
 
-  /// 加载会话列表
+  /// 加载会话列表（只显示与当前用户聊过天的会话）
   Future<void> loadConversations() async {
     if (_imService == null || !_imService!.isLoggedIn) {
       return;
     }
 
     try {
-      final list = await _imService!.getConversationList(count: 100);
+      final convList = await _imService!.getConversationList(count: 100);
 
-      // 按最后消息时间排序（最新在前）
-      list.sort((a, b) {
+      // 按最后消息时间倒序排列
+      convList.sort((a, b) {
         final aTime = a.lastMessage?.timestamp ?? 0;
         final bTime = b.lastMessage?.timestamp ?? 0;
         return bTime.compareTo(aTime);
       });
-
-      conversations.value = list;
+      conversations.value = convList;
 
       // 计算总未读数
       int unread = 0;
-      for (final conv in list) {
+      for (final conv in convList) {
         unread += conv.unreadCount ?? 0;
       }
       totalUnreadCount.value = unread;

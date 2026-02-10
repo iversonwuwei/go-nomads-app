@@ -62,9 +62,7 @@ class ConversationListPage extends StatelessWidget {
               return _ConversationTile(
                 conversation: conversation,
                 onTap: () => _navigateToChat(controller, conversation),
-                onDismissed: () {
-                    controller.deleteConversation(conversation.conversationID);
-                },
+                onDismissed: () => controller.deleteConversation(conversation.conversationID),
               );
             },
           ),
@@ -78,17 +76,17 @@ class ConversationListPage extends StatelessWidget {
     ConversationListController controller,
     V2TimConversation conversation,
   ) {
+    // 标记已读
     final userId = controller.extractUserId(conversation.conversationID);
-    if (userId == null) return;
-
-    // 先标记已读
-    controller.markAsRead(userId);
+    if (userId != null) {
+      controller.markAsRead(userId);
+    }
 
     // 构造一个最小 User 对象用于导航
     final user = models.User(
-      id: userId,
+      id: userId ?? '',
       name: conversation.showName ?? '未知用户',
-      username: conversation.showName ?? '',
+      username: conversation.showName ?? '未知用户',
       avatarUrl: conversation.faceUrl,
       stats: models.TravelStats(
         citiesVisited: 0,
@@ -125,6 +123,70 @@ class _ConversationTile extends StatelessWidget {
     final lastMsg = conversation.lastMessage;
     final timestamp = lastMsg?.timestamp;
 
+    final tile = Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Color(0xFFE8E8E8), width: 0.5),
+            ),
+          ),
+          child: Row(
+            children: [
+              // 头像 + 未读 badge
+              _buildAvatar(unread),
+              const SizedBox(width: 12),
+              // 名字 + 最后消息
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            conversation.showName ?? '未知用户',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF1A1A1A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (timestamp != null)
+                          Text(
+                            _formatTime(timestamp),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFB2B2B2),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _getLastMessagePreview(lastMsg),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF999999),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
     return Dismissible(
       key: Key(conversation.conversationID),
       direction: DismissDirection.endToStart,
@@ -155,69 +217,7 @@ class _ConversationTile extends StatelessWidget {
         );
       },
       onDismissed: (_) => onDismissed(),
-      child: Material(
-        color: Colors.white,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFE8E8E8), width: 0.5),
-              ),
-            ),
-            child: Row(
-              children: [
-                // 头像 + 未读 badge
-                _buildAvatar(unread),
-                const SizedBox(width: 12),
-                // 名字 + 最后消息
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              conversation.showName ?? '未知用户',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFF1A1A1A),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (timestamp != null)
-                            Text(
-                              _formatTime(timestamp),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFFB2B2B2),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _getLastMessagePreview(lastMsg),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF999999),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      child: tile,
     );
   }
 
@@ -275,10 +275,12 @@ class _ConversationTile extends StatelessWidget {
         color: const Color(0xFF07C160).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: const Icon(
-        FontAwesomeIcons.user,
-        color: Color(0xFF07C160),
-        size: 22,
+      child: const Center(
+        child: FaIcon(
+          FontAwesomeIcons.user,
+          color: Color(0xFF07C160),
+          size: 22,
+        ),
       ),
     );
   }

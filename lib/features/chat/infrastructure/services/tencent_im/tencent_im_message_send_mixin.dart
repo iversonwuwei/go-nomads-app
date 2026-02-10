@@ -4,6 +4,16 @@ import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/t
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 import 'package:tencent_cloud_chat_sdk/tencent_im_sdk_plugin.dart';
 
+/// 消息发送被内容安全策略拦截的异常
+class IMContentBlockedException implements Exception {
+  final int code;
+  final String description;
+  IMContentBlockedException(this.code, this.description);
+
+  @override
+  String toString() => 'IMContentBlockedException($code): $description';
+}
+
 /// 腾讯云IM服务 - 消息发送模块扩展
 mixin TencentIMMessageSendMixin {
   bool get isLoggedIn;
@@ -42,9 +52,14 @@ mixin TencentIMMessageSendMixin {
         return sendResult.data;
       } else {
         log('❌ 发送失败: ${sendResult.code} - ${sendResult.desc}');
+        // 80001/80004: 消息内容安全打击（含敏感词）
+        if (sendResult.code == 80001 || sendResult.code == 80004) {
+          throw IMContentBlockedException(sendResult.code, sendResult.desc ?? '消息包含敏感内容，发送失败');
+        }
         return null;
       }
     } catch (e) {
+      if (e is IMContentBlockedException) rethrow;
       log('❌ 发送异常: $e');
       return null;
     }
@@ -81,8 +96,13 @@ mixin TencentIMMessageSendMixin {
         log('✅ 图片消息发送成功');
         return sendResult.data;
       }
+      // 80001/80004: 消息内容安全打击
+      if (sendResult.code == 80001 || sendResult.code == 80004) {
+        throw IMContentBlockedException(sendResult.code, sendResult.desc ?? '图片包含敏感内容，发送失败');
+      }
       return null;
     } catch (e) {
+      if (e is IMContentBlockedException) rethrow;
       log('❌ 图片发送异常: $e');
       return null;
     }

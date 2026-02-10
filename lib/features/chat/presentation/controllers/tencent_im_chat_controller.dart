@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 
 /// 腾讯云IM私聊控制器
@@ -70,9 +71,13 @@ class TencentIMChatController extends GetxController {
 
       // 处理来自对方的消息（需要比较格式化后的ID）
       if (message.sender == formattedTargetId) {
-        _messages.insert(0, message);
-        _messages.refresh();
-        log('✅ [ChatController] 消息已添加到列表，当前消息数: ${_messages.length}');
+        // 去重检查：避免重复添加相同消息
+        if (!_messages.any((m) => m.msgID == message.msgID)) {
+          _messages.insert(0, message);
+          log('✅ [ChatController] 消息已添加到列表，当前消息数: ${_messages.length}');
+        } else {
+          log('⚠️ [ChatController] 消息已存在，跳过: ${message.msgID}');
+        }
       } else {
         log('⚠️ [ChatController] 消息sender不匹配，未添加');
         log('   期望: $formattedTargetId');
@@ -195,13 +200,16 @@ class TencentIMChatController extends GetxController {
       if (msg != null) {
         log('✅ 消息发送成功，msgID=${msg.msgID}');
         _messages.insert(0, msg);
-        _messages.refresh();
         _replyTo.value = null;
         return true;
       } else {
         log('❌ 消息发送返回null');
         return false;
       }
+    } on IMContentBlockedException catch (e) {
+      log('⚠️ 消息被内容安全拦截: $e');
+      AppToast.error('消息包含敏感内容，请修改后重试');
+      return false;
     } catch (e) {
       log('❌ 发送异常: $e');
       return false;
@@ -223,9 +231,12 @@ class TencentIMChatController extends GetxController {
       );
       if (msg != null) {
         _messages.insert(0, msg);
-        _messages.refresh();
         return true;
       }
+      return false;
+    } on IMContentBlockedException catch (e) {
+      log('⚠️ 图片被内容安全拦截: $e');
+      AppToast.error('图片包含敏感内容，发送失败');
       return false;
     } finally {
       _isSending.value = false;
@@ -246,7 +257,6 @@ class TencentIMChatController extends GetxController {
       );
       if (msg != null) {
         _messages.insert(0, msg);
-        _messages.refresh();
         return true;
       }
       return false;
@@ -269,7 +279,6 @@ class TencentIMChatController extends GetxController {
       );
       if (msg != null) {
         _messages.insert(0, msg);
-        _messages.refresh();
         return true;
       }
       return false;
@@ -292,7 +301,6 @@ class TencentIMChatController extends GetxController {
       );
       if (msg != null) {
         _messages.insert(0, msg);
-        _messages.refresh();
         return true;
       }
       return false;
