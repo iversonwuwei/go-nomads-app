@@ -541,6 +541,35 @@ class City {
   String toString() => 'City(id: $id, name: $name, country: $country)';
 }
 
+/// 城市版主摘要
+class CityModeratorSummary {
+  final String cityId;
+  final String? moderatorId;
+  final Moderator? moderator;
+  final bool isCurrentUserModerator;
+  final bool isCurrentUserAdmin;
+
+  const CityModeratorSummary({
+    required this.cityId,
+    this.moderatorId,
+    this.moderator,
+    this.isCurrentUserModerator = false,
+    this.isCurrentUserAdmin = false,
+  });
+
+  factory CityModeratorSummary.fromJson(Map<String, dynamic> json) {
+    final moderatorData = json['moderator'] as Map<String, dynamic>?;
+
+    return CityModeratorSummary(
+      cityId: json['cityId'] as String? ?? json['id'] as String? ?? '',
+      moderatorId: json['moderatorId'] as String?,
+      moderator: moderatorData != null ? Moderator.fromJson(moderatorData) : null,
+      isCurrentUserModerator: json['isCurrentUserModerator'] as bool? ?? false,
+      isCurrentUserAdmin: json['isCurrentUserAdmin'] as bool? ?? false,
+    );
+  }
+}
+
 /// 城市聚合数据 - 用于异步加载
 /// 包含需要单独查询的统计数据
 class CityCountsData {

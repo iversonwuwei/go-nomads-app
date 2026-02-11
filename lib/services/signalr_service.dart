@@ -33,6 +33,7 @@ class SignalRService {
   final _notificationReceivedController = StreamController<Map<String, dynamic>>.broadcast();
   final _cityRatingUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
   final _cityReviewUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _cityModeratorUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
   final _aiChatChunkController = StreamController<AIChatChunk>.broadcast();
 
   // 事件流
@@ -43,6 +44,7 @@ class SignalRService {
   Stream<Map<String, dynamic>> get notificationReceivedStream => _notificationReceivedController.stream;
   Stream<Map<String, dynamic>> get cityRatingUpdatedStream => _cityRatingUpdatedController.stream;
   Stream<Map<String, dynamic>> get cityReviewUpdatedStream => _cityReviewUpdatedController.stream;
+  Stream<Map<String, dynamic>> get cityModeratorUpdatedStream => _cityModeratorUpdatedController.stream;
   Stream<AIChatChunk> get aiChatChunkStream => _aiChatChunkController.stream;
 
   SignalRService._internal();
@@ -356,6 +358,37 @@ class SignalRService {
       }
     });
 
+    // CityModeratorUpdated: 城市版主变更
+    _notificationHubConnection?.on('CityModeratorUpdated', (arguments) {
+      log('👤 收到 CityModeratorUpdated 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        log('❌ CityModeratorUpdated 参数为空');
+        return;
+      }
+
+      try {
+        final data = arguments[0] as Map<String, dynamic>;
+        log('👤 收到城市版主变更:');
+        log('   CityId: ${data['CityId'] ?? data['cityId']}');
+        log('   ChangeType: ${data['ChangeType'] ?? data['changeType']}');
+        log('   UserId: ${data['UserId'] ?? data['userId']}');
+
+        // 转换为小写 key 的 map
+        final normalizedData = <String, dynamic>{};
+        data.forEach((key, value) {
+          final normalizedKey = key[0].toLowerCase() + key.substring(1);
+          normalizedData[normalizedKey] = value;
+        });
+
+        _cityModeratorUpdatedController.add(normalizedData);
+      } catch (e) {
+        log('❌ 解析 CityModeratorUpdated 失败: $e');
+        log('   原始数据: ${arguments[0]}');
+      }
+    });
+
     log('✅ NotificationHub 事件处理器注册完成');
   }
 
@@ -655,6 +688,7 @@ class SignalRService {
     _notificationReceivedController.close();
     _cityRatingUpdatedController.close();
     _cityReviewUpdatedController.close();
+    _cityModeratorUpdatedController.close();
     _aiChatChunkController.close();
     disconnect();
   }

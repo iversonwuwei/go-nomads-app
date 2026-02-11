@@ -53,6 +53,7 @@ class CityListController extends GetxController {
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
   StreamSubscription<Map<String, dynamic>>? _cityRatingUpdatedSubscription;
   StreamSubscription<Map<String, dynamic>>? _cityReviewUpdatedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _cityModeratorUpdatedSubscription;
 
   // EventBus 订阅
   StreamSubscription<DataChangedEvent>? _favoriteChangedSubscription;
@@ -162,7 +163,20 @@ class CityListController extends GetxController {
       _handleSignalRReviewUpdated(data);
     });
 
-    log('✅ [CityListController] SignalR 监听已设置 (图片更新 + 评分更新 + 评论更新)');
+    // 监听城市版主变更事件 (通过 SignalR 同步列表中的版主状态)
+    _cityModeratorUpdatedSubscription = signalRService.cityModeratorUpdatedStream.listen((data) {
+      log('👤 [CityListController] 收到城市版主变更通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      if (cityId == null) {
+        log('⚠️ [CityListController] 城市ID为空，忽略通知');
+        return;
+      }
+
+      _updateCityModeratorInList(cityId);
+    });
+
+    log('✅ [CityListController] SignalR 监听已设置 (图片更新 + 评分更新 + 评论更新 + 版主更新)');
   }
 
   /// 处理 SignalR 城市评论更新事件 (同步城市列表中的评论数)
@@ -275,6 +289,35 @@ class CityListController extends GetxController {
     cities[index] = updatedCity;
     cities.refresh(); // 强制触发 Obx 更新
     log('✅ [CityListController] 城市图片已更新: ${updatedCity.name}, imageUrl: ${updatedCity.imageUrl}');
+  }
+
+  /// 仅更新城市版主字段
+  Future<void> _updateCityModeratorInList(String cityId) async {
+    try {
+      log('📡 [CityListController] 开始获取城市版主摘要: $cityId');
+      final result = await _cityRepository.getCityModeratorSummary(cityId);
+      result.fold(
+        onSuccess: (summary) {
+          final index = cities.indexWhere((c) => c.id == cityId);
+          if (index != -1) {
+            cities[index] = cities[index].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            cities.refresh();
+          }
+
+          log('✅ [CityListController] 版主字段已更新: moderatorId=${summary.moderatorId}, moderator=${summary.moderator?.name}');
+        },
+        onFailure: (e) {
+          log('⚠️ [CityListController] 获取版主摘要失败: ${e.message}');
+        },
+      );
+    } catch (e) {
+      log('⚠️ [CityListController] 获取版主摘要异常: $e');
+    }
   }
 
   /// 同步 CityStateController 中的城市更新到本地列表
@@ -731,6 +774,8 @@ class CityListController extends GetxController {
     _cityRatingUpdatedSubscription = null;
     _cityReviewUpdatedSubscription?.cancel();
     _cityReviewUpdatedSubscription = null;
+    _cityModeratorUpdatedSubscription?.cancel();
+    _cityModeratorUpdatedSubscription = null;
 
     // 取消 EventBus 订阅
     _favoriteChangedSubscription?.cancel();

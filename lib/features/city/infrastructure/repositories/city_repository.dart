@@ -1,12 +1,12 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/infrastructure/models/city_detail_dto.dart' as dto;
 import 'package:go_nomads_app/services/http_service.dart';
-import 'package:dio/dio.dart';
 
 /// 城市仓储实现 (Infrastructure Layer)
 ///
@@ -207,6 +207,32 @@ class CityRepository implements ICityRepository {
       return Failure(_convertHttpException(e));
     } catch (e) {
       return Failure(UnknownException('获取城市详情失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<CityModeratorSummary>> getCityModeratorSummary(String cityId) async {
+    try {
+      final response = await _httpService.get('$_baseUrl/$cityId/moderator-summary');
+
+      Map<String, dynamic> summaryData;
+      if (response.data is Map<String, dynamic>) {
+        final responseData = response.data as Map<String, dynamic>;
+        if (responseData.containsKey('data') && responseData['data'] != null) {
+          summaryData = responseData['data'] as Map<String, dynamic>;
+        } else {
+          summaryData = responseData;
+        }
+      } else {
+        throw Exception('Invalid response format');
+      }
+
+      final summary = CityModeratorSummary.fromJson(summaryData);
+      return Success(summary);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取城市版主摘要失败: ${e.toString()}'));
     }
   }
 

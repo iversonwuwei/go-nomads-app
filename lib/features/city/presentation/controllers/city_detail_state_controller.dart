@@ -31,6 +31,7 @@ class CityDetailStateController extends GetxController {
   StreamSubscription<Map<String, dynamic>>? _signalRRatingSubscription;
   StreamSubscription<Map<String, dynamic>>? _signalRReviewSubscription;
   StreamSubscription<Map<String, dynamic>>? _signalRImageSubscription;
+  StreamSubscription<Map<String, dynamic>>? _signalRModeratorSubscription;
 
   CityDetailStateController({
     required GetCityByIdUseCase getCityByIdUseCase,
@@ -86,6 +87,11 @@ class CityDetailStateController extends GetxController {
     // 监听城市图片更新事件 (来自 SignalR)
     _signalRImageSubscription = signalRService.cityImageUpdatedStream.listen((data) {
       _handleSignalRImageUpdated(data);
+    });
+
+    // 监听城市版主变更事件 (来自 SignalR)
+    _signalRModeratorSubscription = signalRService.cityModeratorUpdatedStream.listen((data) {
+      _handleSignalRModeratorUpdated(data);
     });
 
     log('✅ [CityDetailStateController] SignalR 监听器已设置');
@@ -176,6 +182,38 @@ class CityDetailStateController extends GetxController {
     currentCity.value = updatedCity;
 
     log('✅ [城市详情] SignalR 城市图片已更新: portrait=${portraitUrl != null}, landscape=${landscapeUrls?.length ?? 0}');
+  }
+
+  /// 处理 SignalR 城市版主变更事件 (来自其他设备的审核操作)
+  void _handleSignalRModeratorUpdated(Map<String, dynamic> data) {
+    final cityId = data['cityId'] as String?;
+    final changeType = data['changeType'] as String?;
+
+    log('📡 [城市详情] 收到 SignalR 版主变更: cityId=$cityId, changeType=$changeType, currentCityId=${currentCity.value?.id}');
+
+    if (currentCity.value == null || cityId != currentCity.value!.id) {
+      return;
+    }
+
+    // 只 patch 版主字段，不全量刷新
+    _cityRepository.getCityModeratorSummary(cityId!).then((result) {
+      result.fold(
+        onSuccess: (summary) {
+          final updatedCity = currentCity.value!.copyWith(
+            moderatorId: summary.moderatorId,
+            moderator: summary.moderator,
+            isCurrentUserModerator: summary.isCurrentUserModerator,
+            isCurrentUserAdmin: summary.isCurrentUserAdmin,
+          );
+          currentCity.value = null;
+          currentCity.value = updatedCity;
+          log('✅ [城市详情] SignalR patch 版主字段完成: moderatorId=${summary.moderatorId}, moderator=${summary.moderator?.name}');
+        },
+        onFailure: (e) {
+          log('❌ [城市详情] SignalR patch 版主字段失败: ${e.message}');
+        },
+      );
+    });
   }
 
   /// 处理 SignalR 城市评分更新事件 (用于 Header 数据同步)
@@ -572,6 +610,8 @@ class CityDetailStateController extends GetxController {
     _signalRReviewSubscription = null;
     _signalRImageSubscription?.cancel();
     _signalRImageSubscription = null;
+    _signalRModeratorSubscription?.cancel();
+    _signalRModeratorSubscription = null;
 
     // 清理所有状态
     currentCity.value = null;

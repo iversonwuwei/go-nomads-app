@@ -27,6 +27,9 @@ abstract class ICityRepository implements IRepository {
   /// 根据ID获取城市详情
   Future<Result<City>> getCityById(String cityId);
 
+  /// 获取城市版主摘要（轻量接口）
+  Future<Result<CityModeratorSummary>> getCityModeratorSummary(String cityId);
+
   /// 搜索城市
   Future<Result<List<City>>> searchCities({
     required String name,

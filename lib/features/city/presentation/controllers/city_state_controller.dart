@@ -84,6 +84,7 @@ class CityStateController extends PaginatedRefreshableController {
 
   // SignalR 订阅
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _cityModeratorUpdatedSubscription;
 
   // 数据变更事件订阅
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
@@ -159,6 +160,8 @@ class CityStateController extends PaginatedRefreshableController {
   void onClose() {
     _cityImageUpdatedSubscription?.cancel();
     _cityImageUpdatedSubscription = null;
+    _cityModeratorUpdatedSubscription?.cancel();
+    _cityModeratorUpdatedSubscription = null;
     _dataChangedSubscription?.cancel();
     _dataChangedSubscription = null;
 
@@ -426,6 +429,20 @@ class CityStateController extends PaginatedRefreshableController {
       AppToast.success('$cityName 的图片已更新', title: '图片生成完成');
     });
 
+    // 监听城市版主变更事件 (来自其他设备的审核操作)
+    _cityModeratorUpdatedSubscription = signalRService.cityModeratorUpdatedStream.listen((data) {
+      log('👤 [CityController] 收到城市版主变更通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      if (cityId == null) {
+        log('⚠️ [CityController] 城市ID为空，忽略通知');
+        return;
+      }
+
+      // 仅更新版主字段（轻量接口）
+      _updateCityModeratorInList(cityId);
+    });
+
     log('✅ [CityController] SignalR 城市图片更新监听已设置');
   }
 
@@ -469,6 +486,68 @@ class CityStateController extends PaginatedRefreshableController {
       );
     } catch (e) {
       log('⚠️ [城市列表] 更新城市异常: $e');
+    }
+  }
+
+  /// 仅更新城市版主字段
+  Future<void> _updateCityModeratorInList(String cityId) async {
+    try {
+      log('📡 [城市列表] 开始获取城市版主摘要: $cityId');
+      final result = await _cityRepository.getCityModeratorSummary(cityId);
+      result.fold(
+        onSuccess: (summary) {
+          final index = cities.indexWhere((c) => c.id == cityId);
+          if (index != -1) {
+            cities[index] = cities[index].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            cities.refresh();
+          }
+
+          final recIndex = recommendedCities.indexWhere((c) => c.id == cityId);
+          if (recIndex != -1) {
+            recommendedCities[recIndex] = recommendedCities[recIndex].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            recommendedCities.refresh();
+          }
+
+          final popIndex = popularCities.indexWhere((c) => c.id == cityId);
+          if (popIndex != -1) {
+            popularCities[popIndex] = popularCities[popIndex].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            popularCities.refresh();
+          }
+
+          final favIndex = favoriteCities.indexWhere((c) => c.id == cityId);
+          if (favIndex != -1) {
+            favoriteCities[favIndex] = favoriteCities[favIndex].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            favoriteCities.refresh();
+          }
+
+          log('✅ [城市列表] 版主字段已更新: moderatorId=${summary.moderatorId}, moderator=${summary.moderator?.name}');
+        },
+        onFailure: (e) {
+          log('⚠️ [城市列表] 获取版主摘要失败: ${e.message}');
+        },
+      );
+    } catch (e) {
+      log('⚠️ [城市列表] 获取版主摘要异常: $e');
     }
   }
 

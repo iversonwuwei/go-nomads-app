@@ -1,6 +1,10 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/moderator/domain/entities/moderator_application.dart';
 import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
 import 'package:go_nomads_app/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
@@ -8,9 +12,6 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 版主申请详情页面（管理员审核使用）
 class ModeratorApplicationDetailPage extends StatefulWidget {
@@ -180,6 +181,19 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
       try {
         await _repository.revokeModerator(widget.applicationId);
         AppToast.success('已撤销版主资格');
+
+        // 通过 DataEventBus 广播城市更新事件
+        if (_application != null) {
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'city',
+            entityId: _application!.cityId,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: DataChangeType.updated,
+            metadata: {'reason': 'moderator_revoked'},
+          ));
+          log('📡 [ModeratorApplication] 已发送版主撤销事件: cityId=${_application!.cityId}');
+        }
+
         Get.back(result: true);
       } catch (e) {
         AppToast.error('撤销失败: $e');
@@ -201,6 +215,18 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
       final message = action == 'approve' ? '已通过申请' : '已拒绝申请';
       AppToast.success(message);
+
+      // 通过 DataEventBus 广播城市更新事件，通知所有页面刷新版主信息
+      if (_application != null) {
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'city',
+          entityId: _application!.cityId,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.updated,
+          metadata: {'reason': 'moderator_application_$action'},
+        ));
+        log('📡 [ModeratorApplication] 已发送城市版主更新事件: cityId=${_application!.cityId}, action=$action');
+      }
 
       // 返回上一页
       Get.back(result: true);
