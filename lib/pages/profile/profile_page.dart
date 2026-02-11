@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart' hide Badge;
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
@@ -11,29 +13,40 @@ import 'package:go_nomads_app/pages/profile/widgets/skills_interests_widget.dart
 import 'package:go_nomads_app/pages/profile/widgets/social_links_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/travel_history_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/travel_plans_widget.dart';
+import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart' hide Badge;
-import 'package:get/get.dart';
 
 /// Profile 页面 - 使用 GetView 模式
 ///
 /// 展示用户个人资料、会员信息、旅行计划等
-class ProfilePage extends GetView<ProfileController> {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // 确保控制器已注册
-    _ensureControllerRegistered();
+  State<ProfilePage> createState() => _ProfilePageState();
+}
 
-    return const _ProfilePageContent();
+class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<ProfilePage> {
+  late final ProfileController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Get.isRegistered<ProfileController>()) {
+      _controller = Get.find<ProfileController>();
+    } else {
+      _controller = Get.put(ProfileController());
+    }
   }
 
-  /// 确保控制器已注册
-  void _ensureControllerRegistered() {
-    if (!Get.isRegistered<ProfileController>()) {
-      Get.put(ProfileController());
-    }
+  @override
+  Future<void> onRouteResume() async {
+    await _controller.onRouteResume();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ProfilePageContent();
   }
 }
 
