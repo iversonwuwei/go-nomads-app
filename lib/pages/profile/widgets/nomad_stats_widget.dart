@@ -58,7 +58,7 @@ class NomadStatsWidget extends StatelessWidget {
               ),
               _ClickableStatCard(
                 emoji: '🤝',
-                value: (stats?.meetupsJoined ?? 0).toString(),
+                value: (stats?.activeMeetups ?? 0).toString(),
                 label: 'Meetups',
                 isMobile: isMobile,
                 onTap: () => Get.toNamed(AppRoutes.myMeetups),
