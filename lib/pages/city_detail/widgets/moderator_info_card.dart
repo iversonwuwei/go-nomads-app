@@ -352,6 +352,10 @@ class ModeratorInfoCard extends StatelessWidget {
   }
 
   /// 导航到指定版主页面（转让版主）
+  ///
+  /// 版主指定成功后，AssignModeratorController 会通过 DataEventBus
+  /// 广播 'city' updated 事件，CityDetailStateController 和
+  /// CityStateController 会自动响应并刷新数据
   void _showTransferModeratorDialog(BuildContext context, City city) {
     Get.to(
       () => const AssignModeratorPage(),

@@ -383,13 +383,15 @@ class CityDetailStateController extends GetxController {
 
     result.fold(
       onSuccess: (city) {
-        log('📦 [城市详情] 准备更新 currentCity: overallScore=${city.overallScore}, reviewCount=${city.reviewCount}');
-        log('📦 [城市详情] 更新前 currentCity.value: overallScore=${currentCity.value?.overallScore}, reviewCount=${currentCity.value?.reviewCount}');
+        log('📦 [城市详情] 准备更新 currentCity: overallScore=${city.overallScore}, reviewCount=${city.reviewCount}, moderatorId=${city.moderatorId}');
+        log('📦 [城市详情] 更新前 currentCity.value: overallScore=${currentCity.value?.overallScore}, moderatorId=${currentCity.value?.moderatorId}');
+        // 强制触发 GetX 更新 (City 的 == 只比较 id，需先置空再赋值)
+        currentCity.value = null;
         currentCity.value = city;
-        log('📦 [城市详情] 更新后 currentCity.value: overallScore=${currentCity.value?.overallScore}, reviewCount=${currentCity.value?.reviewCount}');
+        log('📦 [城市详情] 更新后 currentCity.value: overallScore=${currentCity.value?.overallScore}, moderatorId=${currentCity.value?.moderatorId}');
         isFavorited.value = city.isFavorite;
         isLoading.value = false;
-        log('✅ [城市详情] 加载成功: ${city.name}, isFavorite: ${city.isFavorite}, overallScore: ${city.overallScore}, reviewCount: ${city.reviewCount}');
+        log('✅ [城市详情] 加载成功: ${city.name}, isFavorite: ${city.isFavorite}, overallScore: ${city.overallScore}, reviewCount: ${city.reviewCount}, hasModerator: ${city.hasModerator}');
       },
       onFailure: (exception) {
         hasError.value = true;

@@ -1,12 +1,13 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/user_management/domain/repositories/iuser_management_repository.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 指定版主控制器
 class AssignModeratorController extends GetxController {
@@ -194,6 +195,16 @@ class AssignModeratorController extends GetxController {
         if (failCount > 0) {
           AppToast.warning('$failCount 个用户指定失败，请查看日志');
         }
+        // 通过 DataEventBus 广播城市更新事件，通知所有监听者（CityDetail、CityList、Home等）
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'city',
+          entityId: cityId,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.updated,
+          metadata: {'reason': 'moderator_assigned'},
+        ));
+        log('📡 [AssignModerator] 已发送城市版主更新事件: cityId=$cityId');
+
         // 成功时延迟导航，避免 widget 生命周期问题
         Future.delayed(const Duration(milliseconds: 100), () {
           Get.back(result: true);
