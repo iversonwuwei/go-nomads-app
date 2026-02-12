@@ -42,7 +42,7 @@ mixin TencentIMMessageSendMixin {
 
       // 发送消息
       final sendResult = await TencentImSDKPlugin.v2TIMManager.getMessageManager().sendMessage(
-            id: createResult.data!.id!,
+            message: createResult.data!.messageInfo,
             receiver: receiverId,
             groupID: '',
           );
@@ -54,7 +54,7 @@ mixin TencentIMMessageSendMixin {
         log('❌ 发送失败: ${sendResult.code} - ${sendResult.desc}');
         // 80001/80004: 消息内容安全打击（含敏感词）
         if (sendResult.code == 80001 || sendResult.code == 80004) {
-          throw IMContentBlockedException(sendResult.code, sendResult.desc ?? '消息包含敏感内容，发送失败');
+          throw IMContentBlockedException(sendResult.code, sendResult.desc);
         }
         return null;
       }
@@ -87,7 +87,7 @@ mixin TencentIMMessageSendMixin {
 
       // 发送消息
       final sendResult = await TencentImSDKPlugin.v2TIMManager.getMessageManager().sendMessage(
-            id: createResult.data!.id!,
+            message: createResult.data!.messageInfo,
             receiver: receiverId,
             groupID: '',
           );
@@ -98,7 +98,7 @@ mixin TencentIMMessageSendMixin {
       }
       // 80001/80004: 消息内容安全打击
       if (sendResult.code == 80001 || sendResult.code == 80004) {
-        throw IMContentBlockedException(sendResult.code, sendResult.desc ?? '图片包含敏感内容，发送失败');
+        throw IMContentBlockedException(sendResult.code, sendResult.desc);
       }
       return null;
     } catch (e) {
@@ -127,7 +127,7 @@ mixin TencentIMMessageSendMixin {
       if (createResult.code != 0) return null;
 
       final sendResult = await TencentImSDKPlugin.v2TIMManager.getMessageManager().sendMessage(
-            id: createResult.data!.id!,
+            message: createResult.data!.messageInfo,
             receiver: receiverId,
             groupID: '',
           );
@@ -161,7 +161,7 @@ mixin TencentIMMessageSendMixin {
       }
 
       final sendResult = await TencentImSDKPlugin.v2TIMManager.getMessageManager().sendMessage(
-            id: createResult.data!.id!,
+            message: createResult.data!.messageInfo,
             receiver: receiverId,
             groupID: '',
           );
@@ -198,7 +198,7 @@ mixin TencentIMMessageSendMixin {
       }
 
       final sendResult = await TencentImSDKPlugin.v2TIMManager.getMessageManager().sendMessage(
-            id: createResult.data!.id!,
+            message: createResult.data!.messageInfo,
             receiver: receiverId,
             groupID: '',
           );
