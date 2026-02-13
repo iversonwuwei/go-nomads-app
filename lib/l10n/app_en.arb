@@ -2150,7 +2150,22 @@
   "moderatorTransfer": "Moderator Transfer",
   "accept": "Accept",
   "decline": "Decline",
-  "from": "From"
+  "from": "From",
+
+  "privacyPolicyIntro": "Welcome to Go-Nomads! To provide you with better services, we need you to understand and agree to the following privacy policy:",
+  "privacyDataCollection": "Data Collection",
+  "privacyDataCollectionDesc": "We collect your behavioral data (such as browsing history, search preferences, feature usage frequency, etc.) to optimize product experience and personalized recommendations.",
+  "privacyLocationData": "Location Information",
+  "privacyLocationDataDesc": "We collect your location data for city recommendations, nearby coworking spaces and events, and travel history tracking features.",
+  "privacyPersonalData": "Personal Information",
+  "privacyPersonalDataDesc": "We collect your basic personal information (such as nickname, avatar, contact details, etc.) for account management and social features.",
+  "privacyDataProtection": "Data Protection",
+  "privacyDataProtectionDesc": "We are committed to using industry-standard security measures to protect your personal data. We will not sell your data to third parties. You can manage your privacy preferences in Settings at any time.",
+  "privacyPolicyNote": "If you do not agree to the above privacy policy, you will not be able to continue using this application. You can view the full privacy policy in Settings at any time.",
+  "agreeAndContinue": "Agree and Continue",
+  "disagreeAndExit": "Disagree and Exit",
+  "viewFullTerms": "View full ",
+  "and": " and "
 }
 
 

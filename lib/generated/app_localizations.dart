@@ -2345,7 +2345,7 @@ abstract class AppLocalizations {
   /// No description provided for @and.
   ///
   /// In zh, this message translates to:
-  /// **'和'**
+  /// **' 和 '**
   String get and;
 
   /// No description provided for @required.
@@ -8185,6 +8185,84 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'拒绝'**
   String get decline;
+
+  /// No description provided for @privacyPolicyIntro.
+  ///
+  /// In zh, this message translates to:
+  /// **'欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：'**
+  String get privacyPolicyIntro;
+
+  /// No description provided for @privacyDataCollection.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据收集'**
+  String get privacyDataCollection;
+
+  /// No description provided for @privacyDataCollectionDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们会收集您的行为数据（如浏览记录、搜索偏好、功能使用频率等），以便优化产品体验和个性化推荐。'**
+  String get privacyDataCollectionDesc;
+
+  /// No description provided for @privacyLocationData.
+  ///
+  /// In zh, this message translates to:
+  /// **'位置信息'**
+  String get privacyLocationData;
+
+  /// No description provided for @privacyLocationDataDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们会收集您的位置数据，用于提供城市推荐、附近的共享办公空间和活动信息、以及旅行足迹记录等功能。'**
+  String get privacyLocationDataDesc;
+
+  /// No description provided for @privacyPersonalData.
+  ///
+  /// In zh, this message translates to:
+  /// **'个人信息'**
+  String get privacyPersonalData;
+
+  /// No description provided for @privacyPersonalDataDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们会收集您的基本个人信息（如昵称、头像、联系方式等），用于账号管理和社交功能。'**
+  String get privacyPersonalDataDesc;
+
+  /// No description provided for @privacyDataProtection.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据保护'**
+  String get privacyDataProtection;
+
+  /// No description provided for @privacyDataProtectionDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们承诺采用行业标准的安全措施保护您的个人数据，不会将您的数据出售给第三方。您可以随时在“设置”中管理您的隐私偏好。'**
+  String get privacyDataProtectionDesc;
+
+  /// No description provided for @privacyPolicyNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的隐私政策。'**
+  String get privacyPolicyNote;
+
+  /// No description provided for @agreeAndContinue.
+  ///
+  /// In zh, this message translates to:
+  /// **'同意并继续'**
+  String get agreeAndContinue;
+
+  /// No description provided for @disagreeAndExit.
+  ///
+  /// In zh, this message translates to:
+  /// **'不同意并退出'**
+  String get disagreeAndExit;
+
+  /// No description provided for @viewFullTerms.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看完整的'**
+  String get viewFullTerms;
 }
 
 class _AppLocalizationsDelegate

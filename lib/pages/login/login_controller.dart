@@ -13,6 +13,7 @@ import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
+import 'package:go_nomads_app/widgets/dialogs/privacy_policy_dialog.dart';
 
 /// 登录模式
 enum LoginMode { email, phone }
@@ -261,7 +262,11 @@ class LoginController extends GetxController {
         );
 
         AppToast.success('Welcome back!', title: 'Login Successful');
+
+        // 先导航到首页（正确卸载登录页，避免 TextEditingController disposed 错误）
         Get.offAllNamed(AppRoutes.home);
+        // 在独立上下文中延迟检查隐私政策（不依赖已 dispose 的 LoginController）
+        _schedulePrivacyPolicyCheck();
       } else {
         AppToast.error('Invalid email or password', title: 'Login Failed');
       }
@@ -299,7 +304,11 @@ class LoginController extends GetxController {
       if (success) {
         log('✅ 手机号登录成功');
         AppToast.success('欢迎回来！', title: '登录成功');
+
+        // 先导航到首页（正确卸载登录页）
         Get.offAllNamed(AppRoutes.home);
+        // 在独立上下文中延迟检查隐私政策
+        _schedulePrivacyPolicyCheck();
       } else {
         AppToast.error('登录失败，请重试', title: '错误');
       }
@@ -342,7 +351,11 @@ class LoginController extends GetxController {
       if (success) {
         log('✅ $platformName 登录成功');
         AppToast.success('欢迎回来！', title: '登录成功');
+
+        // 先导航到首页（正确卸载登录页）
         Get.offAllNamed(AppRoutes.home);
+        // 在独立上下文中延迟检查隐私政策
+        _schedulePrivacyPolicyCheck();
       }
     } catch (e) {
       // 关闭加载对话框
@@ -371,5 +384,20 @@ class LoginController extends GetxController {
         child: CircularProgressIndicator(color: LoginConstants.primaryColor),
       ),
     );
+  }
+
+  /// 在独立上下文中延迟检查隐私政策
+  ///
+  /// 使用 static 方法 + Future.delayed，确保不依赖 LoginController 的生命周期。
+  /// 在 Get.offAllNamed 导航到首页后，LoginController 会被 dispose，
+  /// 但此方法已脱离 controller 上下文，可以安全运行。
+  static void _schedulePrivacyPolicyCheck() {
+    Future.delayed(const Duration(milliseconds: 800), () async {
+      try {
+        await PrivacyPolicyDialog.checkAndShowIfNeeded();
+      } catch (e) {
+        log('⚠️ 登录后隐私政策检查失败: $e');
+      }
+    });
   }
 }

@@ -1146,7 +1146,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bySigningUp => 'By signing up, you agree to our';
 
   @override
-  String get and => 'and';
+  String get and => ' and ';
 
   @override
   String get required => '*';
@@ -4218,4 +4218,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get decline => 'Decline';
+
+  @override
+  String get privacyPolicyIntro =>
+      'Welcome to Go-Nomads! To provide you with better services, we need you to understand and agree to the following privacy policy:';
+
+  @override
+  String get privacyDataCollection => 'Data Collection';
+
+  @override
+  String get privacyDataCollectionDesc =>
+      'We collect your behavioral data (such as browsing history, search preferences, feature usage frequency, etc.) to optimize product experience and personalized recommendations.';
+
+  @override
+  String get privacyLocationData => 'Location Information';
+
+  @override
+  String get privacyLocationDataDesc =>
+      'We collect your location data for city recommendations, nearby coworking spaces and events, and travel history tracking features.';
+
+  @override
+  String get privacyPersonalData => 'Personal Information';
+
+  @override
+  String get privacyPersonalDataDesc =>
+      'We collect your basic personal information (such as nickname, avatar, contact details, etc.) for account management and social features.';
+
+  @override
+  String get privacyDataProtection => 'Data Protection';
+
+  @override
+  String get privacyDataProtectionDesc =>
+      'We are committed to using industry-standard security measures to protect your personal data. We will not sell your data to third parties. You can manage your privacy preferences in Settings at any time.';
+
+  @override
+  String get privacyPolicyNote =>
+      'If you do not agree to the above privacy policy, you will not be able to continue using this application. You can view the full privacy policy in Settings at any time.';
+
+  @override
+  String get agreeAndContinue => 'Agree and Continue';
+
+  @override
+  String get disagreeAndExit => 'Disagree and Exit';
+
+  @override
+  String get viewFullTerms => 'View full ';
 }

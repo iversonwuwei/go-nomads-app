@@ -26,6 +26,7 @@ import 'services/location_service.dart';
 import 'services/notification_service.dart';
 import 'services/signalr_service.dart';
 import 'services/social_sdk_service.dart';
+import 'widgets/dialogs/privacy_policy_dialog.dart';
 
 /// 全局初始化完成状态
 final _initCompleter = ValueNotifier<bool>(false);
@@ -305,6 +306,27 @@ class _AppWrapperState extends State<AppWrapper> {
 
     log('📱 执行 Get.offNamed($targetRoute)');
     Get.offNamed(targetRoute);
+
+    // 如果是已认证用户，异步检查隐私政策
+    if (targetRoute == AppRoutes.home) {
+      _checkPrivacyPolicyForReturningUser();
+    }
+  }
+
+  /// 对于已登录的回访用户，检查是否已同意隐私政策
+  Future<void> _checkPrivacyPolicyForReturningUser() async {
+    try {
+      // 等待页面完全加载后再显示弹窗
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (!mounted) return;
+
+      final accepted = await PrivacyPolicyDialog.checkAndShowIfNeeded();
+      if (!accepted) {
+        log('📋 回访用户拒绝隐私政策，已退出登录');
+      }
+    } catch (e) {
+      log('⚠️ 检查回访用户隐私政策失败: $e');
+    }
   }
 
   @override

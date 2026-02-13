@@ -107,4 +107,33 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<UserPreferences> acceptPrivacyPolicy() async {
+    log('📋 接受隐私政策');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/users/me/accept-privacy-policy',
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final preferences = UserPreferences.fromJson(response.data['data'] as Map<String, dynamic>);
+        log('✅ 成功接受隐私政策');
+        return preferences;
+      }
+
+      throw Exception('接受隐私政策失败');
+    } catch (e) {
+      log('❌ 接受隐私政策失败: $e');
+      rethrow;
+    }
+  }
 }

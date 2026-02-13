@@ -1141,7 +1141,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bySigningUp => '注册即表示您同意我们的';
 
   @override
-  String get and => '和';
+  String get and => ' 和 ';
 
   @override
   String get required => '*';
@@ -4158,4 +4158,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get decline => '拒绝';
+
+  @override
+  String get privacyPolicyIntro =>
+      '欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：';
+
+  @override
+  String get privacyDataCollection => '数据收集';
+
+  @override
+  String get privacyDataCollectionDesc =>
+      '我们会收集您的行为数据（如浏览记录、搜索偏好、功能使用频率等），以便优化产品体验和个性化推荐。';
+
+  @override
+  String get privacyLocationData => '位置信息';
+
+  @override
+  String get privacyLocationDataDesc =>
+      '我们会收集您的位置数据，用于提供城市推荐、附近的共享办公空间和活动信息、以及旅行足迹记录等功能。';
+
+  @override
+  String get privacyPersonalData => '个人信息';
+
+  @override
+  String get privacyPersonalDataDesc =>
+      '我们会收集您的基本个人信息（如昵称、头像、联系方式等），用于账号管理和社交功能。';
+
+  @override
+  String get privacyDataProtection => '数据保护';
+
+  @override
+  String get privacyDataProtectionDesc =>
+      '我们承诺采用行业标准的安全措施保护您的个人数据，不会将您的数据出售给第三方。您可以随时在“设置”中管理您的隐私偏好。';
+
+  @override
+  String get privacyPolicyNote => '如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的隐私政策。';
+
+  @override
+  String get agreeAndContinue => '同意并继续';
+
+  @override
+  String get disagreeAndExit => '不同意并退出';
+
+  @override
+  String get viewFullTerms => '查看完整的';
 }
