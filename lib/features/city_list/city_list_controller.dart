@@ -101,9 +101,8 @@ class CityListController extends GetxController {
     // 设置收藏状态变更监听器
     _setupFavoriteChangedListener();
 
-    // 初始加载
-    loadRegionTabs();
-    loadCities(refresh: true);
+    // 初始加载：先加载 Tab 列表，再加载城市数据，确保 Tab 先渲染
+    _initLoad();
 
     // 异步加载关注状态
     Future.microtask(() => _loadFollowedCities());
@@ -376,6 +375,12 @@ class CityListController extends GetxController {
 
   // ==================== 数据加载 ====================
 
+  /// 初始化加载：先加载 Tab 列表确保 UI 渲染，再加载城市数据
+  Future<void> _initLoad() async {
+    await loadRegionTabs();
+    await loadCities(refresh: true);
+  }
+
   /// 加载区域 Tab 数据（后端控制）
   Future<void> loadRegionTabs() async {
     isLoadingTabs.value = true;
@@ -397,18 +402,24 @@ class CityListController extends GetxController {
     }
   }
 
-  /// 切换区域 Tab
+  /// 切换区域 Tab - 清空列表显示骨架屏，再加载新数据
   Future<void> selectRegion(String? region) async {
     if (selectedRegion.value == region) return;
     selectedRegion.value = region;
+    // 清空当前列表，触发骨架屏
+    cities.clear();
     await loadCities(refresh: true);
   }
 
   /// 加载城市列表
-  Future<void> loadCities({bool refresh = false}) async {
+  /// [refresh] 为 true 时重置分页
+  /// [showLoading] 为 false 时不显示全局loading（tab切换时使用）
+  Future<void> loadCities({bool refresh = false, bool showLoading = true}) async {
     if (isLoading.value && !refresh) return;
 
-    isLoading.value = true;
+    if (showLoading) {
+      isLoading.value = true;
+    }
     errorMessage.value = null;
     _currentPage = 1;
 
@@ -446,6 +457,8 @@ class CityListController extends GetxController {
   /// 搜索城市
   Future<void> search(String query) async {
     searchQuery.value = query.trim();
+    // 搜索时自动切到"全部" Tab，搜索结果不受区域限制
+    selectedRegion.value = null;
     await loadCities(refresh: true);
   }
 

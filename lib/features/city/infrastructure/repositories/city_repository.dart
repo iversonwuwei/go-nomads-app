@@ -136,8 +136,8 @@ class CityRepository implements ICityRepository {
     try {
       final response = await _httpService.get('$_baseUrl/region-tabs');
 
-      final data = response.data as Map<String, dynamic>;
-      final items = data['data'] as List<dynamic>? ?? [];
+      // HttpService 拦截器已自动解包 ApiResponse，response.data 直接就是 List
+      final items = response.data as List<dynamic>? ?? [];
 
       final tabs = items.map((json) => CityRegionTab.fromJson(json as Map<String, dynamic>)).toList();
 

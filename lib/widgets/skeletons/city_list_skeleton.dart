@@ -16,113 +16,86 @@ class _CityListSkeletonState extends BaseSkeletonState<CityListSkeleton> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
-    return Column(
-      children: [
-        _buildFilterBarPlaceholder(isMobile),
-        Expanded(
-          child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(
-              isMobile ? 16 : 20,
-              isMobile ? 16 : 20,
-              isMobile ? 16 : 20,
-              100,
-            ),
-            itemCount: 8,
-            itemBuilder: (context, index) {
-              return _buildCityCard();
-            },
-          ),
-        ),
-      ],
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 12 : 20,
+        isMobile ? 12 : 20,
+        isMobile ? 12 : 20,
+        20,
+      ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isMobile ? 2 : 3,
+        crossAxisSpacing: isMobile ? 10 : 16,
+        mainAxisSpacing: isMobile ? 10 : 16,
+        childAspectRatio: 0.68,
+      ),
+      itemCount: isMobile ? 6 : 9,
+      itemBuilder: (context, index) {
+        return _buildCityCardSkeleton();
+      },
     );
   }
 
-  Widget _buildFilterBarPlaceholder(bool isMobile) {
+  /// 城市卡片骨架 - 匹配实际 CityCard 布局
+  /// 顶部图片区 + 底部信息区（城市名、国家、评分等）
+  Widget _buildCityCardSkeleton() {
     return Container(
-      width: double.infinity,
-      color: Colors.white,
-      padding: EdgeInsets.all(isMobile ? 16 : 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SkeletonBox(
-            width: double.infinity,
-            height: 52,
-            borderRadius: 12,
-          ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
+          // 图片区域（占比约 60%）
+          const Expanded(
+            flex: 6,
             child: SkeletonBox(
-              width: isMobile ? 60 : 72,
-              height: 16,
-              borderRadius: 12,
+              width: double.infinity,
+              height: double.infinity,
+              borderRadius: 0,
+            ),
+          ),
+          // 信息区域（占比约 40%）
+          Expanded(
+            flex: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // 城市名称
+                  const SkeletonBox(
+                    width: 80,
+                    height: 14,
+                    borderRadius: 4,
+                  ),
+                  const SizedBox(height: 4),
+                  // 国家名称
+                  const SkeletonBox(
+                    width: 50,
+                    height: 11,
+                    borderRadius: 4,
+                  ),
+                  const Spacer(),
+                  // 底部指标行
+                  Row(
+                    children: const [
+                      SkeletonBox(width: 32, height: 16, borderRadius: 4),
+                      SizedBox(width: 6),
+                      SkeletonBox(width: 32, height: 16, borderRadius: 4),
+                      Spacer(),
+                      SkeletonBox(width: 20, height: 16, borderRadius: 4),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCityCard() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: SkeletonCard(
-        height: 120,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // 城市图标/图片
-                const SkeletonBox(
-                  width: 60,
-                  height: 60,
-                  borderRadius: 12,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      // 城市名称
-                      SkeletonBox(
-                        width: double.infinity,
-                        height: 18,
-                        borderRadius: 4,
-                      ),
-                      SizedBox(height: 8),
-                      // 城市描述
-                      SkeletonBox(
-                        width: 180,
-                        height: 14,
-                        borderRadius: 4,
-                      ),
-                      SizedBox(height: 8),
-                      // 标签或其他信息
-                      Row(
-                        children: [
-                          SkeletonBox(
-                            width: 60,
-                            height: 12,
-                            borderRadius: 4,
-                          ),
-                          SizedBox(width: 8),
-                          SkeletonBox(
-                            width: 60,
-                            height: 12,
-                            borderRadius: 4,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
