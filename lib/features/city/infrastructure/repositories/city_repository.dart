@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_region_tab.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/infrastructure/models/city_detail_dto.dart' as dto;
 import 'package:go_nomads_app/services/http_service.dart';
@@ -95,6 +96,7 @@ class CityRepository implements ICityRepository {
     int page = 1,
     int pageSize = 20,
     String? search,
+    String? region,
   }) async {
     try {
       final queryParameters = <String, dynamic>{
@@ -104,6 +106,10 @@ class CityRepository implements ICityRepository {
 
       if (search != null && search.isNotEmpty) {
         queryParameters['search'] = search;
+      }
+
+      if (region != null && region.isNotEmpty) {
+        queryParameters['region'] = region;
       }
 
       // 使用轻量级 API，不包含聚合数据（meetup count, coworking count 等）
@@ -122,6 +128,25 @@ class CityRepository implements ICityRepository {
       return Failure(_convertHttpException(e));
     } catch (e) {
       return Failure(UnknownException('获取城市基础列表失败: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Result<List<CityRegionTab>>> getRegionTabs() async {
+    try {
+      final response = await _httpService.get('$_baseUrl/region-tabs');
+
+      final data = response.data as Map<String, dynamic>;
+      final items = data['data'] as List<dynamic>? ?? [];
+
+      final tabs = items.map((json) => CityRegionTab.fromJson(json as Map<String, dynamic>)).toList();
+
+      log('🌍 [CityRepository] 获取到 ${tabs.length} 个区域标签');
+      return Success(tabs);
+    } on HttpException catch (e) {
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      return Failure(UnknownException('获取区域标签失败: ${e.toString()}'));
     }
   }
 

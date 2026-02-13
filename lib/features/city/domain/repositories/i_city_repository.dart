@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_region_tab.dart';
 
 /// 城市仓储接口 (Domain Layer)
 /// 定义城市数据访问的抽象契约,不依赖具体实现
@@ -14,12 +15,16 @@ abstract class ICityRepository implements IRepository {
   });
 
   /// 获取城市列表（基础版本，不包含聚合数据）
-  /// 用于快速首屏加载
+  /// 用于快速首屏加载，支持可选 region 筛选
   Future<Result<List<City>>> getCitiesBasic({
     int page = 1,
     int pageSize = 20,
     String? search,
+    String? region,
   });
+
+  /// 获取区域标签列表（用于Tab展示，后端控制）
+  Future<Result<List<CityRegionTab>>> getRegionTabs();
 
   /// 批量获取城市聚合数据
   Future<Result<Map<String, CityCountsData>>> getCityCountsBatch(List<String> cityIds);

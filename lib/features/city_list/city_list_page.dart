@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/features/city_list/widgets/widgets.dart';
@@ -5,9 +8,6 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/global_map_page.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 城市列表页面 - 使用 GetView 符合 GetX 标准
 class CityListPage extends GetView<CityListController> {
@@ -79,11 +79,11 @@ class CityListPage extends GetView<CityListController> {
 
       return Column(
         children: [
-          // 筛选栏
+          // 搜索栏 + 区域 Tab 栏
           CityFilterBar(isMobile: isMobile),
-          // 城市列表
+          // 城市网格列表
           Expanded(
-            child: controller.cities.isEmpty ? const CityListEmptyState() : _CityListContent(isMobile: isMobile),
+            child: controller.cities.isEmpty ? const CityListEmptyState() : _CityGridContent(isMobile: isMobile),
           ),
         ],
       );
@@ -91,38 +91,44 @@ class CityListPage extends GetView<CityListController> {
   }
 }
 
-/// 城市列表内容组件
-class _CityListContent extends GetView<CityListController> {
+/// 城市网格列表内容组件 - 2列网格布局
+class _CityGridContent extends GetView<CityListController> {
   final bool isMobile;
 
-  const _CityListContent({required this.isMobile});
+  const _CityGridContent({required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final cityList = controller.cities.toList();
+      final itemCount = cityList.length + (controller.hasMore.value ? 1 : 0);
 
       return RefreshIndicator(
         onRefresh: () => controller.loadCities(refresh: true),
         color: const Color(0xFFFF4458),
-        child: ListView.builder(
+        child: GridView.builder(
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(
-            isMobile ? 16 : 20,
-            isMobile ? 16 : 20,
-            isMobile ? 16 : 20,
-            100, // 底部留白给导航栏
+            isMobile ? 12 : 20,
+            isMobile ? 12 : 20,
+            isMobile ? 12 : 20,
+            100,
           ),
-          itemCount: cityList.length + (controller.hasMore.value ? 1 : 0),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isMobile ? 2 : 3,
+            crossAxisSpacing: isMobile ? 10 : 16,
+            mainAxisSpacing: isMobile ? 10 : 16,
+            childAspectRatio: 0.68,
+          ),
+          itemCount: itemCount,
           itemBuilder: (context, index) {
-            // 加载指示器
+            // 加载更多指示器
             if (index == cityList.length) {
               return const CityListLoadingIndicator();
             }
 
             final city = cityList[index];
-            // 使用 cityId 构建 CityCard，确保响应式更新
             return CityCard(cityId: city.id, isMobile: isMobile);
           },
         ),

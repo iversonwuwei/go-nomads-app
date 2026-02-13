@@ -7,6 +7,7 @@ import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_region_tab.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/domain/usecases/city_rating_usecases.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
@@ -45,6 +46,11 @@ class CityListController extends GetxController {
   final errorMessage = Rx<String?>(null);
   final searchQuery = ''.obs;
   final followedCities = <String, bool>{}.obs;
+
+  // 区域 Tab 相关状态
+  final regionTabs = <CityRegionTab>[].obs;
+  final selectedRegion = Rx<String?>(null);
+  final isLoadingTabs = false.obs;
 
   // 本地生成中状态（响应式）
   final generatingImageCityIds = <String>{}.obs;
@@ -96,6 +102,7 @@ class CityListController extends GetxController {
     _setupFavoriteChangedListener();
 
     // 初始加载
+    loadRegionTabs();
     loadCities(refresh: true);
 
     // 异步加载关注状态
@@ -369,6 +376,34 @@ class CityListController extends GetxController {
 
   // ==================== 数据加载 ====================
 
+  /// 加载区域 Tab 数据（后端控制）
+  Future<void> loadRegionTabs() async {
+    isLoadingTabs.value = true;
+    try {
+      final result = await _cityRepository.getRegionTabs();
+      result.fold(
+        onSuccess: (tabs) {
+          regionTabs.assignAll(tabs);
+          log('✅ 加载了 ${tabs.length} 个区域标签');
+        },
+        onFailure: (error) {
+          log('⚠️ 加载区域标签失败: ${error.message}');
+        },
+      );
+    } catch (e) {
+      log('⚠️ 加载区域标签异常: $e');
+    } finally {
+      isLoadingTabs.value = false;
+    }
+  }
+
+  /// 切换区域 Tab
+  Future<void> selectRegion(String? region) async {
+    if (selectedRegion.value == region) return;
+    selectedRegion.value = region;
+    await loadCities(refresh: true);
+  }
+
   /// 加载城市列表
   Future<void> loadCities({bool refresh = false}) async {
     if (isLoading.value && !refresh) return;
@@ -469,7 +504,11 @@ class CityListController extends GetxController {
   }
 
   Future<void> _loadFromDatabase() async {
-    final result = await _cityRepository.getCitiesBasic(page: 1, pageSize: _pageSize);
+    final result = await _cityRepository.getCitiesBasic(
+      page: 1,
+      pageSize: _pageSize,
+      region: selectedRegion.value,
+    );
 
     result.fold(
       onSuccess: (data) {
@@ -530,6 +569,7 @@ class CityListController extends GetxController {
     final result = await _cityRepository.getCitiesBasic(
       page: _currentPage + 1,
       pageSize: _pageSize,
+      region: selectedRegion.value,
     );
 
     result.fold(
