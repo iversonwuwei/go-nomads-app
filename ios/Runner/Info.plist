@@ -51,13 +51,13 @@
 			<key>NSAllowsArbitraryLoads</key>
 			<true/>
 		</dict>
-		<!-- 位置权限描述 -->
+		<!-- 位置权限描述 - 明确说明每个权限的具体用途 -->
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>我们需要访问您的位置以提供基于位置的城市推荐服务</string>
+		<string>行途需要获取您的位置信息，用于为您推荐附近城市和目的地、查找附近的活动和聚会、发现附近的共享办公空间，以及提供地图导航和位置选择功能。我们仅在您使用相关功能时获取位置信息。</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>我们需要访问您的位置以提供更好的服务体验</string>
+		<string>行途需要在后台访问您的位置信息，以便为您提供旅行足迹记录和到达新城市的自动检测功能。您可以随时在系统设置中关闭此权限。</string>
 		<key>NSLocationAlwaysUsageDescription</key>
-		<string>我们需要访问您的位置以提供持续的位置服务</string>
+		<string>行途需要在后台访问您的位置信息，以便为您提供旅行足迹记录和到达新城市的自动检测功能。您可以随时在系统设置中关闭此权限。</string>
 		<!-- 支持 canLaunchUrl 检测第三方App -->
 		<key>LSApplicationQueriesSchemes</key>
 		<array>
@@ -77,18 +77,18 @@
 			<string>baidumap</string>
 			<string>qqmap</string>
 		</array>
-		<!-- 日历权限描述 -->
+		<!-- 日历权限描述 - 明确说明每个权限的具体用途 -->
 		<key>NSCalendarsUsageDescription</key>
-		<string>We need access to your calendar to add meetup events</string>
+		<string>行途需要访问您的日历，以便将您感兴趣的活动和聚会添加到日历中，并设置活动提醒。我们仅在您主动点击"添加到日历"时访问日历，不会读取您的其他日历信息。</string>
 		<!-- iOS 17+ 日历完整访问权限 -->
 		<key>NSCalendarsFullAccessUsageDescription</key>
-		<string>We need full access to your calendar to add and manage meetup events</string>
+		<string>行途需要完整的日历访问权限，以便将活动和聚会添加到您选择的日历中，并管理活动提醒。我们仅在您主动操作时访问日历。</string>
 		<!-- 联系人权限 (日历位置自动完成需要) -->
 		<key>NSContactsUsageDescription</key>
-		<string>We need access to contacts for calendar event location autocomplete</string>
+		<string>行途在创建日历事件时可能需要访问通讯录，用于日历事件中的位置自动补全功能。</string>
 		<!-- 通知权限描述 -->
 		<key>NSUserNotificationsUsageDescription</key>
-		<string>我们需要发送通知以告知您旅游指南生成完成</string>
+		<string>行途需要发送通知，用于旅行指南生成完成提醒、新消息和互动提醒、以及活动开始前提醒。您可以随时在应用设置或系统设置中关闭通知。</string>
 		<!-- Deep Link URL Schemes -->
 		<key>CFBundleURLTypes</key>
 		<array>

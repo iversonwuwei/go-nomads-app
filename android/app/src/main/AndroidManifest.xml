@@ -1,18 +1,20 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 <!-- 网络权限 -->
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-<!-- 位置权限 -->
+<!-- 位置权限 - 用于城市推荐、附近活动查找、共享办公空间发现、地图导航 -->
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<!-- 后台位置 - 仅用于旅行足迹检测功能（用户主动开启后使用） -->
 <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-<!-- 日历权限 -->
+<!-- 日历权限 - 仅用于将活动/聚会添加到用户日历，用户主动点击"添加到日历"时使用 -->
 <uses-permission android:name="android.permission.READ_CALENDAR" />
 <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
-<!-- 通知权限 (Android 13+) -->
+<!-- 通知权限 (Android 13+) - 用于旅行指南生成完成提醒、新消息提醒、活动开始提醒 -->
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 <uses-permission android:name="android.permission.VIBRATE" />
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />

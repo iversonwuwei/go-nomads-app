@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/dialogs/permission_purpose_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationService extends GetxService {
@@ -11,6 +14,7 @@ class NotificationService extends GetxService {
   // 通知启用状态
   final RxBool isEnabled = true.obs;
   static const String _enabledKey = 'notifications_enabled';
+  static const String _notificationPurposeShownKey = 'notification_permission_purpose_shown';
 
   // 通知渠道配置
   static const String _channelId = 'guide_generation';
@@ -26,11 +30,11 @@ class NotificationService extends GetxService {
     // Android 初始化配置
     const androidSettings = AndroidInitializationSettings(_androidIcon);
 
-    // iOS 初始化配置
+    // iOS 初始化配置 - 不在初始化时请求权限，延迟到用户需要时再请求
     const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
 
     const initSettings = InitializationSettings(
@@ -44,9 +48,15 @@ class NotificationService extends GetxService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
-    // 如果通知已启用，请求权限
+    // 如果通知已启用且之前已授权过，静默检查权限状态
     if (isEnabled.value) {
-      await _requestPermissions();
+      final prefs = await SharedPreferences.getInstance();
+      final hasShownPurpose = prefs.getBool(_notificationPurposeShownKey) ?? false;
+      if (hasShownPurpose) {
+        // 之前已展示过用途说明并授权过，直接请求（不弹对话框）
+        await _requestPermissionsSilent();
+      }
+      // 否则延迟到用户首次需要通知时再展示用途说明并请求权限
     }
 
     return this;
@@ -65,8 +75,8 @@ class NotificationService extends GetxService {
     await prefs.setBool(_enabledKey, enabled);
 
     if (enabled) {
-      // 启用通知时请求权限
-      await _requestPermissions();
+      // 启用通知时，展示用途说明后请求权限
+      await requestPermissionsWithPurpose();
     } else {
       // 禁用通知时取消所有通知
       await _notifications.cancelAll();
@@ -92,8 +102,29 @@ class NotificationService extends GetxService {
     await AppSettings.openAppSettings(type: AppSettingsType.notification);
   }
 
-  /// 请求通知权限
-  Future<void> _requestPermissions() async {
+  /// 展示用途说明后请求通知权限
+  ///
+  /// 隐私合规：在请求系统通知权限前，先向用户说明通知的用途。
+  Future<bool> requestPermissionsWithPurpose() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasShownPurpose = prefs.getBool(_notificationPurposeShownKey) ?? false;
+
+    if (!hasShownPurpose) {
+      // 首次请求，展示用途说明
+      final shouldRequest = await PermissionPurposeDialog.showNotificationPermissionPurpose();
+      if (!shouldRequest) {
+        log('📋 用户在用途说明对话框中拒绝了通知权限');
+        return false;
+      }
+      await prefs.setBool(_notificationPurposeShownKey, true);
+    }
+
+    await _requestPermissionsSilent();
+    return true;
+  }
+
+  /// 静默请求通知权限（不弹自定义对话框）
+  Future<void> _requestPermissionsSilent() async {
     // Android 13+ 需要运行时权限
     final androidPlugin =
         _notifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
