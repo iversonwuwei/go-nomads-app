@@ -17,12 +17,12 @@ import 'package:go_nomads_app/pages/city_chat_page.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
 import 'package:go_nomads_app/pages/city_search_page.dart';
 import 'package:go_nomads_app/pages/community_page.dart';
+import 'package:go_nomads_app/pages/conversations/conversation_list_page.dart';
 import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_page.dart';
 import 'package:go_nomads_app/pages/coworking_home_page.dart';
 import 'package:go_nomads_app/pages/coworking_list_page.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
-import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 import 'package:go_nomads_app/pages/edit_basic_info_page.dart';
 import 'package:go_nomads_app/pages/edit_interests_page.dart';
 import 'package:go_nomads_app/pages/edit_skills_page.dart';
@@ -36,18 +36,19 @@ import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_page.dar
 import 'package:go_nomads_app/pages/innovation_list/innovation_list_page.dart';
 import 'package:go_nomads_app/pages/invite_to_meetup_page.dart';
 import 'package:go_nomads_app/pages/legal/community_guidelines_page.dart';
+import 'package:go_nomads_app/pages/legal/privacy_policy_page.dart';
 import 'package:go_nomads_app/pages/legal/terms_of_service_page.dart';
 import 'package:go_nomads_app/pages/login/login.dart';
 import 'package:go_nomads_app/pages/meetup_list/meetup_list.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
 import 'package:go_nomads_app/pages/my_meetups_page.dart';
-import 'package:go_nomads_app/pages/conversations/conversation_list_page.dart';
 import 'package:go_nomads_app/pages/notifications_page.dart';
 import 'package:go_nomads_app/pages/profile_edit_page.dart';
 import 'package:go_nomads_app/pages/profile_page.dart';
 import 'package:go_nomads_app/pages/pros_and_cons_add_page.dart';
 import 'package:go_nomads_app/pages/register/register.dart';
 import 'package:go_nomads_app/pages/skills_interests_page.dart';
+import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 import 'package:go_nomads_app/pages/travel_plan/travel_plan_page.dart';
 import 'package:go_nomads_app/pages/user_profile_page.dart';
 
@@ -65,6 +66,7 @@ class AppRoutes {
   static const String register = '/register';
   static const String termsOfService = '/terms-of-service';
   static const String communityGuidelinesPage = '/community-guidelines';
+  static const String privacyPolicy = '/privacy-policy';
 
   // ============================================================================
   // 城市相关路由
@@ -186,6 +188,11 @@ class AppRoutes {
       name: communityGuidelinesPage,
       page: () => const CommunityGuidelinesPage(),
       // 🚫 无 middleware - 社区准则
+    ),
+    GetPage(
+      name: privacyPolicy,
+      page: () => const PrivacyPolicyPage(),
+      // 🚫 无 middleware - 隐私政策
     ),
 
     // ============================================================================

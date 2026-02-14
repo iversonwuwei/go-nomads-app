@@ -4263,4 +4263,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewFullTerms => 'View full ';
+
+  @override
+  String get thirdPartyServices => 'Third-Party Services';
+
+  @override
+  String get thirdPartyServicesDesc =>
+      'To provide related features, this app integrates the following third-party SDKs:\n• Amap SDK — Map display and location services\n• WeChat OpenSDK — WeChat login and sharing\n• QQ Connect SDK — QQ login and sharing\n• Alipay SDK — Payment features\n• Tencent Cloud IM SDK — Instant messaging\n• Google Location — Overseas location services\nThese third-party SDKs may collect necessary information according to their respective privacy policies.';
+
+  @override
+  String get permissionUsage => 'Permission Usage';
+
+  @override
+  String get permissionUsageDesc =>
+      'This app uses the following permissions:\n• Location — City recommendations, nearby events, travel footprint\n• Calendar — Add events to calendar\n• Notifications — Message and event reminders\nAll permissions are requested only when the corresponding feature is used. You can manage them in system settings at any time.';
+
+  @override
+  String get privacyDeclineTitle => 'Notice';
+
+  @override
+  String get privacyDeclineMessage =>
+      'If you do not agree to the privacy policy, you will not be able to use this app\'s features.\n\nWe take your privacy seriously. The information collected is only used to provide you with better services.\n\nAre you sure you want to disagree?';
+
+  @override
+  String get reconsider => 'Reconsider';
+
+  @override
+  String get confirmExit => 'Confirm Exit';
 }

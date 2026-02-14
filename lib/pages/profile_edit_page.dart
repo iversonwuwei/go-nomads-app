@@ -1,5 +1,8 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/config/supabase_config.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
@@ -14,6 +17,7 @@ import 'package:go_nomads_app/features/user/presentation/controllers/user_state_
 import 'package:go_nomads_app/features/user_management/domain/repositories/iuser_management_repository.dart';
 import 'package:go_nomads_app/features/user_management/presentation/controllers/user_management_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/services/notification_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
@@ -21,9 +25,6 @@ import 'package:go_nomads_app/utils/image_upload_helper.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
 class ProfileEditPage extends StatefulWidget {
@@ -1186,7 +1187,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
           _buildActionTile(
             icon: FontAwesomeIcons.userSecret,
             title: l10n.privacySettings,
-            onTap: () => AppToast.info(l10n.privacySettingsComingSoon),
+            onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
           ),
           Divider(color: AppColors.divider),
           _buildActionTile(

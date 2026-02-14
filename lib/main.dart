@@ -26,6 +26,7 @@ import 'services/location_service.dart';
 import 'services/notification_service.dart';
 import 'services/signalr_service.dart';
 import 'services/social_sdk_service.dart';
+import 'widgets/dialogs/first_launch_privacy_dialog.dart';
 import 'widgets/dialogs/privacy_policy_dialog.dart';
 
 /// 全局初始化完成状态
@@ -33,6 +34,12 @@ final _initCompleter = ValueNotifier<bool>(false);
 
 /// 全局变量：标记是否已从 AppWrapper 导航到目标页面
 var _hasNavigatedFromAppWrapper = false;
+
+/// 全局变量：标记首次启动隐私政策是否需要展示
+var _needsFirstLaunchPrivacyConsent = false;
+
+/// 全局变量：标记首次启动隐私政策已通过（用于控制SDK初始化时机）
+var _privacyConsentCompleted = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,11 +49,34 @@ void main() async {
   // 重置导航状态（热重启时需要）
   _hasNavigatedFromAppWrapper = false;
   _initCompleter.value = false;
+  _privacyConsentCompleted = false;
 
-  // 立即启动 UI（显示启动页）
-  runApp(const MyApp());
+  // 工信部合规：在初始化任何SDK之前，先检查用户是否已同意隐私政策
+  final hasConsented = await FirstLaunchPrivacyDialog.hasConsented();
+  _needsFirstLaunchPrivacyConsent = !hasConsented;
 
-  // 在后台完成初始化
+  if (_needsFirstLaunchPrivacyConsent) {
+    log('📋 首次启动，需要展示隐私政策同意弹窗（在SDK初始化之前）');
+    // 先启动UI显示启动页，等待用户同意后再初始化SDK
+    runApp(const MyApp());
+    // 不在这里执行 _performInitialization()，而是等用户同意后由 AppWrapper 触发
+  } else {
+    log('✅ 用户已同意隐私政策，正常初始化');
+    _privacyConsentCompleted = true;
+
+    // 立即启动 UI（显示启动页）
+    runApp(const MyApp());
+
+    // 在后台完成初始化
+    await _performInitialization();
+  }
+}
+
+/// 当用户在首次启动隐私弹窗中同意后，执行完整初始化
+Future<void> performInitializationAfterConsent() async {
+  if (_privacyConsentCompleted) return;
+  _privacyConsentCompleted = true;
+  log('✅ 用户同意隐私政策，开始完整初始化...');
   await _performInitialization();
 }
 
@@ -241,6 +271,15 @@ class _AppWrapperState extends State<AppWrapper> {
 
     log('📱 AppWrapper initState - _initCompleter.value = ${_initCompleter.value}');
 
+    // 如果需要首次启动隐私政策弹窗，等 UI 渲染后显示
+    if (_needsFirstLaunchPrivacyConsent) {
+      log('📋 等待 UI 渲染后显示首次启动隐私政策弹窗');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showFirstLaunchPrivacyDialog();
+      });
+      return;
+    }
+
     // 监听初始化完成
     _initCompleter.addListener(_onInitComplete);
 
@@ -265,6 +304,33 @@ class _AppWrapperState extends State<AppWrapper> {
   void dispose() {
     _initCompleter.removeListener(_onInitComplete);
     super.dispose();
+  }
+
+  /// 显示首次启动隐私政策弹窗（工信部合规要求）
+  Future<void> _showFirstLaunchPrivacyDialog() async {
+    if (!mounted) return;
+
+    final consented = await FirstLaunchPrivacyDialog.show(context);
+
+    if (consented) {
+      // 用户同意 → 开始完整初始化
+      _needsFirstLaunchPrivacyConsent = false;
+
+      // 开始监听初始化完成
+      _initCompleter.addListener(_onInitComplete);
+
+      // 执行完整的SDK初始化
+      await performInitializationAfterConsent();
+
+      // 添加超时保护
+      Future.delayed(const Duration(seconds: 3), () {
+        if (!_hasNavigatedFromAppWrapper && mounted) {
+          log('⏰ 超时保护触发，强制导航');
+          _navigateToTargetPage();
+        }
+      });
+    }
+    // 如果不同意，FirstLaunchPrivacyDialog 内部会退出应用
   }
 
   void _onInitComplete() {

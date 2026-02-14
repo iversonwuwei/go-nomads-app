@@ -2150,7 +2150,15 @@
   "agreeAndContinue": "同意并继续",
   "disagreeAndExit": "不同意并退出",
   "viewFullTerms": "查看完整的",
-  "and": " 和 "
+  "and": " 和 ",
+  "thirdPartyServices": "第三方服务",
+  "thirdPartyServicesDesc": "为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• QQ互联SDK — QQ登录和分享\n• 支付宝SDK — 支付功能\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。",
+  "permissionUsage": "权限使用说明",
+  "permissionUsageDesc": "本应用使用以下权限：\n• 位置权限 — 城市推荐、附近活动、旅行足迹\n• 日历权限 — 将活动添加到日历\n• 通知权限 — 消息提醒和活动通知\n所有权限均在使用对应功能时才会申请，您可随时在系统设置中管理。",
+  "privacyDeclineTitle": "温馨提示",
+  "privacyDeclineMessage": "如果您不同意隐私政策，将无法使用本应用的相关功能。\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。\n\n您确定不同意吗？",
+  "reconsider": "再想想",
+  "confirmExit": "确认退出"
 }
 
 

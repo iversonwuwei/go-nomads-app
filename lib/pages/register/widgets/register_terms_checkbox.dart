@@ -50,6 +50,15 @@ class RegisterTermsCheckbox extends GetView<RegisterController> {
                     ),
                     recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.communityGuidelinesPage),
                   ),
+                  TextSpan(text: ' ${l10n.and} '),
+                  TextSpan(
+                    text: l10n.privacyPolicy,
+                    style: const TextStyle(
+                      color: RegisterConstants.primaryColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.privacyPolicy),
+                  ),
                 ],
               ),
             ),
