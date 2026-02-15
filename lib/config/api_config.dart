@@ -212,6 +212,11 @@ class ApiConfig {
   static const String userBatchEndpoint = '/users/batch';
   static String get userProfileEndpoint => userMeEndpoint;
 
+  // ============================================================
+  // Legal Endpoints - /api/v1/users/legal
+  // ============================================================
+  static const String legalPrivacyPolicyEndpoint = '/users/legal/privacy-policy';
+
   // 首页相关
   static const String homeDataEndpoint = '/home/data';
   static const String homeBannersEndpoint = '/home/banners';

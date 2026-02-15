@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/models/legal_document.dart';
 import 'package:go_nomads_app/pages/legal/privacy_policy_page.dart';
+import 'package:go_nomads_app/services/legal_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 首次启动隐私政策弹窗 key
@@ -58,8 +60,42 @@ class FirstLaunchPrivacyDialog {
   }
 }
 
-class _FirstLaunchPrivacyDialogWidget extends StatelessWidget {
+class _FirstLaunchPrivacyDialogWidget extends StatefulWidget {
   const _FirstLaunchPrivacyDialogWidget();
+
+  @override
+  State<_FirstLaunchPrivacyDialogWidget> createState() => _FirstLaunchPrivacyDialogWidgetState();
+}
+
+class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDialogWidget> {
+  List<LegalSummary>? _summaryItems;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSummary();
+  }
+
+  Future<void> _loadSummary() async {
+    final doc = await LegalService().getPrivacyPolicy();
+    if (mounted) {
+      setState(() {
+        _summaryItems = doc?.summary;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// 将后端返回的 icon 名称字符串映射为 Material IconData
+  static final Map<String, IconData> _iconMap = {
+    'analytics_outlined': Icons.analytics_outlined,
+    'location_on_outlined': Icons.location_on_outlined,
+    'person_outline': Icons.person_outline,
+    'security_outlined': Icons.security_outlined,
+    'extension_outlined': Icons.extension_outlined,
+    'verified_user_outlined': Icons.verified_user_outlined,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -135,63 +171,25 @@ class _FirstLaunchPrivacyDialogWidget extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // 数据收集说明
-          _buildSection(
-            icon: Icons.analytics_outlined,
-            title: l10n?.privacyDataCollection ?? '数据收集',
-            content: l10n?.privacyDataCollectionDesc ??
-                '我们会收集您的行为数据（如浏览记录、搜索偏好、功能使用频率等），以便优化产品体验和个性化推荐。',
-          ),
-
-          _buildSection(
-            icon: Icons.location_on_outlined,
-            title: l10n?.privacyLocationData ?? '位置信息',
-            content: l10n?.privacyLocationDataDesc ??
-                '我们会收集您的位置数据，用于提供城市推荐、附近的共享办公空间和活动信息、以及旅行足迹记录等功能。',
-          ),
-
-          _buildSection(
-            icon: Icons.person_outline,
-            title: l10n?.privacyPersonalData ?? '个人信息',
-            content: l10n?.privacyPersonalDataDesc ??
-                '我们会收集您的基本个人信息（如昵称、头像、联系方式等），用于账号管理和社交功能。',
-          ),
-
-          _buildSection(
-            icon: Icons.security_outlined,
-            title: l10n?.privacyDataProtection ?? '数据保护',
-            content: l10n?.privacyDataProtectionDesc ??
-                '我们承诺采用行业标准的安全措施保护您的个人数据，不会将您的数据出售给第三方。您可以随时在"设置"中管理您的隐私偏好。',
-          ),
-
-          // 第三方SDK说明
-          _buildSection(
-            icon: Icons.extension_outlined,
-            title: l10n?.thirdPartyServices ?? '第三方服务',
-            content: l10n?.thirdPartyServicesDesc ??
-                '为实现相关功能，本应用集成了以下第三方服务SDK：\n'
-                    '• 高德地图/定位SDK（高德软件）— 地图显示和定位服务，可能收集位置信息\n'
-                    '• 微信OpenSDK（腾讯）— 微信登录和分享\n'
-                    '• 抖音开放平台SDK（字节跳动）— 抖音登录\n'
-                    '• 腾讯云IM SDK（腾讯）— 即时通信服务\n'
-                    '• Google Location/Login（Google）— 海外定位和登录服务\n'
-                    '上述SDK可能按照各自隐私政策收集必要信息，详见隐私政策全文。',
-          ),
-
-          // 权限使用说明
-          _buildSection(
-            icon: Icons.verified_user_outlined,
-            title: l10n?.permissionUsage ?? '权限使用说明',
-            content: l10n?.permissionUsageDesc ??
-                '本应用使用以下权限：\n'
-                    '• 位置权限 — 城市推荐、附近活动、旅行足迹\n'
-                    '• 相机权限 — 拍摄头像和社区内容图片\n'
-                    '• 相册权限 — 选择头像和社区图片\n'
-                    '• 麦克风权限 — 聊天语音消息录制\n'
-                    '• 日历权限 — 将活动添加到日历\n'
-                    '• 通知权限 — 消息提醒和活动通知\n'
-                    '所有权限均在使用对应功能时才会申请，您可随时在系统设置中管理。',
-          ),
+          // 动态渲染摘要项（从 API 加载）或显示加载状态
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else if (_summaryItems != null && _summaryItems!.isNotEmpty)
+            ..._summaryItems!.map((item) => _buildSection(
+                  icon: _iconMap[item.icon] ?? Icons.info_outline,
+                  title: item.title,
+                  content: item.content,
+                ))
+          else
+            // API 加载失败时的兜底文案
+            _buildSection(
+              icon: Icons.info_outline,
+              title: '隐私保护',
+              content: '我们重视您的隐私安全。点击下方链接查看完整隐私政策以了解详情。',
+            ),
 
           const SizedBox(height: 12),
 

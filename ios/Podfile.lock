@@ -149,11 +149,6 @@ PODS:
     - Flutter
     - HydraAsync
     - TXIMSDK_Plus_iOS_XCFramework (~> 8.8.7373)
-  - tencent_kit (6.2.0):
-    - Flutter
-    - tencent_kit/vendor (= 6.2.0)
-  - tencent_kit/vendor (6.2.0):
-    - Flutter
   - TXIMSDK_Plus_iOS_XCFramework (8.8.7373)
   - url_launcher_ios (0.0.1):
     - Flutter
@@ -183,7 +178,6 @@ DEPENDENCIES:
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - tencent_cloud_chat_sdk (from `.symlinks/plugins/tencent_cloud_chat_sdk/ios`)
-  - tencent_kit (from `.symlinks/plugins/tencent_kit/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -249,8 +243,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
   tencent_cloud_chat_sdk:
     :path: ".symlinks/plugins/tencent_cloud_chat_sdk/ios"
-  tencent_kit:
-    :path: ".symlinks/plugins/tencent_kit/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -293,7 +285,6 @@ SPEC CHECKSUMS:
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   tencent_cloud_chat_sdk: 2182475abf83a60de565b91c6eaed4dbef8c825a
-  tencent_kit: 6c75fb074b891a9151d53d0f3d335a3033d5d674
   TXIMSDK_Plus_iOS_XCFramework: a99356b102d4c47ee1c60fa91837d7efb0f8f83d
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   WechatOpenSDK-XCFramework: ff342ae616bb86df3d236aca38059dfd4bc4a949
