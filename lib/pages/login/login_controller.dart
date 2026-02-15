@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
@@ -13,7 +14,6 @@ import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
-import 'package:go_nomads_app/widgets/dialogs/privacy_policy_dialog.dart';
 
 /// 登录模式
 enum LoginMode { email, phone }
@@ -386,17 +386,22 @@ class LoginController extends GetxController {
     );
   }
 
-  /// 在独立上下文中延迟检查隐私政策
+  /// 登录成功后，静默同步隐私政策同意状态到后端
   ///
-  /// 使用 static 方法 + Future.delayed，确保不依赖 LoginController 的生命周期。
-  /// 在 Get.offAllNamed 导航到首页后，LoginController 会被 dispose，
-  /// 但此方法已脱离 controller 上下文，可以安全运行。
+  /// 用户在首次启动时已通过 FirstLaunchPrivacyDialog 同意过隐私政策，
+  /// 这里只需要静默将同意状态同步到后端，不再弹窗。
   static void _schedulePrivacyPolicyCheck() {
     Future.delayed(const Duration(milliseconds: 800), () async {
       try {
-        await PrivacyPolicyDialog.checkAndShowIfNeeded();
+        final prefsRepo = Get.find<IUserPreferencesRepository>();
+        final preferences = await prefsRepo.getCurrentUserPreferences();
+        if (!preferences.privacyPolicyAccepted) {
+          log('🔄 登录后静默同步隐私政策同意状态到后端...');
+          await prefsRepo.acceptPrivacyPolicy();
+          log('✅ 隐私政策同意状态已同步到后端');
+        }
       } catch (e) {
-        log('⚠️ 登录后隐私政策检查失败: $e');
+        log('⚠️ 登录后同步隐私政策状态失败（不影响使用）: $e');
       }
     });
   }

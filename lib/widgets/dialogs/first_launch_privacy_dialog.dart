@@ -32,6 +32,11 @@ class FirstLaunchPrivacyDialog {
     await prefs.setBool(_kPrivacyConsentKey, true);
   }
 
+  /// 外部调用：标记本地已同意隐私政策（用于后端已同意但本地未记录的场景）
+  static Future<void> markConsented() async {
+    await _saveConsent();
+  }
+
   /// 显示首次启动隐私政策弹窗
   ///
   /// 返回 true 表示用户同意，false 表示用户拒绝
@@ -165,13 +170,12 @@ class _FirstLaunchPrivacyDialogWidget extends StatelessWidget {
             title: l10n?.thirdPartyServices ?? '第三方服务',
             content: l10n?.thirdPartyServicesDesc ??
                 '为实现相关功能，本应用集成了以下第三方服务SDK：\n'
-                    '• 高德地图SDK — 地图显示和定位服务\n'
-                    '• 微信OpenSDK — 微信登录和分享\n'
-                    '• QQ互联SDK — QQ登录和分享\n'
-                    '• 支付宝SDK — 支付功能\n'
-                    '• 腾讯云IM SDK — 即时通信服务\n'
-                    '• Google Location — 海外定位服务\n'
-                    '上述第三方SDK可能会按照其各自的隐私政策收集必要信息。',
+                    '• 高德地图/定位SDK（高德软件）— 地图显示和定位服务，可能收集位置信息\n'
+                    '• 微信OpenSDK（腾讯）— 微信登录和分享\n'
+                    '• 抖音开放平台SDK（字节跳动）— 抖音登录\n'
+                    '• 腾讯云IM SDK（腾讯）— 即时通信服务\n'
+                    '• Google Location/Login（Google）— 海外定位和登录服务\n'
+                    '上述SDK可能按照各自隐私政策收集必要信息，详见隐私政策全文。',
           ),
 
           // 权限使用说明
@@ -181,6 +185,9 @@ class _FirstLaunchPrivacyDialogWidget extends StatelessWidget {
             content: l10n?.permissionUsageDesc ??
                 '本应用使用以下权限：\n'
                     '• 位置权限 — 城市推荐、附近活动、旅行足迹\n'
+                    '• 相机权限 — 拍摄头像和社区内容图片\n'
+                    '• 相册权限 — 选择头像和社区图片\n'
+                    '• 麦克风权限 — 聊天语音消息录制\n'
                     '• 日历权限 — 将活动添加到日历\n'
                     '• 通知权限 — 消息提醒和活动通知\n'
                     '所有权限均在使用对应功能时才会申请，您可随时在系统设置中管理。',

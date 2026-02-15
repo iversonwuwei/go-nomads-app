@@ -1,6 +1,8 @@
 // AI Domain
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:go_nomads_app/features/ai/application/use_cases/ai_use_cases.dart';
 import 'package:go_nomads_app/features/ai/domain/repositories/iai_repository.dart';
@@ -99,7 +101,6 @@ import 'package:go_nomads_app/features/notification/domain/repositories/i_notifi
 import 'package:go_nomads_app/features/notification/infrastructure/repositories/notification_repository.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 // Payment Domain
-import 'package:go_nomads_app/features/payment/application/services/alipay_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/unified_payment_service.dart';
@@ -146,8 +147,6 @@ import 'package:go_nomads_app/services/search_service.dart';
 // Social Login
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
-import 'package:dio/dio.dart';
-import 'package:get/get.dart';
 
 /// DDD依赖注入配置
 ///
@@ -1201,12 +1200,6 @@ class DependencyInjection {
     // 微信支付服务
     Get.lazyPut<WeChatPayService>(
       () => WeChatPayService(),
-      fenix: true,
-    );
-
-    // 支付宝服务
-    Get.lazyPut<AlipayService>(
-      () => AlipayService(),
       fenix: true,
     );
 

@@ -38,7 +38,7 @@ extension PaymentMethodExtension on PaymentMethod {
 
   /// 是否当前平台可用
   bool get isAvailable {
-    // PayPal 始终可用，微信和支付宝需要原生配置
+    // PayPal 始终可用，微信需要原生配置
     switch (this) {
       case PaymentMethod.paypal:
         return true;

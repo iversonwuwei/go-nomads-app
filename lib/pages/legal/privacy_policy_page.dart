@@ -64,7 +64,9 @@ class PrivacyPolicyPage extends StatelessWidget {
               '• 网络信息：IP 地址、网络类型、运营商信息。\n\n'
               '3. 经您授权后收集的信息\n'
               '• 位置信息：用于推荐附近城市、共享办公空间和活动（仅在您授权后收集）。\n'
-              '• 相机与相册：用于上传头像和社区内容中的图片。\n'
+              '• 相机与相册：用于拍摄和选择头像照片、社区内容图片。\n'
+              '• 麦克风：用于聊天中录制和发送语音消息。\n'
+              '• 日历：用于将活动和聚会添加到日历并设置提醒。\n'
               '• 通知权限：用于推送活动提醒、消息通知等。',
             ),
 
@@ -94,12 +96,29 @@ class PrivacyPolicyPage extends StatelessWidget {
             const _SectionTitle('四、第三方SDK说明'),
             const _SectionBody(
               '为实现应用相关功能，我们集成了以下第三方SDK：\n\n'
-              '• 高德地图SDK（高德软件有限公司）— 提供地图显示和定位服务，可能收集位置信息、设备信息。\n'
-              '• 微信OpenSDK（深圳市腾讯计算机系统有限公司）— 提供微信登录和分享功能。\n'
-              '• QQ互联SDK（深圳市腾讯计算机系统有限公司）— 提供QQ登录和分享功能。\n'
-              '• 支付宝SDK（支付宝(杭州)信息技术有限公司）— 提供支付功能，可能收集设备信息、交易信息。\n'
-              '• 腾讯云IM SDK（腾讯科技（深圳）有限公司）— 提供即时通信服务。\n'
-              '• Google Location（Google LLC）— 提供海外定位服务。\n\n'
+              '【地图与定位类】\n'
+              '• 高德定位SDK（北京市 高德软件有限公司）— 提供定位服务，可能收集精确/粗略位置信息、设备信息。'
+              '隐私政策：https://lbs.amap.com/pages/privacy/\n'
+              '• 高德轻量版地图SDK（北京市 高德软件有限公司）— 提供基础地图显示功能，可能收集位置信息、设备信息。'
+              '隐私政策：https://lbs.amap.com/pages/privacy/\n'
+              '• 高德地图SDK（北京市 高德软件有限公司）— 提供完整地图交互功能，可能收集位置信息、WIFI信息、设备信息。'
+              '隐私政策：https://lbs.amap.com/pages/privacy/\n'
+              '• Google Location Services（Google LLC）— 提供海外定位服务。'
+              '隐私政策：https://policies.google.com/privacy\n\n'
+              '【第三方登录类】\n'
+              '• 微信OpenSDK（深圳市腾讯计算机系统有限公司）— 提供微信登录和分享功能。'
+              '隐私政策：https://weixin.qq.com/cgi-bin/readtemplate?t=weixin_agreement&s=privacy\n'
+              '• Google Account Login（Google LLC）— 提供Google账号登录功能。'
+              '隐私政策：https://policies.google.com/privacy\n\n'
+              '【社交通讯类】\n'
+              '• 抖音开放平台SDK（北京微播视界科技有限公司）— 提供抖音登录功能，可能收集设备信息。'
+              '隐私政策：https://www.douyin.com/agreements/?id=6773901168964798477\n'
+              '• 腾讯云即时通信IM SDK（腾讯科技（深圳）有限公司）— 提供即时通信服务，可能收集存储信息。'
+              '隐私政策：https://cloud.tencent.com/document/product/269/90455\n\n'
+              '【基础功能类】\n'
+              '• OkHttp3（Square）、Okio（Square）、谷歌Gson（Google）、ApacheHttp（Apache）、'
+              'ReLinker（Keepsafe）、Sanselan（Apache）、图片压缩库（Compressor）、'
+              'BouncyCastle — 基础网络通信、数据处理与加密功能，不主动收集个人信息。\n\n'
               '上述第三方SDK可能会按照其各自的隐私政策收集必要信息，请参阅各SDK的隐私政策了解详情。',
             ),
 

@@ -12,6 +12,7 @@ import 'core/di/dependency_injection.dart';
 import 'core/utils/deep_link_handler.dart';
 import 'features/auth/presentation/controllers/auth_state_controller.dart';
 import 'features/chat/infrastructure/services/tencent_im/tencent_im.dart';
+import 'features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'generated/app_localizations.dart';
 import 'layouts/bottom_nav/bottom_nav.dart';
 import 'routes/app_routes.dart';
@@ -27,7 +28,6 @@ import 'services/notification_service.dart';
 import 'services/signalr_service.dart';
 import 'services/social_sdk_service.dart';
 import 'widgets/dialogs/first_launch_privacy_dialog.dart';
-import 'widgets/dialogs/privacy_policy_dialog.dart';
 
 /// 全局初始化完成状态
 final _initCompleter = ValueNotifier<bool>(false);
@@ -373,25 +373,27 @@ class _AppWrapperState extends State<AppWrapper> {
     log('📱 执行 Get.offNamed($targetRoute)');
     Get.offNamed(targetRoute);
 
-    // 如果是已认证用户，异步检查隐私政策
+    // 如果是已认证用户，静默同步隐私政策状态到后端（不再弹窗）
     if (targetRoute == AppRoutes.home) {
-      _checkPrivacyPolicyForReturningUser();
+      _syncPrivacyConsentToBackend();
     }
   }
 
-  /// 对于已登录的回访用户，检查是否已同意隐私政策
-  Future<void> _checkPrivacyPolicyForReturningUser() async {
+  /// 对于已登录用户，静默将本地隐私政策同意状态同步到后端
+  /// 注意：不再弹窗，因为用户在首次启动时已经通过 FirstLaunchPrivacyDialog 同意过
+  Future<void> _syncPrivacyConsentToBackend() async {
     try {
-      // 等待页面完全加载后再显示弹窗
-      await Future.delayed(const Duration(milliseconds: 800));
-      if (!mounted) return;
+      final prefsRepo = Get.find<IUserPreferencesRepository>();
+      final preferences = await prefsRepo.getCurrentUserPreferences();
 
-      final accepted = await PrivacyPolicyDialog.checkAndShowIfNeeded();
-      if (!accepted) {
-        log('📋 回访用户拒绝隐私政策，已退出登录');
+      if (!preferences.privacyPolicyAccepted) {
+        // 本地已同意但后端未记录，静默补同步
+        log('🔄 静默同步隐私政策同意状态到后端...');
+        await prefsRepo.acceptPrivacyPolicy();
+        log('✅ 隐私政策同意状态已同步到后端');
       }
     } catch (e) {
-      log('⚠️ 检查回访用户隐私政策失败: $e');
+      log('⚠️ 同步隐私政策状态失败（不影响使用）: $e');
     }
   }
 

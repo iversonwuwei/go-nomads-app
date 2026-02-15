@@ -349,7 +349,7 @@ class AuthStateController extends GetxController {
     );
   }
 
-  /// 社交登录 (微信、支付宝、QQ 等)
+  /// 社交登录 (微信、抖音、QQ 等)
   /// [type] 社交平台类型
   /// [onAuthSuccess] 可选回调，在第三方授权成功后、调用后端 API 前触发
   Future<bool> socialLogin(SocialLoginType type, {VoidCallback? onAuthSuccess}) async {
@@ -574,10 +574,8 @@ class AuthStateController extends GetxController {
     switch (type) {
       case SocialLoginType.wechat:
         return SocialAuthProvider.wechat;
-      case SocialLoginType.alipay:
-        return SocialAuthProvider.alipay;
-      case SocialLoginType.qq:
-        return SocialAuthProvider.qq;
+      case SocialLoginType.douyin:
+        return SocialAuthProvider.douyin;
       case SocialLoginType.apple:
         return SocialAuthProvider.apple;
       case SocialLoginType.google:

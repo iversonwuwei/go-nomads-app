@@ -1947,8 +1947,8 @@
   "paypalDescription": "Fast & Secure international payment",
   "wechatPayment": "WeChat Pay",
   "wechatDescription": "Pay with WeChat",
-  "alipayPayment": "Alipay",
-  "alipayDescription": "Pay with Alipay",
+  "douyinLogin": "Douyin Login",
+  "douyinDescription": "Login with Douyin account",
   "securePayment": "Secure Payment",
   "allPaymentsSecure": "All payments are processed securely. Cancel anytime.",
   "allPaymentsEncrypted": "All payments are secure and encrypted",
@@ -1961,7 +1961,7 @@
   "alreadyHavePlan": "You already have this or higher plan",
   "creatingPaypalOrder": "Creating PayPal order...",
   "creatingWechatOrder": "Creating WeChat Pay order...",
-  "creatingAlipayOrder": "Creating Alipay order...",
+  "douyinAuthInProgress": "Authorizing with Douyin...",
   "priceForPlan": "${price} for {planName}",
   "@priceForPlan": {
     "placeholders": {
@@ -1996,10 +1996,10 @@
   "openingPaypal": "Opening PayPal for payment...",
   "failedToCreateOrder": "Failed to create payment order",
   "wechatNotInstalled": "Please install WeChat to use WeChat Pay",
-  "alipayNotInstalled": "Please install Alipay to use Alipay Pay",
+  "douyinNotInstalled": "Please install Douyin to use Douyin Login",
   "paymentSuccessful": "Payment successful!",
   "wechatPayFailed": "WeChat Pay failed",
-  "alipayPayFailed": "Alipay payment failed",
+  "douyinLoginFailed": "Douyin login failed",
   "wechatPayError": "WeChat Pay error: {error}",
   "@wechatPayError": {
     "placeholders": {
@@ -2008,8 +2008,8 @@
       }
     }
   },
-  "alipayError": "Alipay error: {error}",
-  "@alipayError": {
+  "douyinError": "Douyin error: {error}",
+  "@douyinError": {
     "placeholders": {
       "error": {
         "type": "String"
@@ -2167,7 +2167,7 @@
   "viewFullTerms": "View full ",
   "and": " and ",
   "thirdPartyServices": "Third-Party Services",
-  "thirdPartyServicesDesc": "To provide related features, this app integrates the following third-party SDKs:\n• Amap SDK — Map display and location services\n• WeChat OpenSDK — WeChat login and sharing\n• QQ Connect SDK — QQ login and sharing\n• Alipay SDK — Payment features\n• Tencent Cloud IM SDK — Instant messaging\n• Google Location — Overseas location services\nThese third-party SDKs may collect necessary information according to their respective privacy policies.",
+  "thirdPartyServicesDesc": "To provide related features, this app integrates the following third-party SDKs:\n• Amap SDK — Map display and location services\n• WeChat OpenSDK — WeChat login and sharing\n• Douyin Open Platform SDK — Douyin login\n• Tencent Cloud IM SDK — Instant messaging\n• Google Location — Overseas location services\nThese third-party SDKs may collect necessary information according to their respective privacy policies.",
   "permissionUsage": "Permission Usage",
   "permissionUsageDesc": "This app uses the following permissions:\n• Location — City recommendations, nearby events, travel footprint\n• Calendar — Add events to calendar\n• Notifications — Message and event reminders\nAll permissions are requested only when the corresponding feature is used. You can manage them in system settings at any time.",
   "privacyDeclineTitle": "Notice",

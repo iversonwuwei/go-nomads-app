@@ -1,5 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/utils/clipboard_share_util.dart';
 import 'package:go_nomads_app/utils/dingtalk_share_util.dart';
@@ -7,7 +10,6 @@ import 'package:go_nomads_app/utils/email_share_util.dart';
 import 'package:go_nomads_app/utils/facebook_share_util.dart';
 import 'package:go_nomads_app/utils/image_save_util.dart';
 import 'package:go_nomads_app/utils/linkedin_share_util.dart';
-import 'package:go_nomads_app/utils/qq_share_util.dart';
 import 'package:go_nomads_app/utils/qzone_share_util.dart';
 import 'package:go_nomads_app/utils/share_card_generator.dart';
 import 'package:go_nomads_app/utils/sms_share_util.dart';
@@ -17,16 +19,12 @@ import 'package:go_nomads_app/utils/twitter_share_util.dart';
 import 'package:go_nomads_app/utils/wechat_share_util.dart';
 import 'package:go_nomads_app/utils/weibo_share_util.dart';
 import 'package:go_nomads_app/utils/whatsapp_share_util.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 enum ShareChannel {
   system,
   copyLink,
   wechat,
   wechatTimeline,
-  qq,
   qzone,
   weibo,
   dingtalk,
@@ -112,20 +110,6 @@ class _ShareChannelSheet extends StatelessWidget {
         label: '朋友圈',
         color: const Color(0xFF07C160),
         onTap: () => _share(ShareChannel.wechatTimeline),
-      ),
-      const SizedBox(width: 16),
-      _ShareButton(
-        icon: FontAwesomeIcons.qq,
-        label: 'QQ',
-        color: const Color(0xFF12B7F5),
-        onTap: () => _share(ShareChannel.qq),
-      ),
-      const SizedBox(width: 16),
-      _ShareButton(
-        icon: FontAwesomeIcons.qq,
-        label: 'QQ空间',
-        color: const Color(0xFFFECE00),
-        onTap: () => _share(ShareChannel.qzone),
       ),
       const SizedBox(width: 16),
       _ShareButton(
@@ -264,9 +248,6 @@ class _ShareChannelSheet extends StatelessWidget {
       case ShareChannel.wechatTimeline:
         await WechatShareUtil.shareToWeChat(
             url: url, title: title, description: description, thumbnail: imageBytes, toTimeline: true);
-        break;
-      case ShareChannel.qq:
-        await QQShareUtil.shareToQQ(url: url, title: title, summary: description, imageBytes: imageBytes);
         break;
       case ShareChannel.qzone:
         await QzoneShareUtil.shareToQzone(url: url, title: title, summary: description);

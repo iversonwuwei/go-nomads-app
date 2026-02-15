@@ -1,14 +1,13 @@
 import 'dart:developer';
 
-import 'package:go_nomads_app/controllers/locale_controller.dart';
-import 'package:go_nomads_app/services/social_sdk_service.dart';
-import 'package:go_nomads_app/utils/qq_share_util.dart';
-import 'package:go_nomads_app/utils/wechat_share_util.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/locale_controller.dart';
+import 'package:go_nomads_app/services/social_sdk_service.dart';
+import 'package:go_nomads_app/utils/wechat_share_util.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,7 +15,6 @@ import 'package:url_launcher/url_launcher.dart';
 enum ShareChannelType {
   none,
   wechat, // 微信（微信好友、朋友圈）
-  qq, // QQ（QQ好友、QQ空间）
 }
 
 /// 分享底部抽屉
@@ -163,8 +161,6 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
     switch (_expandedChannel) {
       case ShareChannelType.wechat:
         return '分享到微信';
-      case ShareChannelType.qq:
-        return '分享到QQ';
       case ShareChannelType.none:
         return '分享到';
     }
@@ -201,26 +197,6 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
               label: '朋友圈',
               color: const Color(0xFF09B83E),
               onTap: () => _shareToWeChatMoments(context),
-            ),
-          ],
-        );
-      case ShareChannelType.qq:
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildShareOption(
-              context,
-              icon: FontAwesomeIcons.qq,
-              label: 'QQ好友',
-              color: const Color(0xFF12B7F5),
-              onTap: () => _shareToQQFriend(context),
-            ),
-            _buildShareOption(
-              context,
-              icon: FontAwesomeIcons.star,
-              label: 'QQ空间',
-              color: const Color(0xFFFECE00),
-              onTap: () => _shareToQZone(context),
             ),
           ],
         );
@@ -275,14 +251,6 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                 label: '微信',
                 color: const Color(0xFF09B83E),
                 onTap: () => _toggleSubChannel(ShareChannelType.wechat),
-                hasSubChannel: true,
-              ),
-              _buildShareOption(
-                context,
-                icon: FontAwesomeIcons.qq,
-                label: 'QQ',
-                color: const Color(0xFF12B7F5),
-                onTap: () => _toggleSubChannel(ShareChannelType.qq),
                 hasSubChannel: true,
               ),
               _buildShareOption(
@@ -406,30 +374,6 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
         AppToast.info('微信未安装，已使用系统分享');
       }
     }
-  }
-
-  /// 分享到QQ好友
-  void _shareToQQFriend(BuildContext context) async {
-    Navigator.pop(context);
-
-    // 尝试使用 QQ URL Scheme 唤醒 QQ 分享
-    await QQShareUtil.shareToQQFriend(
-      url: shareUrl,
-      title: title,
-      description: description,
-    );
-  }
-
-  /// 分享到QQ空间
-  void _shareToQZone(BuildContext context) async {
-    Navigator.pop(context);
-
-    // 使用 QQShareUtil 唤醒 QQ空间分享
-    await QQShareUtil.shareToQZone(
-      url: shareUrl,
-      title: title,
-      description: description,
-    );
   }
 
   /// 构建分享选项

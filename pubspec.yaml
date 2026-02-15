@@ -72,8 +72,6 @@ dependencies:
   
   # 社交登录相关
   fluwx: ^5.7.5  # 微信 SDK
-  tobias: ^3.0.0  # 支付宝 SDK
-  tencent_kit: ^6.0.3  # QQ SDK
   google_sign_in: ^6.2.2  # Google 登录
   
   # 系统设置
@@ -175,10 +173,3 @@ flutter_launcher_icons:
     generate: true
     image_path: "assets/icon/app_icon.png"
 
-# 支付宝 tobias 配置
-tobias:
-  url_scheme: "alipay2021006115624759"
-
-# QQ tencent_kit 配置
-tencent_kit:
-  app_id: "102822014"

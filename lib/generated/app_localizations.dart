@@ -7568,17 +7568,17 @@ abstract class AppLocalizations {
   /// **'使用微信支付'**
   String get wechatDescription;
 
-  /// No description provided for @alipayPayment.
+  /// No description provided for @douyinLogin.
   ///
   /// In zh, this message translates to:
-  /// **'支付宝'**
-  String get alipayPayment;
+  /// **'抖音登录'**
+  String get douyinLogin;
 
-  /// No description provided for @alipayDescription.
+  /// No description provided for @douyinDescription.
   ///
   /// In zh, this message translates to:
-  /// **'使用支付宝支付'**
-  String get alipayDescription;
+  /// **'使用抖音账号登录'**
+  String get douyinDescription;
 
   /// No description provided for @securePayment.
   ///
@@ -7646,11 +7646,11 @@ abstract class AppLocalizations {
   /// **'正在创建微信支付订单...'**
   String get creatingWechatOrder;
 
-  /// No description provided for @creatingAlipayOrder.
+  /// No description provided for @douyinAuthInProgress.
   ///
   /// In zh, this message translates to:
-  /// **'正在创建支付宝订单...'**
-  String get creatingAlipayOrder;
+  /// **'正在进行抖音授权...'**
+  String get douyinAuthInProgress;
 
   /// No description provided for @priceForPlan.
   ///
@@ -7694,11 +7694,11 @@ abstract class AppLocalizations {
   /// **'请安装微信以使用微信支付'**
   String get wechatNotInstalled;
 
-  /// No description provided for @alipayNotInstalled.
+  /// No description provided for @douyinNotInstalled.
   ///
   /// In zh, this message translates to:
-  /// **'请安装支付宝以使用支付宝支付'**
-  String get alipayNotInstalled;
+  /// **'请安装抖音以使用抖音登录'**
+  String get douyinNotInstalled;
 
   /// No description provided for @paymentSuccessful.
   ///
@@ -7712,11 +7712,11 @@ abstract class AppLocalizations {
   /// **'微信支付失败'**
   String get wechatPayFailed;
 
-  /// No description provided for @alipayPayFailed.
+  /// No description provided for @douyinLoginFailed.
   ///
   /// In zh, this message translates to:
-  /// **'支付宝支付失败'**
-  String get alipayPayFailed;
+  /// **'抖音登录失败'**
+  String get douyinLoginFailed;
 
   /// No description provided for @wechatPayError.
   ///
@@ -7724,11 +7724,11 @@ abstract class AppLocalizations {
   /// **'微信支付错误：{error}'**
   String wechatPayError(String error);
 
-  /// No description provided for @alipayError.
+  /// No description provided for @douyinError.
   ///
   /// In zh, this message translates to:
-  /// **'支付宝错误：{error}'**
-  String alipayError(String error);
+  /// **'抖音错误：{error}'**
+  String douyinError(String error);
 
   /// No description provided for @travelDetected.
   ///
@@ -8273,7 +8273,7 @@ abstract class AppLocalizations {
   /// No description provided for @thirdPartyServicesDesc.
   ///
   /// In zh, this message translates to:
-  /// **'为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• QQ互联SDK — QQ登录和分享\n• 支付宝SDK — 支付功能\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。'**
+  /// **'为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• 抖音开放平台SDK — 抖音登录\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。'**
   String get thirdPartyServicesDesc;
 
   /// No description provided for @permissionUsage.
