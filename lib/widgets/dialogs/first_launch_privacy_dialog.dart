@@ -39,6 +39,12 @@ class FirstLaunchPrivacyDialog {
     await _saveConsent();
   }
 
+  /// 清除本地同意状态（用于后端重置/隐私政策版本更新时强制重新确认）
+  static Future<void> clearConsent() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kPrivacyConsentKey);
+  }
+
   /// 显示首次启动隐私政策弹窗
   ///
   /// 返回 true 表示用户同意，false 表示用户拒绝

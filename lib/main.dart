@@ -379,18 +379,45 @@ class _AppWrapperState extends State<AppWrapper> {
     }
   }
 
-  /// 对于已登录用户，静默将本地隐私政策同意状态同步到后端
-  /// 注意：不再弹窗，因为用户在首次启动时已经通过 FirstLaunchPrivacyDialog 同意过
+  /// 双向同步隐私政策同意状态（后端为 source of truth）
+  ///
+  /// - 后端未同意 + 本地已同意 → 清除本地缓存，重新弹窗
+  /// - 后端已同意 + 本地未同意 → 补写本地缓存（换设备场景）
+  /// - 本地已同意 + 后端未记录 → 静默推送到后端
   Future<void> _syncPrivacyConsentToBackend() async {
     try {
       final prefsRepo = Get.find<IUserPreferencesRepository>();
       final preferences = await prefsRepo.getCurrentUserPreferences();
 
       if (!preferences.privacyPolicyAccepted) {
-        // 本地已同意但后端未记录，静默补同步
-        log('🔄 静默同步隐私政策同意状态到后端...');
-        await prefsRepo.acceptPrivacyPolicy();
-        log('✅ 隐私政策同意状态已同步到后端');
+        final localConsented = await FirstLaunchPrivacyDialog.hasConsented();
+
+        if (localConsented) {
+          // 后端标记为未同意（可能是管理员重置了），清除本地缓存并重新弹窗
+          log('⚠️ 后端隐私政策状态为未同意，需要重新确认');
+          await FirstLaunchPrivacyDialog.clearConsent();
+
+          if (mounted) {
+            final consented = await FirstLaunchPrivacyDialog.show(context);
+            if (consented) {
+              await prefsRepo.acceptPrivacyPolicy();
+              log('✅ 用户重新同意隐私政策，已同步到后端');
+            }
+            // 不同意则 dialog 内部会退出应用
+          }
+        } else {
+          // 本地也没同意过（不应出现在这里，但防御性处理）
+          log('🔄 静默同步隐私政策同意状态到后端...');
+          await prefsRepo.acceptPrivacyPolicy();
+          log('✅ 隐私政策同意状态已同步到后端');
+        }
+      } else {
+        // 后端已同意，确保本地也有记录（换设备场景）
+        final localConsented = await FirstLaunchPrivacyDialog.hasConsented();
+        if (!localConsented) {
+          await FirstLaunchPrivacyDialog.markConsented();
+          log('✅ 后端已同意，补写本地缓存');
+        }
       }
     } catch (e) {
       log('⚠️ 同步隐私政策状态失败（不影响使用）: $e');
