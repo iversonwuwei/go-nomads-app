@@ -4327,4 +4327,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportFailedDesc => 'Network error, please try again later.';
+
+  @override
+  String get helpAndSupport => 'Help & Support';
+
+  @override
+  String get helpAndSupportDesc =>
+      'If you have any questions or suggestions, feel free to contact us';
+
+  @override
+  String get customerServiceEmail => 'Support Email';
+
+  @override
+  String get customerServiceEmailDesc =>
+      'We will reply to your email within 1-2 business days';
+
+  @override
+  String get emailCopied => 'Email address copied';
+
+  @override
+  String get sendEmail => 'Send Email';
+
+  @override
+  String get commonQuestions => 'FAQ';
+
+  @override
+  String get faqPayment => 'Payment Issues';
+
+  @override
+  String get faqPaymentAnswer =>
+      'If you encounter any payment issues such as failed payments or order anomalies, please contact us via support email with your order details and we will assist you promptly.';
+
+  @override
+  String get faqAccount => 'Account Issues';
+
+  @override
+  String get faqAccountAnswer =>
+      'If you experience issues with login, password recovery, or account deletion, please contact us via support email with your registration details for verification.';
+
+  @override
+  String get faqFeedback => 'Feature Suggestions & Feedback';
+
+  @override
+  String get faqFeedbackAnswer =>
+      'We value your opinions and suggestions. If you have any product improvement ideas, please let us know via support email.';
+
+  @override
+  String get serviceHours => 'Service Hours';
+
+  @override
+  String get serviceHoursDesc => 'Mon-Fri 9:00 AM - 6:00 PM (Beijing Time)';
 }

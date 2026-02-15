@@ -4,6 +4,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
 import 'package:go_nomads_app/pages/profile/widgets/badges_section_widget.dart';
+import 'package:go_nomads_app/pages/profile/widgets/help_and_support_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/login_notice_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/logout_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/membership_card_widget.dart';
@@ -205,6 +206,10 @@ class _ProfileSections extends GetView<ProfileController> {
             isMobile: isMobile,
             title: l10n.connect,
           ),
+          const SizedBox(height: 32),
+
+          // 帮助与客服
+          const HelpAndSupportWidget(),
           const SizedBox(height: 48),
 
           // 退出登录按钮

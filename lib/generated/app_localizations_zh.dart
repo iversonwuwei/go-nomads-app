@@ -4265,4 +4265,51 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reportFailedDesc => '网络异常，请稍后重试。';
+
+  @override
+  String get helpAndSupport => '帮助与客服';
+
+  @override
+  String get helpAndSupportDesc => '如有任何问题或建议，请随时联系我们';
+
+  @override
+  String get customerServiceEmail => '客服邮箱';
+
+  @override
+  String get customerServiceEmailDesc => '我们将在 1-2 个工作日内回复您的邮件';
+
+  @override
+  String get emailCopied => '邮箱地址已复制';
+
+  @override
+  String get sendEmail => '发送邮件';
+
+  @override
+  String get commonQuestions => '常见问题';
+
+  @override
+  String get faqPayment => '付费相关问题';
+
+  @override
+  String get faqPaymentAnswer =>
+      '如您在付费过程中遇到问题，如支付失败、订单异常等，请通过客服邮箱联系我们，并附上您的订单信息，我们会尽快为您处理。';
+
+  @override
+  String get faqAccount => '账号相关问题';
+
+  @override
+  String get faqAccountAnswer =>
+      '如遇到账号登录、密码找回、账号注销等问题，请通过客服邮箱联系我们，并提供您的注册信息以便核实。';
+
+  @override
+  String get faqFeedback => '功能建议与反馈';
+
+  @override
+  String get faqFeedbackAnswer => '我们非常重视用户的意见与建议，如您有任何产品改进建议，欢迎通过客服邮箱告诉我们。';
+
+  @override
+  String get serviceHours => '服务时间';
+
+  @override
+  String get serviceHoursDesc => '工作日 9:00 - 18:00（北京时间）';
 }

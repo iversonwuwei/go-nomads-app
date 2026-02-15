@@ -2170,7 +2170,23 @@
   "reportUser": "举报用户",
   "reportContent": "举报内容",
   "reportFailed": "举报提交失败",
-  "reportFailedDesc": "网络异常，请稍后重试。"
+  "reportFailedDesc": "网络异常，请稍后重试。",
+
+  "helpAndSupport": "帮助与客服",
+  "helpAndSupportDesc": "如有任何问题或建议，请随时联系我们",
+  "customerServiceEmail": "客服邮箱",
+  "customerServiceEmailDesc": "我们将在 1-2 个工作日内回复您的邮件",
+  "emailCopied": "邮箱地址已复制",
+  "sendEmail": "发送邮件",
+  "commonQuestions": "常见问题",
+  "faqPayment": "付费相关问题",
+  "faqPaymentAnswer": "如您在付费过程中遇到问题，如支付失败、订单异常等，请通过客服邮箱联系我们，并附上您的订单信息，我们会尽快为您处理。",
+  "faqAccount": "账号相关问题",
+  "faqAccountAnswer": "如遇到账号登录、密码找回、账号注销等问题，请通过客服邮箱联系我们，并提供您的注册信息以便核实。",
+  "faqFeedback": "功能建议与反馈",
+  "faqFeedbackAnswer": "我们非常重视用户的意见与建议，如您有任何产品改进建议，欢迎通过客服邮箱告诉我们。",
+  "serviceHours": "服务时间",
+  "serviceHoursDesc": "工作日 9:00 - 18:00（北京时间）"
 }
 
 

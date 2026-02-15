@@ -8383,6 +8383,96 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'网络异常，请稍后重试。'**
   String get reportFailedDesc;
+
+  /// No description provided for @helpAndSupport.
+  ///
+  /// In zh, this message translates to:
+  /// **'帮助与客服'**
+  String get helpAndSupport;
+
+  /// No description provided for @helpAndSupportDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'如有任何问题或建议，请随时联系我们'**
+  String get helpAndSupportDesc;
+
+  /// No description provided for @customerServiceEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'客服邮箱'**
+  String get customerServiceEmail;
+
+  /// No description provided for @customerServiceEmailDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们将在 1-2 个工作日内回复您的邮件'**
+  String get customerServiceEmailDesc;
+
+  /// No description provided for @emailCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱地址已复制'**
+  String get emailCopied;
+
+  /// No description provided for @sendEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送邮件'**
+  String get sendEmail;
+
+  /// No description provided for @commonQuestions.
+  ///
+  /// In zh, this message translates to:
+  /// **'常见问题'**
+  String get commonQuestions;
+
+  /// No description provided for @faqPayment.
+  ///
+  /// In zh, this message translates to:
+  /// **'付费相关问题'**
+  String get faqPayment;
+
+  /// No description provided for @faqPaymentAnswer.
+  ///
+  /// In zh, this message translates to:
+  /// **'如您在付费过程中遇到问题，如支付失败、订单异常等，请通过客服邮箱联系我们，并附上您的订单信息，我们会尽快为您处理。'**
+  String get faqPaymentAnswer;
+
+  /// No description provided for @faqAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号相关问题'**
+  String get faqAccount;
+
+  /// No description provided for @faqAccountAnswer.
+  ///
+  /// In zh, this message translates to:
+  /// **'如遇到账号登录、密码找回、账号注销等问题，请通过客服邮箱联系我们，并提供您的注册信息以便核实。'**
+  String get faqAccountAnswer;
+
+  /// No description provided for @faqFeedback.
+  ///
+  /// In zh, this message translates to:
+  /// **'功能建议与反馈'**
+  String get faqFeedback;
+
+  /// No description provided for @faqFeedbackAnswer.
+  ///
+  /// In zh, this message translates to:
+  /// **'我们非常重视用户的意见与建议，如您有任何产品改进建议，欢迎通过客服邮箱告诉我们。'**
+  String get faqFeedbackAnswer;
+
+  /// No description provided for @serviceHours.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务时间'**
+  String get serviceHours;
+
+  /// No description provided for @serviceHoursDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作日 9:00 - 18:00（北京时间）'**
+  String get serviceHoursDesc;
 }
 
 class _AppLocalizationsDelegate

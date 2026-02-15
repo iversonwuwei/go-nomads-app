@@ -2185,7 +2185,23 @@
   "reportUser": "Report User",
   "reportContent": "Report Content",
   "reportFailed": "Report Failed",
-  "reportFailedDesc": "Network error, please try again later."
+  "reportFailedDesc": "Network error, please try again later.",
+
+  "helpAndSupport": "Help & Support",
+  "helpAndSupportDesc": "If you have any questions or suggestions, feel free to contact us",
+  "customerServiceEmail": "Support Email",
+  "customerServiceEmailDesc": "We will reply to your email within 1-2 business days",
+  "emailCopied": "Email address copied",
+  "sendEmail": "Send Email",
+  "commonQuestions": "FAQ",
+  "faqPayment": "Payment Issues",
+  "faqPaymentAnswer": "If you encounter any payment issues such as failed payments or order anomalies, please contact us via support email with your order details and we will assist you promptly.",
+  "faqAccount": "Account Issues",
+  "faqAccountAnswer": "If you experience issues with login, password recovery, or account deletion, please contact us via support email with your registration details for verification.",
+  "faqFeedback": "Feature Suggestions & Feedback",
+  "faqFeedbackAnswer": "We value your opinions and suggestions. If you have any product improvement ideas, please let us know via support email.",
+  "serviceHours": "Service Hours",
+  "serviceHoursDesc": "Mon-Fri 9:00 AM - 6:00 PM (Beijing Time)"
 }
 
 
