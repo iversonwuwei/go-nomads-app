@@ -357,6 +357,13 @@ class ApiConfig {
   static const String notificationSendToAdminsEndpoint = '/notifications/admins';
 
   // ============================================================
+  // Report Endpoints - /api/v1/reports
+  // ============================================================
+  static const String reportsEndpoint = '/reports';
+  static const String reportDetailEndpoint = '/reports/{id}';
+  static const String reportMyEndpoint = '/reports/my';
+
+  // ============================================================
   // AI Chat Endpoints - /api/v1/ai
   // ============================================================
   static const String aiConversationsEndpoint = '/ai/conversations';

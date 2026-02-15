@@ -2158,7 +2158,19 @@
   "privacyDeclineTitle": "温馨提示",
   "privacyDeclineMessage": "如果您不同意隐私政策，将无法使用本应用的相关功能。\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。\n\n您确定不同意吗？",
   "reconsider": "再想想",
-  "confirmExit": "确认退出"
+  "confirmExit": "确认退出",
+  "reportSubmitted": "举报已提交",
+  "reportSubmittedDesc": "感谢您的反馈，我们将尽快处理。",
+  "reportReasonSpam": "垃圾信息/广告",
+  "reportReasonHarassment": "骚扰/欺凌",
+  "reportReasonInappropriate": "不当内容",
+  "reportReasonFraud": "欺诈/虚假信息",
+  "reportReasonViolence": "暴力/危险行为",
+  "reportReasonOther": "其他原因",
+  "reportUser": "举报用户",
+  "reportContent": "举报内容",
+  "reportFailed": "举报提交失败",
+  "reportFailedDesc": "网络异常，请稍后重试。"
 }
 
 

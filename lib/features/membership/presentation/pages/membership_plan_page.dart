@@ -419,11 +419,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 PaymentMethod.paypal,
                 l10n.paypalDescription,
               ),
-              _buildPaymentMethodTile(
-                context,
-                PaymentMethod.wechat,
-                l10n.wechatDescription,
-              ),
+              // TODO: 暂时隐藏微信支付，待上线后恢复
+              // _buildPaymentMethodTile(
+              //   context,
+              //   PaymentMethod.wechat,
+              //   l10n.wechatDescription,
+              // ),
 
               const SizedBox(height: 8),
 

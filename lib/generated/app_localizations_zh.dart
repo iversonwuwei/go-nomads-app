@@ -4229,4 +4229,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get confirmExit => '确认退出';
+
+  @override
+  String get reportSubmitted => '举报已提交';
+
+  @override
+  String get reportSubmittedDesc => '感谢您的反馈，我们将尽快处理。';
+
+  @override
+  String get reportReasonSpam => '垃圾信息/广告';
+
+  @override
+  String get reportReasonHarassment => '骚扰/欺凌';
+
+  @override
+  String get reportReasonInappropriate => '不当内容';
+
+  @override
+  String get reportReasonFraud => '欺诈/虚假信息';
+
+  @override
+  String get reportReasonViolence => '暴力/危险行为';
+
+  @override
+  String get reportReasonOther => '其他原因';
+
+  @override
+  String get reportUser => '举报用户';
+
+  @override
+  String get reportContent => '举报内容';
+
+  @override
+  String get reportFailed => '举报提交失败';
+
+  @override
+  String get reportFailedDesc => '网络异常，请稍后重试。';
 }

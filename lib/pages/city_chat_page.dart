@@ -18,6 +18,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/chat_more_options_sheet.dart';
 import 'package:go_nomads_app/widgets/chat_voice.dart';
+import 'package:go_nomads_app/widgets/report_dialog.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -1345,6 +1346,22 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 onTap: () {
                   Get.back();
                   AppToast.success('已静音');
+                },
+              ),
+              _buildMenuOption(
+                icon: FontAwesomeIcons.circleExclamation,
+                title: AppLocalizations.of(context)!.reportContent,
+                titleColor: Colors.orange,
+                iconColor: Colors.orange,
+                onTap: () {
+                  Get.back();
+                  final room = widget.controller.currentRoom;
+                  ReportDialog.show(
+                    context: context,
+                    contentType: ReportContentType.chatRoom,
+                    targetId: room?.id ?? '',
+                    targetName: room?.displayName,
+                  );
                 },
               ),
               const Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),

@@ -8311,6 +8311,78 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'确认退出'**
   String get confirmExit;
+
+  /// No description provided for @reportSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'举报已提交'**
+  String get reportSubmitted;
+
+  /// No description provided for @reportSubmittedDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'感谢您的反馈，我们将尽快处理。'**
+  String get reportSubmittedDesc;
+
+  /// No description provided for @reportReasonSpam.
+  ///
+  /// In zh, this message translates to:
+  /// **'垃圾信息/广告'**
+  String get reportReasonSpam;
+
+  /// No description provided for @reportReasonHarassment.
+  ///
+  /// In zh, this message translates to:
+  /// **'骚扰/欺凌'**
+  String get reportReasonHarassment;
+
+  /// No description provided for @reportReasonInappropriate.
+  ///
+  /// In zh, this message translates to:
+  /// **'不当内容'**
+  String get reportReasonInappropriate;
+
+  /// No description provided for @reportReasonFraud.
+  ///
+  /// In zh, this message translates to:
+  /// **'欺诈/虚假信息'**
+  String get reportReasonFraud;
+
+  /// No description provided for @reportReasonViolence.
+  ///
+  /// In zh, this message translates to:
+  /// **'暴力/危险行为'**
+  String get reportReasonViolence;
+
+  /// No description provided for @reportReasonOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他原因'**
+  String get reportReasonOther;
+
+  /// No description provided for @reportUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'举报用户'**
+  String get reportUser;
+
+  /// No description provided for @reportContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'举报内容'**
+  String get reportContent;
+
+  /// No description provided for @reportFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'举报提交失败'**
+  String get reportFailed;
+
+  /// No description provided for @reportFailedDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'网络异常，请稍后重试。'**
+  String get reportFailedDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -2173,7 +2173,19 @@
   "privacyDeclineTitle": "Notice",
   "privacyDeclineMessage": "If you do not agree to the privacy policy, you will not be able to use this app's features.\n\nWe take your privacy seriously. The information collected is only used to provide you with better services.\n\nAre you sure you want to disagree?",
   "reconsider": "Reconsider",
-  "confirmExit": "Confirm Exit"
+  "confirmExit": "Confirm Exit",
+  "reportSubmitted": "Report Submitted",
+  "reportSubmittedDesc": "Thank you for your feedback. We will review it as soon as possible.",
+  "reportReasonSpam": "Spam / Advertising",
+  "reportReasonHarassment": "Harassment / Bullying",
+  "reportReasonInappropriate": "Inappropriate Content",
+  "reportReasonFraud": "Fraud / False Information",
+  "reportReasonViolence": "Violence / Dangerous Behavior",
+  "reportReasonOther": "Other Reason",
+  "reportUser": "Report User",
+  "reportContent": "Report Content",
+  "reportFailed": "Report Failed",
+  "reportFailedDesc": "Network error, please try again later."
 }
 
 

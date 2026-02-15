@@ -18,6 +18,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/chat_more_options_sheet.dart';
 import 'package:go_nomads_app/widgets/chat_voice.dart';
+import 'package:go_nomads_app/widgets/report_dialog.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:image_picker/image_picker.dart';
@@ -553,6 +554,14 @@ class _DirectChatViewState extends State<_DirectChatView> {
                 case 'block':
                   _showBlockDialog(widget.user.name, context);
                   break;
+                case 'report':
+                  ReportDialog.show(
+                    context: context,
+                    contentType: ReportContentType.user,
+                    targetId: widget.user.id,
+                    targetName: widget.user.name,
+                  );
+                  break;
               }
             },
             itemBuilder: (context) {
@@ -585,6 +594,16 @@ class _DirectChatViewState extends State<_DirectChatView> {
                       const Icon(FontAwesomeIcons.ban, size: 20, color: Colors.red),
                       const SizedBox(width: 12),
                       Text(l10n.blockUser, style: const TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      const Icon(FontAwesomeIcons.circleExclamation, size: 20, color: Colors.orange),
+                      const SizedBox(width: 12),
+                      Text(l10n.reportUser, style: const TextStyle(color: Colors.orange)),
                     ],
                   ),
                 ),

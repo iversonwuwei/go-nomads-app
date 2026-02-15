@@ -9,9 +9,11 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/tencent_im_chat_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/chat_voice.dart';
+import 'package:go_nomads_app/widgets/report_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tencent_cloud_chat_sdk/enum/message_elem_type.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
@@ -224,6 +226,36 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
           ),
         ],
       ),
+      actions: [
+        PopupMenuButton<String>(
+          icon: const Icon(FontAwesomeIcons.ellipsisVertical, color: Colors.black),
+          onSelected: (value) {
+            if (value == 'report') {
+              ReportDialog.show(
+                context: context,
+                contentType: ReportContentType.user,
+                targetId: widget.user.id,
+                targetName: widget.user.name,
+              );
+            }
+          },
+          itemBuilder: (context) {
+            final l10n = AppLocalizations.of(context)!;
+            return [
+              PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    const Icon(FontAwesomeIcons.circleExclamation, size: 20, color: Colors.orange),
+                    const SizedBox(width: 12),
+                    Text(l10n.reportUser, style: const TextStyle(color: Colors.orange)),
+                  ],
+                ),
+              ),
+            ];
+          },
+        ),
+      ],
     );
   }
 

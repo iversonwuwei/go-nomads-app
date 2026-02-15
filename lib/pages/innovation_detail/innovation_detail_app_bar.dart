@@ -1,10 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/admin_delete_button.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/report_dialog.dart';
 
 /// Innovation Detail App Bar Section
 /// 创意项目详情页 - AppBar 区域
@@ -43,6 +44,20 @@ class InnovationDetailAppBar extends StatelessWidget {
                 icon: const Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 20),
                 onPressed: onEdit,
                 tooltip: l10n.edit,
+              ),
+            // 举报按钮 - 非创建者且非管理员可见
+            if (!_c.project.canEdit && !_c.isAdmin.value)
+              IconButton(
+                icon: const Icon(FontAwesomeIcons.circleExclamation, color: Colors.white, size: 18),
+                onPressed: () {
+                  ReportDialog.show(
+                    context: context,
+                    contentType: ReportContentType.innovationProject,
+                    targetId: _c.project.uuid ?? '',
+                    targetName: _c.project.projectName,
+                  );
+                },
+                tooltip: l10n.report,
               ),
           ],
           flexibleSpace: FlexibleSpaceBar(

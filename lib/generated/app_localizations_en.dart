@@ -4290,4 +4290,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmExit => 'Confirm Exit';
+
+  @override
+  String get reportSubmitted => 'Report Submitted';
+
+  @override
+  String get reportSubmittedDesc =>
+      'Thank you for your feedback. We will review it as soon as possible.';
+
+  @override
+  String get reportReasonSpam => 'Spam / Advertising';
+
+  @override
+  String get reportReasonHarassment => 'Harassment / Bullying';
+
+  @override
+  String get reportReasonInappropriate => 'Inappropriate Content';
+
+  @override
+  String get reportReasonFraud => 'Fraud / False Information';
+
+  @override
+  String get reportReasonViolence => 'Violence / Dangerous Behavior';
+
+  @override
+  String get reportReasonOther => 'Other Reason';
+
+  @override
+  String get reportUser => 'Report User';
+
+  @override
+  String get reportContent => 'Report Content';
+
+  @override
+  String get reportFailed => 'Report Failed';
+
+  @override
+  String get reportFailedDesc => 'Network error, please try again later.';
 }
