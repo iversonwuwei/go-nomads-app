@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/legal_document.dart';
+import 'package:go_nomads_app/pages/legal/sdk_list_page.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
@@ -102,6 +103,27 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                   _SectionBody(section.content),
                 ],
               )),
+
+          // 第三方SDK清单入口
+          if (doc.sdkList.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SdkListPage()),
+                );
+              },
+              icon: const Icon(Icons.extension_outlined, size: 18),
+              label: const Text('查看第三方SDK信息收集清单'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.cityPrimary,
+                side: const BorderSide(color: AppColors.cityPrimary),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 24),
           const CopyrightWidget(),

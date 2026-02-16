@@ -9,6 +9,7 @@ class LegalDocument {
   final bool isCurrent;
   final List<LegalSection> sections;
   final List<LegalSummary> summary;
+  final List<SdkInfo> sdkList;
 
   LegalDocument({
     required this.id,
@@ -20,6 +21,7 @@ class LegalDocument {
     required this.isCurrent,
     required this.sections,
     required this.summary,
+    required this.sdkList,
   });
 
   factory LegalDocument.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,10 @@ class LegalDocument {
           [],
       summary: (json['summary'] as List<dynamic>?)
               ?.map((e) => LegalSummary.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      sdkList: (json['sdkList'] as List<dynamic>?)
+              ?.map((e) => SdkInfo.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );
@@ -71,6 +77,36 @@ class LegalSummary {
       icon: json['icon'] ?? '',
       title: json['title'] ?? '',
       content: json['content'] ?? '',
+    );
+  }
+}
+
+/// 第三方SDK信息收集清单项
+class SdkInfo {
+  final String name;
+  final String company;
+  final String purpose;
+  final List<String> dataCollected;
+  final String privacyUrl;
+
+  SdkInfo({
+    required this.name,
+    required this.company,
+    required this.purpose,
+    required this.dataCollected,
+    required this.privacyUrl,
+  });
+
+  factory SdkInfo.fromJson(Map<String, dynamic> json) {
+    return SdkInfo(
+      name: json['name'] ?? '',
+      company: json['company'] ?? '',
+      purpose: json['purpose'] ?? '',
+      dataCollected: (json['dataCollected'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      privacyUrl: json['privacyUrl'] ?? '',
     );
   }
 }

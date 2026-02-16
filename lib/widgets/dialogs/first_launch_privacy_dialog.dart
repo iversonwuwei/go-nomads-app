@@ -8,6 +8,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/legal_document.dart';
 import 'package:go_nomads_app/pages/legal/privacy_policy_page.dart';
+import 'package:go_nomads_app/pages/legal/sdk_list_page.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -238,6 +239,20 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                               _openPrivacyPolicyUrl(context);
                             },
                         ),
+                        const TextSpan(text: '和'),
+                        TextSpan(
+                          text: '第三方SDK清单',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.amber[900],
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              _openSdkListPage(context);
+                            },
+                        ),
                         const TextSpan(text: '。'),
                       ],
                     ),
@@ -419,6 +434,16 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const PrivacyPolicyPage(),
+      ),
+    );
+  }
+
+  /// 打开第三方SDK信息收集清单页面
+  void _openSdkListPage(BuildContext context) {
+    log('🔗 用户点击查看第三方SDK清单');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const SdkListPage(),
       ),
     );
   }
