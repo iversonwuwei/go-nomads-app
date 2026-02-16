@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/add_innovation_page_controller.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -8,44 +11,48 @@ import 'package:go_nomads_app/pages/add_innovation/add_innovation_market_section
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_problem_solution_section.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_progress_section.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_team_section.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// Add Innovation Project Page
 /// 添加创意项目页面（支持编辑模式）
-class AddInnovationPage extends StatelessWidget {
+class AddInnovationPage extends StatefulWidget {
   /// 编辑模式下传入的项目数据，null 表示创建新项目
   final InnovationProject? project;
 
   const AddInnovationPage({super.key, this.project});
 
-  /// 是否为编辑模式
-  bool get isEditMode => project != null;
+  @override
+  State<AddInnovationPage> createState() => _AddInnovationPageState();
+}
 
-  String get _controllerTag => 'add_innovation_${project?.id ?? 'new'}_${DateTime.now().millisecondsSinceEpoch}';
+class _AddInnovationPageState extends State<AddInnovationPage> {
+  /// 是否为编辑模式
+  bool get isEditMode => widget.project != null;
+
+  /// tag 在 State 创建时固定，后续 rebuild 不会改变
+  late final String _controllerTag =
+      'add_innovation_${widget.project?.id ?? 'new'}_${DateTime.now().millisecondsSinceEpoch}';
+
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 中注册控制器，确保只注册一次
+    Get.put(AddInnovationPageController(project: widget.project), tag: _controllerTag);
+  }
+
+  @override
+  void dispose() {
+    _cleanupController(_controllerTag);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final tag = _controllerTag;
     final l10n = AppLocalizations.of(context)!;
 
-    // 注册控制器
-    Get.put(AddInnovationPageController(project: project), tag: tag);
-
-    return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          // 延迟清理，确保页面完全销毁后再删除 controller
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _cleanupController(tag);
-          });
-        }
-      },
-      child: Scaffold(
-        appBar: _buildAppBar(context, l10n, tag),
-        body: _buildBody(context, l10n, tag),
-      ),
+    return Scaffold(
+      appBar: _buildAppBar(context, l10n, tag),
+      body: _buildBody(context, l10n, tag),
     );
   }
 

@@ -1,11 +1,11 @@
-import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/controllers/add_innovation_page_controller.dart';
-import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/add_innovation_page_controller.dart';
+import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 
 class AddInnovationImageSection extends StatelessWidget {
   final String controllerTag;
@@ -280,27 +280,41 @@ class AddInnovationImageSection extends StatelessWidget {
         title: Row(children: [Icon(Icons.auto_awesome, color: Theme.of(context).primaryColor), const SizedBox(width: 8), const Text('AI 生成封面')]),
         content: SizedBox(
           width: MediaQuery.of(context).size.width * 0.8,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(controller: _c.aiPromptController, maxLines: 3, decoration: InputDecoration(hintText: '请描述您想要的封面图片...', border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), filled: true)),
-              const SizedBox(height: 16),
-              Text('快速模板：', style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: promptTemplates.map((template) => InkWell(
-                  onTap: () => _c.aiPromptController.text = template,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(color: Theme.of(context).primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(16), border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3))),
-                    child: Text(template.length > 20 ? '${template.substring(0, 20)}...' : template, style: TextStyle(fontSize: 11, color: Theme.of(context).primaryColor)),
-                  ),
-                )).toList(),
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                    controller: _c.aiPromptController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                        hintText: '请描述您想要的封面图片...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        filled: true)),
+                const SizedBox(height: 16),
+                Text('快速模板：', style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: promptTemplates
+                      .map((template) => InkWell(
+                            onTap: () => _c.aiPromptController.text = template,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3))),
+                              child: Text(template.length > 20 ? '${template.substring(0, 20)}...' : template,
+                                  style: TextStyle(fontSize: 11, color: Theme.of(context).primaryColor)),
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
           ),
         ),
         actions: [
