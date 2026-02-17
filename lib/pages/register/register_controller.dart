@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -184,8 +185,8 @@ class RegisterController extends GetxController {
           title: successTitle,
         );
 
-        await Future.delayed(const Duration(milliseconds: 500));
-        Get.offAllNamed('/');
+        // 直接跳转到首页（与登录流程一致），不经过 AppWrapper
+        Get.offAllNamed(AppRoutes.home);
       } else {
         log('❌ 注册失败');
         AppToast.error(
