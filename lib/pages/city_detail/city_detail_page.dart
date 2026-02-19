@@ -12,6 +12,7 @@ import '../../features/city/presentation/controllers/city_detail_state_controlle
 import '../../features/membership/presentation/services/ai_quota_service.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/app_toast.dart';
+import '../../widgets/share_bottom_sheet.dart';
 import '../add_coworking/add_coworking_page.dart';
 import '../city_photo_submission_page.dart';
 import '../manage_pros_cons_page.dart';
@@ -367,8 +368,66 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     final city = cityDetailController.currentCity.value;
     if (city == null) return;
 
-    // TODO: 实现分享功能
-    AppToast.info('分享功能开发中...');
+    final l10n = AppLocalizations.of(context)!;
+
+    // 构建分享标题
+    final String title =
+        city.country != null ? '${city.name}, ${city.country} - Go Nomads' : '${city.name} - Go Nomads';
+
+    // 构建分享描述
+    final List<String> descParts = [];
+
+    // 总体评分
+    if (city.overallScore != null && city.overallScore! > 0) {
+      descParts.add('⭐ ${l10n.overallScore}: ${city.overallScore!.toStringAsFixed(1)}/5.0');
+    }
+
+    // 温度
+    if (city.temperature != null) {
+      descParts.add('🌡️ ${city.temperature}°C');
+    }
+
+    // 人口
+    if (city.population != null && city.population!.isNotEmpty) {
+      descParts.add('👥 ${l10n.population}: ${city.population}');
+    }
+
+    // 平均花费
+    if (city.averageCost != null && city.averageCost! > 0) {
+      descParts.add('💰 ${l10n.monthlyCost}: \$${city.averageCost!.toStringAsFixed(0)}/月');
+    }
+
+    // 安全评分
+    if (city.safetyScore != null && city.safetyScore! > 0) {
+      descParts.add('🛡️ ${l10n.safety}: ${city.safetyScore!.toStringAsFixed(1)}/5.0');
+    }
+
+    // 网速评分
+    if (city.internetScore != null && city.internetScore! > 0) {
+      descParts.add('📶 ${l10n.internet}: ${city.internetScore!.toStringAsFixed(1)}/5.0');
+    }
+
+    // 描述
+    if (city.description != null && city.description!.isNotEmpty) {
+      descParts.add('\n${city.description}');
+    }
+
+    final String description = descParts.join('\n');
+
+    // 构建分享链接
+    final String shareUrl = 'https://nomadcities.app/cities/${city.id}';
+
+    // 封面图
+    final String? imageUrl = city.imageUrl;
+
+    // 显示分享底部抽屉
+    ShareBottomSheet.show(
+      context,
+      title: title,
+      description: description,
+      imageUrl: imageUrl,
+      shareUrl: shareUrl,
+    );
   }
 
   // ==================== Coworking 相关 ====================

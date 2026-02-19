@@ -18,6 +18,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tencent_cloud_chat_sdk/enum/message_elem_type.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 
+import 'member_detail_page.dart';
+
 /// 上传中的图片信息
 class _UploadingImage {
   final String id;
@@ -212,19 +214,24 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       backgroundColor: Colors.white,
       elevation: 0,
       leading: const AppBackButton(),
-      title: Row(
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundImage: widget.user.avatarUrl != null ? NetworkImage(widget.user.avatarUrl!) : null,
-            child: widget.user.avatarUrl == null ? Text(widget.user.name[0].toUpperCase()) : null,
-          ),
-          const SizedBox(width: 10),
-          Text(
-            widget.user.name,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-        ],
+      title: GestureDetector(
+        onTap: () {
+          Get.to(() => MemberDetailPage(user: widget.user));
+        },
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundImage: widget.user.avatarUrl != null ? NetworkImage(widget.user.avatarUrl!) : null,
+              child: widget.user.avatarUrl == null ? Text(widget.user.name[0].toUpperCase()) : null,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              widget.user.name,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
       ),
       actions: [
         PopupMenuButton<String>(
@@ -246,7 +253,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
                 value: 'report',
                 child: Row(
                   children: [
-                    const Icon(FontAwesomeIcons.circleExclamation, size: 20, color: Colors.orange),
+                    const Icon(FontAwesomeIcons.flag, size: 20, color: Colors.orange),
                     const SizedBox(width: 12),
                     Text(l10n.reportUser, style: const TextStyle(color: Colors.orange)),
                   ],
@@ -300,9 +307,14 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isSelf) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundImage: widget.user.avatarUrl != null ? NetworkImage(widget.user.avatarUrl!) : null,
+            GestureDetector(
+              onTap: () {
+                Get.to(() => MemberDetailPage(user: widget.user));
+              },
+              child: CircleAvatar(
+                radius: 16,
+                backgroundImage: widget.user.avatarUrl != null ? NetworkImage(widget.user.avatarUrl!) : null,
+              ),
             ),
             const SizedBox(width: 8),
           ],

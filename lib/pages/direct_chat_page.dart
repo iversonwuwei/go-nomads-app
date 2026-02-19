@@ -601,7 +601,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   value: 'report',
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.circleExclamation, size: 20, color: Colors.orange),
+                      const Icon(FontAwesomeIcons.flag, size: 20, color: Colors.orange),
                       const SizedBox(width: 12),
                       Text(l10n.reportUser, style: const TextStyle(color: Colors.orange)),
                     ],

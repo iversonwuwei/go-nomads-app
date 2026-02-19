@@ -5,6 +5,7 @@ import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/admin_delete_button.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/report_button.dart';
 import 'package:go_nomads_app/widgets/report_dialog.dart';
 
 /// Innovation Detail App Bar Section
@@ -47,8 +48,7 @@ class InnovationDetailAppBar extends StatelessWidget {
               ),
             // 举报按钮 - 非创建者且非管理员可见
             if (!_c.project.canEdit && !_c.isAdmin.value)
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.circleExclamation, color: Colors.white, size: 18),
+              SliverReportButton(
                 onPressed: () {
                   ReportDialog.show(
                     context: context,

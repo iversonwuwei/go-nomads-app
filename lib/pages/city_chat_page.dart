@@ -1349,7 +1349,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 },
               ),
               _buildMenuOption(
-                icon: FontAwesomeIcons.circleExclamation,
+                icon: FontAwesomeIcons.flag,
                 title: AppLocalizations.of(context)!.reportContent,
                 titleColor: Colors.orange,
                 iconColor: Colors.orange,

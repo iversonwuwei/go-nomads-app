@@ -114,36 +114,46 @@ class _CityGridContent extends GetView<CityListController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final cityList = controller.cities.toList();
-      final itemCount = cityList.length + (controller.hasMore.value ? 1 : 0);
 
       return RefreshIndicator(
         onRefresh: () => controller.loadCities(refresh: true),
         color: const Color(0xFFFF4458),
-        child: GridView.builder(
+        child: CustomScrollView(
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(
-            isMobile ? 12 : 20,
-            isMobile ? 12 : 20,
-            isMobile ? 12 : 20,
-            100,
-          ),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: isMobile ? 2 : 3,
-            crossAxisSpacing: isMobile ? 10 : 16,
-            mainAxisSpacing: isMobile ? 10 : 16,
-            childAspectRatio: 0.68,
-          ),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            // 加载更多指示器
-            if (index == cityList.length) {
-              return const CityListLoadingIndicator();
-            }
-
-            final city = cityList[index];
-            return CityCard(cityId: city.id, isMobile: isMobile);
-          },
+          slivers: [
+            // 城市网格
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                isMobile ? 12 : 20,
+                isMobile ? 12 : 20,
+                isMobile ? 12 : 20,
+                0,
+              ),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isMobile ? 2 : 3,
+                  crossAxisSpacing: isMobile ? 10 : 16,
+                  mainAxisSpacing: isMobile ? 10 : 16,
+                  childAspectRatio: 0.68,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final city = cityList[index];
+                    return CityCard(cityId: city.id, isMobile: isMobile);
+                  },
+                  childCount: cityList.length,
+                ),
+              ),
+            ),
+            // 加载更多指示器 - 全宽居中显示
+            if (controller.hasMore.value)
+              const SliverToBoxAdapter(
+                child: CityListLoadingIndicator(),
+              ),
+            // 底部留白
+            const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
+          ],
         ),
       );
     });

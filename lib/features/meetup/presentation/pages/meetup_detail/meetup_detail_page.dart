@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
@@ -17,6 +16,7 @@ import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
+import 'package:go_nomads_app/widgets/report_button.dart';
 import 'package:go_nomads_app/widgets/report_dialog.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
@@ -99,8 +99,7 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
         // 举报按钮 - 非组织者可见
         Obx(() {
           if (!controller.isOrganizer) {
-            return IconButton(
-              icon: const Icon(FontAwesomeIcons.circleExclamation, color: Colors.white, size: 18),
+            return SliverReportButton(
               onPressed: () {
                 ReportDialog.show(
                   context: context,
