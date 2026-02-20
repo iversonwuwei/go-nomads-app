@@ -12,7 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 /// 社交登录类型
 enum SocialLoginType {
   wechat,
-  douyin,
+  qq,
   apple,
   google,
   twitter,
@@ -78,7 +78,7 @@ class SocialLoginResult {
 }
 
 /// 社交登录服务
-/// 封装微信、抖音等第三方登录的 SDK 调用
+/// 封装微信、QQ 等第三方登录的 SDK 调用
 /// 注意：微信 SDK 的初始化由 SocialSdkService 在 main.dart 中完成
 class SocialLoginService {
   final Fluwx _fluwx = Fluwx();
@@ -100,7 +100,8 @@ class SocialLoginService {
       // 检查微信是否已安装
       final isInstalled = await isWechatInstalled();
       if (!isInstalled) {
-        return const SocialLoginResult.failure('请先安装微信');
+        log('⚠️ [SocialLogin] 微信未安装，终止登录流程');
+        return const SocialLoginResult.failure('WECHAT_NOT_INSTALLED');
       }
 
       log('📱 [SocialLogin] 开始微信登录...');
@@ -176,104 +177,92 @@ class SocialLoginService {
     }
   }
 
-  // ==================== 抖音 OAuth 2.0 ====================
+  // ==================== QQ OAuth 2.0 ====================
 
-  /// 抖音 OAuth 配置
-  static const String _douyinClientKey = 'aww4boc80of9zeb5';
-  static const String _douyinRedirectUri = 'gonomads://douyin-callback';
-  static const String _douyinAuthUrl = 'https://open.douyin.com/platform/oauth/connect/';
+  /// QQ OAuth 配置
+  static const String _qqAppId = '102822014';
+  static const String _qqRedirectUri = 'gonomads://qq-callback';
+  static const String _qqAuthUrl = 'https://graph.qq.com/oauth2.0/authorize';
 
-  /// 抖音 OAuth 回调 Completer
-  Completer<SocialLoginResult>? _douyinAuthCompleter;
+  /// QQ OAuth 回调 Completer
+  Completer<SocialLoginResult>? _qqAuthCompleter;
 
-  /// 检查抖音是否已安装
-  Future<bool> isDouyinInstalled() async {
+  /// 检查 QQ 是否已安装
+  Future<bool> isQQInstalled() async {
     try {
-      final douyinUri = Uri.parse('snssdk1128://');
-      final installed = await canLaunchUrl(douyinUri);
-      log('📱 [SocialLogin] 抖音安装检测结果: $installed');
+      final qqUri = Uri.parse('mqq://');
+      final installed = await canLaunchUrl(qqUri);
+      log('📱 [SocialLogin] QQ 安装检测结果: $installed');
       return installed;
     } catch (e) {
-      log('⚠️ [SocialLogin] 检测抖音安装状态失败: $e');
+      log('⚠️ [SocialLogin] 检测 QQ 安装状态失败: $e');
       return false;
     }
   }
 
-  /// 抖音登录
-  /// 优先使用抖音 app 授权（如已安装），否则使用浏览器授权
+  /// QQ 登录
+  /// 必须安装 QQ app 才能登录，未安装时直接返回失败提示
   /// 使用 OAuth 2.0 授权码模式
-  Future<SocialLoginResult> loginWithDouyin() async {
+  Future<SocialLoginResult> loginWithQQ() async {
     try {
-      log('📱 [SocialLogin] 开始抖音登录 (OAuth 2.0)...');
+      log('📱 [SocialLogin] 开始 QQ 登录 (OAuth 2.0)...');
 
-      // 检查抖音是否已安装
-      final isInstalled = await isDouyinInstalled();
-      log('📱 [SocialLogin] 抖音安装状态: $isInstalled');
+      // 检查 QQ 是否已安装，未安装则直接返回失败
+      final isInstalled = await isQQInstalled();
+      log('📱 [SocialLogin] QQ 安装状态: $isInstalled');
+
+      if (!isInstalled) {
+        log('⚠️ [SocialLogin] QQ 未安装，终止登录流程');
+        return const SocialLoginResult.failure('QQ_NOT_INSTALLED');
+      }
 
       // 生成 state 参数（防止 CSRF）
-      final state = 'gonomads_douyin_${DateTime.now().millisecondsSinceEpoch}';
+      final state = 'gonomads_qq_${DateTime.now().millisecondsSinceEpoch}';
 
       // 等待回调（通过 deep link 返回）
-      _douyinAuthCompleter = Completer<SocialLoginResult>();
+      _qqAuthCompleter = Completer<SocialLoginResult>();
 
-      Uri authorizationUrl;
-      LaunchMode launchMode;
-
-      if (isInstalled) {
-        // 已安装：使用抖音 app scheme 唤起抖音 app 授权
-        authorizationUrl = Uri.parse(
-          'snssdk1128://oauth'
-          '?client_key=$_douyinClientKey'
-          '&response_type=code'
-          '&scope=user_info'
-          '&redirect_uri=${Uri.encodeComponent(_douyinRedirectUri)}'
-          '&state=$state',
-        );
-        launchMode = LaunchMode.externalApplication;
-        log('📱 [SocialLogin] 使用抖音 app 授权: $authorizationUrl');
-      } else {
-        // 未安装：使用浏览器打开网页授权
-        authorizationUrl = Uri.parse(
-          '$_douyinAuthUrl'
-          '?client_key=$_douyinClientKey'
-          '&response_type=code'
-          '&scope=user_info'
-          '&redirect_uri=${Uri.encodeComponent(_douyinRedirectUri)}'
-          '&state=$state',
-        );
-        launchMode = LaunchMode.externalApplication;
-        log('📱 [SocialLogin] 使用浏览器授权: $authorizationUrl');
-      }
+      // 使用 QQ app scheme 唤起 QQ app 授权
+      final authorizationUrl = Uri.parse(
+        'mqq://opensdkul/mqqapi/share/to_fri'
+        '?src_type=app'
+        '&appId=$_qqAppId'
+        '&response_type=code'
+        '&scope=get_user_info'
+        '&redirect_uri=${Uri.encodeComponent(_qqRedirectUri)}'
+        '&state=$state',
+      );
+      log('📱 [SocialLogin] 使用 QQ app 授权: $authorizationUrl');
 
       // 打开授权页面
-      if (!await launchUrl(authorizationUrl, mode: launchMode)) {
-        _douyinAuthCompleter = null;
-        return const SocialLoginResult.failure('无法打开抖音授权页面');
+      if (!await launchUrl(authorizationUrl, mode: LaunchMode.externalApplication)) {
+        _qqAuthCompleter = null;
+        return const SocialLoginResult.failure('无法打开 QQ 授权页面');
       }
 
-      final result = await _douyinAuthCompleter!.future.timeout(
+      final result = await _qqAuthCompleter!.future.timeout(
         const Duration(minutes: 3),
         onTimeout: () {
-          _douyinAuthCompleter = null;
-          return const SocialLoginResult.failure('抖音授权超时');
+          _qqAuthCompleter = null;
+          return const SocialLoginResult.failure('QQ 授权超时');
         },
       );
 
       return result;
     } catch (e) {
-      log('❌ [SocialLogin] 抖音登录异常: $e');
-      _douyinAuthCompleter = null;
-      return SocialLoginResult.failure('抖音登录失败: $e');
+      log('❌ [SocialLogin] QQ 登录异常: $e');
+      _qqAuthCompleter = null;
+      return SocialLoginResult.failure('QQ 登录失败: $e');
     }
   }
 
-  /// 处理抖音 OAuth 回调
-  /// 当 app 通过 deep link 收到 gonomads://douyin-callback?code=xxx&state=xxx 时调用
-  void handleDouyinCallback(Uri uri) {
-    log('📱 [SocialLogin] 抖音回调: $uri');
+  /// 处理 QQ OAuth 回调
+  /// 当 app 通过 deep link 收到 gonomads://qq-callback?code=xxx&state=xxx 时调用
+  void handleQQCallback(Uri uri) {
+    log('📱 [SocialLogin] QQ 回调: $uri');
 
-    if (_douyinAuthCompleter == null || _douyinAuthCompleter!.isCompleted) {
-      log('⚠️ [SocialLogin] 抖音回调无效: Completer 不存在或已完成');
+    if (_qqAuthCompleter == null || _qqAuthCompleter!.isCompleted) {
+      log('⚠️ [SocialLogin] QQ 回调无效: Completer 不存在或已完成');
       return;
     }
 
@@ -281,25 +270,25 @@ class SocialLoginService {
     final error = uri.queryParameters['error'];
 
     if (error != null) {
-      log('❌ [SocialLogin] 抖音授权失败: $error');
+      log('❌ [SocialLogin] QQ 授权失败: $error');
       if (error == 'access_denied') {
-        _douyinAuthCompleter!.complete(const SocialLoginResult.cancelled());
+        _qqAuthCompleter!.complete(const SocialLoginResult.cancelled());
       } else {
-        _douyinAuthCompleter!.complete(SocialLoginResult.failure('抖音授权失败: $error'));
+        _qqAuthCompleter!.complete(SocialLoginResult.failure('QQ 授权失败: $error'));
       }
-      _douyinAuthCompleter = null;
+      _qqAuthCompleter = null;
       return;
     }
 
     if (code == null || code.isEmpty) {
-      _douyinAuthCompleter!.complete(const SocialLoginResult.failure('未获取到抖音授权码'));
-      _douyinAuthCompleter = null;
+      _qqAuthCompleter!.complete(const SocialLoginResult.failure('未获取到 QQ 授权码'));
+      _qqAuthCompleter = null;
       return;
     }
 
-    log('✅ [SocialLogin] 抖音授权码获取成功');
-    _douyinAuthCompleter!.complete(SocialLoginResult.success(code: code));
-    _douyinAuthCompleter = null;
+    log('✅ [SocialLogin] QQ 授权码获取成功');
+    _qqAuthCompleter!.complete(SocialLoginResult.success(code: code));
+    _qqAuthCompleter = null;
   }
 
   /// Apple 登录 (仅 iOS)
@@ -372,8 +361,8 @@ class SocialLoginService {
     switch (type) {
       case SocialLoginType.wechat:
         return loginWithWechat();
-      case SocialLoginType.douyin:
-        return loginWithDouyin();
+      case SocialLoginType.qq:
+        return loginWithQQ();
       case SocialLoginType.apple:
         return loginWithApple();
       case SocialLoginType.google:

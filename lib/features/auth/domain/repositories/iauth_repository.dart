@@ -5,7 +5,7 @@ import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
 /// 社交登录类型
 enum SocialAuthProvider {
   wechat,
-  douyin,
+  qq,
   apple,
   google,
   twitter,
@@ -29,7 +29,7 @@ abstract class IAuthRepository {
 
   /// 社交登录
   /// [provider] 社交平台类型
-  /// [code] 授权码（微信、抖音等使用）
+  /// [code] 授权码（微信、QQ 等使用）
   /// [accessToken] 直接的访问令牌（部分平台使用）
   /// [openId] 用户唯一标识
   Future<Result<AuthToken>> socialLogin({

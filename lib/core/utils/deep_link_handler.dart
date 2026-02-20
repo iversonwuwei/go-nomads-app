@@ -71,8 +71,8 @@ class DeepLinkHandler {
       case 'twitter-callback':
         _handleTwitterCallback(uri);
         break;
-      case 'douyin-callback':
-        _handleDouyinCallback(uri);
+      case 'qq-callback':
+        _handleQQCallback(uri);
         break;
       case 'city':
         await _handleCityDeepLink(uri);
@@ -101,15 +101,15 @@ class DeepLinkHandler {
     }
   }
 
-  /// 处理抖音 OAuth 回调
-  /// deep link: gonomads://douyin-callback?code=xxx&state=xxx
-  static void _handleDouyinCallback(Uri uri) {
-    log('📱 处理抖音 OAuth 回调: $uri');
+  /// 处理 QQ OAuth 回调
+  /// deep link: gonomads://qq-callback?code=xxx&state=xxx
+  static void _handleQQCallback(Uri uri) {
+    log('📱 处理 QQ OAuth 回调: $uri');
     try {
       final socialLoginService = Get.find<SocialLoginService>();
-      socialLoginService.handleDouyinCallback(uri);
+      socialLoginService.handleQQCallback(uri);
     } catch (e) {
-      log('❌ 处理抖音回调失败: $e');
+      log('❌ 处理 QQ 回调失败: $e');
     }
   }
 

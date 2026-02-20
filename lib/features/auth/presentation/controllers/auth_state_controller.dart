@@ -349,7 +349,7 @@ class AuthStateController extends GetxController {
     );
   }
 
-  /// 社交登录 (微信、抖音、QQ 等)
+  /// 社交登录 (微信、QQ 等)
   /// [type] 社交平台类型
   /// [onAuthSuccess] 可选回调，在第三方授权成功后、调用后端 API 前触发
   Future<bool> socialLogin(SocialLoginType type, {VoidCallback? onAuthSuccess}) async {
@@ -361,6 +361,12 @@ class AuthStateController extends GetxController {
         if (sdkResult.isCancelled) {
           // 用户取消授权，使用普通提示
           AppToast.info('用户取消授权');
+        } else if (sdkResult.errorMessage == 'WECHAT_NOT_INSTALLED') {
+          // 微信未安装，提示用户安装
+          AppToast.warning('请先安装微信客户端', title: '未检测到微信');
+        } else if (sdkResult.errorMessage == 'QQ_NOT_INSTALLED') {
+          // QQ 未安装，提示用户安装
+          AppToast.warning('请先安装 QQ 客户端', title: '未检测到 QQ');
         } else if (sdkResult.errorMessage != null) {
           // 真正的错误，使用错误提示
           AppToast.error(sdkResult.errorMessage!);
@@ -574,8 +580,8 @@ class AuthStateController extends GetxController {
     switch (type) {
       case SocialLoginType.wechat:
         return SocialAuthProvider.wechat;
-      case SocialLoginType.douyin:
-        return SocialAuthProvider.douyin;
+      case SocialLoginType.qq:
+        return SocialAuthProvider.qq;
       case SocialLoginType.apple:
         return SocialAuthProvider.apple;
       case SocialLoginType.google:

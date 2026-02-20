@@ -46,11 +46,6 @@ class LoginPhoneForm extends GetView<LoginController> {
 
         // 手机登录按钮
         _PhoneLoginButton(),
-
-        const SizedBox(height: 16),
-
-        // 切换到邮箱登录
-        _SwitchToEmailButton(),
       ],
     );
   }
@@ -122,25 +117,6 @@ class _PhoneLoginButton extends GetView<LoginController> {
         child: const Text(
           '登录',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-}
-
-/// 切换到邮箱登录按钮
-class _SwitchToEmailButton extends GetView<LoginController> {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: TextButton(
-        onPressed: () => controller.setLoginMode(LoginMode.email),
-        child: const Text(
-          '使用邮箱密码登录',
-          style: TextStyle(
-            color: LoginConstants.primaryColor,
-            fontWeight: FontWeight.w500,
-          ),
         ),
       ),
     );

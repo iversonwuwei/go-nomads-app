@@ -5,7 +5,7 @@ class LoginConstants {
   // 品牌色
   static const Color primaryColor = Color(0xFFFF4458); // Nomads Red
   static const Color wechatGreen = Color(0xFF09BB07);
-  static const Color douyinBlack = Color(0xFF161823);
+  static const Color qqBlue = Color(0xFF12B7F5);
   static const Color googleRed = Color(0xFFDB4437);
   static const Color facebookBlue = Color(0xFF1877F2);
   static const Color phoneGreen = Color(0xFF4CAF50);

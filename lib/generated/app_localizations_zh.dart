@@ -3831,10 +3831,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wechatDescription => '使用微信支付';
 
   @override
-  String get douyinLogin => '抖音登录';
+  String get qqLogin => 'QQ登录';
 
   @override
-  String get douyinDescription => '使用抖音账号登录';
+  String get qqDescription => '使用 QQ 账号登录';
 
   @override
   String get securePayment => '安全支付';
@@ -3870,7 +3870,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatingWechatOrder => '正在创建微信支付订单...';
 
   @override
-  String get douyinAuthInProgress => '正在进行抖音授权...';
+  String get qqAuthInProgress => '正在进行 QQ 授权...';
 
   @override
   String priceForPlan(String price, String planName) {
@@ -3900,7 +3900,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wechatNotInstalled => '请安装微信以使用微信支付';
 
   @override
-  String get douyinNotInstalled => '请安装抖音以使用抖音登录';
+  String get qqNotInstalled => '请安装 QQ 以使用 QQ 登录';
 
   @override
   String get paymentSuccessful => '支付成功！';
@@ -3909,7 +3909,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wechatPayFailed => '微信支付失败';
 
   @override
-  String get douyinLoginFailed => '抖音登录失败';
+  String get qqLoginFailed => 'QQ 登录失败';
 
   @override
   String wechatPayError(String error) {
@@ -3917,8 +3917,8 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String douyinError(String error) {
-    return '抖音错误：$error';
+  String qqError(String error) {
+    return 'QQ 错误：$error';
   }
 
   @override
@@ -4208,7 +4208,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get thirdPartyServicesDesc =>
-      '为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• 抖音开放平台SDK — 抖音登录\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。';
+      '为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• QQ 互联SDK — QQ 登录和分享\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。';
 
   @override
   String get permissionUsage => '权限使用说明';

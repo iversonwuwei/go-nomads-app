@@ -3887,10 +3887,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wechatDescription => 'Pay with WeChat';
 
   @override
-  String get douyinLogin => 'Douyin Login';
+  String get qqLogin => 'QQ Login';
 
   @override
-  String get douyinDescription => 'Login with Douyin account';
+  String get qqDescription => 'Login with QQ account';
 
   @override
   String get securePayment => 'Secure Payment';
@@ -3927,7 +3927,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creatingWechatOrder => 'Creating WeChat Pay order...';
 
   @override
-  String get douyinAuthInProgress => 'Authorizing with Douyin...';
+  String get qqAuthInProgress => 'Authorizing with QQ...';
 
   @override
   String priceForPlan(String price, String planName) {
@@ -3957,7 +3957,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wechatNotInstalled => 'Please install WeChat to use WeChat Pay';
 
   @override
-  String get douyinNotInstalled => 'Please install Douyin to use Douyin Login';
+  String get qqNotInstalled => 'Please install QQ to use QQ Login';
 
   @override
   String get paymentSuccessful => 'Payment successful!';
@@ -3966,7 +3966,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wechatPayFailed => 'WeChat Pay failed';
 
   @override
-  String get douyinLoginFailed => 'Douyin login failed';
+  String get qqLoginFailed => 'QQ login failed';
 
   @override
   String wechatPayError(String error) {
@@ -3974,8 +3974,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String douyinError(String error) {
-    return 'Douyin error: $error';
+  String qqError(String error) {
+    return 'QQ error: $error';
   }
 
   @override
@@ -4269,7 +4269,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get thirdPartyServicesDesc =>
-      'To provide related features, this app integrates the following third-party SDKs:\n• Amap SDK — Map display and location services\n• WeChat OpenSDK — WeChat login and sharing\n• Douyin Open Platform SDK — Douyin login\n• Tencent Cloud IM SDK — Instant messaging\n• Google Location — Overseas location services\nThese third-party SDKs may collect necessary information according to their respective privacy policies.';
+      'To provide related features, this app integrates the following third-party SDKs:\n• Amap SDK — Map display and location services\n• WeChat OpenSDK — WeChat login and sharing\n• QQ Connect SDK — QQ login and sharing\n• Tencent Cloud IM SDK — Instant messaging\n• Google Location — Overseas location services\nThese third-party SDKs may collect necessary information according to their respective privacy policies.';
 
   @override
   String get permissionUsage => 'Permission Usage';

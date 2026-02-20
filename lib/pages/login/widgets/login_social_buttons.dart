@@ -48,35 +48,19 @@ class _Divider extends StatelessWidget {
 class _ChineseSocialButtons extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            _SocialButton(
-              onPressed: () => controller.handleSocialLogin(SocialLoginType.wechat, '微信'),
-              icon: FontAwesomeIcons.weixin,
-              color: LoginConstants.wechatGreen,
-              label: '微信',
-            ),
-            _SocialButton(
-              onPressed: () => controller.handleSocialLogin(SocialLoginType.douyin, '抖音'),
-              icon: FontAwesomeIcons.tiktok,
-              color: LoginConstants.douyinBlack,
-              label: '抖音',
-            ),
-          ],
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.wechat, '微信'),
+          icon: FontAwesomeIcons.weixin,
+          color: LoginConstants.wechatGreen,
+          label: '微信',
         ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _SocialButton(
-              onPressed: () => controller.setLoginMode(LoginMode.phone),
-              icon: FontAwesomeIcons.mobile,
-              color: LoginConstants.phoneGreen,
-              label: '手机号',
-            ),
-          ],
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
+          icon: FontAwesomeIcons.qq,
+          color: LoginConstants.qqBlue,
+          label: 'QQ',
         ),
       ],
     );
@@ -87,41 +71,25 @@ class _ChineseSocialButtons extends GetView<LoginController> {
 class _InternationalSocialButtons extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            _SocialButton(
-              onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
-              icon: FontAwesomeIcons.google,
-              color: LoginConstants.googleRed,
-              label: 'Google',
-            ),
-            _SocialButton(
-              onPressed: () => controller.handleSocialLogin(SocialLoginType.twitter, 'Twitter'),
-              icon: FontAwesomeIcons.xTwitter,
-              color: Colors.black,
-              label: 'Twitter',
-            ),
-            _SocialButton(
-              onPressed: () => AppToast.info('Facebook Sign In coming soon', title: 'Facebook'),
-              icon: FontAwesomeIcons.facebook,
-              color: LoginConstants.facebookBlue,
-              label: 'Facebook',
-            ),
-          ],
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
+          icon: FontAwesomeIcons.google,
+          color: LoginConstants.googleRed,
+          label: 'Google',
         ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _SocialButton(
-              onPressed: () => controller.setLoginMode(LoginMode.phone),
-              icon: FontAwesomeIcons.mobile,
-              color: LoginConstants.phoneGreen,
-              label: 'Phone',
-            ),
-          ],
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.twitter, 'Twitter'),
+          icon: FontAwesomeIcons.xTwitter,
+          color: Colors.black,
+          label: 'Twitter',
+        ),
+        _SocialButton(
+          onPressed: () => AppToast.info('Facebook Sign In coming soon', title: 'Facebook'),
+          icon: FontAwesomeIcons.facebook,
+          color: LoginConstants.facebookBlue,
+          label: 'Facebook',
         ),
       ],
     );

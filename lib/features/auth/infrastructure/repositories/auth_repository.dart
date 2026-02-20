@@ -327,7 +327,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     return execute(() async {
       // 构建请求数据
       final requestData = <String, dynamic>{
-        'provider': provider.name, // wechat, douyin, qq, apple, google
+        'provider': provider.name, // wechat, qq, apple, google
       };
 
       if (code != null) requestData['code'] = code;
