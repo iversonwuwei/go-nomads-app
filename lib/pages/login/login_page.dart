@@ -9,6 +9,7 @@ import 'package:go_nomads_app/pages/login/widgets/login_header.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_phone_form.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_register_link.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_social_buttons.dart';
+import 'package:go_nomads_app/pages/login/widgets/login_terms_checkbox.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
 
 /// 登录页面 - 使用响应式验证，无需 GlobalKey
@@ -59,6 +60,11 @@ class LoginPage extends GetView<LoginController> {
                     )),
 
                 const SizedBox(height: 24),
+
+                // 用户协议勾选框（工信部/腾讯合规要求）
+                const LoginTermsCheckbox(),
+
+                const SizedBox(height: 16),
 
                 // 社交登录按钮
                 const LoginSocialButtons(),

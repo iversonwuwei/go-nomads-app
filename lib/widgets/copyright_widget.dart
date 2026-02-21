@@ -37,7 +37,7 @@ class CopyrightWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'All Rights Reserved by Walden',
+              '© 大连素辉软件科技有限公司 All Rights Reserved',
               style: TextStyle(
                 fontSize: fontSize?.sp ?? 10.sp,
                 color: textColor ?? AppColors.textTertiary,

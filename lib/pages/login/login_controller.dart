@@ -44,6 +44,9 @@ class LoginController extends GetxController {
   // 是否显示验证错误
   final RxBool showValidationErrors = false.obs;
 
+  // 用户协议勾选状态（工信部合规要求）
+  final RxBool agreeToTerms = false.obs;
+
   Timer? _countdownTimer;
 
   /// 判断是否为中国区用户
@@ -187,6 +190,22 @@ class LoginController extends GetxController {
     }
   }
 
+  // ==================== 协议勾选 ====================
+
+  /// 切换用户协议勾选状态
+  void toggleAgreeToTerms([bool? value]) {
+    agreeToTerms.value = value ?? !agreeToTerms.value;
+  }
+
+  /// 检查用户是否已同意协议，未同意则提示
+  bool _checkTermsAgreed() {
+    if (!agreeToTerms.value) {
+      AppToast.warning('请先同意用户协议和隐私政策', title: '提示');
+      return false;
+    }
+    return true;
+  }
+
   // ==================== 发送验证码 ====================
 
   Future<void> sendSmsCode() async {
@@ -240,6 +259,8 @@ class LoginController extends GetxController {
       return;
     }
 
+    if (!_checkTermsAgreed()) return;
+
     _showLoadingDialog(context);
 
     try {
@@ -288,6 +309,8 @@ class LoginController extends GetxController {
       return;
     }
 
+    if (!_checkTermsAgreed()) return;
+
     _showLoadingDialog(context);
 
     try {
@@ -329,6 +352,8 @@ class LoginController extends GetxController {
 
   /// 社交登录
   Future<void> handleSocialLogin(SocialLoginType type, String platformName) async {
+    if (!_checkTermsAgreed()) return;
+
     log('📱 开始 $platformName 登录...');
 
     try {

@@ -10,6 +10,7 @@ import 'package:go_nomads_app/pages/register/widgets/register_login_link.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_submit_button.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_terms_checkbox.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
+import 'package:go_nomads_app/widgets/legal_links_widget.dart';
 
 /// 注册页面 - 使用响应式验证，无需 GlobalKey
 class RegisterPage extends GetView<RegisterController> {
@@ -57,6 +58,11 @@ class RegisterPage extends GetView<RegisterController> {
                 const RegisterFeatureHighlights(),
 
                 const SizedBox(height: 24),
+
+                // 用户协议 & 隐私政策链接（工信部合规）
+                const LegalLinksWidget(),
+
+                const SizedBox(height: 8),
 
                 // ICP 备案信息
                 const CopyrightWidget(),

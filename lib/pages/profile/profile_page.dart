@@ -5,6 +5,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
 import 'package:go_nomads_app/pages/profile/widgets/badges_section_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/help_and_support_widget.dart';
+import 'package:go_nomads_app/pages/profile/widgets/legal_info_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/login_notice_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/logout_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/membership_card_widget.dart';
@@ -210,6 +211,10 @@ class _ProfileSections extends GetView<ProfileController> {
 
           // 帮助与客服
           const HelpAndSupportWidget(),
+          const SizedBox(height: 16),
+
+          // 法律信息（隐私政策、用户协议）
+          const LegalInfoWidget(),
           const SizedBox(height: 48),
 
           // 退出登录按钮
