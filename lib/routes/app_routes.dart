@@ -13,6 +13,10 @@ import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
 import 'package:go_nomads_app/pages/add_review_page.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_binding.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_page.dart';
+import 'package:go_nomads_app/controllers/change_password_page_controller.dart';
+import 'package:go_nomads_app/pages/change_password/change_password_page.dart';
+import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
+import 'package:go_nomads_app/pages/forgot_password/forgot_password_page.dart';
 import 'package:go_nomads_app/pages/city_chat_page.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
 import 'package:go_nomads_app/pages/city_search_page.dart';
@@ -131,6 +135,8 @@ class AppRoutes {
   static const String editSkills = '/edit-skills';
   static const String editInterests = '/edit-interests';
   static const String editSocialLinks = '/edit-social-links';
+  static const String changePassword = '/change-password';
+  static const String forgotPassword = '/forgot-password';
 
   // ============================================================================
   // 会员相关路由
@@ -461,6 +467,21 @@ class AppRoutes {
       name: profileEdit,
       page: () => const BottomNavLayout(child: ProfileEditPage()),
       middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: changePassword,
+      page: () => const ChangePasswordPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut(() => ChangePasswordController());
+      }),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: forgotPassword,
+      page: () => const ForgotPasswordPage(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut(() => ForgotPasswordController());
+      }),
     ),
     GetPage(
       name: userProfile,

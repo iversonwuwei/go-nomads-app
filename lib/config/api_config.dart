@@ -197,7 +197,12 @@ class ApiConfig {
   static const String logoutEndpoint = '/auth/logout';
   static const String refreshTokenEndpoint = '/auth/refresh';
   static const String changePasswordEndpoint = '/auth/change-password';
+  static const String setPasswordEndpoint = '/auth/set-password';
+  static const String hasPasswordEndpoint = '/auth/has-password';
+  static const String checkEmailEndpoint = '/auth/check-email';
   static const String socialLoginEndpoint = '/auth/social-login';
+  static const String forgotPasswordSendCodeEndpoint = '/auth/forgot-password/send-code';
+  static const String forgotPasswordResetEndpoint = '/auth/forgot-password/reset';
 
   // ============================================================
   // User Endpoints - /api/v1/users

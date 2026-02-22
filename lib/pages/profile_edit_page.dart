@@ -48,6 +48,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
 
+  // FocusNode 用于监听失焦自动保存
+  final FocusNode _nameFocus = FocusNode();
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _bioFocus = FocusNode();
+
+  // 原始值，用于检测是否有改动
+  String _originalName = '';
+  String _originalEmail = '';
+  String _originalBio = '';
+
   // 头像上传状态
   bool _uploadingAvatar = false;
   String? _newAvatarUrl;
@@ -72,12 +82,61 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     _initAutoTravelDetectionState();
     // 初始化偏好设置仓库
     _initPreferencesRepository();
+    // 初始化失焦自动保存监听
+    _initFocusListeners();
     // 延迟到下一帧执行，避免在 build 过程中触发状态更新
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserProfile();
       _loadUserPreferences();
       _checkAdminRole();
     });
+  }
+
+  // 初始化失焦自动保存监听（与头像/技能即时保存行为一致）
+  void _initFocusListeners() {
+    _nameFocus.addListener(() {
+      if (!_nameFocus.hasFocus) _autoSaveFieldIfChanged('name', _nameController.text.trim(), _originalName);
+    });
+    _emailFocus.addListener(() {
+      if (!_emailFocus.hasFocus) _autoSaveFieldIfChanged('email', _emailController.text.trim(), _originalEmail);
+    });
+    _bioFocus.addListener(() {
+      if (!_bioFocus.hasFocus) _autoSaveFieldIfChanged('bio', _bioController.text.trim(), _originalBio);
+    });
+  }
+
+  // 字段失焦时自动保存（仅在值有变动时）
+  Future<void> _autoSaveFieldIfChanged(String field, String newValue, String originalValue) async {
+    if (newValue == originalValue) return;
+
+    final l10n = AppLocalizations.of(context)!;
+
+    // 邮箱格式校验
+    if (field == 'email' && newValue.isNotEmpty && !_isValidEmail(newValue)) {
+      AppToast.error(l10n.invalidEmailFormat, title: l10n.error);
+      return;
+    }
+
+    // 用户名不能为空
+    if (field == 'name' && newValue.isEmpty) return;
+
+    final updates = <String, dynamic>{};
+    if (field == 'name') updates['name'] = newValue;
+    if (field == 'email') updates['email'] = newValue;
+    if (field == 'bio') updates['bio'] = newValue;
+
+    final profileController = Get.find<UserStateController>();
+    final success = await profileController.updateUser(updates);
+
+    if (success && mounted) {
+      // 更新原始值，避免重复保存
+      setState(() {
+        if (field == 'name') _originalName = newValue;
+        if (field == 'email') _originalEmail = newValue;
+        if (field == 'bio') _originalBio = newValue;
+      });
+      AppToast.success(l10n.profileUpdatedSuccessfully, title: l10n.saved);
+    }
   }
 
   // 初始化偏好设置仓库
@@ -298,6 +357,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
   @override
   void dispose() {
+    _nameFocus.dispose();
+    _emailFocus.dispose();
+    _bioFocus.dispose();
     _nameController.dispose();
     _emailController.dispose();
     _bioController.dispose();
@@ -367,16 +429,28 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         _nameController.text = user.name;
         _emailController.text = user.email ?? '';
         _bioController.text = user.bio ?? '';
+        _originalName = user.name;
+        _originalEmail = user.email ?? '';
+        _originalBio = user.bio ?? '';
       });
     }
 
-    // 继续监听后续的用户数据变化
+    // 继续监听后续的用户数据变化（仅在字段未聚焦时更新，避免覆盖正在编辑的内容）
     ever(profileController.currentUser, (user) {
       if (user != null && mounted) {
         setState(() {
-          _nameController.text = user.name;
-          _emailController.text = user.email ?? '';
-          _bioController.text = user.bio ?? '';
+          if (!_nameFocus.hasFocus) {
+            _nameController.text = user.name;
+            _originalName = user.name;
+          }
+          if (!_emailFocus.hasFocus) {
+            _emailController.text = user.email ?? '';
+            _originalEmail = user.email ?? '';
+          }
+          if (!_bioFocus.hasFocus) {
+            _bioController.text = user.bio ?? '';
+            _originalBio = user.bio ?? '';
+          }
         });
       }
     });
@@ -512,82 +586,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
               const SizedBox(height: 24),
               _buildAdminManagementSection(isMobile),
             ],
-
-            const SizedBox(height: 32),
-
-            // 保存按钮
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final profileController = Get.find<UserStateController>();
-
-                  // 验证邮箱格式
-                  final email = _emailController.text.trim();
-                  if (email.isNotEmpty && !_isValidEmail(email)) {
-                    AppToast.error(
-                      l10n.invalidEmailFormat,
-                      title: l10n.error,
-                    );
-                    return;
-                  }
-
-                  // 构建更新数据
-                  final updates = <String, dynamic>{};
-
-                  final name = _nameController.text.trim();
-                  if (name.isNotEmpty) {
-                    updates['name'] = name;
-                  }
-
-                  if (email.isNotEmpty) {
-                    updates['email'] = email;
-                  }
-
-                  final bio = _bioController.text.trim();
-                  if (bio.isNotEmpty) {
-                    updates['bio'] = bio;
-                  }
-
-                  if (_newAvatarUrl != null) {
-                    updates['avatarUrl'] = _newAvatarUrl;
-                  }
-
-                  // 如果没有任何更新，直接返回
-                  if (updates.isEmpty) {
-                    Get.back();
-                    return;
-                  }
-
-                  // 调用更新 API
-                  final success = await profileController.updateUser(updates);
-
-                  if (success) {
-                    AppToast.success(
-                      l10n.profileUpdatedSuccessfully,
-                      title: l10n.saved,
-                    );
-                    Get.back();
-                  }
-                  // 失败的情况 updateUser 内部已经处理了错误提示
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  l10n.saveChanges,
-                  style: TextStyle(
-                    fontSize: isMobile ? 16 : 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -674,6 +672,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             // 用户名编辑
             TextField(
               controller: _nameController,
+              focusNode: _nameFocus,
               decoration: InputDecoration(
                 labelText: l10n.name,
                 labelStyle: TextStyle(color: AppColors.textSecondary),
@@ -702,6 +701,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             // 邮箱编辑
             TextField(
               controller: _emailController,
+              focusNode: _emailFocus,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
                 labelText: l10n.email,
@@ -731,6 +731,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             // Bio
             TextField(
               controller: _bioController,
+              focusNode: _bioFocus,
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: l10n.bio,
@@ -1180,16 +1181,17 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
           SizedBox(height: isMobile ? 12 : 16),
           _buildActionTile(
             icon: FontAwesomeIcons.lock,
-            title: l10n.changePassword,
-            onTap: () => AppToast.info(l10n.changePasswordComingSoon),
+            title: '修改/设置密码',
+            onTap: () => Get.toNamed(AppRoutes.changePassword),
           ),
           Divider(color: AppColors.divider),
-          _buildActionTile(
-            icon: FontAwesomeIcons.userSecret,
-            title: l10n.privacySettings,
-            onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
-          ),
-          Divider(color: AppColors.divider),
+          // TODO: 隐私设置暂时隐藏，后续功能完善后恢复
+          // _buildActionTile(
+          //   icon: FontAwesomeIcons.userSecret,
+          //   title: l10n.privacySettings,
+          //   onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+          // ),
+          // Divider(color: AppColors.divider),
           _buildActionTile(
             icon: FontAwesomeIcons.trash,
             title: l10n.deleteAccount,

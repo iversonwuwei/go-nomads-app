@@ -115,7 +115,7 @@ class _PhoneLoginButton extends GetView<LoginController> {
           elevation: 0,
         ),
         child: const Text(
-          '登录',
+          '点击登录/注册',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
       ),

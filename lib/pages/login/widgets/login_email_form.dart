@@ -5,6 +5,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_form_field.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// 邮箱登录表单 - 响应式验证
 class LoginEmailForm extends GetView<LoginController> {
@@ -100,7 +101,7 @@ class _RememberMeRow extends GetView<LoginController> {
         ),
         TextButton(
           onPressed: () {
-            // TODO: 实现忘记密码功能
+            Get.toNamed(AppRoutes.forgotPassword);
           },
           child: Text(
             l10n.forgotPassword,
@@ -137,9 +138,9 @@ class _LoginButton extends GetView<LoginController> {
           ),
           elevation: 0,
         ),
-        child: Text(
-          l10n.login,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        child: const Text(
+          '点击登录/注册',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
       ),
     );
