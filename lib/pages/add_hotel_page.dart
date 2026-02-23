@@ -1,14 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/add_hotel_page_controller.dart';
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/pages/flutter_map_picker_page.dart';
+import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/location_picker_field.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 class AddHotelPage extends StatelessWidget {
   final String? cityName;
@@ -353,15 +353,19 @@ class AddHotelPage extends StatelessWidget {
               : Text(l10n.pickLocationOnMap),
           trailing: const Icon(FontAwesomeIcons.arrowRight, size: 16),
           onTap: () async {
-            final result = await Get.to(() => FlutterMapPickerPage(
-                  initialLatitude: lat != 0 ? lat : null,
-                  initialLongitude: lng != 0 ? lng : null,
-                  searchQuery: controller.addressController.text.trim().isNotEmpty
-                      ? controller.addressController.text.trim()
-                      : null,
-                  country: controller.selectedCountry.value,
-                  city: controller.selectedCity.value,
-                ));
+            final result = await Get.to(
+              () => const MapPickerPage(),
+              binding: MapPickerBinding(),
+              arguments: {
+                'initialLatitude': lat != 0 ? lat : null,
+                'initialLongitude': lng != 0 ? lng : null,
+                'searchQuery': controller.addressController.text.trim().isNotEmpty
+                    ? controller.addressController.text.trim()
+                    : null,
+                    'country': controller.selectedCountry.value,
+                    'city': controller.selectedCity.value,
+                  },
+                );
 
             if (result != null && result is Map<String, dynamic>) {
               controller.updateCoordinates(result['latitude'] ?? 0.0, result['longitude'] ?? 0.0);

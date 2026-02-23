@@ -11,7 +11,7 @@ import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_
 import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/chat_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/pages/flutter_map_picker_page.dart';
+import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
@@ -2078,7 +2078,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     try {
       // 跳转到地图选择页面
       final result = await Get.to<Map<String, dynamic>>(
-        () => const FlutterMapPickerPage(),
+        () => const MapPickerPage(),
+        binding: MapPickerBinding(),
       );
       if (result != null) {
         final lat = result['latitude'] as double?;

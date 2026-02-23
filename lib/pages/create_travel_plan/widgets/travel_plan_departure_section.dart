@@ -1,12 +1,11 @@
-import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/services/amap_poi_service.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../../flutter_map_picker_page.dart';
+import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
+import 'package:go_nomads_app/services/amap_poi_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// 出发地点部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanDepartureSection extends GetView<CreateTravelPlanPageController> {
@@ -421,7 +420,10 @@ class _MapPickerButton extends GetView<CreateTravelPlanPageController> {
         onPressed: () async {
           controller.hideDepartureSuggestions();
           try {
-            final result = await Get.to(() => const FlutterMapPickerPage());
+            final result = await Get.to(
+              () => const MapPickerPage(),
+              binding: MapPickerBinding(),
+            );
             if (result != null && result is Map) {
               final address = result['address'] as String? ?? '';
               final name = result['name'] as String? ?? '';

@@ -1,14 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/services/amap_poi_service.dart';
 import 'package:go_nomads_app/services/location_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
-import 'flutter_map_picker_page.dart';
 import 'travel_plan/travel_plan_page.dart';
 
 /// 创建旅行计划页面 - 完整页面版本
@@ -368,7 +368,8 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               onPressed: () async {
                                 try {
                                   final result = await Get.to(
-                                    () => const FlutterMapPickerPage(),
+                                    () => const MapPickerPage(),
+                                    binding: MapPickerBinding(),
                                   );
                                   if (result != null && result is Map) {
                                     final address = result['address'] as String? ?? '';

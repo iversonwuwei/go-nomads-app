@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
-import 'package:go_nomads_app/pages/flutter_map_picker_page.dart';
+import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/utils/image_upload_helper.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -136,11 +136,13 @@ class CityPhotoSubmissionPageController extends GetxController {
     final address = locationNoteController.text.trim();
 
     final result = await Get.to<Map<String, dynamic>>(
-      () => FlutterMapPickerPage(
-        initialLatitude: selectedLat.value,
-        initialLongitude: selectedLng.value,
-        searchQuery: address,
-      ),
+      () => const MapPickerPage(),
+      binding: MapPickerBinding(),
+      arguments: {
+        'initialLatitude': selectedLat.value,
+        'initialLongitude': selectedLng.value,
+        'searchQuery': address,
+      },
     );
 
     if (result != null) {
