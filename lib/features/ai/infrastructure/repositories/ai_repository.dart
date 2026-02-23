@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/ai/domain/repositories/iai_repository.dart';
@@ -14,8 +16,6 @@ import 'package:go_nomads_app/services/database/digital_nomad_guide_dao.dart';
 import 'package:go_nomads_app/services/database_service.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
-import 'package:dio/dio.dart';
-import 'package:get/get.dart';
 
 /// AI服务Repository实现
 ///
@@ -132,9 +132,9 @@ class AiRepository implements IAiRepository {
       // 1. 先设置 SignalR 连接和监听器
       final signalRService = SignalRService();
 
-      // SignalR Hub 连接到 MessageService 的 ai-progress hub (端口 5005)
-      final host = ApiConfig.usePhysicalDevice ? ApiConfig.physicalDeviceHost : ApiConfig.developmentHost;
-      final messageServiceUrl = 'http://$host:5005'; // MessageService 端口 5005
+      // SignalR Hub 连接到 MessageService 的 ai-progress hub
+      // 生产环境通过 Gateway 路由，开发环境也通过 Gateway 路由
+      final messageServiceUrl = ApiConfig.messageServiceBaseUrl;
       log('🔌 连接到 MessageService SignalR Hub: $messageServiceUrl/hubs/ai-progress');
 
       if (!signalRService.isConnected) {
@@ -345,9 +345,9 @@ class AiRepository implements IAiRepository {
       // 1. 先设置 SignalR 连接和监听器
       final signalRService = SignalRService();
 
-      // SignalR Hub 连接到 MessageService 的 ai-progress hub (端口 5005)
-      final host = ApiConfig.usePhysicalDevice ? ApiConfig.physicalDeviceHost : ApiConfig.developmentHost;
-      final messageServiceUrl = 'http://$host:5005'; // MessageService 端口 5005
+      // SignalR Hub 连接到 MessageService 的 ai-progress hub
+      // 生产环境通过 Gateway 路由，开发环境也通过 Gateway 路由
+      final messageServiceUrl = ApiConfig.messageServiceBaseUrl;
       log('🔌 连接到 MessageService SignalR Hub: $messageServiceUrl/hubs/ai-progress');
 
       if (!signalRService.isConnected) {
@@ -662,9 +662,9 @@ class AiRepository implements IAiRepository {
       // 1. 先设置 SignalR 连接和监听器
       final signalRService = SignalRService();
 
-      // SignalR Hub 连接到 MessageService 的 ai-progress hub (端口 5005)
-      final host = ApiConfig.usePhysicalDevice ? ApiConfig.physicalDeviceHost : ApiConfig.developmentHost;
-      final messageServiceUrl = 'http://$host:5005';
+      // SignalR Hub 连接到 MessageService 的 ai-progress hub
+      // 生产环境通过 Gateway 路由，开发环境也通过 Gateway 路由
+      final messageServiceUrl = ApiConfig.messageServiceBaseUrl;
       log('🔌 连接到 MessageService SignalR Hub: $messageServiceUrl/hubs/ai-progress');
 
       if (!signalRService.isConnected) {

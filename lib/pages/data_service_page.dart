@@ -1,5 +1,8 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -16,9 +19,6 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 import 'city_detail/city_detail.dart';
 import 'create_meetup/create_meetup_page.dart';
@@ -1799,13 +1799,15 @@ class _DataCardState extends State<_DataCard> {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // 刷新图片按钮（仅管理员可见）
+                          // 刷新图片按钮（管理员或城市版主可见）
                           Obx(() {
                             final authController = Get.find<AuthStateController>();
                             final user = authController.currentUser.value;
                             final isAdmin = user?.role.toLowerCase() == 'admin';
+                            final isCityModerator = widget.data.isCurrentUserModerator ||
+                                (widget.data.moderatorId != null && widget.data.moderatorId == user?.id);
 
-                            if (!isAdmin) return const SizedBox.shrink();
+                            if (!isAdmin && !isCityModerator) return const SizedBox.shrink();
 
                             return Row(
                               mainAxisSize: MainAxisSize.min,
@@ -3076,12 +3078,25 @@ class _GenerateImageButton extends StatelessWidget {
       return;
     }
 
-    // 检查是否是管理员（只有管理员可以生成图片）
+    // 检查是否是管理员或城市版主
     final user = authController.currentUser.value;
     final userRole = user?.role.toLowerCase() ?? '';
-    if (userRole != 'admin') {
+    final isAdmin = userRole == 'admin';
+
+    // 检查是否为该城市的版主
+    bool isCityModerator = false;
+    try {
+      final city = cityController.cities.firstWhereOrNull((c) => c.id == cityId) ??
+          cityController.recommendedCities.firstWhereOrNull((c) => c.id == cityId) ??
+          cityController.popularCities.firstWhereOrNull((c) => c.id == cityId);
+      if (city != null) {
+        isCityModerator = city.isCurrentUserModerator || (city.moderatorId != null && city.moderatorId == user?.id);
+      }
+    } catch (_) {}
+
+    if (!isAdmin && !isCityModerator) {
       AppToast.warning(
-        'Only administrators can generate images',
+        'Only administrators or city moderators can generate images',
         title: 'Permission Denied',
       );
       return;

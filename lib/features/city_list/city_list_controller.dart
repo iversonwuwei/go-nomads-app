@@ -787,8 +787,20 @@ class CityListController extends GetxController {
 
     final user = authController.currentUser.value;
     final userRole = user?.role.toLowerCase() ?? '';
-    if (userRole != 'admin') {
-      AppToast.warning('Only administrators can generate images', title: 'Permission Denied');
+    final isAdmin = userRole == 'admin';
+
+    // 检查是否为该城市的版主（通过城市列表中的 moderatorId 或 isCurrentUserModerator 判断）
+    bool isCityModerator = false;
+    try {
+      final city = cities.firstWhereOrNull((c) => c.id == cityId) ??
+          _cityStateController.cities.firstWhereOrNull((c) => c.id == cityId);
+      if (city != null) {
+        isCityModerator = city.isCurrentUserModerator || (city.moderatorId != null && city.moderatorId == user?.id);
+      }
+    } catch (_) {}
+
+    if (!isAdmin && !isCityModerator) {
+      AppToast.warning('Only administrators or city moderators can generate images', title: 'Permission Denied');
       return;
     }
 
