@@ -103,9 +103,10 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     _cityImageUpdatedSubscription?.cancel();
     _cityImageUpdatedSubscription = null;
 
-    // 清理资源
-    scrollController.dispose();
-    searchController.dispose();
+    // 注意：不要在 onClose() 中 dispose TextEditingController / ScrollController
+    // GetX 的 onClose() 在 widget 卸载之前调用，此时 TextField 仍在使用 controller，
+    // 手动 dispose 会导致 "TextEditingController was used after being disposed" 异常。
+    // 这些控制器会随着 HomePageController 实例一起被 GC 回收。
 
     super.onClose();
   }

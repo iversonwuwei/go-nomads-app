@@ -21,6 +21,9 @@ enum ReportContentType {
 
   /// 聊天室
   chatRoom,
+
+  /// 城市
+  city,
 }
 
 /// 举报原因

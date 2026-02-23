@@ -105,6 +105,8 @@ enum NotificationType {
   systemAnnouncement('system_announcement'), // 系统公告
   eventInvitation('event_invitation'), // 活动邀请
   eventInvitationResponse('event_invitation_response'), // 活动邀请响应
+  userReport('user_report'), // 用户举报通知
+  cityReport('city_report'), // 城市举报通知
   other('other'); // 其他
 
   final String value;
@@ -138,6 +140,10 @@ enum NotificationType {
         return '📨';
       case NotificationType.eventInvitationResponse:
         return '💬';
+      case NotificationType.userReport:
+        return '⚠️';
+      case NotificationType.cityReport:
+        return '🚨';
       case NotificationType.other:
         return '🔔';
     }
@@ -164,6 +170,10 @@ enum NotificationType {
         return '#10B981'; // 绿色
       case NotificationType.eventInvitationResponse:
         return '#3B82F6'; // 蓝色
+      case NotificationType.userReport:
+        return '#EF4444'; // 红色
+      case NotificationType.cityReport:
+        return '#DC2626'; // 深红色
       case NotificationType.other:
         return '#757575'; // 灰色
     }

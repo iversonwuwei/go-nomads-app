@@ -1,12 +1,12 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/dialogs/notification_dialogs.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 /// 通知列表页面控制器
@@ -169,6 +169,12 @@ class NotificationsPageController extends GetxController {
         // 活动邀请响应：只是通知消息，用户点击后已通过 _markAsRead 标记已读，无需其他操作
         break;
 
+      case NotificationType.userReport:
+      case NotificationType.cityReport:
+        // 举报通知：显示举报详情弹窗
+        _showReportNotificationDialog(notification);
+        break;
+
       case NotificationType.other:
         break;
     }
@@ -201,6 +207,50 @@ class NotificationsPageController extends GetxController {
       AlertDialog(
         title: Text(notification.title),
         content: Text(notification.message),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('关闭'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 显示举报通知详情对话框
+  void _showReportNotificationDialog(AppNotification notification) {
+    final isCity = notification.type == NotificationType.cityReport;
+    final metadata = notification.metadata ?? {};
+    final reporterName = metadata['reporterName'] ?? '未知';
+    final targetName = metadata['targetName'] ?? '';
+    final reasonLabel = metadata['reasonLabel'] ?? '';
+
+    Get.dialog(
+      AlertDialog(
+        title: Row(
+          children: [
+            Text(isCity ? '🚨' : '⚠️', style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Expanded(child: Text(notification.title, style: const TextStyle(fontSize: 16))),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(notification.message),
+            if (targetName.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('举报对象: $targetName', style: const TextStyle(fontWeight: FontWeight.w500)),
+            ],
+            if (reasonLabel.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text('举报原因: $reasonLabel'),
+            ],
+            const SizedBox(height: 4),
+            Text('举报人: $reporterName', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
