@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
+import 'package:go_nomads_app/utils/app_logo_util.dart';
 import 'package:go_nomads_app/utils/clipboard_share_util.dart';
 import 'package:go_nomads_app/utils/dingtalk_share_util.dart';
 import 'package:go_nomads_app/utils/email_share_util.dart';
@@ -265,10 +266,12 @@ class _ShareChannelSheet extends StatelessWidget {
             url: url, title: title, description: description, thumbnail: imageBytes, toTimeline: true);
         break;
       case ShareChannel.qq:
-        await QQShareUtil.shareToQQFriend(url: url, title: title, summary: description);
+        final logoUri = await AppLogoUtil.getFileUri();
+        await QQShareUtil.shareToQQFriend(url: url, title: title, summary: description, imageUri: logoUri);
         break;
       case ShareChannel.qzone:
-        await QQShareUtil.shareToQzone(url: url, title: title, summary: description);
+        final logoUri = await AppLogoUtil.getFileUri();
+        await QQShareUtil.shareToQzone(url: url, title: title, summary: description, imageUri: logoUri);
         break;
       case ShareChannel.weibo:
         await WeiboShareUtil.shareToWeibo(url: url, title: title, description: description, imageBytes: imageBytes);

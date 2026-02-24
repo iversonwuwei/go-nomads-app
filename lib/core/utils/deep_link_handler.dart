@@ -71,9 +71,6 @@ class DeepLinkHandler {
       case 'twitter-callback':
         _handleTwitterCallback(uri);
         break;
-      case 'qq-callback':
-        _handleQQCallback(uri);
-        break;
       case 'city':
         await _handleCityDeepLink(uri);
         break;
@@ -98,18 +95,6 @@ class DeepLinkHandler {
       socialLoginService.handleTwitterCallback(uri);
     } catch (e) {
       log('❌ 处理 Twitter 回调失败: $e');
-    }
-  }
-
-  /// 处理 QQ OAuth 回调
-  /// deep link: gonomads://qq-callback?code=xxx&state=xxx
-  static void _handleQQCallback(Uri uri) {
-    log('📱 处理 QQ OAuth 回调: $uri');
-    try {
-      final socialLoginService = Get.find<SocialLoginService>();
-      socialLoginService.handleQQCallback(uri);
-    } catch (e) {
-      log('❌ 处理 QQ 回调失败: $e');
     }
   }
 
@@ -147,7 +132,7 @@ class DeepLinkHandler {
   static Future<void> _handlePathBasedDeepLink(Uri uri) async {
     final path = uri.path;
     final queryParams = uri.queryParameters;
-    
+
     if (path.startsWith('/city/detail')) {
       final cityId = queryParams['id'];
       if (cityId != null) {

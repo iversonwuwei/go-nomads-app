@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +7,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/services/social_sdk_service.dart';
+import 'package:go_nomads_app/utils/app_logo_util.dart';
+import 'package:go_nomads_app/utils/qq_share_util.dart';
 import 'package:go_nomads_app/utils/wechat_share_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:share_plus/share_plus.dart';
@@ -15,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 enum ShareChannelType {
   none,
   wechat, // 微信（微信好友、朋友圈）
+  qq, // QQ（QQ 好友、QQ 空间）
 }
 
 /// 分享底部抽屉
@@ -62,9 +66,25 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   /// 当前展开的子通道类型
   ShareChannelType _expandedChannel = ShareChannelType.none;
 
+  /// App Logo 缩略图缓存
+  Uint8List? _logoThumbnail;
+  Uri? _logoFileUri;
+
   String get title => widget.title;
   String get description => widget.description;
   String get shareUrl => widget.shareUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppLogo();
+  }
+
+  /// 加载 App Logo 作为分享缩略图
+  Future<void> _loadAppLogo() async {
+    _logoThumbnail = await AppLogoUtil.getThumbnail();
+    _logoFileUri = await AppLogoUtil.getFileUri();
+  }
 
   /// 判断是否为中国区用户
   bool get _isChineseUser {
@@ -161,6 +181,8 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
     switch (_expandedChannel) {
       case ShareChannelType.wechat:
         return '分享到微信';
+      case ShareChannelType.qq:
+        return '分享到QQ';
       case ShareChannelType.none:
         return '分享到';
     }
@@ -180,6 +202,26 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   /// 构建子通道
   Widget _buildSubChannels(BuildContext context) {
     switch (_expandedChannel) {
+      case ShareChannelType.qq:
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildShareOption(
+              context,
+              icon: FontAwesomeIcons.qq,
+              label: 'QQ好友',
+              color: const Color(0xFF12B7F5),
+              onTap: () => _shareToQQFriend(context),
+            ),
+            _buildShareOption(
+              context,
+              icon: FontAwesomeIcons.qq,
+              label: 'QQ空间',
+              color: const Color(0xFFFECE00),
+              onTap: () => _shareToQzone(context),
+            ),
+          ],
+        );
       case ShareChannelType.wechat:
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -251,6 +293,14 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                 label: '微信',
                 color: const Color(0xFF09B83E),
                 onTap: () => _toggleSubChannel(ShareChannelType.wechat),
+                hasSubChannel: true,
+              ),
+              _buildShareOption(
+                context,
+                icon: FontAwesomeIcons.qq,
+                label: 'QQ',
+                color: const Color(0xFF12B7F5),
+                onTap: () => _toggleSubChannel(ShareChannelType.qq),
                 hasSubChannel: true,
               ),
               _buildShareOption(
@@ -335,15 +385,15 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
     final isInstalled = await SocialSdkService.isWechatInstalled();
     log('📤 微信安装状态: $isInstalled');
     if (isInstalled) {
-      // 使用微信 SDK 直接分享
+      // 使用微信 SDK 直接分享，带上 App Logo 缩略图
       await WechatShareUtil.shareToWeChat(
         url: shareUrl,
         title: title,
         description: description,
-        toTimeline: false, // 发送给好友
+        thumbnail: _logoThumbnail,
+        toTimeline: false,
       );
     } else {
-      // 微信未安装，使用系统分享
       final shareText = '$title\n$description\n$shareUrl';
       await Share.share(shareText);
       if (context.mounted) {
@@ -356,24 +406,47 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   void _shareToWeChatMoments(BuildContext context) async {
     Navigator.pop(context);
 
-    // 检查微信是否安装
     final isInstalled = await SocialSdkService.isWechatInstalled();
     if (isInstalled) {
-      // 使用微信 SDK 直接分享到朋友圈
+      // 使用微信 SDK 直接分享到朋友圈，带上 App Logo 缩略图
       await WechatShareUtil.shareToWeChat(
         url: shareUrl,
         title: title,
         description: description,
-        toTimeline: true, // 发送到朋友圈
+        thumbnail: _logoThumbnail,
+        toTimeline: true,
       );
     } else {
-      // 微信未安装，使用系统分享
       final shareText = '$title\n$description\n$shareUrl';
       await Share.share(shareText);
       if (context.mounted) {
         AppToast.info('微信未安装，已使用系统分享');
       }
     }
+  }
+
+  /// 分享到 QQ 好友
+  void _shareToQQFriend(BuildContext context) async {
+    Navigator.pop(context);
+
+    await QQShareUtil.shareToQQFriend(
+      url: shareUrl,
+      title: title,
+      summary: description,
+      imageUri: _logoFileUri,
+    );
+  }
+
+  /// 分享到 QQ 空间
+  void _shareToQzone(BuildContext context) async {
+    Navigator.pop(context);
+
+    await QQShareUtil.shareToQzone(
+      url: shareUrl,
+      title: title,
+      summary: description,
+      imageUri: _logoFileUri,
+    );
   }
 
   /// 构建分享选项

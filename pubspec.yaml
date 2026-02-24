@@ -72,6 +72,7 @@ dependencies:
   
   # 社交登录相关
   fluwx: ^5.7.5  # 微信 SDK
+  tencent_kit: ^6.2.0  # QQ 登录 SDK (腾讯开放平台)
   google_sign_in: ^6.2.2  # Google 登录
   
   # 系统设置
@@ -172,4 +173,9 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/icon/app_icon.png"
+
+# tencent_kit (QQ SDK) 配置
+tencent_kit:
+  app_id: "102822014"
+  universal_link: https://go-nomads.com/universal_link/gonomads/qq_conn/102822014/
 

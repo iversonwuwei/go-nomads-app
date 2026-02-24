@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:crypto/crypto.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:tencent_kit/tencent_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// 社交登录类型
@@ -84,6 +85,7 @@ class SocialLoginService {
   final Fluwx _fluwx = Fluwx();
   Completer<SocialLoginResult>? _authCompleter;
   Function(WeChatResponse response)? _authListener;
+
   /// 检查微信是否已安装
   Future<bool> isWechatInstalled() async {
     try {
@@ -177,21 +179,38 @@ class SocialLoginService {
     }
   }
 
-  // ==================== QQ OAuth 2.0 ====================
+  // ==================== QQ SDK (tencent_kit) ====================
 
-  /// QQ OAuth 配置
+  /// QQ SDK 配置
   static const String _qqAppId = '102822014';
-  static const String _qqRedirectUri = 'gonomads://qq-callback';
-  static const String _qqAuthUrl = 'https://graph.qq.com/oauth2.0/authorize';
+  static const String _qqUniversalLink = 'https://go-nomads.com/universal_link/gonomads/qq_conn/102822014/';
 
-  /// QQ OAuth 回调 Completer
-  Completer<SocialLoginResult>? _qqAuthCompleter;
+  /// QQ SDK 登录响应订阅
+  StreamSubscription<TencentResp>? _qqRespSubscription;
+
+  /// QQ 登录结果 Completer
+  Completer<SocialLoginResult>? _qqLoginCompleter;
+
+  /// 初始化 QQ SDK
+  /// 必须在使用 QQ 登录前调用（通常在 SocialSdkService.init() 中调用）
+  Future<void> initQQSdk() async {
+    try {
+      // 3.1.0 之后的版本必须先获取权限/同意隐私协议
+      await TencentKitPlatform.instance.setIsPermissionGranted(granted: true);
+      await TencentKitPlatform.instance.registerApp(
+        appId: _qqAppId,
+        universalLink: _qqUniversalLink,
+      );
+      log('✅ [SocialLogin] QQ SDK 初始化成功');
+    } catch (e) {
+      log('❌ [SocialLogin] QQ SDK 初始化失败: $e');
+    }
+  }
 
   /// 检查 QQ 是否已安装
   Future<bool> isQQInstalled() async {
     try {
-      final qqUri = Uri.parse('mqq://');
-      final installed = await canLaunchUrl(qqUri);
+      final installed = await TencentKitPlatform.instance.isQQInstalled();
       log('📱 [SocialLogin] QQ 安装检测结果: $installed');
       return installed;
     } catch (e) {
@@ -201,13 +220,13 @@ class SocialLoginService {
   }
 
   /// QQ 登录
-  /// 必须安装 QQ app 才能登录，未安装时直接返回失败提示
-  /// 使用 OAuth 2.0 授权码模式
+  /// 使用官方 QQ SDK (tencent_kit) 进行登录
+  /// SDK 会自动唤起 QQ App 进行授权，返回 accessToken + openId
   Future<SocialLoginResult> loginWithQQ() async {
     try {
-      log('📱 [SocialLogin] 开始 QQ 登录 (OAuth 2.0)...');
+      log('📱 [SocialLogin] 开始 QQ 登录 (SDK)...');
 
-      // 检查 QQ 是否已安装，未安装则直接返回失败
+      // 检查 QQ 是否已安装
       final isInstalled = await isQQInstalled();
       log('📱 [SocialLogin] QQ 安装状态: $isInstalled');
 
@@ -216,34 +235,32 @@ class SocialLoginService {
         return const SocialLoginResult.failure('QQ_NOT_INSTALLED');
       }
 
-      // 生成 state 参数（防止 CSRF）
-      final state = 'gonomads_qq_${DateTime.now().millisecondsSinceEpoch}';
+      // 创建 Completer 等待 SDK 回调
+      _qqLoginCompleter = Completer<SocialLoginResult>();
 
-      // 等待回调（通过 deep link 返回）
-      _qqAuthCompleter = Completer<SocialLoginResult>();
-
-      // 使用 QQ app scheme 唤起 QQ app 授权
-      final authorizationUrl = Uri.parse(
-        'mqq://opensdkul/mqqapi/share/to_fri'
-        '?src_type=app'
-        '&appId=$_qqAppId'
-        '&response_type=code'
-        '&scope=get_user_info'
-        '&redirect_uri=${Uri.encodeComponent(_qqRedirectUri)}'
-        '&state=$state',
+      // 监听 QQ SDK 响应
+      _qqRespSubscription?.cancel();
+      _qqRespSubscription = TencentKitPlatform.instance.respStream().listen(
+        _onQQLoginResponse,
+        onError: (error) {
+          log('❌ [SocialLogin] QQ SDK 响应流错误: $error');
+          if (_qqLoginCompleter != null && !_qqLoginCompleter!.isCompleted) {
+            _qqLoginCompleter!.complete(SocialLoginResult.failure('QQ SDK 错误: $error'));
+          }
+          _cleanupQQLogin();
+        },
       );
-      log('📱 [SocialLogin] 使用 QQ app 授权: $authorizationUrl');
 
-      // 打开授权页面
-      if (!await launchUrl(authorizationUrl, mode: LaunchMode.externalApplication)) {
-        _qqAuthCompleter = null;
-        return const SocialLoginResult.failure('无法打开 QQ 授权页面');
-      }
+      // 调用 QQ SDK 登录
+      await TencentKitPlatform.instance.login(
+        scope: <String>[TencentScope.kGetSimpleUserInfo],
+      );
 
-      final result = await _qqAuthCompleter!.future.timeout(
+      // 等待 SDK 回调结果（最长等待 3 分钟）
+      final result = await _qqLoginCompleter!.future.timeout(
         const Duration(minutes: 3),
         onTimeout: () {
-          _qqAuthCompleter = null;
+          _cleanupQQLogin();
           return const SocialLoginResult.failure('QQ 授权超时');
         },
       );
@@ -251,44 +268,46 @@ class SocialLoginService {
       return result;
     } catch (e) {
       log('❌ [SocialLogin] QQ 登录异常: $e');
-      _qqAuthCompleter = null;
+      _cleanupQQLogin();
       return SocialLoginResult.failure('QQ 登录失败: $e');
     }
   }
 
-  /// 处理 QQ OAuth 回调
-  /// 当 app 通过 deep link 收到 gonomads://qq-callback?code=xxx&state=xxx 时调用
-  void handleQQCallback(Uri uri) {
-    log('📱 [SocialLogin] QQ 回调: $uri');
+  /// 处理 QQ SDK 登录响应
+  void _onQQLoginResponse(TencentResp resp) {
+    log('📱 [SocialLogin] QQ SDK 响应: ${resp.runtimeType}');
 
-    if (_qqAuthCompleter == null || _qqAuthCompleter!.isCompleted) {
-      log('⚠️ [SocialLogin] QQ 回调无效: Completer 不存在或已完成');
-      return;
-    }
-
-    final code = uri.queryParameters['code'];
-    final error = uri.queryParameters['error'];
-
-    if (error != null) {
-      log('❌ [SocialLogin] QQ 授权失败: $error');
-      if (error == 'access_denied') {
-        _qqAuthCompleter!.complete(const SocialLoginResult.cancelled());
-      } else {
-        _qqAuthCompleter!.complete(SocialLoginResult.failure('QQ 授权失败: $error'));
+    if (resp is TencentLoginResp) {
+      if (_qqLoginCompleter == null || _qqLoginCompleter!.isCompleted) {
+        log('⚠️ [SocialLogin] QQ 登录 Completer 不存在或已完成');
+        return;
       }
-      _qqAuthCompleter = null;
-      return;
-    }
 
-    if (code == null || code.isEmpty) {
-      _qqAuthCompleter!.complete(const SocialLoginResult.failure('未获取到 QQ 授权码'));
-      _qqAuthCompleter = null;
-      return;
-    }
+      if (resp.isSuccessful) {
+        log('✅ [SocialLogin] QQ SDK 登录成功, openId=${resp.openid}, accessToken=${resp.accessToken != null ? '已获取' : '无'}');
+        _qqLoginCompleter!.complete(SocialLoginResult.success(
+          accessToken: resp.accessToken,
+          openId: resp.openid,
+        ));
+      } else if (resp.isCancelled) {
+        log('📱 [SocialLogin] 用户取消 QQ 授权');
+        _qqLoginCompleter!.complete(const SocialLoginResult.cancelled());
+      } else {
+        log('❌ [SocialLogin] QQ SDK 登录失败: ret=${resp.ret}, msg=${resp.msg}');
+        _qqLoginCompleter!.complete(
+          SocialLoginResult.failure('QQ 登录失败: ${resp.msg ?? '未知错误'}'),
+        );
+      }
 
-    log('✅ [SocialLogin] QQ 授权码获取成功');
-    _qqAuthCompleter!.complete(SocialLoginResult.success(code: code));
-    _qqAuthCompleter = null;
+      _cleanupQQLogin();
+    }
+  }
+
+  /// 清理 QQ 登录相关资源
+  void _cleanupQQLogin() {
+    _qqRespSubscription?.cancel();
+    _qqRespSubscription = null;
+    _qqLoginCompleter = null;
   }
 
   /// Apple 登录 (仅 iOS)

@@ -1,56 +1,136 @@
-import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:share_plus/share_plus.dart';
+import 'package:tencent_kit/tencent_kit.dart';
 
 /// QQ 分享工具类
-/// 支持分享到 QQ 好友和 QQ 空间
+/// 使用官方 QQ SDK (tencent_kit) 实现分享到 QQ 好友和 QQ 空间
 class QQShareUtil {
-  /// 分享到 QQ 好友（优先唤醒 QQ App，失败后回退网页版）
-  static Future<void> shareToQQFriend({
+  /// 分享网页到 QQ 好友
+  static Future<bool> shareToQQFriend({
     required String url,
     required String title,
     String? summary,
+    Uri? imageUri,
   }) async {
-    final encodedUrl = Uri.encodeComponent(url);
-    final encodedTitle = Uri.encodeComponent(title);
-    final summaryParam = summary != null ? '&summary=${Uri.encodeComponent(summary)}' : '';
+    try {
+      log('📤 QQShareUtil: 开始分享到 QQ 好友');
 
-    // 优先尝试唤醒 QQ App 分享给好友
-    final appUrl = Uri.parse(
-        'mqq://share/to_fri?src_type=web&url=$encodedUrl&title=$encodedTitle$summaryParam');
-    if (await canLaunchUrl(appUrl)) {
-      await launchUrl(appUrl, mode: LaunchMode.externalApplication);
-      return;
-    }
+      // 检查 QQ 是否已安装
+      final isInstalled = await TencentKitPlatform.instance.isQQInstalled();
+      if (!isInstalled) {
+        log('⚠️ QQShareUtil: QQ 未安装，回退到系统分享');
+        await Share.share('$title\n$url');
+        return false;
+      }
 
-    // 回退到网页版 QQ 分享（通过 connect.qq.com）
-    final webUrl = Uri.parse(
-        'https://connect.qq.com/widget/shareqq/index.html?url=$encodedUrl&title=$encodedTitle$summaryParam');
-    if (await canLaunchUrl(webUrl)) {
-      await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      await TencentKitPlatform.instance.shareWebpage(
+        scene: TencentScene.kScene_QQ,
+        title: title,
+        summary: summary,
+        imageUri: imageUri,
+        targetUrl: url,
+      );
+
+      log('✅ QQShareUtil: QQ 好友分享调用成功');
+      return true;
+    } catch (e) {
+      log('❌ QQShareUtil: QQ 好友分享失败: $e，回退到系统分享');
+      await Share.share('$title\n$url');
+      return false;
     }
   }
 
-  /// 分享到 QQ 空间（优先唤醒 QQ 空间 App，失败后回退网页版）
-  static Future<void> shareToQzone({
+  /// 分享网页到 QQ 空间
+  static Future<bool> shareToQzone({
     required String url,
     required String title,
     String? summary,
+    Uri? imageUri,
   }) async {
-    final encodedUrl = Uri.encodeComponent(url);
-    final encodedTitle = Uri.encodeComponent(title);
-    final summaryParam = summary != null ? '&summary=${Uri.encodeComponent(summary)}' : '';
+    try {
+      log('📤 QQShareUtil: 开始分享到 QQ 空间');
 
-    // 优先尝试唤醒 QQ 空间 App
-    final appUrl = Uri.parse('mqqzone://share?url=$encodedUrl&title=$encodedTitle$summaryParam');
-    if (await canLaunchUrl(appUrl)) {
-      await launchUrl(appUrl, mode: LaunchMode.externalApplication);
-      return;
+      // 检查 QQ 是否已安装
+      final isInstalled = await TencentKitPlatform.instance.isQQInstalled();
+      if (!isInstalled) {
+        log('⚠️ QQShareUtil: QQ 未安装，回退到系统分享');
+        await Share.share('$title\n$url');
+        return false;
+      }
+
+      await TencentKitPlatform.instance.shareWebpage(
+        scene: TencentScene.kScene_QZone,
+        title: title,
+        summary: summary,
+        imageUri: imageUri,
+        targetUrl: url,
+        extInt: TencentQZoneFlag.kAutoOpen,
+      );
+
+      log('✅ QQShareUtil: QQ 空间分享调用成功');
+      return true;
+    } catch (e) {
+      log('❌ QQShareUtil: QQ 空间分享失败: $e，回退到系统分享');
+      await Share.share('$title\n$url');
+      return false;
     }
+  }
 
-    // 回退到网页版 QQ 空间分享
-    final webUrl = Uri.parse(
-        'https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=$encodedUrl&title=$encodedTitle$summaryParam');
-    if (await canLaunchUrl(webUrl)) {
-      await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+  /// 分享图片到 QQ 好友
+  static Future<bool> shareImageToQQ({
+    required Uri imageUri,
+    String? appName,
+  }) async {
+    try {
+      log('📤 QQShareUtil: 开始分享图片到 QQ');
+
+      final isInstalled = await TencentKitPlatform.instance.isQQInstalled();
+      if (!isInstalled) {
+        log('⚠️ QQShareUtil: QQ 未安装');
+        return false;
+      }
+
+      await TencentKitPlatform.instance.shareImage(
+        scene: TencentScene.kScene_QQ,
+        imageUri: imageUri,
+        appName: appName,
+      );
+
+      log('✅ QQShareUtil: QQ 图片分享调用成功');
+      return true;
+    } catch (e) {
+      log('❌ QQShareUtil: QQ 图片分享失败: $e');
+      return false;
+    }
+  }
+
+  /// 分享文本到 QQ 好友
+  static Future<bool> shareTextToQQ({
+    required String text,
+  }) async {
+    try {
+      log('📤 QQShareUtil: 开始分享文本到 QQ');
+
+      final isInstalled = await TencentKitPlatform.instance.isQQInstalled();
+      if (!isInstalled) {
+        log('⚠️ QQShareUtil: QQ 未安装，回退到系统分享');
+        await Share.share(text);
+        return false;
+      }
+
+      await TencentKitPlatform.instance.shareText(
+        scene: TencentScene.kScene_QQ,
+        summary: text,
+      );
+
+      log('✅ QQShareUtil: QQ 文本分享调用成功');
+      return true;
+    } catch (e) {
+      log('❌ QQShareUtil: QQ 文本分享失败: $e');
+      await Share.share(text);
+      return false;
     }
   }
 }

@@ -37,6 +37,8 @@
     <package android:name="com.linkedin.android" />
     <!-- 微信 -->
     <package android:name="com.tencent.mm" />
+    <!-- QQ -->
+    <package android:name="com.tencent.mobileqq" />
     <!-- 微博 -->
     <package android:name="com.sina.weibo" />
     <!-- 钉钉 -->
@@ -72,6 +74,55 @@
     <intent>
         <action android:name="android.intent.action.VIEW" />
         <data android:scheme="weixin" />
+    </intent>
+    <!-- QQ SDK scheme (SSO 登录 + 分享等功能需要) -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqq" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqapi" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdkapi" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdkapiV2" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdkapiV3" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdkapiV4" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqOpensdkSSoLogin" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdknopasteboard" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqconnect" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="wtloginmqq2" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="tim" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="timapi" />
     </intent>
     <intent>
         <action android:name="android.intent.action.VIEW" />
