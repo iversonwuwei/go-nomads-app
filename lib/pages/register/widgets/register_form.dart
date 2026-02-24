@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_form_field.dart';
 
@@ -29,6 +30,10 @@ class RegisterForm extends GetView<RegisterController> {
         return l10n.confirmPasswordRequired;
       case 'passwordsNotMatch':
         return l10n.passwordsNotMatch;
+      case 'verificationCodeRequired':
+        return '请输入验证码';
+      case 'verificationCodeLength':
+        return '验证码必须为6位';
       default:
         return errorKey;
     }
@@ -61,6 +66,60 @@ class RegisterForm extends GetView<RegisterController> {
               keyboardType: TextInputType.emailAddress,
               errorText:
                   controller.showValidationErrors.value ? _getErrorText(controller.emailError.value, l10n) : null,
+            )),
+
+        const SizedBox(height: 20),
+
+        // 邮箱验证码输入
+        Obx(() => Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: RegisterFormField(
+                    controller: controller.verificationCodeController,
+                    labelText: '验证码',
+                    hintText: '请输入6位验证码',
+                    prefixIcon: FontAwesomeIcons.shieldHalved,
+                    keyboardType: TextInputType.number,
+                    errorText: controller.showValidationErrors.value
+                        ? _getErrorText(controller.verificationCodeError.value, l10n)
+                        : null,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: controller.isSendingCode.value || controller.countdown.value > 0
+                        ? null
+                        : () => controller.sendVerificationCode(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: RegisterConstants.primaryColor,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(RegisterConstants.inputBorderRadius),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    child: controller.isSendingCode.value
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            controller.countdown.value > 0
+                                ? '${controller.countdown.value}s'
+                                : (controller.codeSent.value ? '重新发送' : '获取验证码'),
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                  ),
+                ),
+              ],
             )),
 
         const SizedBox(height: 20),

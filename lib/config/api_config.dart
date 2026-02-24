@@ -194,6 +194,7 @@ class ApiConfig {
   // ============================================================
   static const String loginEndpoint = '/auth/login';
   static const String registerEndpoint = '/auth/register';
+  static const String registerSendCodeEndpoint = '/auth/register/send-code';
   static const String logoutEndpoint = '/auth/logout';
   static const String refreshTokenEndpoint = '/auth/refresh';
   static const String changePasswordEndpoint = '/auth/change-password';

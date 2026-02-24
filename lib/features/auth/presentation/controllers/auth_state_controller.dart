@@ -312,6 +312,7 @@ class AuthStateController extends GetxController {
     required String email,
     required String password,
     required String confirmPassword,
+    required String verificationCode,
     String? phone,
   }) async {
     isLoading.value = true;
@@ -322,6 +323,7 @@ class AuthStateController extends GetxController {
         email: email,
         password: password,
         confirmPassword: confirmPassword,
+        verificationCode: verificationCode,
         phone: phone,
       ),
     );

@@ -127,6 +127,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     required String name,
     required String email,
     required String password,
+    required String verificationCode,
     String? phone,
   }) async {
     return execute(() async {
@@ -136,6 +137,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
           'name': name,
           'email': email,
           'password': password,
+          'verificationCode': verificationCode,
           if (phone != null && phone.isNotEmpty) 'phone': phone,
         },
       );
@@ -376,7 +378,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   }
 
   /// 保存 Token 到 SQLite 数据库
-  /// 
+  ///
   /// 用于 app 重启后恢复登录状态
   Future<void> _saveTokenToDatabase(AuthToken token, AuthUser user) async {
     try {

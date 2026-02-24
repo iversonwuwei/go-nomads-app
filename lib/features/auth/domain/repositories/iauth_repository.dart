@@ -24,6 +24,7 @@ abstract class IAuthRepository {
     required String name,
     required String email,
     required String password,
+    required String verificationCode,
     String? phone,
   });
 

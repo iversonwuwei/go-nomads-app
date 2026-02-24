@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
@@ -9,21 +11,31 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// 注册页面控制器 - 使用响应式验证，无需 GlobalKey
 class RegisterController extends GetxController {
+  final HttpService _httpService = HttpService();
+
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final usernameController = TextEditingController();
+  final verificationCodeController = TextEditingController();
 
   final RxBool obscurePassword = true.obs;
   final RxBool obscureConfirmPassword = true.obs;
   final RxBool agreeToTerms = false.obs;
   final RxBool isRegistering = false.obs;
 
+  // 验证码相关状态
+  final RxBool isSendingCode = false.obs;
+  final RxInt countdown = 0.obs;
+  final RxBool codeSent = false.obs;
+  Timer? _countdownTimer;
+
   // 响应式错误信息 - 替代 GlobalKey + FormState
   final RxnString usernameError = RxnString(null);
   final RxnString emailError = RxnString(null);
   final RxnString passwordError = RxnString(null);
   final RxnString confirmPasswordError = RxnString(null);
+  final RxnString verificationCodeError = RxnString(null);
 
   // 是否显示验证错误（首次提交后才显示）
   final RxBool showValidationErrors = false.obs;
@@ -45,6 +57,7 @@ class RegisterController extends GetxController {
     emailController.addListener(_validateEmail);
     passwordController.addListener(_validatePassword);
     confirmPasswordController.addListener(_validateConfirmPassword);
+    verificationCodeController.addListener(_validateVerificationCode);
   }
 
   @override
@@ -53,10 +66,13 @@ class RegisterController extends GetxController {
     emailController.removeListener(_validateEmail);
     passwordController.removeListener(_validatePassword);
     confirmPasswordController.removeListener(_validateConfirmPassword);
+    verificationCodeController.removeListener(_validateVerificationCode);
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     usernameController.dispose();
+    verificationCodeController.dispose();
+    _countdownTimer?.cancel();
     super.onClose();
   }
 
@@ -109,17 +125,30 @@ class RegisterController extends GetxController {
     }
   }
 
+  void _validateVerificationCode() {
+    final value = verificationCodeController.text;
+    if (value.isEmpty) {
+      verificationCodeError.value = 'verificationCodeRequired';
+    } else if (value.length < 6) {
+      verificationCodeError.value = 'verificationCodeLength';
+    } else {
+      verificationCodeError.value = null;
+    }
+  }
+
   /// 验证所有字段
   bool _validateAll() {
     _validateUsername();
     _validateEmail();
     _validatePassword();
     _validateConfirmPassword();
+    _validateVerificationCode();
 
     return usernameError.value == null &&
         emailError.value == null &&
         passwordError.value == null &&
-        confirmPasswordError.value == null;
+        confirmPasswordError.value == null &&
+        verificationCodeError.value == null;
   }
 
   /// 清除所有错误
@@ -128,6 +157,7 @@ class RegisterController extends GetxController {
     emailError.value = null;
     passwordError.value = null;
     confirmPasswordError.value = null;
+    verificationCodeError.value = null;
     showValidationErrors.value = false;
   }
 
@@ -141,6 +171,60 @@ class RegisterController extends GetxController {
 
   void toggleAgreeToTerms([bool? value]) {
     agreeToTerms.value = value ?? !agreeToTerms.value;
+  }
+
+  /// 发送邮箱验证码
+  Future<void> sendVerificationCode() async {
+    // 先验证邮箱格式
+    _validateEmail();
+    if (emailError.value != null) {
+      showValidationErrors.value = true;
+      return;
+    }
+
+    if (countdown.value > 0) return;
+
+    final email = emailController.text.trim();
+    try {
+      isSendingCode.value = true;
+      final response = await _httpService.post(
+        ApiConfig.registerSendCodeEndpoint,
+        data: {'email': email},
+      );
+
+      final data = response.data;
+      if (data != null && data is Map) {
+        final success = data['success'] as bool? ?? false;
+        if (success) {
+          codeSent.value = true;
+          _startCountdown(60);
+          AppToast.success('验证码已发送到邮箱，请查收');
+        } else {
+          AppToast.error((data['message'] as String?) ?? '发送失败');
+        }
+      }
+    } on HttpException catch (e) {
+      log('发送注册验证码失败 (HttpException): ${e.message}');
+      AppToast.error(e.message);
+    } catch (e) {
+      log('发送注册验证码失败: $e');
+      AppToast.error('发送验证码失败，请稍后重试');
+    } finally {
+      isSendingCode.value = false;
+    }
+  }
+
+  /// 开始倒计时
+  void _startCountdown(int seconds) {
+    countdown.value = seconds;
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (countdown.value <= 0) {
+        timer.cancel();
+      } else {
+        countdown.value--;
+      }
+    });
   }
 
   /// 注册
@@ -174,6 +258,7 @@ class RegisterController extends GetxController {
         email: emailController.text.trim(),
         password: passwordController.text,
         confirmPassword: confirmPasswordController.text,
+        verificationCode: verificationCodeController.text.trim(),
       );
 
       if (success) {

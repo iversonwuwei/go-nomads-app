@@ -46,6 +46,7 @@ class RegisterUseCase extends UseCase<AuthToken, RegisterParams> {
       name: params.name,
       email: params.email,
       password: params.password,
+      verificationCode: params.verificationCode,
       phone: params.phone,
     );
   }
@@ -56,6 +57,7 @@ class RegisterParams {
   final String email;
   final String password;
   final String confirmPassword;
+  final String verificationCode;
   final String? phone;
 
   RegisterParams({
@@ -63,6 +65,7 @@ class RegisterParams {
     required this.email,
     required this.password,
     required this.confirmPassword,
+    required this.verificationCode,
     this.phone,
   });
 }
