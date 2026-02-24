@@ -84,7 +84,12 @@ class ForgotPasswordController extends GetxController {
       }
     } catch (e) {
       log('发送验证码失败: $e');
-      // HttpService 已自动处理错误提示
+      // 显示后端返回的具体错误信息
+      if (e is HttpException) {
+        AppToast.error(e.message);
+      } else {
+        AppToast.error('发送验证码失败，请稍后重试');
+      }
     } finally {
       isSendingCode.value = false;
     }
@@ -146,7 +151,11 @@ class ForgotPasswordController extends GetxController {
       Get.back();
     } catch (e) {
       log('重置密码失败: $e');
-      // HttpService 已自动处理错误提示
+      if (e is HttpException) {
+        AppToast.error(e.message);
+      } else {
+        AppToast.error('重置密码失败，请稍后重试');
+      }
     } finally {
       isLoading.value = false;
     }
