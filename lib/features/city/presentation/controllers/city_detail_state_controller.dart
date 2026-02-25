@@ -499,7 +499,10 @@ class CityDetailStateController extends GetxController {
     isFavorited.value = !previousState;
 
     final result = await _toggleCityFavoriteUseCase.execute(
-      ToggleCityFavoriteParams(cityId: cityId),
+      ToggleCityFavoriteParams(
+        cityId: cityId,
+        currentIsFavorited: previousState,
+      ),
     );
 
     result.fold(

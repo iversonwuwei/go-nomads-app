@@ -375,10 +375,12 @@ class CityListController extends GetxController {
 
   // ==================== 数据加载 ====================
 
-  /// 初始化加载：先加载 Tab 列表确保 UI 渲染，再加载城市数据
+  /// 初始化加载：并行加载 Tab 列表和城市数据，缩短首屏等待时间
   Future<void> _initLoad() async {
-    await loadRegionTabs();
-    await loadCities(refresh: true);
+    await Future.wait([
+      loadRegionTabs(),
+      loadCities(refresh: true),
+    ]);
   }
 
   /// 加载区域 Tab 数据（后端控制）
@@ -636,26 +638,39 @@ class CityListController extends GetxController {
     }
   }
 
-  /// 异步加载评分
+  /// 异步加载评分 — 🚀 优化：使用 Future.wait 并行加载，替代串行循环
   Future<void> _loadCityRatingsAsync(List<String> cityIds) async {
     if (cityIds.isEmpty) return;
-    log('📊 开始异步加载评分: ${cityIds.length} 个城市');
-    for (final cityId in cityIds) {
+    log('📊 开始并行加载评分: ${cityIds.length} 个城市');
+
+    // 并行发起所有评分请求
+    final futures = cityIds.map((cityId) async {
       try {
         final info = await _cityRatingUseCases.getCityRatings(cityId);
-        log('📊 获取到评分: cityId=$cityId, overallScore=${info.overallScore}');
-        final idx = cities.indexWhere((c) => c.id == cityId);
-        if (idx != -1) {
-          final oldScore = cities[idx].overallScore;
-          cities[idx] = cities[idx].copyWith(overallScore: info.overallScore);
-          log('📊 更新城市评分: ${cities[idx].name} $oldScore -> ${info.overallScore}');
-        }
+        return MapEntry(cityId, info.overallScore);
       } catch (e) {
         log('⚠️ 评分加载失败: cityId=$cityId, error=$e');
+        return null;
+      }
+    }).toList();
+
+    final results = await Future.wait(futures);
+
+    // 批量更新城市列表
+    bool hasUpdates = false;
+    for (final result in results) {
+      if (result == null) continue;
+      final idx = cities.indexWhere((c) => c.id == result.key);
+      if (idx != -1) {
+        cities[idx] = cities[idx].copyWith(overallScore: result.value);
+        hasUpdates = true;
       }
     }
-    cities.refresh();
-    log('📊 评分异步加载完成');
+
+    if (hasUpdates) {
+      cities.refresh();
+    }
+    log('📊 评分并行加载完成');
   }
 
   City _convertSearchDocToCity(CitySearchDocument doc) {

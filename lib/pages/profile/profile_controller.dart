@@ -92,8 +92,15 @@ class ProfileController extends GetxController {
         return;
       }
 
-      // 加载用户数据
-      await userController.loadUserProfile();
+      // 并行加载所有数据（用户资料 + 统计 + 收藏 + 旅行计划 + 会员信息）
+      // 这些接口均使用 auth token，不依赖 currentUser 的返回值
+      await Future.wait([
+        userController.loadUserProfile(),
+        _loadNomadStats(),
+        _loadFavoriteCityIds(),
+        _loadTravelPlans(),
+        _ensureMembershipLoaded(),
+      ]);
 
       if (currentUser == null && userController.errorMessage.value.isNotEmpty) {
         log('⚠️ 加载用户数据失败，跳转到登录页');
@@ -101,17 +108,6 @@ class ProfileController extends GetxController {
         Get.offAllNamed(AppRoutes.login);
         return;
       }
-
-      // 并行加载其他数据
-      await Future.wait([
-        _loadNomadStats(),
-        _loadFavoriteCityIds(),
-        _loadTravelPlans(),
-        _ensureMembershipLoaded(),
-      ]);
-
-      // 后端已经在 /users/me/stats 接口中返回 meetupsJoined
-      // 无需前端单独获取
 
       _isInitialized.value = true;
       log('✅ ProfileController: 数据加载完成');

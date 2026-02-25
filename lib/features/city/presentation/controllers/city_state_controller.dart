@@ -657,8 +657,15 @@ class CityStateController extends PaginatedRefreshableController {
 
   /// 切换城市收藏状态
   Future<bool> toggleFavorite(String cityId) async {
+    // 从本地列表获取已知收藏状态，避免额外 HTTP 请求
+    final city = cities.firstWhereOrNull((c) => c.id == cityId) ??
+        recommendedCities.firstWhereOrNull((c) => c.id == cityId) ??
+        popularCities.firstWhereOrNull((c) => c.id == cityId);
     final result = await _toggleCityFavoriteUseCase.execute(
-      ToggleCityFavoriteParams(cityId: cityId),
+      ToggleCityFavoriteParams(
+        cityId: cityId,
+        currentIsFavorited: city?.isFavorite,
+      ),
     );
 
     return result.fold(
@@ -835,8 +842,15 @@ class CityStateController extends PaginatedRefreshableController {
 
   /// 切换城市收藏状态 - 兼容原控制器 API
   Future<Result<void>> toggleCityFavorite(String cityId) async {
+    // 从本地列表获取已知收藏状态，避免额外 HTTP 请求
+    final city = cities.firstWhereOrNull((c) => c.id == cityId) ??
+        recommendedCities.firstWhereOrNull((c) => c.id == cityId) ??
+        popularCities.firstWhereOrNull((c) => c.id == cityId);
     final result = await _toggleCityFavoriteUseCase.execute(
-      ToggleCityFavoriteParams(cityId: cityId),
+      ToggleCityFavoriteParams(
+        cityId: cityId,
+        currentIsFavorited: city?.isFavorite,
+      ),
     );
 
     return result.fold(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -73,14 +74,14 @@ class InnovationDetailPageController extends GetxController {
   Future<bool> deleteInnovationProject() async {
     try {
       final projectId = project.uuid ?? project.id.toString();
-      print('🗑️ [InnovationDetailPageController] 删除创新项目: $projectId');
+      log('🗑️ [InnovationDetailPageController] 删除创新项目: $projectId');
 
       final repository = Get.find<IInnovationProjectRepository>();
       final result = await repository.deleteProject(projectId);
 
       return result.fold(
         onSuccess: (_) {
-          print('✅ [InnovationDetailPageController] 创新项目删除成功');
+          log('✅ [InnovationDetailPageController] 创新项目删除成功');
           // 通知列表刷新
           DataEventBus.instance.emit(DataChangedEvent(
             entityType: 'innovation_project',
@@ -91,12 +92,12 @@ class InnovationDetailPageController extends GetxController {
           return true;
         },
         onFailure: (error) {
-          print('❌ [InnovationDetailPageController] 删除失败: ${error.message}');
+          log('❌ [InnovationDetailPageController] 删除失败: ${error.message}');
           return false;
         },
       );
     } catch (e) {
-      print('❌ [InnovationDetailPageController] 删除异常: $e');
+      log('❌ [InnovationDetailPageController] 删除异常: $e');
       return false;
     }
   }
@@ -112,7 +113,7 @@ class InnovationDetailPageController extends GetxController {
   /// 设置数据变更监听器
   void _setupDataChangeListeners() {
     _dataChangedSubscription = DataEventBus.instance.on('innovation_project', _handleDataChanged);
-    print('✅ [InnovationDetailPageController] 数据变更监听器已设置');
+    log('✅ [InnovationDetailPageController] 数据变更监听器已设置');
   }
 
   /// 处理数据变更事件
@@ -128,7 +129,7 @@ class InnovationDetailPageController extends GetxController {
       return;
     }
 
-    print('🔔 [创新项目详情] 收到数据变更通知: ${event.entityId} (${event.changeType}), metadata: ${event.metadata}');
+    log('🔔 [创新项目详情] 收到数据变更通知: ${event.entityId} (${event.changeType}), metadata: ${event.metadata}');
 
     switch (event.changeType) {
       case DataChangeType.updated:
@@ -137,7 +138,7 @@ class InnovationDetailPageController extends GetxController {
         break;
       case DataChangeType.deleted:
         // 项目被删除
-        print('⚠️ [创新项目详情] 该项目已被删除');
+        log('⚠️ [创新项目详情] 该项目已被删除');
         break;
       case DataChangeType.invalidated:
         // 缓存失效，重新加载
@@ -155,7 +156,7 @@ class InnovationDetailPageController extends GetxController {
       final newState = metadata['isFollowed'] as bool;
       if (isFollowed.value != newState) {
         isFollowed.value = newState;
-        print('🔄 [创新项目详情] 从事件同步关注状态: ${initialProject.uuid} -> $newState');
+        log('🔄 [创新项目详情] 从事件同步关注状态: ${initialProject.uuid} -> $newState');
       }
     }
   }
@@ -164,19 +165,19 @@ class InnovationDetailPageController extends GetxController {
   Future<void> loadFullProject() async {
     final controller = _stateController;
     final projectId = initialProject.uuid;
-    print('📱 加载项目详情: projectId=$projectId, controller=${controller != null}');
+    log('📱 加载项目详情: projectId=$projectId, controller=${controller != null}');
 
     if (controller != null && projectId != null) {
       await controller.getProjectById(projectId);
-      print('📱 API返回: currentProject=${controller.currentProject.value?.projectName}');
+      log('📱 API返回: currentProject=${controller.currentProject.value?.projectName}');
 
       fullProject.value = controller.currentProject.value;
       isLoading.value = false;
       // 从服务器数据初始化关注状态
       isFollowed.value = fullProject.value?.isLiked ?? false;
-      print('📱 设置 fullProject: ${fullProject.value?.projectName}, isLiked: ${isFollowed.value}');
+      log('📱 设置 fullProject: ${fullProject.value?.projectName}, isLiked: ${isFollowed.value}');
     } else {
-      print('📱 跳过加载: controller=$controller, projectId=$projectId');
+      log('📱 跳过加载: controller=$controller, projectId=$projectId');
       isLoading.value = false;
     }
   }

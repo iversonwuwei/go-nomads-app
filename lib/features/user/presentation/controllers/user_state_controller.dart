@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:get/get.dart';
@@ -69,6 +70,12 @@ class UserStateController extends GetxController {
   DateTime? _lastFavoritesLoadTime;
   static const _cacheDuration = Duration(minutes: 5);
 
+  // 防抖定时器 — 避免短时间内多个事件触发重复网络请求
+  Timer? _userDebounceTimer;
+  Timer? _statsDebounceTimer;
+  Timer? _favoritesDebounceTimer;
+  static const _debounceDuration = Duration(milliseconds: 500);
+
   // ==================== Getters ====================
   bool get isLoggedIn => currentUser.value != null;
   bool get hasCompletedProfile => currentUser.value?.hasCompletedProfile ?? false;
@@ -89,6 +96,10 @@ class UserStateController extends GetxController {
   @override
   void onClose() {
     log('👋 UserStateController 关闭');
+    // 取消防抖定时器
+    _userDebounceTimer?.cancel();
+    _statsDebounceTimer?.cancel();
+    _favoritesDebounceTimer?.cancel();
     currentUser.value = null;
     isLoading.value = false;
     errorMessage.value = '';
@@ -203,49 +214,63 @@ class UserStateController extends GetxController {
     log('🔔 收到用户数据变更通知: ${event.changeType}');
     if (event.entityId == currentUser.value?.id || event.entityId == null) {
       _invalidateUserCache();
-      loadCurrentUser(forceRefresh: true);
+      _userDebounceTimer?.cancel();
+      _userDebounceTimer = Timer(_debounceDuration, () {
+        loadCurrentUser(forceRefresh: true);
+      });
     }
   }
 
   void _handleFavoriteChanged(DataChangedEvent event) {
     log('🔔 收到收藏数据变更通知: ${event.changeType}');
     _invalidateFavoritesCache();
-    loadFavoriteCityIds(forceRefresh: true);
-    // 收藏变更也会影响统计数据
     _invalidateStatsCache();
-    loadNomadStats(forceRefresh: true);
+    _favoritesDebounceTimer?.cancel();
+    _favoritesDebounceTimer = Timer(_debounceDuration, () {
+      // 收藏变更后并行刷新收藏列表和统计数据
+      Future.wait([
+        loadFavoriteCityIds(forceRefresh: true),
+        loadNomadStats(forceRefresh: true),
+      ]);
+    });
   }
 
   void _handleSkillInterestChanged(DataChangedEvent event) {
     log('🔔 收到技能/兴趣变更通知');
-    // 技能或兴趣变更后刷新用户数据
     _invalidateUserCache();
-    loadCurrentUser(forceRefresh: true);
+    _userDebounceTimer?.cancel();
+    _userDebounceTimer = Timer(_debounceDuration, () {
+      loadCurrentUser(forceRefresh: true);
+    });
   }
 
   void _handleMeetupChanged(DataChangedEvent event) {
     log('🔔 收到 Meetup 变更通知: ${event.changeType}');
-    // Meetup 创建/删除会影响用户统计数据
     if (event.changeType == DataChangeType.created || event.changeType == DataChangeType.deleted) {
       _invalidateStatsCache();
-      // 立即重新加载统计数据
-      loadNomadStats(forceRefresh: true);
+      _statsDebounceTimer?.cancel();
+      _statsDebounceTimer = Timer(_debounceDuration, () {
+        loadNomadStats(forceRefresh: true);
+      });
     }
   }
 
   void _handleMeetupRsvpChanged(DataChangedEvent event) {
     log('🔔 收到 Meetup RSVP 变更通知: ${event.changeType}');
-    // 加入/退出活动会影响用户统计数据
     _invalidateStatsCache();
-    // 立即重新加载统计数据
-    loadNomadStats(forceRefresh: true);
+    _statsDebounceTimer?.cancel();
+    _statsDebounceTimer = Timer(_debounceDuration, () {
+      loadNomadStats(forceRefresh: true);
+    });
   }
 
   void _handleTravelHistoryChanged(DataChangedEvent event) {
     log('🔔 收到旅行历史变更通知: ${event.changeType}');
-    // 旅行历史变更会影响 countries/cities/days/trips 统计
     _invalidateStatsCache();
-    loadNomadStats(forceRefresh: true);
+    _statsDebounceTimer?.cancel();
+    _statsDebounceTimer = Timer(_debounceDuration, () {
+      loadNomadStats(forceRefresh: true);
+    });
   }
 
   void _invalidateStatsCache() {
