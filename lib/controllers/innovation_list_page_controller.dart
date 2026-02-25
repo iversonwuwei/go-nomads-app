@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
 import 'package:go_nomads_app/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 创意项目列表页面控制器
 class InnovationListPageController extends GetxController with WidgetsBindingObserver {
