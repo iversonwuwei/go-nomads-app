@@ -419,12 +419,11 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 PaymentMethod.paypal,
                 l10n.paypalDescription,
               ),
-              // TODO: 暂时隐藏微信支付，待上线后恢复
-              // _buildPaymentMethodTile(
-              //   context,
-              //   PaymentMethod.wechat,
-              //   l10n.wechatDescription,
-              // ),
+              _buildPaymentMethodTile(
+                context,
+                PaymentMethod.wechat,
+                l10n.wechatDescription,
+              ),
 
               const SizedBox(height: 8),
 
@@ -663,7 +662,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    l10n.cnyPriceForPlan((plan.priceYearly * 7.2).toStringAsFixed(0), plan.name),
+                    l10n.cnyPriceForPlan(plan.priceYearly.toStringAsFixed(0), plan.name),
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -893,6 +892,16 @@ class _MembershipPlanCard extends StatelessWidget {
     required this.onSelect,
   });
 
+  String get currencySymbol {
+    switch (plan.currency.toUpperCase()) {
+      case 'CNY':
+        return '¥';
+      case 'USD':
+      default:
+        return r'$';
+    }
+  }
+
   /// 根据计划等级获取颜色
   Color get planColor {
     switch (plan.level) {
@@ -993,7 +1002,7 @@ class _MembershipPlanCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '\$${plan.priceYearly.toStringAsFixed(0)}',
+                          '$currencySymbol${plan.priceYearly.toStringAsFixed(0)}',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,

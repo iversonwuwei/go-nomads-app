@@ -190,7 +190,7 @@ class UnifiedPaymentService extends GetxService {
       }
 
       // 2. 调用微信 SDK 发起支付
-      final result = await wechatService.pay(
+      final sdkResult = await wechatService.pay(
         appId: wechatPayInfo['appId'],
         partnerId: wechatPayInfo['partnerId'],
         prepayId: wechatPayInfo['prepayId'],
@@ -200,11 +200,46 @@ class UnifiedPaymentService extends GetxService {
         sign: wechatPayInfo['sign'],
       );
 
+      if (!sdkResult.success) {
+        return UnifiedPaymentResult(
+          success: false,
+          method: PaymentMethod.wechat,
+          orderId: wechatPayInfo['orderId'],
+          errorMessage: sdkResult.errorMessage,
+        );
+      }
+
+      // 3. SDK 回调成功后，调用后端确认支付结果
+      final orderId = wechatPayInfo['orderId'] as String?;
+      if (orderId != null) {
+        log('🔄 微信 SDK 支付成功，正在确认支付结果...');
+        final confirmResult = await controller.confirmWeChatPayment(
+          orderId: orderId,
+        );
+
+        if (confirmResult != null && confirmResult.success) {
+          log('✅ 微信支付确认成功');
+          return UnifiedPaymentResult(
+            success: true,
+            method: PaymentMethod.wechat,
+            orderId: orderId,
+          );
+        } else {
+          // 确认失败但 SDK 已返回成功，可能 webhook 尚未到达
+          log('⚠️ 微信支付确认暂未完成，可能稍后通过 webhook 完成');
+          return UnifiedPaymentResult(
+            success: true,
+            method: PaymentMethod.wechat,
+            orderId: orderId,
+            errorMessage: '支付已提交，正在确认中...',
+          );
+        }
+      }
+
       return UnifiedPaymentResult(
-        success: result.success,
+        success: true,
         method: PaymentMethod.wechat,
         orderId: wechatPayInfo['orderId'],
-        errorMessage: result.success ? null : result.errorMessage,
       );
     } catch (e) {
       log('❌ 微信支付失败: $e');

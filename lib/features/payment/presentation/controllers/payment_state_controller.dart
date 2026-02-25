@@ -186,4 +186,31 @@ class PaymentStateController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  /// 确认微信支付结果（SDK 回调后调用）
+  Future<PaymentResult?> confirmWeChatPayment({
+    required String orderId,
+  }) async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    try {
+      final result = await _paymentRepository.confirmWeChatPayment(
+        orderId: orderId,
+      );
+
+      lastPaymentResult.value = result;
+
+      if (result.success) {
+        await refreshCurrentOrder();
+      }
+
+      return result;
+    } catch (e) {
+      errorMessage.value = '确认微信支付失败: $e';
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

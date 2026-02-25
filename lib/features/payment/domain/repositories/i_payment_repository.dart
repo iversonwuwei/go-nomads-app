@@ -33,4 +33,9 @@ abstract class IPaymentRepository {
     int? durationDays,
     double? depositAmount,
   });
+
+  /// 确认微信支付结果（App SDK 回调后调用）
+  Future<PaymentResult> confirmWeChatPayment({
+    required String orderId,
+  });
 }

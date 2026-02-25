@@ -214,4 +214,35 @@ class PaymentRepository implements IPaymentRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<PaymentResult> confirmWeChatPayment({
+    required String orderId,
+  }) async {
+    log('🔍 确认微信支付结果: orderId=$orderId');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/payments/orders/$orderId/wechat-confirm',
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['data'] != null) {
+        final result = PaymentResult.fromJson(response.data['data'] as Map<String, dynamic>);
+        log('✅ 微信支付确认完成: success=${result.success}');
+        return result;
+      }
+
+      throw Exception(response.data['message'] ?? '确认微信支付失败');
+    } catch (e) {
+      log('❌ 确认微信支付失败: $e');
+      rethrow;
+    }
+  }
 }
