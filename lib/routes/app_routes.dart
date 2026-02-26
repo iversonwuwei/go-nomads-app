@@ -1,4 +1,8 @@
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/change_password_page_controller.dart';
+import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
+import 'package:go_nomads_app/core/lifecycle/binding_helper.dart';
+import 'package:go_nomads_app/core/lifecycle/page_lifecycle_middleware.dart';
 import 'package:go_nomads_app/features/city_list/city_list.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:go_nomads_app/features/membership/presentation/pages/membership_plan_page.dart';
@@ -13,10 +17,7 @@ import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
 import 'package:go_nomads_app/pages/add_review_page.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_binding.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_page.dart';
-import 'package:go_nomads_app/controllers/change_password_page_controller.dart';
 import 'package:go_nomads_app/pages/change_password/change_password_page.dart';
-import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
-import 'package:go_nomads_app/pages/forgot_password/forgot_password_page.dart';
 import 'package:go_nomads_app/pages/city_chat_page.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
 import 'package:go_nomads_app/pages/city_search_page.dart';
@@ -32,6 +33,7 @@ import 'package:go_nomads_app/pages/edit_interests_page.dart';
 import 'package:go_nomads_app/pages/edit_skills_page.dart';
 import 'package:go_nomads_app/pages/edit_social_links_page.dart';
 import 'package:go_nomads_app/pages/favorites_page.dart';
+import 'package:go_nomads_app/pages/forgot_password/forgot_password_page.dart';
 import 'package:go_nomads_app/pages/global_map_page.dart';
 import 'package:go_nomads_app/pages/home/home.dart';
 import 'package:go_nomads_app/pages/hotel_detail_page.dart';
@@ -208,7 +210,7 @@ class AppRoutes {
       name: home,
       page: () => const BottomNavLayout(child: HomePage()),
       binding: HomePageBinding(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -218,7 +220,7 @@ class AppRoutes {
       name: cityList,
       page: () => const CityListPage(),
       binding: CityListBinding(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: cityDetail,
@@ -234,29 +236,29 @@ class AppRoutes {
         );
       },
       binding: CityDetailBinding(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: citySearch,
       page: () => const CitySearchPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: cityChat,
       page: () => const CityChatPage(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 200),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: favorites,
       page: () => const FavoritesPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: globalMap,
       page: () => const GlobalMapPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: addReview,
@@ -267,7 +269,7 @@ class AppRoutes {
           cityName: args['cityName'],
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: addCost,
@@ -278,7 +280,7 @@ class AppRoutes {
           cityName: args['cityName'],
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: prosConsAdd,
@@ -290,7 +292,7 @@ class AppRoutes {
           initialTab: args['initialTab'] ?? 0,
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -300,29 +302,29 @@ class AppRoutes {
       name: meetupsList,
       page: () => const MeetupListPage(),
       binding: MeetupListBinding(),
-      middlewares: [AuthMiddleware()],
-      preventDuplicates: false, // 允许重复进入，确保每次都重新加载数据
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+      preventDuplicates: false,
     ),
     GetPage(
       name: meetupDetail,
       page: () => MeetupDetailPage(meetup: Get.arguments),
       binding: MeetupDetailBinding(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: createMeetup,
       page: () => const CreateMeetupPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: inviteToMeetup,
       page: () => InviteToMeetupPage(user: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: myMeetups,
       page: () => const MyMeetupsPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -331,7 +333,7 @@ class AppRoutes {
     GetPage(
       name: coworking,
       page: () => const CoworkingHomePage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: coworkingList,
@@ -343,13 +345,13 @@ class AppRoutes {
           countryName: args['countryName'],
         );
       },
-      middlewares: [AuthMiddleware()],
-      preventDuplicates: false, // 允许重复进入，确保每次都重新加载数据
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+      preventDuplicates: false,
     ),
     GetPage(
       name: coworkingDetail,
       page: () => CoworkingDetailPage(space: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: addCoworking,
@@ -361,7 +363,7 @@ class AppRoutes {
           countryName: args['countryName'],
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -376,12 +378,12 @@ class AppRoutes {
           cityName: args['cityName'],
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: hotelDetail,
       page: () => HotelDetailPage(hotelId: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: addHotel,
@@ -393,7 +395,7 @@ class AppRoutes {
           countryName: args?['countryName'],
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -409,7 +411,7 @@ class AppRoutes {
           cityName: args['cityName'],
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: createTravelPlan,
@@ -420,20 +422,20 @@ class AppRoutes {
           cityName: args['cityName'],
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: travelHistory,
       page: () => const TravelHistoryPage(),
       binding: TravelHistoryBinding(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     // 访问地点路由
     GetPage(
       name: TravelHistoryRoutes.visitedPlaces,
       page: () => const VisitedPlacesPage(),
       binding: VisitedPlacesBinding(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -442,17 +444,17 @@ class AppRoutes {
     GetPage(
       name: innovation,
       page: () => const InnovationListPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: innovationDetail,
       page: () => InnovationDetailPage(project: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: addInnovation,
       page: () => const AddInnovationPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -461,62 +463,62 @@ class AppRoutes {
     GetPage(
       name: profile,
       page: () => const BottomNavLayout(child: ProfilePage()),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: profileEdit,
       page: () => const BottomNavLayout(child: ProfileEditPage()),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: changePassword,
       page: () => const ChangePasswordPage(),
       binding: BindingsBuilder(() {
-        Get.lazyPut(() => ChangePasswordController());
+        BindingHelper.putFresh(() => ChangePasswordController());
       }),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: forgotPassword,
       page: () => const ForgotPasswordPage(),
       binding: BindingsBuilder(() {
-        Get.lazyPut(() => ForgotPasswordController());
+        BindingHelper.putFresh(() => ForgotPasswordController());
       }),
     ),
     GetPage(
       name: userProfile,
       page: () => UserProfilePage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: memberDetail,
       page: () => MemberDetailPage(user: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: skillsInterests,
       page: () => const SkillsInterestsPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: editBasicInfo,
       page: () => EditBasicInfoPage(accountId: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: editSkills,
       page: () => EditSkillsPage(accountId: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: editInterests,
       page: () => EditInterestsPage(accountId: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: editSocialLinks,
       page: () => EditSocialLinksPage(accountId: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -525,7 +527,7 @@ class AppRoutes {
     GetPage(
       name: membershipPlan,
       page: () => const MembershipPlanPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -535,22 +537,22 @@ class AppRoutes {
       name: aiChat,
       page: () => const AiChatPage(),
       binding: AiChatBinding(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: directChat,
       page: () => TencentIMDirectChatPage(user: Get.arguments),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: conversations,
       page: () => const BottomNavLayout(child: ConversationListPage()),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: notifications,
       page: () => const BottomNavLayout(child: NotificationsPage()),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -559,7 +561,7 @@ class AppRoutes {
     GetPage(
       name: community,
       page: () => const CommunityPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
     // ============================================================================
@@ -573,7 +575,7 @@ class AppRoutes {
           applicationId: args['applicationId'] ?? '',
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
   ];
 }

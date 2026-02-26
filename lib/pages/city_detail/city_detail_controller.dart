@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_rating_item.dart';
@@ -8,8 +10,6 @@ import 'package:go_nomads_app/features/coworking/presentation/controllers/cowork
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:go_nomads_app/features/weather/presentation/controllers/weather_state_controller.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 城市详情页面控制器
 ///
@@ -135,10 +135,13 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   Future<void> _loadInitialData() async {
     final cityDetailController = Get.find<CityDetailStateController>();
 
-    // 加载城市详情
-    cityDetailController.loadCityDetail(cityId);
+    // 重置 tab 索引
+    cityDetailController.currentTabIndex.value = initialTab;
 
-    // 首屏仅加载必要数据，其余按需加载
+    // 先加载页面通用数据（城市详情）
+    await cityDetailController.loadCityDetail(cityId);
+
+    // 城市详情加载完毕后，再按需加载首屏 Tab 数据
     _loadTabDataIfNeeded(initialTab);
   }
 
@@ -276,8 +279,30 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
     }
   }
 
+  /// 重置所有加载标记和页面状态
+  void _resetAllState() {
+    _loadedGuide = false;
+    _loadedProsCons = false;
+    _loadedReviews = false;
+    _loadedPhotos = false;
+    _loadedCost = false;
+    _loadedWeather = false;
+    _loadedCoworking = false;
+    currentPage.value = 0;
+    appBarOpacity.value = 0.0;
+    isRefreshingReviews.value = false;
+    isRefreshingPhotos.value = false;
+    hasInitializedGuide.value = false;
+    hasInitializedNearbyCities.value = false;
+    lastGuideLoadedCityId.value = null;
+    lastNearbyCitiesLoadedCityId.value = null;
+    customRatingItems.clear();
+    log('🧹 [CityDetailController] 所有页面状态已重置');
+  }
+
   @override
   void onClose() {
+    _resetAllState();
     pageController.dispose();
     scrollController.dispose();
     tabController.removeListener(_onTabChanged);

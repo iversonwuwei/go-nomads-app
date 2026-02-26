@@ -9,6 +9,7 @@ import 'config/api_config.dart';
 import 'config/supabase_config.dart';
 import 'controllers/locale_controller.dart';
 import 'core/di/dependency_injection.dart';
+import 'core/lifecycle/page_lifecycle_observer.dart';
 import 'core/utils/deep_link_handler.dart';
 import 'features/auth/presentation/controllers/auth_state_controller.dart';
 import 'features/chat/infrastructure/services/tencent_im/tencent_im.dart';
@@ -243,7 +244,12 @@ class MyApp extends StatelessWidget {
               // 使用 AppWrapper 来控制启动页和主内容的切换
               home: const AppWrapper(),
               getPages: AppRoutes.getPages,
-              navigatorObservers: [appRouteObserver, keyboardDismissObserver, BottomNavRouteObserver()],
+              navigatorObservers: [
+                appRouteObserver,
+                keyboardDismissObserver,
+                BottomNavRouteObserver(),
+                PageLifecycleObserver(),
+              ],
             ));
       },
     );

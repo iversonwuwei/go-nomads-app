@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:go_nomads_app/core/lifecycle/binding_helper.dart';
 
 import '../presentation/controllers/travel_history_controller.dart';
 import '../presentation/controllers/visited_places_controller.dart';
@@ -25,29 +26,31 @@ class TravelHistoryRoutes {
 }
 
 /// 旅行历史控制器绑定
+///
+/// 每次进入页面时创建全新控制器。
 class TravelHistoryBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<TravelHistoryController>(() => TravelHistoryController());
+    BindingHelper.putFresh<TravelHistoryController>(
+      () => TravelHistoryController(),
+    );
   }
 }
 
 /// 访问地点控制器绑定
+///
+/// 每次进入页面时创建全新控制器。
 class VisitedPlacesBinding extends Bindings {
   @override
   void dependencies() {
     final args = Get.arguments as Map<String, dynamic>?;
-    // 使用 Get.put 并设置 tag 确保每次进入页面都有正确的 Controller 实例
-    // 先删除旧实例（如果存在）
-    if (Get.isRegistered<VisitedPlacesController>()) {
-      Get.delete<VisitedPlacesController>();
-    }
-    Get.put<VisitedPlacesController>(VisitedPlacesController(
-      travelHistoryId: args?['travelHistoryId'] ?? '',
-      cityId: args?['cityId'],
-      cityName: args?['cityName'],
-      countryName: args?['countryName'],
-    ));
+    BindingHelper.putFresh<VisitedPlacesController>(
+      () => VisitedPlacesController(
+        travelHistoryId: args?['travelHistoryId'] ?? '',
+        cityId: args?['cityId'],
+        cityName: args?['cityName'],
+        countryName: args?['countryName'],
+      ),
+    );
   }
 }
-

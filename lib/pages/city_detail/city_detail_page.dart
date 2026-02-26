@@ -73,25 +73,27 @@ class CityDetailPage extends StatelessWidget {
     // 使用唯一 tag 确保每个城市页面有独立的控制器实例
     final tag = 'city_detail_$resolvedCityId';
 
-    // 注册控制器
-    if (!Get.isRegistered<CityDetailController>(tag: tag)) {
-      final controller = Get.put(CityDetailController(), tag: tag);
-      controller.initWithParams(
-        cityId: resolvedCityId,
-        cityName: resolvedCityName,
-        cityImages: heroImages,
-        overallScore:
-            resolvedOverallScore is double ? resolvedOverallScore : (resolvedOverallScore as num?)?.toDouble() ?? 0.0,
-        reviewCount: resolvedReviewCount is int ? resolvedReviewCount : (resolvedReviewCount as num?)?.toInt() ?? 0,
-        initialTab: initialTab,
-      );
-    } else {
-      // 控制器已存在，需要重新同步收藏状态
-      // 这解决了从列表页跳转到详情页时，收藏状态不同步的问题
-      final cityDetailController = Get.find<CityDetailStateController>();
-      cityDetailController.loadCityDetail(resolvedCityId);
-      log('🔄 [CityDetailPage] 控制器已存在，重新加载城市详情以同步状态');
+    // 每次进入都清理旧控制器，确保数据从服务端全新加载
+    if (Get.isRegistered<CityDetailController>(tag: tag)) {
+      Get.delete<CityDetailController>(tag: tag, force: true);
+      log('🧹 [CityDetailPage] 清理旧控制器: $tag');
     }
+
+    // 重置共享状态控制器的 tab 索引
+    final cityDetailStateController = Get.find<CityDetailStateController>();
+    cityDetailStateController.currentTabIndex.value = 0;
+
+    // 注册全新的控制器
+    final controller = Get.put(CityDetailController(), tag: tag);
+    controller.initWithParams(
+      cityId: resolvedCityId,
+      cityName: resolvedCityName,
+      cityImages: heroImages,
+      overallScore:
+          resolvedOverallScore is double ? resolvedOverallScore : (resolvedOverallScore as num?)?.toDouble() ?? 0.0,
+      reviewCount: resolvedReviewCount is int ? resolvedReviewCount : (resolvedReviewCount as num?)?.toInt() ?? 0,
+      initialTab: initialTab,
+    );
 
     return _CityDetailPageContent(controllerTag: tag);
   }
