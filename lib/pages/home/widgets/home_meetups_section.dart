@@ -1,5 +1,9 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
@@ -8,10 +12,6 @@ import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_meetup_card.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Meetups 区域组件
 class HomeMeetupsSection extends StatelessWidget {
@@ -267,7 +267,7 @@ class HomeMeetupsSection extends StatelessWidget {
 
   Widget _buildMeetupList(List upcomingMeetups) {
     return SizedBox(
-      height: 300.h,
+      height: 330.h,
       child: NotificationListener<ScrollNotification>(
         onNotification: (scrollInfo) {
           if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
