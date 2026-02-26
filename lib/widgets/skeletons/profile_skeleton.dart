@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'base_skeleton.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 个人资料页骨架屏组件
 class ProfileSkeleton extends BaseSkeleton {
