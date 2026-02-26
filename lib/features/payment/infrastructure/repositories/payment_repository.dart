@@ -241,7 +241,14 @@ class PaymentRepository implements IPaymentRepository {
 
       throw Exception(response.data['message'] ?? '确认微信支付失败');
     } catch (e) {
-      log('❌ 确认微信支付失败: $e');
+      // 尝试提取服务端返回的详细错误信息
+      if (e is DioException && e.response?.data != null) {
+        final serverMessage = e.response?.data is Map ? e.response?.data['message'] : e.response?.data.toString();
+        log('❌ 确认微信支付失败 (服务端): $serverMessage');
+        log('❌ 确认微信支付失败 (HTTP ${e.response?.statusCode}): $e');
+      } else {
+        log('❌ 确认微信支付失败: $e');
+      }
       rethrow;
     }
   }

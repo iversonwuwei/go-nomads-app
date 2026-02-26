@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
@@ -8,11 +9,11 @@ import 'package:go_nomads_app/features/payment/application/services/payment_serv
 import 'package:go_nomads_app/features/payment/application/services/unified_payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
 import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart' as payment_entities;
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 支付方式枚举
 enum PaymentMethod {
@@ -694,7 +695,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         // 支付结果回调
         if (result.success) {
           AppToast.success(l10n.paymentSuccessful);
+          // 刷新会员状态
           controller.loadMembership();
+          // 强制刷新用户 profile（跳过缓存，确保获取最新会员级别）
+          if (Get.isRegistered<UserStateController>()) {
+            Get.find<UserStateController>().refresh();
+          }
         } else {
           AppToast.error(result.errorMessage ?? l10n.wechatPayFailed);
         }

@@ -3,12 +3,13 @@ import 'dart:developer';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Deep Link 处理器
 /// 处理应用的 deep link，包括支付回调
@@ -195,6 +196,12 @@ class DeepLinkHandler {
           if (Get.isRegistered<MembershipStateController>()) {
             final membershipController = Get.find<MembershipStateController>();
             await membershipController.loadMembership();
+          }
+
+          // 强制刷新用户 profile（跳过缓存，确保获取最新会员级别）
+          if (Get.isRegistered<UserStateController>()) {
+            final userController = Get.find<UserStateController>();
+            await userController.refresh();
           }
 
           // 显示成功对话框

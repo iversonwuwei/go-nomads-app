@@ -1,13 +1,15 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
 import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart';
 import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 统一支付结果
 class UnifiedPaymentResult {
@@ -220,6 +222,8 @@ class UnifiedPaymentService extends GetxService {
 
         if (confirmResult != null && confirmResult.success) {
           log('✅ 微信支付确认成功');
+          // 刷新用户 profile 和会员状态
+          await refreshUserAndMembership();
           return UnifiedPaymentResult(
             success: true,
             method: PaymentMethod.wechat,
@@ -261,6 +265,35 @@ class UnifiedPaymentService extends GetxService {
         final wechatService = _wechatService;
         if (wechatService == null) return false;
         return await wechatService.isWeChatInstalled;
+    }
+  }
+
+  /// 支付成功后刷新用户信息和会员状态
+  /// 确保 profile 和会员计划页面的会员级别实时更新
+  Future<void> refreshUserAndMembership() async {
+    log('🔄 支付成功，刷新用户信息和会员状态...');
+
+    // 1. 强制刷新用户 profile（跳过 5 分钟缓存，确保获取最新会员数据）
+    if (Get.isRegistered<UserStateController>()) {
+      try {
+        final userController = Get.find<UserStateController>();
+        await userController.refresh();
+        log('✅ 用户 profile 已强制刷新');
+      } catch (e) {
+        log('⚠️ 刷新用户 profile 失败: $e');
+      }
+    }
+
+    // 2. 刷新会员状态（MembershipStateController 会通过 ever 监听自动同步，
+    //    但也显式调用一次确保立即更新）
+    if (Get.isRegistered<MembershipStateController>()) {
+      try {
+        final membershipController = Get.find<MembershipStateController>();
+        await membershipController.loadMembership();
+        log('✅ 会员状态已刷新');
+      } catch (e) {
+        log('⚠️ 刷新会员状态失败: $e');
+      }
     }
   }
 

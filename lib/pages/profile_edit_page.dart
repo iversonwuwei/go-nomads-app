@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -25,7 +26,6 @@ import 'package:go_nomads_app/utils/image_upload_helper.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
 class ProfileEditPage extends StatefulWidget {
@@ -174,6 +174,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
           _temperatureUnit = preferences.temperatureUnit;
         });
 
+        // 同步语言设置到 LocaleController
+        if (Get.isRegistered<LocaleController>()) {
+          Get.find<LocaleController>().syncFromPreferences(preferences.language);
+        }
+
         // 同步通知状态到 NotificationService
         if (Get.isRegistered<NotificationService>()) {
           final notificationService = Get.find<NotificationService>();
@@ -211,6 +216,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     setState(() => _isSavingPreferences = true);
 
     try {
+      // 获取当前语言设置
+      final currentLanguage =
+          Get.isRegistered<LocaleController>() ? Get.find<LocaleController>().locale.value.languageCode : null;
+
       await _preferencesRepository!.updatePreferences(
         notificationsEnabled: _notifications,
         travelHistoryVisible: _travelHistoryVisible,
@@ -218,6 +227,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         profilePublic: _profilePublic,
         currency: _currency,
         temperatureUnit: _temperatureUnit,
+        language: currentLanguage,
       );
 
       debugPrint('✅ 用户偏好设置保存成功');

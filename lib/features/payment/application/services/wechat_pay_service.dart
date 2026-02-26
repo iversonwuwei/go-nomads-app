@@ -22,25 +22,41 @@ class WeChatPayService extends GetxService {
   Function(dynamic)? _paymentListener;
   Completer<WeChatPayResult>? _paymentCompleter;
 
-  /// 初始化微信 SDK
-  Future<WeChatPayService> init(WeChatPayConfig config) async {
+  /// GetxService 生命周期 —— 自动注册支付回调监听
+  /// WeChat SDK 已由 SocialSdkService.init() 在 main.dart 中完成注册，
+  /// 此处仅需挂载支付结果监听器
+  @override
+  void onInit() {
+    super.onInit();
+    _setupPaymentListener();
+  }
+
+  /// 设置支付结果监听器
+  void _setupPaymentListener() {
     try {
-      await _fluwx.registerApi(
-        appId: config.appId,
-        universalLink: config.universalLink ?? '',
-      );
-      
-      // 监听支付结果
       _paymentListener = (response) {
         if (response is WeChatPaymentResponse) {
           _onPaymentResponse(response);
         }
       };
       _fluwx.addSubscriber(_paymentListener!);
-      
-      log('✅ 微信 SDK 初始化成功');
+      log('✅ 微信支付回调监听器已注册');
     } catch (e) {
-      log('❌ 微信 SDK 初始化失败: $e');
+      log('❌ 微信支付回调监听器注册失败: $e');
+    }
+  }
+
+  /// 手动初始化微信 SDK（兼容旧调用方式）
+  /// 如果 SocialSdkService 已初始化过，则无需再次调用
+  Future<WeChatPayService> init(WeChatPayConfig config) async {
+    try {
+      await _fluwx.registerApi(
+        appId: config.appId,
+        universalLink: config.universalLink ?? '',
+      );
+      log('✅ 微信 SDK（支付服务）初始化成功');
+    } catch (e) {
+      log('❌ 微信 SDK（支付服务）初始化失败: $e');
     }
     
     return this;

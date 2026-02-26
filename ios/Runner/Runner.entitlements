@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+<!-- Universal Links / Associated Domains -->
+<!-- 用于微信 SDK Universal Link 回调 (https://go-nomads.com/app/) -->
+<!-- 用于 QQ SDK Universal Link 回调 (https://go-nomads.com/universal_link/...) -->
+<!-- 用于 App Link / Deep Link (https://go-nomads.com/...) -->
     <key>com.apple.developer.associated-domains</key>
     <array>
         <string>applinks:go-nomads.com</string>
