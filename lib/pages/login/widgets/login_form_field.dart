@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 登录页面通用输入框 - 使用响应式错误显示，无需 Form/GlobalKey
 class LoginFormField extends StatelessWidget {

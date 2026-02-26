@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 安全的网络图片组件,处理空字符串和无效 URL
 class SafeNetworkImage extends StatelessWidget {

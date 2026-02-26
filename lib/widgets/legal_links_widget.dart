@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 底部法律协议链接组件
 ///
