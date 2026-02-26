@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 导航栏项目数据模型
 class NavBarItem {
@@ -82,9 +83,9 @@ class ModernBottomNavBar extends GetView<BottomNavController> {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 48,
+              blurRadius: 48.r,
               offset: const Offset(0, 12),
-              spreadRadius: 2,
+              spreadRadius: 2.r,
             ),
             BoxShadow(
               color: Colors.white.withValues(alpha: 0.10),
@@ -166,7 +167,7 @@ class _NavBarItemWidget extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(28 * scaleFactor),
+        borderRadius: BorderRadius.circular(28.r * scaleFactor),
         splashColor: const Color(0xFF2196F3).withValues(alpha: 0.10),
         highlightColor: const Color(0xFF2196F3).withValues(alpha: 0.05),
         child: Center(
@@ -178,7 +179,7 @@ class _NavBarItemWidget extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: Colors.transparent,
-              borderRadius: BorderRadius.circular(18 * scaleFactor),
+              borderRadius: BorderRadius.circular(18.r * scaleFactor),
             ),
             child: Stack(
               clipBehavior: Clip.none,
@@ -195,7 +196,7 @@ class _NavBarItemWidget extends StatelessWidget {
                     right: -6,
                     top: -6,
                     child: Container(
-                      padding: const EdgeInsets.all(4),
+                      padding: EdgeInsets.all(4.w),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF4458),
                         shape: BoxShape.circle,
@@ -204,15 +205,15 @@ class _NavBarItemWidget extends StatelessWidget {
                           width: 1.5,
                         ),
                       ),
-                      constraints: const BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
+                      constraints: BoxConstraints(
+                        minWidth: 18.w,
+                        minHeight: 18.h,
                       ),
                       child: Text(
                         item.badge > 99 ? '99+' : '${item.badge}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 10,
+                          fontSize: 10.sp,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,

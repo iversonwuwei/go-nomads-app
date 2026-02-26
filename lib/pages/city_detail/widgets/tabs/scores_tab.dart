@@ -5,6 +5,7 @@ import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Scores Tab - 城市评分
 /// 使用 GetView 绑定 CityDetailController
@@ -36,7 +37,7 @@ class ScoresTab extends GetView<CityDetailController> {
       return RefreshIndicator(
         onRefresh: () => cityDetailController.loadCityDetail(controller.cityId),
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 80),
+          padding: EdgeInsets.only(bottom: 80.h),
           children: [
             // 用户评分系统
             CityRatingsCard(cityId: city.id),

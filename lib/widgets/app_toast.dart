@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Toast 类型
 enum ToastType {
@@ -128,9 +129,9 @@ class AppToast {
       Get.rawSnackbar(
         backgroundColor: config.backgroundColor,
         messageText: content,
-        margin: const EdgeInsets.all(16),
+        margin: EdgeInsets.all(16.w),
         borderRadius: 12,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         snackPosition: SnackPosition.TOP,
         duration: duration,
         isDismissible: true,
@@ -141,7 +142,7 @@ class AppToast {
         boxShadows: [
           BoxShadow(
             color: config.shadowColor,
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
@@ -175,9 +176,9 @@ class AppToast {
       SnackBar(
         backgroundColor: config.backgroundColor,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
+        margin: EdgeInsets.all(16.w),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         duration: duration,
         content: DefaultTextStyle.merge(
@@ -191,7 +192,7 @@ class AppToast {
   /// 构建 Toast 内容（居中对称设计）
   static Widget _buildToastContent(String title, String message, _ToastConfig config) {
     // 使用支持中文的字体族，优先使用系统默认字体
-    const String? fontFamily = null; // 使用系统默认字体以支持中文
+    String? fontFamily = null; // 使用系统默认字体以支持中文
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -200,29 +201,29 @@ class AppToast {
         Icon(
           config.icon,
           color: config.textColor,
-          size: 32,
+          size: 32.r,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         // 标题
         Text(
           title,
           textAlign: TextAlign.center,
           style: TextStyle(
             color: config.textColor,
-            fontSize: 16,
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             fontFamily: fontFamily,
             fontFamilyFallback: const ['PingFang SC', 'Heiti SC', 'Microsoft YaHei', 'sans-serif'],
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         // 消息
         Text(
           message,
           textAlign: TextAlign.center,
           style: TextStyle(
             color: config.textColor.withValues(alpha: 0.95),
-            fontSize: 14,
+            fontSize: 14.sp,
             height: 1.4,
             fontFamily: fontFamily,
             fontFamilyFallback: const ['PingFang SC', 'Heiti SC', 'Microsoft YaHei', 'sans-serif'],

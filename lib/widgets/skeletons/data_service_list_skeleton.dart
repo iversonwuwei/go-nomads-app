@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 数据服务页面骨架屏组件 - 匹配实际页面结构
 class DataServiceListSkeleton extends BaseSkeleton {
@@ -31,7 +32,7 @@ class _DataServiceListSkeletonState
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: isMobile ? 16 : 32,
-              vertical: 20,
+              vertical: 20.h,
             ),
             child: _buildSearchBarSkeleton(),
           ),
@@ -47,7 +48,7 @@ class _DataServiceListSkeletonState
           ),
         ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 8)),
+        SliverToBoxAdapter(child: SizedBox(height: 8.h)),
 
         // 城市卡片网格骨架
         SliverPadding(
@@ -57,7 +58,7 @@ class _DataServiceListSkeletonState
           sliver: _buildCityGridSkeleton(isMobile),
         ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 40)),
+        SliverToBoxAdapter(child: SizedBox(height: 40.h)),
 
         // Meetups 部分骨架
         SliverToBoxAdapter(
@@ -69,7 +70,7 @@ class _DataServiceListSkeletonState
           ),
         ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 60)),
+        SliverToBoxAdapter(child: SizedBox(height: 60.h)),
 
         // 特性列表骨架
         SliverToBoxAdapter(
@@ -82,7 +83,7 @@ class _DataServiceListSkeletonState
           ),
         ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 80)),
+        SliverToBoxAdapter(child: SizedBox(height: 80.h)),
       ],
     );
   }
@@ -114,14 +115,14 @@ class _DataServiceListSkeletonState
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SkeletonBox(
-                    width: 56,
-                    height: 56,
+                  SkeletonBox(
+                    width: 56.w,
+                    height: 56.h,
                     borderRadius: 12,
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   SkeletonBox(
-                    width: 150,
+                    width: 150.w,
                     height: isMobile ? 32 : 42,
                     borderRadius: 8,
                   ),
@@ -136,7 +137,7 @@ class _DataServiceListSkeletonState
                 height: isMobile ? 18 : 22,
                 borderRadius: 4,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               SkeletonBox(
                 width: isMobile ? 240 : 350,
                 height: isMobile ? 18 : 22,
@@ -162,21 +163,21 @@ class _DataServiceListSkeletonState
     if (useGridLayout) {
       // 2x2 网格
       return Container(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: const Column(
+        constraints: BoxConstraints(maxWidth: 600),
+        child: Column(
           children: [
             Row(
               children: [
                 Expanded(child: _CompactCardSkeleton()),
-                SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(child: _CompactCardSkeleton()),
               ],
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(
               children: [
                 Expanded(child: _CompactCardSkeleton()),
-                SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(child: _CompactCardSkeleton()),
               ],
             ),
@@ -186,15 +187,15 @@ class _DataServiceListSkeletonState
     } else {
       // 1x4 横向布局
       return Container(
-        constraints: const BoxConstraints(maxWidth: 900),
-        child: const Row(
+        constraints: BoxConstraints(maxWidth: 900),
+        child: Row(
           children: [
             Expanded(child: _CompactCardSkeleton()),
-            SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(child: _CompactCardSkeleton()),
-            SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(child: _CompactCardSkeleton()),
-            SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(child: _CompactCardSkeleton()),
           ],
         ),
@@ -205,30 +206,30 @@ class _DataServiceListSkeletonState
   // 搜索栏骨架
   Widget _buildSearchBarSkeleton() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: AppColors.borderLight, width: 1),
       ),
-      child: const Row(
+      child: Row(
         children: [
           SkeletonBox(
-            width: 20,
-            height: 20,
+            width: 20.w,
+            height: 20.h,
             borderRadius: 4,
           ),
-          SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: SkeletonBox(
-              height: 14,
+              height: 14.h,
               borderRadius: 4,
             ),
           ),
-          SizedBox(width: 12),
+          SizedBox(width: 12.w),
           SkeletonBox(
-            width: 34,
-            height: 34,
+            width: 34.w,
+            height: 34.h,
             borderRadius: 17,
           ),
         ],
@@ -238,31 +239,31 @@ class _DataServiceListSkeletonState
 
   // 工具栏骨架
   Widget _buildToolbarSkeleton() {
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SkeletonBox(
-          width: 80,
-          height: 14,
+          width: 80.w,
+          height: 14.h,
           borderRadius: 4,
         ),
         Row(
           children: [
             SkeletonBox(
-              width: 40,
-              height: 40,
+              width: 40.w,
+              height: 40.h,
               borderRadius: 8,
             ),
-            SizedBox(width: 8),
+            SizedBox(width: 8.w),
             SkeletonBox(
-              width: 40,
-              height: 40,
+              width: 40.w,
+              height: 40.h,
               borderRadius: 8,
             ),
-            SizedBox(width: 8),
+            SizedBox(width: 8.w),
             SkeletonBox(
-              width: 40,
-              height: 40,
+              width: 40.w,
+              height: 40.h,
               borderRadius: 8,
             ),
           ],
@@ -279,8 +280,8 @@ class _DataServiceListSkeletonState
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         childAspectRatio: isMobile ? 0.68 : 0.72,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        crossAxisSpacing: 12.w,
+        mainAxisSpacing: 12.w,
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {
@@ -302,18 +303,18 @@ class _DataServiceListSkeletonState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonBox(
-                  width: 180,
-                  height: 28,
+                  width: 180.w,
+                  height: 28.h,
                   borderRadius: 4,
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 SkeletonBox(
-                  width: 120,
-                  height: 16,
+                  width: 120.w,
+                  height: 16.h,
                   borderRadius: 4,
                 ),
               ],
@@ -325,11 +326,11 @@ class _DataServiceListSkeletonState
                   height: isMobile ? 36 : 44,
                   borderRadius: 8,
                 ),
-                if (!isMobile) const SizedBox(width: 12),
+                if (!isMobile) SizedBox(width: 12.w),
                 if (!isMobile)
-                  const SkeletonBox(
-                    width: 140,
-                    height: 44,
+                  SkeletonBox(
+                    width: 140.w,
+                    height: 44.h,
                     borderRadius: 8,
                   ),
               ],
@@ -337,17 +338,17 @@ class _DataServiceListSkeletonState
           ],
         ),
 
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // Meetup 卡片列表（横向滚动）
         SizedBox(
-          height: 310,
+          height: 310.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: 3,
             itemBuilder: (context, index) {
               return Padding(
-                padding: const EdgeInsets.only(right: 16),
+                padding: EdgeInsets.only(right: 16.w),
                 child: SkeletonBox(
                   width: isMobile ? 280 : 340,
                   borderRadius: 12,
@@ -359,11 +360,11 @@ class _DataServiceListSkeletonState
 
         // 移动端的 View all 按钮骨架
         if (isMobile) ...[
-          const SizedBox(height: 16),
-          const Center(
+          SizedBox(height: 16.h),
+          Center(
             child: SkeletonBox(
-              width: 160,
-              height: 44,
+              width: 160.w,
+              height: 44.h,
               borderRadius: 8,
             ),
           ),
@@ -379,20 +380,20 @@ class _DataServiceListSkeletonState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(5, (index) {
-          return const Padding(
-            padding: EdgeInsets.only(bottom: 12),
+          return Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SkeletonBox(
-                  width: 24,
-                  height: 24,
+                  width: 24.w,
+                  height: 24.h,
                   borderRadius: 12,
                 ),
-                SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: SkeletonBox(
-                    height: 16,
+                    height: 16.h,
                     borderRadius: 4,
                   ),
                 ),
@@ -411,8 +412,8 @@ class _CompactCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SkeletonBox(
-      height: 140,
+    return SkeletonBox(
+      height: 140.h,
       borderRadius: 16,
     );
   }

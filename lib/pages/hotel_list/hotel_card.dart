@@ -57,7 +57,7 @@ class HotelCard extends StatelessWidget {
                           return Container(
                             height: 200.h,
                             color: Colors.grey[300],
-                            child: const Icon(FontAwesomeIcons.hotel, size: 64),
+                            child: Icon(FontAwesomeIcons.hotel, size: 64.r),
                           );
                         },
                       )
@@ -65,7 +65,7 @@ class HotelCard extends StatelessWidget {
                         height: 200.h,
                         color: Colors.grey[300],
                         child: Center(
-                          child: Icon(FontAwesomeIcons.hotel, size: 64, color: Colors.grey[400]),
+                          child: Icon(FontAwesomeIcons.hotel, size: 64.r, color: Colors.grey[400]),
                         ),
                       ),
                 // 精选标签

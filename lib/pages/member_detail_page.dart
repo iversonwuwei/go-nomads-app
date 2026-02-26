@@ -12,6 +12,7 @@ import 'package:get/get.dart';
 
 import 'tencent_im_direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MemberDetailPage extends StatelessWidget {
   final models.User? user;
@@ -67,20 +68,20 @@ class MemberDetailPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   FontAwesomeIcons.circleExclamation,
-                  size: 48,
+                  size: 48.r,
                   color: Colors.grey,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   controller.errorMessage.value ?? '用户信息不存在',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     color: Colors.grey,
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 ElevatedButton(
                   onPressed: controller.retry,
                   child: const Text('重试'),
@@ -126,8 +127,8 @@ class MemberDetailPage extends StatelessWidget {
                       child: Hero(
                         tag: 'user_avatar_${user.id}',
                         child: Container(
-                          width: 150,
-                          height: 150,
+                          width: 150.w,
+                          height: 150.h,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
@@ -137,7 +138,7 @@ class MemberDetailPage extends StatelessWidget {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 20,
+                                blurRadius: 20.r,
                                 offset: const Offset(0, 4),
                               ),
                             ],
@@ -146,7 +147,7 @@ class MemberDetailPage extends StatelessWidget {
                             imageUrl: user.avatarUrl,
                             radius: 73,
                             backgroundColor: Colors.grey[200],
-                            errorWidget: const Icon(FontAwesomeIcons.user, size: 40, color: Colors.grey),
+                            errorWidget: Icon(FontAwesomeIcons.user, size: 40.r, color: Colors.grey),
                           ),
                         ),
                       ),
@@ -154,7 +155,7 @@ class MemberDetailPage extends StatelessWidget {
                   ),
                   if (user.isVerified)
                     Positioned(
-                      top: 180,
+                      top: 180.h,
                       right: 0,
                       left: 0,
                       child: Builder(
@@ -162,28 +163,28 @@ class MemberDetailPage extends StatelessWidget {
                           final l10n = AppLocalizations.of(context)!;
                           return Center(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12.w,
+                                vertical: 6.h,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF10B981),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(20.r),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     FontAwesomeIcons.circleCheck,
                                     color: Colors.white,
-                                    size: 16,
+                                    size: 16.r,
                                   ),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: 4.w),
                                   Text(
                                     l10n.verified,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 12,
+                                      fontSize: 12.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -200,7 +201,7 @@ class MemberDetailPage extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -209,36 +210,36 @@ class MemberDetailPage extends StatelessWidget {
                       children: [
                         Text(
                           user.name,
-                          style: const TextStyle(
-                            fontSize: 24,
+                          style: TextStyle(
+                            fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF1a1a1a),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Text(
                           '@${user.username}',
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: 14.sp,
                             color: Color(0xFF9ca3af),
                           ),
                         ),
                         if (user.currentCity != null)
                           Padding(
-                            padding: const EdgeInsets.only(top: 8),
+                            padding: EdgeInsets.only(top: 8.h),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(
+                                Icon(
                                   FontAwesomeIcons.locationDot,
-                                  size: 16,
+                                  size: 16.r,
                                   color: Color(0xFFFF4458),
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4.w),
                                 Text(
                                   '${user.currentCity}, ${user.currentCountry ?? ''}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
                                     color: Color(0xFF6b7280),
                                   ),
                                 ),
@@ -248,41 +249,41 @@ class MemberDetailPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
                     _buildSectionTitle(AppLocalizations.of(context)!.about),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
                           color: const Color(0xFFE5E7EB),
                         ),
                       ),
                       child: Text(
                         user.bio!,
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: TextStyle(
+                          fontSize: 14.sp,
                           height: 1.6,
                           color: Color(0xFF4b5563),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                   ],
                   _buildInterestsSection(context, user),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildSkillsSection(context, user),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildBadgesSection(context, user),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildTravelHistorySection(context, user),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildSectionTitle(AppLocalizations.of(context)!.stats),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Row(
                     children: [
                       Expanded(
@@ -293,7 +294,7 @@ class MemberDetailPage extends StatelessWidget {
                           const Color(0xFFFF4458),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: _buildStatCard(
                           AppLocalizations.of(context)!.countries,
@@ -302,7 +303,7 @@ class MemberDetailPage extends StatelessWidget {
                           const Color(0xFF3B82F6),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: _buildStatCard(
                           AppLocalizations.of(context)!.meetups,
@@ -313,7 +314,7 @@ class MemberDetailPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   if (!controller.isCurrentUser)
                     Builder(
                       builder: (context) {
@@ -328,15 +329,15 @@ class MemberDetailPage extends StatelessWidget {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF10B981),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: EdgeInsets.symmetric(vertical: 16.h),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(12.r),
                                   ),
                                   elevation: 0,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             Expanded(
                               child: ElevatedButton.icon(
                                 onPressed: () {
@@ -347,21 +348,21 @@ class MemberDetailPage extends StatelessWidget {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFFF4458),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: EdgeInsets.symmetric(vertical: 16.h),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(12.r),
                                   ),
                                   elevation: 0,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
                                   color: const Color(0xFFE5E7EB),
                                 ),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: IconButton(
                                 onPressed: () {
@@ -380,7 +381,7 @@ class MemberDetailPage extends StatelessWidget {
                         );
                       },
                     ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
                 ],
               ),
             ),
@@ -393,8 +394,8 @@ class MemberDetailPage extends StatelessWidget {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: 18,
+      style: TextStyle(
+        fontSize: 18.sp,
         fontWeight: FontWeight.bold,
         color: Color(0xFF1a1a1a),
       ),
@@ -403,7 +404,7 @@ class MemberDetailPage extends StatelessWidget {
 
   Widget _buildBadgeCard(models.Badge badge) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -413,7 +414,7 @@ class MemberDetailPage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: const Color(0xFFFFB020).withValues(alpha: 0.3),
           width: 1.5,
@@ -424,14 +425,14 @@ class MemberDetailPage extends StatelessWidget {
         children: [
           Text(
             badge.icon,
-            style: const TextStyle(fontSize: 32),
+            style: TextStyle(fontSize: 32.sp),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             badge.name,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
+            style: TextStyle(
+              fontSize: 13.sp,
               fontWeight: FontWeight.w600,
               color: Color(0xFF1a1a1a),
               height: 1.2,
@@ -452,7 +453,7 @@ class MemberDetailPage extends StatelessWidget {
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [
@@ -462,7 +463,7 @@ class MemberDetailPage extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: const Color(0xFFFFB020),
               width: 2,
@@ -470,7 +471,7 @@ class MemberDetailPage extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFFFB020).withValues(alpha: 0.2),
-                blurRadius: 8,
+                blurRadius: 8.r,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -479,32 +480,32 @@ class MemberDetailPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                children: const [
+                children: [
                   Icon(
                     FontAwesomeIcons.trophy,
                     color: Color(0xFFFF6F00),
-                    size: 24,
+                    size: 24.r,
                   ),
-                  SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
                     'Badges',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1a1a1a),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               user.badges.isEmpty
                   ? Center(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        padding: EdgeInsets.symmetric(vertical: 20.h),
                         child: Text(
                           AppLocalizations.of(context)!.noBadgesYet,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             color: const Color(0xFFFF6F00).withValues(alpha: 0.6),
                             fontStyle: FontStyle.italic,
                           ),
@@ -516,8 +517,8 @@ class MemberDetailPage extends StatelessWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12.w,
+                        mainAxisSpacing: 12.w,
                         childAspectRatio: 1,
                       ),
                       itemCount: user.badges.length,
@@ -537,7 +538,7 @@ class MemberDetailPage extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -547,7 +548,7 @@ class MemberDetailPage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: const Color(0xFF2196F3),
           width: 2,
@@ -555,7 +556,7 @@ class MemberDetailPage extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF2196F3).withValues(alpha: 0.2),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -564,32 +565,32 @@ class MemberDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Icon(
                 FontAwesomeIcons.earthAmericas,
                 color: Color(0xFF1976D2),
-                size: 24,
+                size: 24.r,
               ),
-              SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 'Travel History',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           latestTravel == null
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.symmetric(vertical: 20.h),
                     child: Text(
                       AppLocalizations.of(context)!.noTravelHistoryYet,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: const Color(0xFF1976D2).withValues(alpha: 0.6),
                         fontStyle: FontStyle.italic,
                       ),
@@ -604,7 +605,7 @@ class MemberDetailPage extends StatelessWidget {
 
   Widget _buildLatestTravelHistoryCard(models.LatestTravelHistory travel, BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -614,7 +615,7 @@ class MemberDetailPage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: const Color(0xFFFF9800),
           width: 1.5,
@@ -622,7 +623,7 @@ class MemberDetailPage extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF9800).withValues(alpha: 0.2),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -630,8 +631,8 @@ class MemberDetailPage extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 60.w,
+            height: 60.h,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [
@@ -641,7 +642,7 @@ class MemberDetailPage extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
               border: Border.all(
                 color: const Color(0xFFFFA726),
                 width: 1,
@@ -650,62 +651,62 @@ class MemberDetailPage extends StatelessWidget {
             child: Center(
               child: Text(
                 _getCountryFlag(travel.country),
-                style: const TextStyle(fontSize: 32),
+                style: TextStyle(fontSize: 32.sp),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   travel.city,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1a1a1a),
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   travel.country,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     color: Color(0xFF6b7280),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       FontAwesomeIcons.calendar,
-                      size: 14,
+                      size: 14.r,
                       color: Color(0xFF9ca3af),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6.w),
                     Flexible(
                       child: Text(
                         _formatTravelDate(travel.arrivalTime, travel.departureTime),
-                        style: const TextStyle(
-                          fontSize: 13,
+                        style: TextStyle(
+                          fontSize: 13.sp,
                           color: Color(0xFF9ca3af),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (travel.isOngoing) ...[
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
                           AppLocalizations.of(context)!.currentLocation,
-                          style: const TextStyle(
-                            fontSize: 11,
+                          style: TextStyle(
+                            fontSize: 11.sp,
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),
@@ -762,10 +763,10 @@ class MemberDetailPage extends StatelessWidget {
 
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: color.withValues(alpha: 0.2),
         ),
@@ -775,22 +776,22 @@ class MemberDetailPage extends StatelessWidget {
           Icon(
             icon,
             color: color,
-            size: 24,
+            size: 24.r,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             value,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: 12.sp,
               color: Color(0xFF6b7280),
             ),
           ),
@@ -802,7 +803,7 @@ class MemberDetailPage extends StatelessWidget {
   Widget _buildInterestsSection(BuildContext context, models.User user) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -812,7 +813,7 @@ class MemberDetailPage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: const Color(0xFFE91E63),
           width: 2,
@@ -820,7 +821,7 @@ class MemberDetailPage extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFE91E63).withValues(alpha: 0.2),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -829,32 +830,32 @@ class MemberDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Icon(
                 FontAwesomeIcons.heart,
                 color: Color(0xFFC2185B),
-                size: 24,
+                size: 24.r,
               ),
-              SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 'Interests',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           user.interests.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.symmetric(vertical: 20.h),
                     child: Text(
                       'No interests added yet',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: const Color(0xFFC2185B).withValues(alpha: 0.6),
                         fontStyle: FontStyle.italic,
                       ),
@@ -862,11 +863,11 @@ class MemberDetailPage extends StatelessWidget {
                   ),
                 )
               : Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 8.w,
+                  runSpacing: 8.w,
                   children: user.interests.map((interest) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [
@@ -876,11 +877,11 @@ class MemberDetailPage extends StatelessWidget {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                            blurRadius: 4,
+                            blurRadius: 4.r,
                             offset: const Offset(0, 2),
                           ),
                         ],
@@ -890,9 +891,9 @@ class MemberDetailPage extends StatelessWidget {
                         children: [
                           Text(
                             interest.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -909,7 +910,7 @@ class MemberDetailPage extends StatelessWidget {
   Widget _buildSkillsSection(BuildContext context, models.User user) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -919,7 +920,7 @@ class MemberDetailPage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: const Color(0xFF2196F3),
           width: 2,
@@ -927,7 +928,7 @@ class MemberDetailPage extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF2196F3).withValues(alpha: 0.2),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -936,32 +937,32 @@ class MemberDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
+            children: [
               Icon(
                 FontAwesomeIcons.star,
                 color: Color(0xFF1976D2),
-                size: 24,
+                size: 24.r,
               ),
-              SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 'Skills',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1a1a1a),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           user.skills.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    padding: EdgeInsets.symmetric(vertical: 20.h),
                     child: Text(
                       'No skills added yet',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: const Color(0xFF1976D2).withValues(alpha: 0.6),
                         fontStyle: FontStyle.italic,
                       ),
@@ -969,11 +970,11 @@ class MemberDetailPage extends StatelessWidget {
                   ),
                 )
               : Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 8.w,
+                  runSpacing: 8.w,
                   children: user.skills.map((skill) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [
@@ -983,11 +984,11 @@ class MemberDetailPage extends StatelessWidget {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                            blurRadius: 4,
+                            blurRadius: 4.r,
                             offset: const Offset(0, 2),
                           ),
                         ],
@@ -997,9 +998,9 @@ class MemberDetailPage extends StatelessWidget {
                         children: [
                           Text(
                             skill.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

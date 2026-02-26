@@ -12,6 +12,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 支付方式枚举
 enum PaymentMethod {
@@ -103,12 +104,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         }
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           child: Column(
             children: [
               // 当前会员状态
               _buildCurrentStatus(context),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 动态生成会员计划卡片
               ...paidPlans.asMap().entries.map((entry) {
@@ -128,7 +129,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 );
               }),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               // 底部说明
               _buildFooterNote(context),
@@ -150,11 +151,11 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
   Widget _buildLoadingSkeleton() {
     return SafeShimmer(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           children: [
             const _CurrentStatusSkeleton(),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             ...List.generate(3, (index) {
               final hasSpacing = index < 2;
               return Padding(
@@ -162,7 +163,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 child: const _MembershipPlanSkeleton(),
               );
             }),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
             const _FooterSkeleton(),
           ],
         ),
@@ -177,50 +178,50 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         final l10n = AppLocalizations.of(context)!;
         return Center(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   FontAwesomeIcons.triangleExclamation,
-                  size: 64,
+                  size: 64.r,
                   color: Colors.orange.shade400,
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 Text(
                   l10n.unableToLoadPlans,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   controller.plansError ?? l10n.checkNetworkConnection,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: Colors.grey.shade600,
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 ElevatedButton.icon(
                   onPressed: controller.isLoadingPlans ? null : () => controller.loadPlans(),
                   icon: controller.isLoadingPlans
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
+                      ? SizedBox(
+                          width: 16.w,
+                          height: 16.h,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Icon(FontAwesomeIcons.arrowsRotate, size: 16),
+                      : Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
                   label: Text(controller.isLoadingPlans ? l10n.loading : l10n.retry),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
                 ),
@@ -238,7 +239,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -248,11 +249,11 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Color(level.colorValue).withValues(alpha: 0.3),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 6),
           ),
         ],
@@ -260,39 +261,39 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       child: Row(
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 60.w,
+            height: 60.h,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Center(
               child: Text(
                 level.icon,
-                style: const TextStyle(fontSize: 32),
+                style: TextStyle(fontSize: 32.sp),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   l10n.currentPlan(level.name),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 if (membership?.isActive == true)
                   Text(
                     l10n.daysRemaining(controller.remainingDays),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   )
                 else if (level == MembershipLevel.free)
@@ -300,7 +301,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     l10n.upgradeToUnlock,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
               ],
@@ -314,30 +315,30 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
   Widget _buildFooterNote(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              Icon(FontAwesomeIcons.shield, size: 16, color: Colors.green.shade600),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.shield, size: 16.r, color: Colors.green.shade600),
+              SizedBox(width: 8.w),
               Text(
                 l10n.securePayment,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             l10n.allPaymentsSecure,
             style: TextStyle(
               color: Colors.grey.shade600,
-              fontSize: 13,
+              fontSize: 13.sp,
             ),
           ),
         ],
@@ -367,9 +368,9 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     final l10n = AppLocalizations.of(context)!;
     return Get.bottomSheet<PaymentMethod>(
       Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         ),
         child: SafeArea(
           child: Column(
@@ -377,33 +378,33 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
             children: [
               // 拖动指示器
               Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(top: 12.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
 
               // 标题
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 child: Column(
                   children: [
                     Text(
                       l10n.selectPaymentMethod,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Text(
                       l10n.upgradeTo(plan.name, plan.priceYearly.toStringAsFixed(0)),
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -411,7 +412,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 ),
               ),
 
-              const Divider(height: 1),
+              Divider(height: 1),
 
               // 支付方式列表
               _buildPaymentMethodTile(
@@ -425,24 +426,24 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 l10n.wechatDescription,
               ),
 
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
 
               // 安全提示
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       FontAwesomeIcons.shieldHalved,
-                      size: 14,
+                      size: 14.r,
                       color: Colors.green.shade600,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
                       l10n.allPaymentsEncrypted,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -450,7 +451,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 ),
               ),
 
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
             ],
           ),
         ),
@@ -473,37 +474,37 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         break;
     }
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       leading: Container(
-        width: 48,
-        height: 48,
+        width: 48.w,
+        height: 48.h,
         decoration: BoxDecoration(
           color: method.color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         child: Icon(
           method.iconData,
           color: method.color,
-          size: 24,
+          size: 24.r,
         ),
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           fontWeight: FontWeight.w600,
         ),
       ),
       subtitle: Text(
         subtitle,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 12.sp,
           color: Colors.grey.shade600,
         ),
       ),
       trailing: Icon(
         FontAwesomeIcons.chevronRight,
-        size: 14,
+        size: 14.r,
         color: Colors.grey.shade400,
       ),
       onTap: () => Get.back(result: method),
@@ -551,7 +552,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         content: Row(
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -561,10 +562,10 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     l10n.creatingPaypalOrder,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     l10n.priceForPlan(plan.priceYearly.toStringAsFixed(0), plan.name),
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -650,7 +651,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         content: Row(
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -660,10 +661,10 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     l10n.creatingWechatOrder,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     l10n.cnyPriceForPlan(plan.priceYearly.toStringAsFixed(0), plan.name),
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -740,62 +741,62 @@ class _MembershipPlanSkeleton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                SkeletonBox(width: 48, height: 48, borderRadius: 12),
-                const SizedBox(width: 12),
+                SkeletonBox(width: 48.w, height: 48.h, borderRadius: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      SkeletonBox(width: 140, height: 18),
-                      SizedBox(height: 6),
-                      SkeletonBox(width: 200, height: 14),
+                    children: [
+                      SkeletonBox(width: 140.w, height: 18.h),
+                      SizedBox(height: 6.h),
+                      SkeletonBox(width: 200.w, height: 14.h),
                     ],
                   ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: const [
-                    SkeletonBox(width: 80, height: 22),
-                    SizedBox(height: 6),
-                    SkeletonBox(width: 50, height: 14),
+                  children: [
+                    SkeletonBox(width: 80.w, height: 22.h),
+                    SizedBox(height: 6.h),
+                    SkeletonBox(width: 50.w, height: 14.h),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Column(
-              children: const [
+              children: [
                 _PlanBenefitSkeleton(),
-                SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 _PlanBenefitSkeleton(),
-                SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 _PlanBenefitSkeleton(),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Container(
               width: double.infinity,
-              height: 44,
+              height: 44.h,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
             ),
           ],
@@ -811,10 +812,10 @@ class _PlanBenefitSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
-        SkeletonCircle(size: 12),
-        SizedBox(width: 8),
-        Expanded(child: SkeletonBox(height: 14)),
+      children: [
+        SkeletonCircle(size: 12.r),
+        SizedBox(width: 8.w),
+        Expanded(child: SkeletonBox(height: 14.h)),
       ],
     );
   }
@@ -830,26 +831,26 @@ class _CurrentStatusSkeleton extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            SkeletonBox(width: 160, height: 18),
-            SizedBox(height: 12),
-            SkeletonBox(width: 220, height: 16),
-            SizedBox(height: 12),
-            SkeletonBox(width: 120, height: 14),
+          children: [
+            SkeletonBox(width: 160.w, height: 18.h),
+            SizedBox(height: 12.h),
+            SkeletonBox(width: 220.w, height: 16.h),
+            SizedBox(height: 12.h),
+            SkeletonBox(width: 120.w, height: 14.h),
           ],
         ),
       ),
@@ -865,12 +866,12 @@ class _FooterSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        SkeletonBox(width: 180, height: 16),
-        SizedBox(height: 8),
-        SkeletonBox(width: double.infinity, height: 14),
-        SizedBox(height: 6),
-        SkeletonBox(width: double.infinity, height: 14),
+      children: [
+        SkeletonBox(width: 180.w, height: 16.h),
+        SizedBox(height: 8.h),
+        SkeletonBox(width: double.infinity, height: 14.h),
+        SizedBox(height: 6.h),
+        SkeletonBox(width: double.infinity, height: 14.h),
       ],
     );
   }
@@ -938,7 +939,7 @@ class _MembershipPlanCard extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: isCurrentPlan
                   ? planColor
@@ -950,13 +951,13 @@ class _MembershipPlanCard extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
+                blurRadius: 10.r,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -964,17 +965,17 @@ class _MembershipPlanCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 48.w,
+                      height: 48.h,
                       decoration: BoxDecoration(
                         color: planColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Center(
-                        child: Text(planIcon, style: const TextStyle(fontSize: 24)),
+                        child: Text(planIcon, style: TextStyle(fontSize: 24.sp)),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -982,7 +983,7 @@ class _MembershipPlanCard extends StatelessWidget {
                           Text(
                             plan.name,
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 20.sp,
                               fontWeight: FontWeight.bold,
                               color: planColor,
                             ),
@@ -991,7 +992,7 @@ class _MembershipPlanCard extends StatelessWidget {
                             Text(
                               plan.description!,
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 13.sp,
                                 color: Colors.grey.shade600,
                               ),
                             ),
@@ -1004,7 +1005,7 @@ class _MembershipPlanCard extends StatelessWidget {
                         Text(
                           '$currencySymbol${plan.priceYearly.toStringAsFixed(0)}',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
                             color: planColor,
                           ),
@@ -1012,7 +1013,7 @@ class _MembershipPlanCard extends StatelessWidget {
                         Text(
                           l10n.perYear,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: Colors.grey.shade500,
                           ),
                         ),
@@ -1021,32 +1022,32 @@ class _MembershipPlanCard extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 const Divider(),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
                 // 功能列表
                 ...plan.features.map((feature) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: EdgeInsets.only(bottom: 8.h),
                       child: Row(
                         children: [
                           Icon(
                             FontAwesomeIcons.circleCheck,
-                            size: 14,
+                            size: 14.r,
                             color: planColor,
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10.w),
                           Expanded(
                             child: Text(
                               feature,
-                              style: const TextStyle(fontSize: 14),
+                              style: TextStyle(fontSize: 14.sp),
                             ),
                           ),
                         ],
                       ),
                     )),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 选择按钮
                 SizedBox(
@@ -1056,15 +1057,15 @@ class _MembershipPlanCard extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isCurrentPlan ? Colors.grey.shade300 : planColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
                     child: isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.h,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: Colors.white,
@@ -1072,8 +1073,8 @@ class _MembershipPlanCard extends StatelessWidget {
                           )
                         : Text(
                             isCurrentPlan ? l10n.currentPlanLabel : l10n.selectPlanLabel,
-                            style: const TextStyle(
-                              fontSize: 16,
+                            style: TextStyle(
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1088,20 +1089,20 @@ class _MembershipPlanCard extends StatelessWidget {
         if (isPopular)
           Positioned(
             top: -1,
-            right: 20,
+            right: 20.w,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: planColor,
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(8),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(8.r),
                 ),
               ),
               child: Text(
                 l10n.popular,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 11,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),

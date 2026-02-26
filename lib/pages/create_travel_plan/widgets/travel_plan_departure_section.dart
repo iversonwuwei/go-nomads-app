@@ -6,6 +6,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/services/amap_poi_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 出发地点部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanDepartureSection extends GetView<CreateTravelPlanPageController> {
@@ -29,12 +30,12 @@ class TravelPlanDepartureSection extends GetView<CreateTravelPlanPageController>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(title: l10n.departureLocation, icon: FontAwesomeIcons.locationDot),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _DepartureInputRow(controllerTag: controllerTag),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           '输入地址搜索或点击地图图标选择出发地点',
-          style: TextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic),
+          style: TextStyle(fontSize: 12.sp, color: Colors.grey[600], fontStyle: FontStyle.italic),
         ),
       ],
     );
@@ -62,7 +63,7 @@ class _DepartureInputRow extends GetView<CreateTravelPlanPageController> {
         Expanded(
           child: _DepartureSearchField(controllerTag: controllerTag),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         _MapPickerButton(controllerTag: controllerTag),
       ],
     );
@@ -107,27 +108,27 @@ class _LoadingLocationIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 56,
+      height: 56.h,
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(
-            width: 20,
-            height: 20,
+          SizedBox(
+            width: 20.w,
+            height: 20.h,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: Color(0xFFFF4458),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Text(
             '正在获取当前位置...',
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            style: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
           ),
         ],
       ),
@@ -162,23 +163,23 @@ class _DepartureTextField extends GetView<CreateTravelPlanPageController> {
         filled: true,
         fillColor: Colors.grey[50],
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(color: Colors.grey.shade200),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFFF4458), width: 2),
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: Color(0xFFFF4458), width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
         prefixIcon: IconButton(
-          icon: const Icon(
+          icon: Icon(
             FontAwesomeIcons.locationCrosshairs,
             color: Color(0xFFFF4458),
-            size: 18,
+            size: 18.r,
           ),
           onPressed: () async {
             controller.hideDepartureSuggestions();
@@ -189,7 +190,7 @@ class _DepartureTextField extends GetView<CreateTravelPlanPageController> {
         ),
         suffixIcon: Obx(() => controller.departureLocation.value.isNotEmpty
             ? IconButton(
-                icon: const Icon(FontAwesomeIcons.xmark, size: 20),
+                icon: Icon(FontAwesomeIcons.xmark, size: 20.r),
                 onPressed: controller.clearDepartureSearch,
               )
             : const SizedBox.shrink()),
@@ -226,16 +227,16 @@ class _SuggestionsDropdown extends GetView<CreateTravelPlanPageController> {
 
       // 显示建议列表
       return Container(
-        margin: const EdgeInsets.only(top: 4),
-        constraints: const BoxConstraints(maxHeight: 250),
+        margin: EdgeInsets.only(top: 4.h),
+        constraints: BoxConstraints(maxHeight: 250.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
+              blurRadius: 8.r,
               offset: const Offset(0, 2),
             ),
           ],
@@ -262,25 +263,25 @@ class _SearchingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 4),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(top: 4.h),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 20,
-            height: 20,
+            width: 20.w,
+            height: 20.h,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: Color(0xFFFF4458),
             ),
           ),
-          SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Text('搜索中...', style: TextStyle(color: Colors.grey)),
         ],
       ),
@@ -295,11 +296,11 @@ class _NoResultsIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 4),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(top: 4.h),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Text(
@@ -329,23 +330,23 @@ class _SuggestionItem extends GetView<CreateTravelPlanPageController> {
     return InkWell(
       onTap: () => controller.selectDepartureSuggestion(poi),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         child: Row(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 32.w,
+              height: 32.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
-              child: const Icon(
+              child: Icon(
                 FontAwesomeIcons.locationDot,
-                size: 14,
+                size: 14.r,
                 color: Color(0xFFFF4458),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,8 +354,8 @@ class _SuggestionItem extends GetView<CreateTravelPlanPageController> {
                 children: [
                   Text(
                     poi.name,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                       color: Colors.black87,
                     ),
@@ -362,10 +363,10 @@ class _SuggestionItem extends GetView<CreateTravelPlanPageController> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (poi.address.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       poi.address,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -398,19 +399,19 @@ class _MapPickerButton extends GetView<CreateTravelPlanPageController> {
     }
 
     return Container(
-      height: 56,
-      width: 56,
+      height: 56.h,
+      width: 56.w,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -461,7 +462,7 @@ class TravelPlanDateSection extends GetView<CreateTravelPlanPageController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionTitle(title: 'Departure Date', icon: FontAwesomeIcons.calendarDays),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _DatePickerField(controllerTag: controllerTag),
       ],
     );
@@ -509,10 +510,10 @@ class _DatePickerField extends GetView<CreateTravelPlanPageController> {
             }
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             decoration: BoxDecoration(
               color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               border: Border.all(color: Colors.grey.shade200),
             ),
             child: Row(
@@ -520,23 +521,23 @@ class _DatePickerField extends GetView<CreateTravelPlanPageController> {
                 Icon(
                   FontAwesomeIcons.calendar,
                   color: controller.departureDate.value != null ? const Color(0xFFFF4458) : Colors.grey[400],
-                  size: 20,
+                  size: 20.r,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
                     controller.departureDate.value != null
                         ? '${controller.departureDate.value!.year}-${controller.departureDate.value!.month.toString().padLeft(2, '0')}-${controller.departureDate.value!.day.toString().padLeft(2, '0')}'
                         : 'Select departure date',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       color: controller.departureDate.value != null ? Colors.black87 : Colors.grey[400],
                     ),
                   ),
                 ),
                 if (controller.departureDate.value != null)
                   IconButton(
-                    icon: const Icon(FontAwesomeIcons.xmark, size: 20),
+                    icon: Icon(FontAwesomeIcons.xmark, size: 20.r),
                     onPressed: controller.clearDepartureDate,
                   ),
               ],
@@ -557,12 +558,12 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFFFF4458)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20.r, color: const Color(0xFFFF4458)),
+        SizedBox(width: 8.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),

@@ -5,6 +5,7 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 旅行计划部分组件
 class TravelPlansWidget extends StatelessWidget {
@@ -29,16 +30,16 @@ class TravelPlansWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 FontAwesomeIcons.wandMagicSparkles,
                 color: Color(0xFFFF4458),
-                size: 20,
+                size: 20.r,
               ),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8.w),
+              Text(
                 'My Travel Plans',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -46,7 +47,7 @@ class TravelPlansWidget extends StatelessWidget {
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () => Get.toNamed(AppRoutes.cityList),
-                  icon: const Icon(FontAwesomeIcons.plus, size: 16),
+                  icon: Icon(FontAwesomeIcons.plus, size: 16.r),
                   label: Text(l10n.createNew),
                   style: TextButton.styleFrom(
                     foregroundColor: const Color(0xFFFF4458),
@@ -55,7 +56,7 @@ class TravelPlansWidget extends StatelessWidget {
               ],
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           if (isLoading)
             const _LoadingPlanCard()
           else if (latestPlan == null)
@@ -75,10 +76,10 @@ class _LoadingPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: const Center(
@@ -99,57 +100,57 @@ class _EmptyPlansCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(32.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: const Color(0xFFFF4458).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               FontAwesomeIcons.earthAmericas,
-              size: 48,
+              size: 48.r,
               color: Color(0xFFFF4458),
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16.h),
+          Text(
             'No Travel Plans Yet',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             'Generate AI-powered travel plans from city detail pages',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           ElevatedButton.icon(
             onPressed: () => Get.toNamed(AppRoutes.cityList),
-            icon: const Icon(FontAwesomeIcons.compass, size: 18),
+            icon: Icon(FontAwesomeIcons.compass, size: 18.r),
             label: Text(l10n.exploreCities),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF4458),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
+              padding: EdgeInsets.symmetric(
+                horizontal: 24.w,
+                vertical: 12.h,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(24.r),
               ),
             ),
           ),
@@ -181,11 +182,11 @@ class _LatestPlanCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
+              blurRadius: 12.r,
               offset: const Offset(0, 4),
             ),
           ],
@@ -195,7 +196,7 @@ class _LatestPlanCard extends StatelessWidget {
           children: [
             // 城市图片
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
               child: Stack(
                 children: [
                   _CityImage(imageUrl: plan.cityImage),
@@ -207,13 +208,13 @@ class _LatestPlanCard extends StatelessWidget {
             ),
             // 计划详情
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: 8.w,
+                    runSpacing: 8.w,
                     children: [
                       _PlanTag(
                         icon: FontAwesomeIcons.calendarDays,
@@ -229,26 +230,26 @@ class _LatestPlanCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Row(
                     children: [
                       Icon(
                         FontAwesomeIcons.clock,
-                        size: 12,
+                        size: 12.r,
                         color: Colors.grey[500],
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6.w),
                       Text(
                         'Created ${plan.formattedCreatedAt}',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[500],
                         ),
                       ),
                       const Spacer(),
                       Icon(
                         FontAwesomeIcons.chevronRight,
-                        size: 14,
+                        size: 14.r,
                         color: Colors.grey[400],
                       ),
                     ],
@@ -274,7 +275,7 @@ class _CityImage extends StatelessWidget {
     if (imageUrl != null && imageUrl!.isNotEmpty) {
       return Image.network(
         imageUrl!,
-        height: 120,
+        height: 120.h,
         width: double.infinity,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
@@ -291,12 +292,12 @@ class _PlaceholderImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120,
+      height: 120.h,
       color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-      child: const Center(
+      child: Center(
         child: Icon(
           FontAwesomeIcons.city,
-          size: 40,
+          size: 40.r,
           color: Color(0xFFFF4458),
         ),
       ),
@@ -313,7 +314,7 @@ class _GradientOverlay extends StatelessWidget {
       left: 0,
       right: 0,
       child: Container(
-        height: 60,
+        height: 60.h,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -338,56 +339,56 @@ class _CityNameOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: 12,
-      left: 16,
-      right: 16,
+      bottom: 12.h,
+      left: 16.w,
+      right: 16.w,
       child: Row(
         children: [
           Text(
             plan.cityName,
-            style: const TextStyle(
-              fontSize: 20,
+            style: TextStyle(
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               shadows: [
                 Shadow(
                   offset: Offset(0, 1),
-                  blurRadius: 3,
+                  blurRadius: 3.r,
                   color: Colors.black45,
                 ),
               ],
             ),
           ),
           if (plan.departureDate != null) ...[
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
+              padding: EdgeInsets.symmetric(
+                horizontal: 8.w,
+                vertical: 4.h,
               ),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     FontAwesomeIcons.planeDeparture,
-                    size: 11,
+                    size: 11.r,
                     color: Colors.white,
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4.w),
                   Text(
                     plan.formattedDepartureDate!,
-                    style: const TextStyle(
-                      fontSize: 12,
+                    style: TextStyle(
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                       shadows: [
                         Shadow(
                           offset: Offset(0, 1),
-                          blurRadius: 2,
+                          blurRadius: 2.r,
                           color: Colors.black45,
                         ),
                       ],
@@ -410,30 +411,30 @@ class _AiTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: 12,
-      right: 12,
+      top: 12.h,
+      right: 12.w,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10,
-          vertical: 4,
+        padding: EdgeInsets.symmetric(
+          horizontal: 10.w,
+          vertical: 4.h,
         ),
         decoration: BoxDecoration(
           color: const Color(0xFFFF4458),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               FontAwesomeIcons.wandMagicSparkles,
-              size: 12,
+              size: 12.r,
               color: Colors.white,
             ),
-            SizedBox(width: 4),
+            SizedBox(width: 4.w),
             Text(
               'AI Generated',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 11.sp,
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
               ),
@@ -458,20 +459,20 @@ class _PlanTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: const Color(0xFFFF4458)),
-          const SizedBox(width: 4),
+          Icon(icon, size: 12.r, color: const Color(0xFFFF4458)),
+          SizedBox(width: 4.w),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: 12.sp,
               fontWeight: FontWeight.w500,
               color: Color(0xFF374151),
             ),

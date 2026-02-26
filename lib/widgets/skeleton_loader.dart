@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 通用骨架屏加载组件
 /// 提供多种预设骨架屏样式和自定义骨架屏构建器
@@ -65,14 +66,14 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
   Widget _buildListSkeleton() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: 6,
       itemBuilder: (context, index) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: EdgeInsets.only(bottom: 16.h),
           child: SkeletonCard(
             shimmerController: _shimmerController,
-            height: 120,
+            height: 120.h,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -80,11 +81,11 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                   children: [
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 60,
-                      height: 60,
+                      width: 60.w,
+                      height: 60.h,
                       borderRadius: 12,
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,21 +93,21 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                           SkeletonBox(
                             shimmerController: _shimmerController,
                             width: double.infinity,
-                            height: 16,
+                            height: 16.h,
                             borderRadius: 4,
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           SkeletonBox(
                             shimmerController: _shimmerController,
-                            width: 150,
-                            height: 14,
+                            width: 150.w,
+                            height: 14.h,
                             borderRadius: 4,
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           SkeletonBox(
                             shimmerController: _shimmerController,
-                            width: 100,
-                            height: 12,
+                            width: 100.w,
+                            height: 12.h,
                             borderRadius: 4,
                           ),
                         ],
@@ -124,11 +125,11 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
   Widget _buildGridSkeleton() {
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      padding: EdgeInsets.all(16.w),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: 16.w,
+        mainAxisSpacing: 16.w,
         childAspectRatio: 0.75,
       ),
       itemCount: 6,
@@ -141,21 +142,21 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
               SkeletonBox(
                 shimmerController: _shimmerController,
                 width: double.infinity,
-                height: 140,
+                height: 140.h,
                 borderRadius: 12,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               SkeletonBox(
                 shimmerController: _shimmerController,
                 width: double.infinity,
-                height: 16,
+                height: 16.h,
                 borderRadius: 4,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               SkeletonBox(
                 shimmerController: _shimmerController,
-                width: 100,
-                height: 14,
+                width: 100.w,
+                height: 14.h,
                 borderRadius: 4,
               ),
             ],
@@ -167,7 +168,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
   Widget _buildDetailSkeleton() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -175,33 +176,33 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
           SkeletonBox(
             shimmerController: _shimmerController,
             width: double.infinity,
-            height: 200,
+            height: 200.h,
             borderRadius: 16,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           // Title
           SkeletonBox(
             shimmerController: _shimmerController,
             width: double.infinity,
-            height: 24,
+            height: 24.h,
             borderRadius: 4,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           // Subtitle
           SkeletonBox(
             shimmerController: _shimmerController,
-            width: 200,
-            height: 16,
+            width: 200.w,
+            height: 16.h,
             borderRadius: 4,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // Content cards
           ...List.generate(3, (index) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: EdgeInsets.only(bottom: 16.h),
               child: SkeletonCard(
                 shimmerController: _shimmerController,
-                height: 150,
+                height: 150.h,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -209,38 +210,38 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                       children: [
                         SkeletonBox(
                           shimmerController: _shimmerController,
-                          width: 24,
-                          height: 24,
+                          width: 24.w,
+                          height: 24.h,
                           borderRadius: 6,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         SkeletonBox(
                           shimmerController: _shimmerController,
-                          width: 120,
-                          height: 20,
+                          width: 120.w,
+                          height: 20.h,
                           borderRadius: 4,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     SkeletonBox(
                       shimmerController: _shimmerController,
                       width: double.infinity,
-                      height: 14,
+                      height: 14.h,
                       borderRadius: 4,
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     SkeletonBox(
                       shimmerController: _shimmerController,
                       width: double.infinity,
-                      height: 14,
+                      height: 14.h,
                       borderRadius: 4,
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 200,
-                      height: 14,
+                      width: 200.w,
+                      height: 14.h,
                       borderRadius: 4,
                     ),
                   ],
@@ -255,59 +256,59 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
   Widget _buildProfileSkeleton() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         children: [
           // Avatar
           SkeletonBox(
             shimmerController: _shimmerController,
-            width: 100,
-            height: 100,
+            width: 100.w,
+            height: 100.h,
             borderRadius: 50,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           // Name
           SkeletonBox(
             shimmerController: _shimmerController,
-            width: 150,
-            height: 20,
+            width: 150.w,
+            height: 20.h,
             borderRadius: 4,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           // Email
           SkeletonBox(
             shimmerController: _shimmerController,
-            width: 200,
-            height: 16,
+            width: 200.w,
+            height: 16.h,
             borderRadius: 4,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // Stats cards
           Row(
             children: [
               Expanded(
                 child: SkeletonCard(
                   shimmerController: _shimmerController,
-                  height: 80,
+                  height: 80.h,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               Expanded(
                 child: SkeletonCard(
                   shimmerController: _shimmerController,
-                  height: 80,
+                  height: 80.h,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // List items
           ...List.generate(4, (index) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.only(bottom: 12.h),
               child: SkeletonCard(
                 shimmerController: _shimmerController,
-                height: 60,
+                height: 60.h,
               ),
             );
           }),
@@ -318,10 +319,10 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
   Widget _buildCardSkeleton() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: SkeletonCard(
         shimmerController: _shimmerController,
-        height: 200,
+        height: 200.h,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -329,38 +330,38 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
               children: [
                 SkeletonBox(
                   shimmerController: _shimmerController,
-                  width: 24,
-                  height: 24,
+                  width: 24.w,
+                  height: 24.h,
                   borderRadius: 6,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 SkeletonBox(
                   shimmerController: _shimmerController,
-                  width: 120,
-                  height: 20,
+                  width: 120.w,
+                  height: 20.h,
                   borderRadius: 4,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             SkeletonBox(
               shimmerController: _shimmerController,
               width: double.infinity,
-              height: 14,
+              height: 14.h,
               borderRadius: 4,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             SkeletonBox(
               shimmerController: _shimmerController,
               width: double.infinity,
-              height: 14,
+              height: 14.h,
               borderRadius: 4,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             SkeletonBox(
               shimmerController: _shimmerController,
-              width: 200,
-              height: 14,
+              width: 200.w,
+              height: 14.h,
               borderRadius: 4,
             ),
             const Spacer(),
@@ -368,15 +369,15 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
               children: [
                 SkeletonBox(
                   shimmerController: _shimmerController,
-                  width: 80,
-                  height: 12,
+                  width: 80.w,
+                  height: 12.h,
                   borderRadius: 4,
                 ),
                 const Spacer(),
                 SkeletonBox(
                   shimmerController: _shimmerController,
-                  width: 60,
-                  height: 12,
+                  width: 60.w,
+                  height: 12.h,
                   borderRadius: 4,
                 ),
               ],
@@ -395,25 +396,25 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
         children: [
           // 轮播图骨架
           Container(
-            margin: const EdgeInsets.all(16),
+            margin: EdgeInsets.all(16.w),
             child: Column(
               children: [
                 SkeletonBox(
                   shimmerController: _shimmerController,
                   width: double.infinity,
-                  height: 180,
+                  height: 180.h,
                   borderRadius: 12,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(3, (index) {
                     return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      margin: EdgeInsets.symmetric(horizontal: 3.w),
                       child: SkeletonBox(
                         shimmerController: _shimmerController,
                         width: index == 0 ? 24 : 6,
-                        height: 6,
+                        height: 6.h,
                         borderRadius: 3,
                       ),
                     );
@@ -425,39 +426,39 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
 
           // 分类标题
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: SkeletonBox(
               shimmerController: _shimmerController,
-              width: 150,
-              height: 20,
+              width: 150.w,
+              height: 20.h,
               borderRadius: 4,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 快捷功能网格
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 4,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
+              mainAxisSpacing: 16.w,
+              crossAxisSpacing: 16.w,
               children: List.generate(8, (index) {
                 return Column(
                   children: [
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 48,
-                      height: 48,
+                      width: 48.w,
+                      height: 48.h,
                       borderRadius: 12,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 60,
-                      height: 12,
+                      width: 60.w,
+                      height: 12.h,
                       borderRadius: 4,
                     ),
                   ],
@@ -465,29 +466,29 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
               }),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
 
           // 热门接口标题
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: SkeletonBox(
               shimmerController: _shimmerController,
-              width: 180,
-              height: 20,
+              width: 180.w,
+              height: 20.h,
               borderRadius: 4,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // API接口网格
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
+              mainAxisSpacing: 12.w,
+              crossAxisSpacing: 12.w,
               childAspectRatio: 1.2,
               children: List.generate(4, (index) {
                 return SkeletonCard(
@@ -499,33 +500,33 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                         children: [
                           SkeletonBox(
                             shimmerController: _shimmerController,
-                            width: 32,
-                            height: 32,
+                            width: 32.w,
+                            height: 32.h,
                             borderRadius: 8,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           Expanded(
                             child: SkeletonBox(
                               shimmerController: _shimmerController,
                               width: double.infinity,
-                              height: 16,
+                              height: 16.h,
                               borderRadius: 4,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       SkeletonBox(
                         shimmerController: _shimmerController,
                         width: double.infinity,
-                        height: 12,
+                        height: 12.h,
                         borderRadius: 4,
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       SkeletonBox(
                         shimmerController: _shimmerController,
-                        width: 100,
-                        height: 12,
+                        width: 100.w,
+                        height: 12.h,
                         borderRadius: 4,
                       ),
                     ],
@@ -534,7 +535,7 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
               }),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
         ],
       ),
     );
@@ -543,14 +544,14 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
   // 聊天室列表骨架屏
   Widget _buildChatSkeleton() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: 5,
       itemBuilder: (context, index) {
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: EdgeInsets.only(bottom: 12.h),
           child: SkeletonCard(
             shimmerController: _shimmerController,
-            height: 140,
+            height: 140.h,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -559,26 +560,26 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                   children: [
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 48,
-                      height: 48,
+                      width: 48.w,
+                      height: 48.h,
                       borderRadius: 24,
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SkeletonBox(
                             shimmerController: _shimmerController,
-                            width: 150,
-                            height: 16,
+                            width: 150.w,
+                            height: 16.h,
                             borderRadius: 4,
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6.h),
                           SkeletonBox(
                             shimmerController: _shimmerController,
-                            width: 100,
-                            height: 12,
+                            width: 100.w,
+                            height: 12.h,
                             borderRadius: 4,
                           ),
                         ],
@@ -586,25 +587,25 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                     ),
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 60,
-                      height: 24,
+                      width: 60.w,
+                      height: 24.h,
                       borderRadius: 12,
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 // 最后消息
                 SkeletonBox(
                   shimmerController: _shimmerController,
                   width: double.infinity,
-                  height: 14,
+                  height: 14.h,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 SkeletonBox(
                   shimmerController: _shimmerController,
-                  width: 200,
-                  height: 14,
+                  width: 200.w,
+                  height: 14.h,
                   borderRadius: 4,
                 ),
                 const Spacer(),
@@ -613,15 +614,15 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                   children: [
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 80,
-                      height: 12,
+                      width: 80.w,
+                      height: 12.h,
                       borderRadius: 4,
                     ),
                     const Spacer(),
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 100,
-                      height: 12,
+                      width: 100.w,
+                      height: 12.h,
                       borderRadius: 4,
                     ),
                   ],
@@ -637,11 +638,11 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
   // 社区内容骨架屏
   Widget _buildCommunitySkeleton() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: 4,
       itemBuilder: (context, index) {
         return Container(
-          margin: const EdgeInsets.only(bottom: 20),
+          margin: EdgeInsets.only(bottom: 20.h),
           child: SkeletonCard(
             shimmerController: _shimmerController,
             child: Column(
@@ -652,26 +653,26 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                   children: [
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 40,
-                      height: 40,
+                      width: 40.w,
+                      height: 40.h,
                       borderRadius: 20,
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SkeletonBox(
                             shimmerController: _shimmerController,
-                            width: 120,
-                            height: 14,
+                            width: 120.w,
+                            height: 14.h,
                             borderRadius: 4,
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6.h),
                           SkeletonBox(
                             shimmerController: _shimmerController,
-                            width: 180,
-                            height: 12,
+                            width: 180.w,
+                            height: 12.h,
                             borderRadius: 4,
                           ),
                         ],
@@ -679,72 +680,72 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                     ),
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 50,
-                      height: 28,
+                      width: 50.w,
+                      height: 28.h,
                       borderRadius: 6,
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 // 内容图片
                 SkeletonBox(
                   shimmerController: _shimmerController,
                   width: double.infinity,
-                  height: 200,
+                  height: 200.h,
                   borderRadius: 12,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 // 标题
                 SkeletonBox(
                   shimmerController: _shimmerController,
                   width: double.infinity,
-                  height: 18,
+                  height: 18.h,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 // 内容
                 SkeletonBox(
                   shimmerController: _shimmerController,
                   width: double.infinity,
-                  height: 14,
+                  height: 14.h,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 SkeletonBox(
                   shimmerController: _shimmerController,
                   width: double.infinity,
-                  height: 14,
+                  height: 14.h,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 SkeletonBox(
                   shimmerController: _shimmerController,
-                  width: 250,
-                  height: 14,
+                  width: 250.w,
+                  height: 14.h,
                   borderRadius: 4,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 // 底部统计信息
                 Row(
                   children: [
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 60,
-                      height: 12,
+                      width: 60.w,
+                      height: 12.h,
                       borderRadius: 4,
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16.w),
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 60,
-                      height: 12,
+                      width: 60.w,
+                      height: 12.h,
                       borderRadius: 4,
                     ),
                     const Spacer(),
                     SkeletonBox(
                       shimmerController: _shimmerController,
-                      width: 80,
-                      height: 12,
+                      width: 80.w,
+                      height: 12.h,
                       borderRadius: 4,
                     ),
                   ],
@@ -761,13 +762,13 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
   Widget _buildMessagesSkeleton() {
     return ListView.builder(
       reverse: true,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: 8,
       itemBuilder: (context, index) {
         // 交替显示左右对齐的消息气泡
         final isLeft = index % 3 == 0;
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: EdgeInsets.only(bottom: 16.h),
           child: Row(
             mainAxisAlignment:
                 isLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
@@ -777,15 +778,15 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                 // 左侧消息（他人）
                 SkeletonBox(
                   shimmerController: _shimmerController,
-                  width: 32,
-                  height: 32,
+                  width: 32.w,
+                  height: 32.h,
                   borderRadius: 16,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
               ],
               Container(
-                constraints: const BoxConstraints(
-                  maxWidth: 250,
+                constraints: BoxConstraints(
+                  maxWidth: 250.w,
                 ),
                 child: Column(
                   crossAxisAlignment: isLeft
@@ -794,16 +795,16 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                   children: [
                     if (isLeft)
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
+                        padding: EdgeInsets.only(bottom: 4.h),
                         child: SkeletonBox(
                           shimmerController: _shimmerController,
-                          width: 80,
-                          height: 12,
+                          width: 80.w,
+                          height: 12.h,
                           borderRadius: 4,
                         ),
                       ),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
                         color: isLeft
                             ? Colors.grey[100]
@@ -811,8 +812,8 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(isLeft ? 4 : 16),
                           topRight: Radius.circular(isLeft ? 16 : 4),
-                          bottomLeft: const Radius.circular(16),
-                          bottomRight: const Radius.circular(16),
+                          bottomLeft: Radius.circular(16.r),
+                          bottomRight: Radius.circular(16.r),
                         ),
                       ),
                       child: Column(
@@ -821,15 +822,15 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                           SkeletonBox(
                             shimmerController: _shimmerController,
                             width: index % 2 == 0 ? 180.0 : 120.0,
-                            height: 14,
+                            height: 14.h,
                             borderRadius: 4,
                           ),
                           if (index % 4 == 0) ...[
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             SkeletonBox(
                               shimmerController: _shimmerController,
-                              width: 150,
-                              height: 14,
+                              width: 150.w,
+                              height: 14.h,
                               borderRadius: 4,
                             ),
                           ],
@@ -837,11 +838,11 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 4),
+                      padding: EdgeInsets.only(top: 4.h),
                       child: SkeletonBox(
                         shimmerController: _shimmerController,
-                        width: 60,
-                        height: 10,
+                        width: 60.w,
+                        height: 10.h,
                         borderRadius: 4,
                       ),
                     ),
@@ -849,11 +850,11 @@ class _SkeletonLoaderState extends State<SkeletonLoader>
                 ),
               ),
               if (!isLeft) ...[
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 SkeletonBox(
                   shimmerController: _shimmerController,
-                  width: 32,
-                  height: 32,
+                  width: 32.w,
+                  height: 32.h,
                   borderRadius: 16,
                 ),
               ],
@@ -883,14 +884,14 @@ class SkeletonCard extends StatelessWidget {
     if (child != null) {
       return Container(
         height: height,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withValues(alpha: 0.1),
-              blurRadius: 8,
+              blurRadius: 8.r,
               offset: const Offset(0, 2),
             ),
           ],
@@ -915,11 +916,11 @@ class SkeletonCard extends StatelessWidget {
               end: Alignment(1.0 + shimmerController.value * 2, 0),
               stops: const [0.0, 0.5, 1.0],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.withValues(alpha: 0.1),
-                blurRadius: 8,
+                blurRadius: 8.r,
                 offset: const Offset(0, 2),
               ),
             ],

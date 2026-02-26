@@ -2,6 +2,7 @@ import 'package:go_nomads_app/controllers/edit_interests_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 兴趣编辑页面
 class EditInterestsPage extends StatelessWidget {
@@ -34,7 +35,7 @@ class EditInterestsPage extends StatelessWidget {
                 Obx(() => controller.selectedInterests.isNotEmpty
                     ? Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         color: Colors.green.shade50,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,24 +43,24 @@ class EditInterestsPage extends StatelessWidget {
                             Row(
                               children: [
                                 const Icon(FontAwesomeIcons.heart, color: Colors.green),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8.w),
                                 Obx(() => Text(
                                   '已选择 ${controller.selectedInterests.length} 项兴趣',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                   ),
                                 )),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12.h),
                             Obx(() => Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                              spacing: 8.w,
+                              runSpacing: 8.w,
                               children: controller.selectedInterests.map((interest) {
                                 return Chip(
                                   label: Text(interest),
-                                  deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
+                                  deleteIcon: Icon(FontAwesomeIcons.xmark, size: 18.r),
                                   onDeleted: () => controller.toggleInterest(interest),
                                   backgroundColor: Colors.green.shade100,
                                 );
@@ -72,7 +73,7 @@ class EditInterestsPage extends StatelessWidget {
 
                 // 自定义兴趣输入
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   child: Row(
                     children: [
                       Expanded(
@@ -87,7 +88,7 @@ class EditInterestsPage extends StatelessWidget {
                           onSubmitted: (_) => controller.addCustomInterest(),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       ElevatedButton(
                         onPressed: controller.addCustomInterest,
                         child: const Text('添加'),
@@ -100,15 +101,15 @@ class EditInterestsPage extends StatelessWidget {
 
                 // 分类选择
                 Container(
-                  height: 50,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  height: 50.h,
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: ['全部', ...controller.categorizedInterests.keys].map((category) {
                       return Obx(() {
                         final isSelected = controller.selectedCategory.value == category;
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 4.w),
                           child: ChoiceChip(
                             label: Text(category),
                             selected: isSelected,
@@ -125,10 +126,10 @@ class EditInterestsPage extends StatelessWidget {
                 // 兴趣列表
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     child: Obx(() => Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 8.w,
+                      runSpacing: 8.w,
                       children: controller.getFilteredInterests().map((interest) {
                         return Obx(() {
                           final isSelected = controller.selectedInterests.contains(interest);

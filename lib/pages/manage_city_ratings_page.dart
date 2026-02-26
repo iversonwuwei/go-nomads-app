@@ -7,6 +7,7 @@ import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ManageCityRatingsPage extends StatelessWidget {
   final String cityId;
@@ -45,7 +46,7 @@ class ManageCityRatingsPage extends StatelessWidget {
                   hintText: '例如：美食',
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextField(
                 controller: nameEnController,
                 decoration: const InputDecoration(
@@ -53,7 +54,7 @@ class ManageCityRatingsPage extends StatelessWidget {
                   hintText: '例如：Food',
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextField(
                 controller: descController,
                 decoration: const InputDecoration(
@@ -62,7 +63,7 @@ class ManageCityRatingsPage extends StatelessWidget {
                 ),
                 maxLines: 2,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               DropdownButtonFormField<String>(
                 initialValue: selectedIcon,
                 decoration: const InputDecoration(labelText: '图标'),
@@ -194,7 +195,7 @@ class ManageCityRatingsPage extends StatelessWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             itemBuilder: (context, index) {
               final category = _controller.categories[index];
               final stat = _controller.statistics.firstWhereOrNull(
@@ -203,7 +204,7 @@ class ManageCityRatingsPage extends StatelessWidget {
 
               return Card(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: ListTile(
                   leading: CircleAvatar(
@@ -218,9 +219,9 @@ class ManageCityRatingsPage extends StatelessWidget {
                     '${category.nameEn ?? ""} • 评分: ${stat?.averageRating.toStringAsFixed(1) ?? "0.0"} (${stat?.ratingCount ?? 0}人)',
                   ),
                   trailing: category.isDefault
-                      ? const Chip(
-                          label: Text('默认', style: TextStyle(fontSize: 12)),
-                          padding: EdgeInsets.symmetric(horizontal: 8),
+                      ? Chip(
+                          label: Text('默认', style: TextStyle(fontSize: 12.sp)),
+                          padding: EdgeInsets.symmetric(horizontal: 8.w),
                         )
                       : IconButton(
                           icon: const Icon(FontAwesomeIcons.trash),
@@ -230,7 +231,7 @@ class ManageCityRatingsPage extends StatelessWidget {
                 ),
               );
             },
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, __) => SizedBox(height: 12.h),
             itemCount: _controller.categories.length,
           );
         }),
@@ -241,22 +242,22 @@ class ManageCityRatingsPage extends StatelessWidget {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FontAwesomeIcons.star, size: 72, color: Colors.grey.withValues(alpha: 0.4)),
-            const SizedBox(height: 16),
-            const Text(
+            Icon(FontAwesomeIcons.star, size: 72.r, color: Colors.grey.withValues(alpha: 0.4)),
+            SizedBox(height: 16.h),
+            Text(
               '暂无评分项',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             const Text(
               '点击右上角加号，添加第一个评分项',
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.cityPrimary,

@@ -5,6 +5,7 @@ import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 社交登录按钮组
 class LoginSocialButtons extends GetView<LoginController> {
@@ -16,7 +17,7 @@ class LoginSocialButtons extends GetView<LoginController> {
       children: [
         // 分隔线
         _Divider(),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
         // 社交登录按钮
         if (controller.isChineseUser) _ChineseSocialButtons() else _InternationalSocialButtons(),
       ],
@@ -32,10 +33,10 @@ class _Divider extends StatelessWidget {
       children: [
         Expanded(child: Divider(color: Colors.grey.shade300)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
           child: Text(
             'Or continue with',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 14.sp),
           ),
         ),
         Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -114,12 +115,12 @@ class _SocialButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        padding: EdgeInsets.symmetric(horizontal: 6.w),
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
@@ -129,11 +130,11 @@ class _SocialButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 FaIcon(icon, size: LoginConstants.iconSize, color: color),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: Colors.grey.shade700,
                     fontWeight: FontWeight.w500,
                   ),

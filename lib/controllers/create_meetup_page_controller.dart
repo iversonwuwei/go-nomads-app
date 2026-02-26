@@ -16,6 +16,7 @@ import 'package:go_nomads_app/services/calendar_service.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CreateMeetupPageController extends GetxController {
   final Meetup? editingMeetup;

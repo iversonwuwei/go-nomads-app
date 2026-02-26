@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 注册页面通用输入框 - 使用响应式错误显示，无需 Form/GlobalKey
 class RegisterFormField extends StatelessWidget {
@@ -60,7 +61,7 @@ class RegisterFormField extends StatelessWidget {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(RegisterConstants.inputBorderRadius),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderSide: BorderSide(color: Colors.red, width: 2),
         ),
       ),
     );

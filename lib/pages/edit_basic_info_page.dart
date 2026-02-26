@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/edit_basic_info_page_controller.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 基本信息编辑页面
 class EditBasicInfoPage extends StatelessWidget {
@@ -42,17 +43,17 @@ class EditBasicInfoPage extends StatelessWidget {
                       }
                     },
               child: controller.isSaving.value
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                  ? SizedBox(
+                      width: 20.w,
+                      height: 20.h,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text(
+                  : Text(
                       '保存',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 16.sp),
                     ),
             );
           }),
@@ -64,7 +65,7 @@ class EditBasicInfoPage extends StatelessWidget {
         }
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           child: Form(
             key: formKey,
             child: Column(
@@ -77,7 +78,7 @@ class EditBasicInfoPage extends StatelessWidget {
                       Obx(() => SafeCircleAvatar(
                             imageUrl: controller.avatarUrl.value,
                             radius: 60,
-                            errorWidget: const Icon(FontAwesomeIcons.user, size: 60),
+                            errorWidget: Icon(FontAwesomeIcons.user, size: 60.r),
                           )),
                       Positioned(
                         bottom: 0,
@@ -86,7 +87,7 @@ class EditBasicInfoPage extends StatelessWidget {
                           backgroundColor: Theme.of(context).primaryColor,
                           radius: 20,
                           child: IconButton(
-                            icon: const Icon(FontAwesomeIcons.camera, size: 20, color: Colors.white),
+                            icon: Icon(FontAwesomeIcons.camera, size: 20.r, color: Colors.white),
                             onPressed: controller.uploadAvatar,
                           ),
                         ),
@@ -95,7 +96,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
 
                 // 姓名
                 TextFormField(
@@ -113,7 +114,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   },
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 个人简介
                 TextFormField(
@@ -127,7 +128,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   maxLines: 4,
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 性别
                 Obx(() => DropdownButtonFormField<String>(
@@ -146,7 +147,7 @@ class EditBasicInfoPage extends StatelessWidget {
                       onChanged: controller.updateGender,
                     )),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 当前城市
                 TextFormField(
@@ -159,7 +160,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 当前国家
                 TextFormField(
@@ -172,7 +173,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 职业
                 TextFormField(
@@ -185,7 +186,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 公司
                 TextFormField(
@@ -198,7 +199,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 个人网站
                 TextFormField(
@@ -212,7 +213,7 @@ class EditBasicInfoPage extends StatelessWidget {
                   keyboardType: TextInputType.url,
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
               ],
             ),
           ),

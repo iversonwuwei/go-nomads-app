@@ -4,6 +4,7 @@ import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 
 import 'app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 管理员删除按钮组件
 ///
@@ -43,7 +44,7 @@ class AdminDeleteButton extends StatelessWidget {
     if (!isAdmin) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
         color: opacity > 0.5 ? Colors.transparent : Colors.black.withValues(alpha: 0.3),
         shape: BoxShape.circle,

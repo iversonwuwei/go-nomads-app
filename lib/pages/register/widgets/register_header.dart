@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 注册页面头部 - Logo 和标题
 class RegisterHeader extends StatelessWidget {
@@ -16,35 +17,35 @@ class RegisterHeader extends StatelessWidget {
         children: [
           // Logo
           Container(
-            width: 80,
-            height: 80,
+            width: 80.w,
+            height: 80.h,
             decoration: BoxDecoration(
               color: RegisterConstants.primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               FontAwesomeIcons.earthAmericas,
-              size: 40,
+              size: 40.r,
               color: RegisterConstants.primaryColor,
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // 标题
           Text(
             '🌍 ${l10n.goNomad}',
-            style: const TextStyle(
-              fontSize: 32,
+            style: TextStyle(
+              fontSize: 32.sp,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           // 副标题
           Text(
             l10n.joinGlobalCommunity,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 16.sp,
               color: Colors.grey,
               height: 1.5,
             ),

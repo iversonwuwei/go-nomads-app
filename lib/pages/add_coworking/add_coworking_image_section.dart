@@ -5,6 +5,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddCoworkingImageSection extends StatelessWidget {
   final String controllerTag;
@@ -27,16 +28,16 @@ class AddCoworkingImageSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l10n.addCoverPhoto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(l10n.addCoverPhoto, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
               Text('${_c.coworkingImageUrls.length}/${AddCoworkingPageController.maxCoworkingImages}',
-                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary)),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           if (hasImages)
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: 12.w,
+              runSpacing: 12.w,
               children: [
                 ..._c.coworkingImageUrls.asMap().entries.map((e) => _buildImageTile(e.value, e.key)),
                 if (canAddMore) _buildAddTile(l10n),
@@ -45,10 +46,10 @@ class AddCoworkingImageSection extends StatelessWidget {
           else
             _buildAddTile(l10n, fullWidth: true),
           if (_c.isUploadingImages.value) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(children: [
-              const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-              const SizedBox(width: 8),
+              SizedBox(height: 18.h, width: 18.w, child: CircularProgressIndicator(strokeWidth: 2)),
+              SizedBox(width: 8.w),
               Text(_c.imageUploadStatus.value ?? 'Uploading...'),
             ]),
           ],
@@ -61,21 +62,21 @@ class AddCoworkingImageSection extends StatelessWidget {
     return Stack(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: Container(
-            width: 120,
-            height: 120,
+            width: 120.w,
+            height: 120.h,
             color: Colors.grey[200],
             child: Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(FontAwesomeIcons.image)),
           ),
         ),
         Positioned(
-          top: 6,
-          right: 6,
+          top: 6.h,
+          right: 6.w,
           child: IconButton(
             onPressed: () => _c.removeImageAt(index),
-            icon: const Icon(FontAwesomeIcons.xmark, size: 18, color: Colors.white),
-            style: IconButton.styleFrom(backgroundColor: Colors.black45, padding: const EdgeInsets.all(4)),
+            icon: Icon(FontAwesomeIcons.xmark, size: 18.r, color: Colors.white),
+            style: IconButton.styleFrom(backgroundColor: Colors.black45, padding: EdgeInsets.all(4.w)),
           ),
         ),
       ],
@@ -87,18 +88,18 @@ class AddCoworkingImageSection extends StatelessWidget {
       onTap: () => _showImageOptions(l10n),
       child: Container(
         width: fullWidth ? double.infinity : 120,
-        height: 120,
+        height: 120.h,
         decoration: BoxDecoration(
           color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: Colors.grey[300]!),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.photoFilm, size: 32, color: Colors.grey[500]),
-            const SizedBox(height: 8),
-            Text(l10n.tapToChoosePhoto, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Icon(FontAwesomeIcons.photoFilm, size: 32.r, color: Colors.grey[500]),
+            SizedBox(height: 8.h),
+            Text(l10n.tapToChoosePhoto, textAlign: TextAlign.center, style: TextStyle(fontSize: 12.sp, color: Colors.grey[600])),
           ],
         ),
       ),

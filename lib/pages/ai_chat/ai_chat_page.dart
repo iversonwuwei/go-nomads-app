@@ -12,6 +12,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 页面
 /// 使用 GetView 模式，自动获取 AiChatController
@@ -96,31 +97,31 @@ class AiChatPage extends GetView<AiChatController> {
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+            padding: EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   '历史对话',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Expanded(
                   child: Obx(() {
                     final items = controller.historyConversations;
                     return ListView.separated(
                       padding: EdgeInsets.zero,
                       itemCount: items.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      separatorBuilder: (_, __) => Divider(height: 1),
                       itemBuilder: (context, index) {
                         final item = items[index];
                         final currentId = controller.conversation.value?.id;
                         final time = item.updatedAt ?? item.createdAt;
                         final timeLabel = time == null ? '' : DateFormat('yyyy-MM-dd HH:mm').format(time);
                         return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 4.h,
                           ),
                           title: Text(
                             controller.getHistoryTitle(item),
@@ -131,9 +132,9 @@ class AiChatPage extends GetView<AiChatController> {
                               ? null
                               : Text(
                                   timeLabel,
-                                  style: const TextStyle(fontSize: 12),
+                                  style: TextStyle(fontSize: 12.sp),
                                 ),
-                          trailing: currentId == item.id ? const Icon(Icons.check_rounded, size: 18) : null,
+                          trailing: currentId == item.id ? Icon(Icons.check_rounded, size: 18.r) : null,
                           onTap: () async {
                             Navigator.of(sheetContext).pop();
                             await controller.selectConversation(item);

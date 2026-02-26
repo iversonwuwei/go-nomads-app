@@ -5,6 +5,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_form_field.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 注册表单 - 使用响应式验证，无需 Form/GlobalKey
 class RegisterForm extends GetView<RegisterController> {
@@ -55,7 +56,7 @@ class RegisterForm extends GetView<RegisterController> {
                   controller.showValidationErrors.value ? _getErrorText(controller.usernameError.value, l10n) : null,
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 邮箱输入
         Obx(() => RegisterFormField(
@@ -68,7 +69,7 @@ class RegisterForm extends GetView<RegisterController> {
                   controller.showValidationErrors.value ? _getErrorText(controller.emailError.value, l10n) : null,
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 邮箱验证码输入
         Obx(() => Row(
@@ -86,9 +87,9 @@ class RegisterForm extends GetView<RegisterController> {
                         : null,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 SizedBox(
-                  height: 56,
+                  height: 56.h,
                   child: ElevatedButton(
                     onPressed: controller.isSendingCode.value || controller.countdown.value > 0
                         ? null
@@ -100,12 +101,12 @@ class RegisterForm extends GetView<RegisterController> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(RegisterConstants.inputBorderRadius),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                     ),
                     child: controller.isSendingCode.value
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.h,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: Colors.white,
@@ -115,14 +116,14 @@ class RegisterForm extends GetView<RegisterController> {
                             controller.countdown.value > 0
                                 ? '${controller.countdown.value}s'
                                 : (controller.codeSent.value ? '重新发送' : '获取验证码'),
-                            style: const TextStyle(fontSize: 14),
+                            style: TextStyle(fontSize: 14.sp),
                           ),
                   ),
                 ),
               ],
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 密码输入
         _PasswordField(
@@ -137,7 +138,7 @@ class RegisterForm extends GetView<RegisterController> {
           getErrorText: (key) => _getErrorText(key, l10n),
         ),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 确认密码输入
         _PasswordField(

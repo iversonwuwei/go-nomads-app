@@ -8,6 +8,7 @@ import 'package:go_nomads_app/pages/map_picker/widgets/map_picker_map_view.dart'
 import 'package:go_nomads_app/pages/map_picker/widgets/map_picker_search_bar.dart';
 import 'package:go_nomads_app/pages/map_picker/widgets/map_picker_search_results.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 地图选点页面（GetView + GetX 架构）
 /// 高德地图风格：拖动地图选择位置，中心点固定标记
@@ -45,9 +46,9 @@ class MapPickerPage extends GetView<MapPickerController> {
         leading: const AppBackButton(color: AppColors.backButtonDark),
         title: Text(
           l10n.selectLocation,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black,
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.w600,
           ),
         ),

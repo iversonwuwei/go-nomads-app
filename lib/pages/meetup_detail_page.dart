@@ -164,7 +164,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         },
                       );
                     },
-                    size: 18,
+                    size: 18.r,
                   ),
                 SliverShareButton(onPressed: _shareMeetup),
                 SizedBox(width: 8.w),
@@ -514,7 +514,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                   onPressed: _contactOrganizer,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFFF4458),
-                    side: BorderSide(color: const Color(0xFFFF4458), width: 1.5.w),
+                    side: BorderSide(color: const Color(0xFFFF4458), width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20.r),
                     ),
@@ -673,7 +673,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       foregroundColor: Colors.blue,
                       side: BorderSide(
                         color: Colors.blue,
-                        width: 1.5.w,
+                        width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -728,7 +728,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       foregroundColor: _isJoined ? Colors.blue : Colors.grey,
                       side: BorderSide(
                         color: _isJoined ? Colors.blue : Colors.grey.shade300,
-                        width: 1.5.w,
+                        width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),

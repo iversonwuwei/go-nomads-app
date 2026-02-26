@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 普通 AppBar 的编辑按钮
 /// 用于不带跑马灯效果的页面，带有渐变背景和阴影
@@ -68,18 +69,18 @@ class AppEditButtonPrimary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      margin: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -88,9 +89,9 @@ class AppEditButtonPrimary extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(10.w),
             child: FaIcon(
               icon ?? FontAwesomeIcons.penToSquare,
               color: Colors.white,
@@ -126,14 +127,14 @@ class SliverEditButton extends StatelessWidget {
     final isScrolled = opacity > 0.5;
 
     return Container(
-      margin: const EdgeInsets.all(8),
+      margin: EdgeInsets.all(8.w),
       decoration: BoxDecoration(
         color: isScrolled ? Colors.grey.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -174,14 +175,14 @@ class SliverActionButton extends StatelessWidget {
     final isScrolled = opacity > 0.5;
 
     return Container(
-      margin: const EdgeInsets.all(8),
+      margin: EdgeInsets.all(8.w),
       decoration: BoxDecoration(
         color: isScrolled ? Colors.grey.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],

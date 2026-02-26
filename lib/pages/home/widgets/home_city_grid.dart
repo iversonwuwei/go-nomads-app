@@ -6,6 +6,7 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市网格组件
 class HomeCityGrid extends GetView<HomePageController> {
@@ -50,8 +51,8 @@ class HomeCityGrid extends GetView<HomePageController> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         childAspectRatio: isMobile ? 0.68 : 0.72,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        crossAxisSpacing: 12.w,
+        mainAxisSpacing: 12.w,
       ),
       itemCount: isMobile ? 4 : 8,
       itemBuilder: (context, index) {
@@ -64,7 +65,7 @@ class HomeCityGrid extends GetView<HomePageController> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: AppColors.borderLight, width: 1),
       ),
       child: Column(
@@ -76,7 +77,7 @@ class HomeCityGrid extends GetView<HomePageController> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.grey[200],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8.r)),
               ),
             ),
           ),
@@ -84,47 +85,47 @@ class HomeCityGrid extends GetView<HomePageController> {
           Expanded(
             flex: 2,
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   // 城市名称
                   Container(
-                    height: 16,
+                    height: 16.h,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
                   // 国家
                   Container(
-                    height: 12,
-                    width: 80,
+                    height: 12.h,
+                    width: 80.w,
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
                   // 标签行
                   Row(
                     children: [
                       Container(
-                        height: 10,
-                        width: 40,
+                        height: 10.h,
+                        width: 40.w,
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Container(
-                        height: 10,
-                        width: 40,
+                        height: 10.h,
+                        width: 40.w,
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
                     ],
@@ -151,8 +152,8 @@ class HomeCityGrid extends GetView<HomePageController> {
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
             childAspectRatio: isMobile ? 0.68 : 0.72,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            crossAxisSpacing: 12.w,
+            mainAxisSpacing: 12.w,
           ),
           itemCount: displayCities.length,
           itemBuilder: (context, index) {
@@ -163,7 +164,7 @@ class HomeCityGrid extends GetView<HomePageController> {
           },
         ),
         if (hasMore) ...[
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           _buildViewAllButton(l10n),
         ],
       ],
@@ -176,24 +177,24 @@ class HomeCityGrid extends GetView<HomePageController> {
         onPressed: () => controller.checkLoginAndNavigate(
           () => Get.toNamed(AppRoutes.cityList),
         ),
-        icon: const Icon(
+        icon: Icon(
           FontAwesomeIcons.city,
-          size: 20,
+          size: 20.r,
           color: Color(0xFFFF4458),
         ),
         label: Text(
           l10n.viewAllCities,
-          style: const TextStyle(
+          style: TextStyle(
             color: Color(0xFFFF4458),
-            fontSize: 15,
+            fontSize: 15.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          side: const BorderSide(color: Color(0xFFFF4458), width: 1.5),
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+          side: BorderSide(color: Color(0xFFFF4458), width: 1.5),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
         ),
       ),
@@ -250,7 +251,7 @@ class HomeCityEmptyState extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           // 描述
           Text(
             isSearching
@@ -278,17 +279,17 @@ class HomeCityEmptyState extends StatelessWidget {
                   vertical: isMobile ? 12 : 16,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
             )
           else
             ElevatedButton.icon(
               onPressed: () => Get.toNamed(AppRoutes.cityList),
-              icon: const Icon(FontAwesomeIcons.circlePlus, size: 20),
+              icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
               label: Text(
                 l10n.browseCities,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
@@ -299,7 +300,7 @@ class HomeCityEmptyState extends StatelessWidget {
                 ),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
             ),

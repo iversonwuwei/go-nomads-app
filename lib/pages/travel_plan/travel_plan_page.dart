@@ -13,6 +13,7 @@ import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_recommendati
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 旅行计划详情页 - 使用 GetView 模式重构
 ///
@@ -135,53 +136,53 @@ class _TravelPlanLoadingView extends StatelessWidget {
             // 进度提示
             SliverToBoxAdapter(
               child: Obx(() => Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(24.w),
                     child: Column(
                       children: [
                         // AI 图标
                         Container(
-                          width: 80,
-                          height: 80,
+                          width: 80.w,
+                          height: 80.h,
                           decoration: BoxDecoration(
                             color: AppColors.containerMedium.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             FontAwesomeIcons.wandMagicSparkles,
-                            size: 40,
+                            size: 40.r,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                         // 进度文本
                         Text(
                           controller.progressMessage.value,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w500,
                             color: AppColors.textPrimary,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         // 进度条
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                           child: LinearProgressIndicator(
                             value: controller.progressValue.value / 100,
-                            minHeight: 8,
+                            minHeight: 8.h,
                             backgroundColor: Colors.grey[200],
                             valueColor: AlwaysStoppedAnimation<Color>(
                               AppColors.textPrimary,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         // 进度百分比
                         Text(
                           '${controller.progressValue.value}%',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             color: AppColors.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
@@ -214,38 +215,38 @@ class _SkeletonListView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         children: [
           // Overview Card Skeleton
-          _SkeletonCard(height: 150, shimmerController: controller.shimmerController),
-          const SizedBox(height: 16),
+          _SkeletonCard(height: 150.h, shimmerController: controller.shimmerController),
+          SizedBox(height: 16.h),
           // Transportation Card Skeleton
-          _SkeletonCard(height: 200, shimmerController: controller.shimmerController),
-          const SizedBox(height: 16),
+          _SkeletonCard(height: 200.h, shimmerController: controller.shimmerController),
+          SizedBox(height: 16.h),
           // Accommodation Card Skeleton
-          _SkeletonCard(height: 180, shimmerController: controller.shimmerController),
-          const SizedBox(height: 16),
+          _SkeletonCard(height: 180.h, shimmerController: controller.shimmerController),
+          SizedBox(height: 16.h),
           // Itinerary Card Skeleton
-          _SkeletonCard(height: 300, shimmerController: controller.shimmerController),
-          const SizedBox(height: 16),
+          _SkeletonCard(height: 300.h, shimmerController: controller.shimmerController),
+          SizedBox(height: 16.h),
           // Loading indicator
           Center(
             child: Column(
               children: [
-                const SizedBox(
-                  width: 24,
-                  height: 24,
+                SizedBox(
+                  width: 24.w,
+                  height: 24.h,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   l10n.generatingAiPlan,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: Colors.grey[600],
                     fontWeight: FontWeight.w500,
                   ),
@@ -276,14 +277,14 @@ class _SkeletonCard extends StatelessWidget {
       builder: (context, child) {
         return Container(
           height: height,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.withValues(alpha: 0.1),
-                blurRadius: 8,
+                blurRadius: 8.r,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -293,23 +294,23 @@ class _SkeletonCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _buildShimmerBox(width: 24, height: 24, borderRadius: 6),
-                  const SizedBox(width: 12),
-                  _buildShimmerBox(width: 120, height: 20, borderRadius: 4),
+                  _buildShimmerBox(width: 24.w, height: 24.h, borderRadius: 6),
+                  SizedBox(width: 12.w),
+                  _buildShimmerBox(width: 120.w, height: 20.h, borderRadius: 4),
                 ],
               ),
-              const SizedBox(height: 16),
-              _buildShimmerBox(width: double.infinity, height: 14, borderRadius: 4),
-              const SizedBox(height: 10),
-              _buildShimmerBox(width: double.infinity, height: 14, borderRadius: 4),
-              const SizedBox(height: 10),
-              _buildShimmerBox(width: 200, height: 14, borderRadius: 4),
+              SizedBox(height: 16.h),
+              _buildShimmerBox(width: double.infinity, height: 14.h, borderRadius: 4),
+              SizedBox(height: 10.h),
+              _buildShimmerBox(width: double.infinity, height: 14.h, borderRadius: 4),
+              SizedBox(height: 10.h),
+              _buildShimmerBox(width: 200.w, height: 14.h, borderRadius: 4),
               const Spacer(),
               Row(
                 children: [
-                  _buildShimmerBox(width: 80, height: 12, borderRadius: 4),
+                  _buildShimmerBox(width: 80.w, height: 12.h, borderRadius: 4),
                   const Spacer(),
-                  _buildShimmerBox(width: 60, height: 12, borderRadius: 4),
+                  _buildShimmerBox(width: 60.w, height: 12.h, borderRadius: 4),
                 ],
               ),
             ],
@@ -454,7 +455,7 @@ class _TravelPlanContentView extends StatelessWidget {
             ),
           ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          SliverToBoxAdapter(child: SizedBox(height: 32.h)),
         ],
       ),
     );
@@ -489,18 +490,18 @@ class _TravelPlanContentView extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFFFF4458), size: 20),
-              const SizedBox(width: 8),
+              Icon(icon, color: const Color(0xFFFF4458), size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           content,
         ],
       ),
@@ -552,15 +553,15 @@ class _OverviewCard extends StatelessWidget {
     final departureLocation = controller.effectiveDepartureLocation;
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -572,33 +573,33 @@ class _OverviewCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: const Icon(
+                child: Icon(
                   FontAwesomeIcons.wandMagicSparkles,
                   color: Color(0xFFFF4458),
-                  size: 20,
+                  size: 20.r,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n.aiGeneratedPlan,
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: TextStyle(
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       l10n.personalizedForYou,
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: TextStyle(
+                        fontSize: 13.sp,
                         color: Colors.grey,
                       ),
                     ),
@@ -607,9 +608,9 @@ class _OverviewCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           const Divider(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           // 信息标签
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -617,12 +618,12 @@ class _OverviewCard extends StatelessWidget {
               children: [
                 if (departureLocation != null && departureLocation.isNotEmpty) ...[
                   _buildInfoChip(FontAwesomeIcons.plane, '${l10n.from}: $departureLocation'),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                 ],
                 _buildInfoChip(FontAwesomeIcons.calendar, '${plan.metadata.duration} ${l10n.days}'),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 _buildInfoChip(FontAwesomeIcons.dollarSign, plan.metadata.budgetLevel.displayName),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 _buildInfoChip(FontAwesomeIcons.paintbrush, plan.metadata.style.name),
               ],
             ),
@@ -634,20 +635,20 @@ class _OverviewCard extends StatelessWidget {
 
   Widget _buildInfoChip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFFFF4458)),
-          const SizedBox(width: 4),
+          Icon(icon, size: 14.r, color: const Color(0xFFFF4458)),
+          SizedBox(width: 4.w),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
             ),
           ),

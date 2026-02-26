@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Hotel List Skeleton - 酒店列表骨架屏
 class HotelListSkeleton extends StatelessWidget {
@@ -14,11 +15,11 @@ class HotelListSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: itemCount,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(bottom: 16.h),
             child: _HotelCardSkeleton(),
           );
         },
@@ -36,11 +37,11 @@ class _HotelCardSkeleton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(13),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -51,32 +52,32 @@ class _HotelCardSkeleton extends StatelessWidget {
           // 酒店图片
           SkeletonBox(
             width: double.infinity,
-            height: 180,
+            height: 180.h,
             borderRadius: 12,
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 酒店名称
-                SkeletonBox(width: 200, height: 20),
-                const SizedBox(height: 8),
+                SkeletonBox(width: 200.w, height: 20.h),
+                SizedBox(height: 8.h),
                 // 地址
-                SkeletonBox(width: 150, height: 14),
-                const SizedBox(height: 12),
+                SkeletonBox(width: 150.w, height: 14.h),
+                SizedBox(height: 12.h),
                 // 评分和价格
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        SkeletonBox(width: 20, height: 20),
-                        const SizedBox(width: 4),
-                        SkeletonBox(width: 30, height: 16),
+                        SkeletonBox(width: 20.w, height: 20.h),
+                        SizedBox(width: 4.w),
+                        SkeletonBox(width: 30.w, height: 16.h),
                       ],
                     ),
-                    SkeletonBox(width: 80, height: 20),
+                    SkeletonBox(width: 80.w, height: 20.h),
                   ],
                 ),
               ],
@@ -102,61 +103,61 @@ class HotelDetailSkeleton extends StatelessWidget {
             // 酒店图片
             SkeletonBox(
               width: double.infinity,
-              height: 250,
+              height: 250.h,
               borderRadius: 0,
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 酒店名称
-                  SkeletonBox(width: 250, height: 28),
-                  const SizedBox(height: 8),
+                  SkeletonBox(width: 250.w, height: 28.h),
+                  SizedBox(height: 8.h),
                   // 地址
-                  SkeletonBox(width: 200, height: 16),
-                  const SizedBox(height: 16),
+                  SkeletonBox(width: 200.w, height: 16.h),
+                  SizedBox(height: 16.h),
                   // 评分
                   Row(
                     children: [
-                      SkeletonBox(width: 100, height: 24),
-                      const SizedBox(width: 16),
-                      SkeletonBox(width: 80, height: 24),
+                      SkeletonBox(width: 100.w, height: 24.h),
+                      SizedBox(width: 16.w),
+                      SkeletonBox(width: 80.w, height: 24.h),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   // 描述标题
-                  SkeletonBox(width: 100, height: 20),
-                  const SizedBox(height: 12),
+                  SkeletonBox(width: 100.w, height: 20.h),
+                  SizedBox(height: 12.h),
                   // 描述内容
-                  SkeletonBox(width: double.infinity, height: 16),
-                  const SizedBox(height: 6),
-                  SkeletonBox(width: double.infinity, height: 16),
-                  const SizedBox(height: 6),
-                  SkeletonBox(width: 280, height: 16),
-                  const SizedBox(height: 24),
+                  SkeletonBox(width: double.infinity, height: 16.h),
+                  SizedBox(height: 6.h),
+                  SkeletonBox(width: double.infinity, height: 16.h),
+                  SizedBox(height: 6.h),
+                  SkeletonBox(width: 280.w, height: 16.h),
+                  SizedBox(height: 24.h),
                   // 设施标题
-                  SkeletonBox(width: 80, height: 20),
-                  const SizedBox(height: 12),
+                  SkeletonBox(width: 80.w, height: 20.h),
+                  SizedBox(height: 12.h),
                   // 设施图标
                   Row(
                     children: [
-                      SkeletonBox(width: 60, height: 60, borderRadius: 8),
-                      const SizedBox(width: 12),
-                      SkeletonBox(width: 60, height: 60, borderRadius: 8),
-                      const SizedBox(width: 12),
-                      SkeletonBox(width: 60, height: 60, borderRadius: 8),
-                      const SizedBox(width: 12),
-                      SkeletonBox(width: 60, height: 60, borderRadius: 8),
+                      SkeletonBox(width: 60.w, height: 60.h, borderRadius: 8),
+                      SizedBox(width: 12.w),
+                      SkeletonBox(width: 60.w, height: 60.h, borderRadius: 8),
+                      SizedBox(width: 12.w),
+                      SkeletonBox(width: 60.w, height: 60.h, borderRadius: 8),
+                      SizedBox(width: 12.w),
+                      SkeletonBox(width: 60.w, height: 60.h, borderRadius: 8),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   // 房型标题
-                  SkeletonBox(width: 100, height: 20),
-                  const SizedBox(height: 12),
+                  SkeletonBox(width: 100.w, height: 20.h),
+                  SizedBox(height: 12.h),
                   // 房型卡片
                   _RoomTypeSkeleton(),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   _RoomTypeSkeleton(),
                 ],
               ),
@@ -174,26 +175,26 @@ class _RoomTypeSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[200]!),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         children: [
-          SkeletonBox(width: 80, height: 60, borderRadius: 6),
-          const SizedBox(width: 12),
+          SkeletonBox(width: 80.w, height: 60.h, borderRadius: 6),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonBox(width: 120, height: 16),
-                const SizedBox(height: 6),
-                SkeletonBox(width: 80, height: 14),
+                SkeletonBox(width: 120.w, height: 16.h),
+                SizedBox(height: 6.h),
+                SkeletonBox(width: 80.w, height: 14.h),
               ],
             ),
           ),
-          SkeletonBox(width: 70, height: 24),
+          SkeletonBox(width: 70.w, height: 24.h),
         ],
       ),
     );

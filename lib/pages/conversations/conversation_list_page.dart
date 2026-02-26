@@ -6,6 +6,7 @@ import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:tencent_cloud_chat_sdk/enum/message_elem_type.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_conversation.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 会话列表页面 — 微信风格
 /// 展示所有 C2C 聊天会话，支持未读数量、最后消息预览、滑动删除
@@ -20,10 +21,10 @@ class ConversationListPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED), // 微信风格背景色
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           '消息',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.w600,
             color: Colors.black,
           ),
@@ -128,8 +129,8 @@ class _ConversationTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: const BoxDecoration(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(color: Color(0xFFE8E8E8), width: 0.5),
             ),
@@ -138,7 +139,7 @@ class _ConversationTile extends StatelessWidget {
             children: [
               // 头像 + 未读 badge
               _buildAvatar(unread),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               // 名字 + 最后消息
               Expanded(
                 child: Column(
@@ -149,8 +150,8 @@ class _ConversationTile extends StatelessWidget {
                         Expanded(
                           child: Text(
                             conversation.showName ?? '未知用户',
-                            style: const TextStyle(
-                              fontSize: 16,
+                            style: TextStyle(
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF1A1A1A),
                             ),
@@ -161,18 +162,18 @@ class _ConversationTile extends StatelessWidget {
                         if (timestamp != null)
                           Text(
                             _formatTime(timestamp),
-                            style: const TextStyle(
-                              fontSize: 12,
+                            style: TextStyle(
+                              fontSize: 12.sp,
                               color: Color(0xFFB2B2B2),
                             ),
                           ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       _getLastMessagePreview(lastMsg),
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: 14.sp,
                         color: Color(0xFF999999),
                       ),
                       maxLines: 1,
@@ -192,7 +193,7 @@ class _ConversationTile extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
+        padding: EdgeInsets.only(right: 20.w),
         color: Colors.red,
         child: const Icon(Icons.delete, color: Colors.white),
       ),
@@ -228,12 +229,12 @@ class _ConversationTile extends StatelessWidget {
       children: [
         // 头像
         ClipRRect(
-          borderRadius: BorderRadius.circular(6), // 微信方形圆角风格
+          borderRadius: BorderRadius.circular(6.r), // 微信方形圆角风格
           child: conversation.faceUrl != null && conversation.faceUrl!.isNotEmpty
               ? Image.network(
                   conversation.faceUrl!,
-                  width: 48,
-                  height: 48,
+                  width: 48.w,
+                  height: 48.h,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => _defaultAvatar(),
                 )
@@ -245,18 +246,18 @@ class _ConversationTile extends StatelessWidget {
             right: -6,
             top: -6,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
                 color: const Color(0xFFFA5151), // 微信红点
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
                 border: Border.all(color: Colors.white, width: 1.5),
               ),
-              constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+              constraints: BoxConstraints(minWidth: 20.w, minHeight: 20.h),
               child: Text(
                 unread > 99 ? '99+' : '$unread',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 11,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -269,17 +270,17 @@ class _ConversationTile extends StatelessWidget {
 
   Widget _defaultAvatar() {
     return Container(
-      width: 48,
-      height: 48,
+      width: 48.w,
+      height: 48.h,
       decoration: BoxDecoration(
         color: const Color(0xFF07C160).withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
-      child: const Center(
+      child: Center(
         child: FaIcon(
           FontAwesomeIcons.user,
           color: Color(0xFF07C160),
-          size: 22,
+          size: 22.r,
         ),
       ),
     );
@@ -347,22 +348,22 @@ class _EmptyView extends StatelessWidget {
         children: [
           Icon(
             FontAwesomeIcons.commentDots,
-            size: 64,
+            size: 64.r,
             color: Colors.grey.withValues(alpha: 0.3),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             '暂无消息',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.grey.withValues(alpha: 0.6),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             '去城市或活动页面开始聊天吧',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: Colors.grey.withValues(alpha: 0.4),
             ),
           ),
@@ -384,39 +385,39 @@ class _LoadingView extends StatelessWidget {
     return ListView.builder(
       itemCount: 8,
       itemBuilder: (_, __) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         color: Colors.white,
         child: Row(
           children: [
             // 头像骨架
             Container(
-              width: 48,
-              height: 48,
+              width: 48.w,
+              height: 48.h,
               decoration: BoxDecoration(
                 color: Colors.grey.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(6.r),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 120,
-                    height: 16,
+                    width: 120.w,
+                    height: 16.h,
                     decoration: BoxDecoration(
                       color: Colors.grey.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Container(
-                    width: 200,
-                    height: 14,
+                    width: 200.w,
+                    height: 14.h,
                     decoration: BoxDecoration(
                       color: Colors.grey.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
                 ],
@@ -445,18 +446,18 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             FontAwesomeIcons.circleExclamation,
-            size: 48,
+            size: 48.r,
             color: Colors.orange,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             message,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
+            style: TextStyle(fontSize: 16.sp, color: Colors.grey),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh),

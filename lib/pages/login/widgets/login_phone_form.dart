@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_form_field.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 手机号登录表单 - 响应式验证
 class LoginPhoneForm extends GetView<LoginController> {
@@ -37,12 +38,12 @@ class LoginPhoneForm extends GetView<LoginController> {
               errorText: controller.showValidationErrors.value ? _getErrorText(controller.phoneError.value) : null,
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 验证码输入 + 发送按钮
         _SmsCodeRow(getErrorText: _getErrorText),
 
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // 手机登录按钮
         _PhoneLoginButton(),
@@ -73,9 +74,9 @@ class _SmsCodeRow extends GetView<LoginController> {
                 errorText: controller.showValidationErrors.value ? getErrorText(controller.smsCodeError.value) : null,
               )),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         SizedBox(
-          height: 56,
+          height: 56.h,
           child: Obx(() => ElevatedButton(
                 onPressed: controller.countdown.value > 0 ? null : controller.sendSmsCode,
                 style: ElevatedButton.styleFrom(
@@ -88,7 +89,7 @@ class _SmsCodeRow extends GetView<LoginController> {
                 ),
                 child: Text(
                   controller.countdown.value > 0 ? '${controller.countdown.value}s' : '发送验证码',
-                  style: const TextStyle(fontSize: 14),
+                  style: TextStyle(fontSize: 14.sp),
                 ),
               )),
         ),
@@ -108,15 +109,15 @@ class _PhoneLoginButton extends GetView<LoginController> {
         style: ElevatedButton.styleFrom(
           backgroundColor: LoginConstants.primaryColor,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
           ),
           elevation: 0,
         ),
-        child: const Text(
+        child: Text(
           '点击登录/注册',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
         ),
       ),
     );

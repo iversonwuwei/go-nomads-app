@@ -17,6 +17,7 @@ import 'package:go_nomads_app/pages/profile/widgets/travel_history_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/travel_plans_widget.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Profile 页面 - 使用 GetView 模式
 ///
@@ -172,34 +173,34 @@ class _ProfileSections extends GetView<ProfileController> {
 
           // 用户头像和基本信息
           ProfileHeaderWidget(user: user, isMobile: isMobile),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 会员卡片
           const MembershipCardWidget(),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 旅行计划
           TravelPlansWidget(isMobile: isMobile),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // Nomad 统计
           NomadStatsWidget(isMobile: isMobile),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 徽章
           BadgesSectionWidget(badges: user.badges, isMobile: isMobile),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 技能和兴趣
           SkillsInterestsWidget(user: user, isMobile: isMobile),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 旅行历史
           TravelHistoryWidget(
             latestTrip: user.latestTravelHistory,
             isMobile: isMobile,
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 社交链接
           SocialLinksWidget(
@@ -207,15 +208,15 @@ class _ProfileSections extends GetView<ProfileController> {
             isMobile: isMobile,
             title: l10n.connect,
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 帮助与客服
           const HelpAndSupportWidget(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 法律信息（隐私政策、用户协议）
           const LegalInfoWidget(),
-          const SizedBox(height: 48),
+          SizedBox(height: 48.h),
 
           // 退出登录按钮
           LogoutWidget(onLogout: onLogout),

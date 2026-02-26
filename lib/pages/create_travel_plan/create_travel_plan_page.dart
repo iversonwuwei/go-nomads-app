@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 
 import '../travel_plan/travel_plan_page.dart';
 import 'widgets/widgets.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 创建旅行计划页面 - 使用 GetX + 组件化架构重构
 class CreateTravelPlanPage extends StatelessWidget {
@@ -51,14 +52,14 @@ class CreateTravelPlanPage extends StatelessWidget {
               // Form Section
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
+                      blurRadius: 10.r,
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -69,32 +70,32 @@ class CreateTravelPlanPage extends StatelessWidget {
                     // Departure Location
                     TravelPlanDepartureSection(controllerTag: uniqueTag),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Departure Date
                     TravelPlanDateSection(controllerTag: uniqueTag),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Trip Duration
                     TravelPlanDurationSection(controllerTag: uniqueTag),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Budget Level
                     TravelPlanBudgetSection(controllerTag: uniqueTag),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Attractions
                     TravelPlanAttractionsSection(controllerTag: uniqueTag),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Travel Style
                     TravelPlanStyleSection(controllerTag: uniqueTag),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Interests
                     TravelPlanInterestsSection(controllerTag: uniqueTag),
@@ -118,33 +119,33 @@ class CreateTravelPlanPage extends StatelessWidget {
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
-            child: const Icon(
+            child: Icon(
               FontAwesomeIcons.wandMagicSparkles,
               color: Color(0xFFFF4458),
-              size: 20,
+              size: 20.r,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 l10n.aiTravelPlanner,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
               Text(
                 l10n.planYourTrip(cityName),
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.sp,
                   color: Colors.grey,
                   fontWeight: FontWeight.normal,
                 ),
@@ -167,19 +168,19 @@ class _HeaderCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
@@ -189,24 +190,24 @@ class _HeaderCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(FontAwesomeIcons.wandMagicSparkles, color: Colors.white, size: 24),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.wandMagicSparkles, color: Colors.white, size: 24.r),
+              SizedBox(width: 8.w),
               Text(
                 l10n.aiPoweredPlanning,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             l10n.tellPreferences(cityName),
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 14,
+              fontSize: 14.sp,
               height: 1.4,
             ),
           ),
@@ -233,13 +234,13 @@ class _BottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
         ],
@@ -250,18 +251,18 @@ class _BottomBar extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFFF4458),
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
             elevation: 0,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(FontAwesomeIcons.wandMagicSparkles, size: 20),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 l10n.generatePlan,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.3),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.3.sp),
               ),
             ],
           ),

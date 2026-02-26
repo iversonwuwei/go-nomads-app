@@ -16,6 +16,7 @@ import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面
@@ -116,16 +117,16 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
         leading: const AppBackButton(color: Colors.black87),
         title: Text(
           widget.cityName,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black87,
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           // 排序按钮
           PopupMenuButton<String>(
-            icon: const Icon(FontAwesomeIcons.arrowDownShortWide, color: Colors.black54, size: 20),
+            icon: Icon(FontAwesomeIcons.arrowDownShortWide, color: Colors.black54, size: 20.r),
             onSelected: (value) {
               switch (value) {
                 case 'rating':
@@ -145,8 +146,8 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                   value: 'rating',
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.star, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(FontAwesomeIcons.star, size: 20.r),
+                      SizedBox(width: 8.w),
                       Text(l10n.rating),
                     ],
                   ),
@@ -155,8 +156,8 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                   value: 'price',
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.dollarSign, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(FontAwesomeIcons.dollarSign, size: 20.r),
+                      SizedBox(width: 8.w),
                       Text(l10n.price),
                     ],
                   ),
@@ -165,8 +166,8 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                   value: 'distance',
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.locationDot, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(FontAwesomeIcons.locationDot, size: 20.r),
+                      SizedBox(width: 8.w),
                       Text(l10n.distance),
                     ],
                   ),
@@ -218,14 +219,14 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                         children: [
                           Icon(
                             FontAwesomeIcons.magnifyingGlass,
-                            size: 80,
+                            size: 80.r,
                             color: Colors.grey[400],
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16.h),
                           Text(
                             l10n.noData,
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               color: Colors.grey[600],
                             ),
                           ),
@@ -241,7 +242,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                 child: ListView.builder(
                   controller: _scrollController, // 添加滚动控制器
                   cacheExtent: 500, // 增加缓存范围，提升滚动性能
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   itemCount: controller.filteredSpaces.length + 1, // +1 用于底部加载指示器
                   itemBuilder: (context, index) {
                     // 最后一项显示加载指示器
@@ -264,21 +265,21 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
   /// 共享办公空间卡片 - Hero 风格（信息覆盖在图片上）
   Widget _buildCoworkingCard(BuildContext context, CoworkingSpace space) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           onTap: () async {
             await NavigationUtil.toWithCallback<CoworkingSpace>(
               page: () => CoworkingDetailPage(space: space),
@@ -311,8 +312,8 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
             errorWidget: (context, url, error) {
               return Container(
                 color: Colors.grey[300],
-                child: const Center(
-                  child: Icon(FontAwesomeIcons.building, size: 48, color: Colors.grey),
+                child: Center(
+                  child: Icon(FontAwesomeIcons.building, size: 48.r, color: Colors.grey),
                 ),
               );
             },
@@ -337,15 +338,15 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
         ),
         // 右上角：验证徽章
         Positioned(
-          top: 12,
-          right: 12,
+          top: 12.h,
+          right: 12.w,
           child: CoworkingVerificationBadge(space: space),
         ),
         // 左上角：编辑按钮（仅创建者可见）
         if (space.isOwner)
           Positioned(
-            top: 12,
-            left: 12,
+            top: 12.h,
+            left: 12.w,
             child: AppEditButton(
               onPressed: () async {
                 await NavigationUtil.toWithCallback<bool>(
@@ -357,15 +358,15 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                   },
                 );
               },
-              size: 14,
+              size: 14.r,
               mini: true,
             ),
           ),
         // 底部信息面板
         Positioned(
-          left: 12,
-          right: 12,
-          bottom: 12,
+          left: 12.w,
+          right: 12.w,
+          bottom: 12.h,
           child: _buildHeroInfoPanel(context, space),
         ),
       ],
@@ -377,10 +378,10 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.18),
           width: 1,
@@ -393,8 +394,8 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
           // 名称
           Text(
             space.name,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
@@ -403,20 +404,20 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
           ),
           // 地址
           if (space.fullAddress.isNotEmpty) ...[
-            const SizedBox(height: 2),
+            SizedBox(height: 2.h),
             Row(
               children: [
                 Icon(
                   FontAwesomeIcons.locationDot,
-                  size: 11,
+                  size: 11.r,
                   color: Colors.white.withValues(alpha: 0.8),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4.w),
                 Expanded(
                   child: Text(
                     space.fullAddress,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: Colors.white.withValues(alpha: 0.8),
                     ),
                     maxLines: 1,
@@ -426,7 +427,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
               ],
             ),
           ],
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           // 指标 Pills
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -438,7 +439,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                   space.spaceInfo.rating.toStringAsFixed(1),
                   color: Colors.amber,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 // WiFi 速度
                 _buildHeroPill(
                   FontAwesomeIcons.wifi,
@@ -446,7 +447,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                 ),
                 // 月租价格
                 if (space.pricing.monthlyRate != null) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _buildHeroPill(
                     FontAwesomeIcons.dollarSign,
                     '${space.pricing.monthlyRate!.toStringAsFixed(0)}/${l10n.monthlyRate}',
@@ -454,7 +455,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                 ],
                 // 24/7 开放
                 if (space.amenities.has24HourAccess) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _buildHeroPill(
                     FontAwesomeIcons.clock,
                     '24/7',
@@ -463,7 +464,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                 ],
                 // 免费试用
                 if (space.pricing.hasFreeTrial) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _buildHeroPill(
                     FontAwesomeIcons.tag,
                     'Free Trial',
@@ -484,10 +485,10 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
     final hasCustomColor = color != null;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
         ),
@@ -497,14 +498,14 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
         children: [
           Icon(
             icon,
-            size: 12,
+            size: 12.r,
             color: hasCustomColor ? pillColor : Colors.white.withValues(alpha: 0.9),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Text(
             value,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
               color: hasCustomColor ? pillColor : Colors.white,
             ),
@@ -519,8 +520,8 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
     return Obx(() {
       // 如果正在加载更多，显示加载指示器
       if (controller.isLoadingMore.value) {
-        return const Padding(
-          padding: EdgeInsets.all(16.0),
+        return Padding(
+          padding: EdgeInsets.all(16.0.w),
           child: Center(
             child: CircularProgressIndicator(),
           ),
@@ -530,13 +531,13 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
       // 如果没有更多数据，显示提示
       if (!controller.hasMore.value && controller.filteredSpaces.isNotEmpty) {
         return Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0.w),
           child: Center(
             child: Text(
               '没有更多数据了',
               style: TextStyle(
                 color: Colors.grey[600],
-                fontSize: 14,
+                fontSize: 14.sp,
               ),
             ),
           ),
@@ -551,7 +552,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
   /// 骨架屏列表（加载时显示）
   Widget _buildSkeletonList() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: 5, // 显示5个骨架项
       itemBuilder: (context, index) => _buildSkeletonCard(),
     );
@@ -560,14 +561,14 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
   /// 单个骨架屏卡片
   Widget _buildSkeletonCard() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -582,54 +583,54 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
                 ),
               ),
             ),
             // 信息骨架
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 标题骨架
                   Container(
                     width: double.infinity,
-                    height: 20,
+                    height: 20.h,
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   // 地址骨架
                   Container(
-                    width: 200,
-                    height: 14,
+                    width: 200.w,
+                    height: 14.h,
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   // 标签骨架
                   Row(
                     children: [
                       Container(
-                        width: 80,
-                        height: 24,
+                        width: 80.w,
+                        height: 24.h,
                         decoration: BoxDecoration(
                           color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Container(
-                        width: 100,
-                        height: 24,
+                        width: 100.w,
+                        height: 24.h,
                         decoration: BoxDecoration(
                           color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                     ],

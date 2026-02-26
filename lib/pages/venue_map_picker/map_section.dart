@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 地图区域组件
 class MapSection extends StatelessWidget {
@@ -21,7 +22,7 @@ class MapSection extends StatelessWidget {
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.25,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         child: Obx(() => _buildMapContent(context, controller, l10n)),
       ),
     );
@@ -35,7 +36,7 @@ class MapSection extends StatelessWidget {
     // 还未初始化时显示加载指示器
     if (!controller.isInitialized.value) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Container(
           color: Colors.grey[200],
           child: Center(
@@ -43,11 +44,11 @@ class MapSection extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const CircularProgressIndicator(color: Color(0xFFFF4458)),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   '${l10n.loading}...',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
@@ -65,7 +66,7 @@ class MapSection extends StatelessWidget {
     final markers = _buildMarkers(controller, venues);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: Stack(
         children: [
           FlutterMap(
@@ -88,8 +89,8 @@ class MapSection extends StatelessWidget {
             ],
           ),
           Positioned(
-            top: 12,
-            left: 12,
+            top: 12.h,
+            left: 12.w,
             child: _mapBadge(
               icon: FontAwesomeIcons.city,
               text: controller.currentCityName.value.isNotEmpty
@@ -99,8 +100,8 @@ class MapSection extends StatelessWidget {
           ),
           // 缩放控制按钮
           Positioned(
-            top: 12,
-            right: 12,
+            top: 12.h,
+            right: 12.w,
             child: Column(
               children: [
                 _zoomButton(
@@ -112,7 +113,7 @@ class MapSection extends StatelessWidget {
                     }
                   },
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 _zoomButton(
                   icon: FontAwesomeIcons.minus,
                   onTap: () {
@@ -126,8 +127,8 @@ class MapSection extends StatelessWidget {
             ),
           ),
           Positioned(
-            bottom: 12,
-            right: 12,
+            bottom: 12.h,
+            right: 12.w,
             child: controller.isLoadingPoi.value
                 ? _mapBadge(icon: FontAwesomeIcons.spinner, text: l10n.loading)
                 : _mapBadge(icon: FontAwesomeIcons.layerGroup, text: '${venues.length} ${l10n.venues}'),
@@ -142,8 +143,8 @@ class MapSection extends StatelessWidget {
       final venueLatLng = LatLng(venue.latitude, venue.longitude);
       final isSelected = venue.name == controller.selectedVenueName.value;
       return Marker(
-        width: 50,
-        height: 50,
+        width: 50.w,
+        height: 50.h,
         point: venueLatLng,
         alignment: Alignment.topCenter,
         child: GestureDetector(
@@ -170,16 +171,16 @@ class MapSection extends StatelessWidget {
     // 用户位置标记
     if (controller.userLocation.value != null) {
       markers.add(Marker(
-        width: 40,
-        height: 40,
+        width: 40.w,
+        height: 40.h,
         point: controller.userLocation.value!,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.blue.withValues(alpha: 0.3),
             shape: BoxShape.circle,
           ),
-          child: const Center(
-            child: Icon(FontAwesomeIcons.locationCrosshairs, color: Colors.blue, size: 20),
+          child: Center(
+            child: Icon(FontAwesomeIcons.locationCrosshairs, color: Colors.blue, size: 20.r),
           ),
         ),
       ));
@@ -209,21 +210,21 @@ class MapSection extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 36.w,
+        height: 36.h,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 4,
+              blurRadius: 4.r,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Center(
-          child: Icon(icon, size: 16, color: Colors.grey[700]),
+          child: Icon(icon, size: 16.r, color: Colors.grey[700]),
         ),
       ),
     );
@@ -231,14 +232,14 @@ class MapSection extends StatelessWidget {
 
   Widget _mapBadge({required IconData icon, required String text}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -246,12 +247,12 @@ class MapSection extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.grey[700]),
-          const SizedBox(width: 6),
+          Icon(icon, size: 16.r, color: Colors.grey[700]),
+          SizedBox(width: 6.w),
           Text(
             text,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w600,
               color: Colors.grey[800],
             ),

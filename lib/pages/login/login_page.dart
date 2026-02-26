@@ -11,6 +11,7 @@ import 'package:go_nomads_app/pages/login/widgets/login_register_link.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_social_buttons.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_terms_checkbox.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 登录页面 - 使用响应式验证，无需 GlobalKey
 class LoginPage extends GetView<LoginController> {
@@ -30,12 +31,12 @@ class LoginPage extends GetView<LoginController> {
                 // Logo 和标题
                 const LoginHeader(),
 
-                const SizedBox(height: 36),
+                SizedBox(height: 36.h),
 
                 // 邮箱/手机号 书签式 Tab 切换
                 const _LoginModeTabs(),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // 根据登录模式显示不同表单（带切换动画）
                 Obx(() => AnimatedSwitcher(
@@ -59,27 +60,27 @@ class LoginPage extends GetView<LoginController> {
                           : const LoginEmailForm(key: ValueKey('email')),
                     )),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // 用户协议勾选框（工信部/腾讯合规要求）
                 const LoginTermsCheckbox(),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 社交登录按钮
                 const LoginSocialButtons(),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
 
                 // 注册提示
                 const LoginRegisterLink(),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
 
                 // 社区亮点
                 const LoginCommunityHighlight(),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // ICP 备案信息
                 const CopyrightWidget(),
@@ -177,7 +178,7 @@ class _LoginModeTabsState extends State<_LoginModeTabs> with SingleTickerProvide
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: EdgeInsets.all(4.w),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final tabWidth = (constraints.maxWidth - 8) / 2; // 减去 padding
@@ -188,9 +189,9 @@ class _LoginModeTabsState extends State<_LoginModeTabs> with SingleTickerProvide
                 animation: _slideAnimation,
                 builder: (context, child) {
                   return Positioned(
-                    left: 4 + _slideAnimation.value * tabWidth,
-                    top: 4,
-                    bottom: 4,
+                    left: 4.w + _slideAnimation.value * tabWidth,
+                    top: 4.h,
+                    bottom: 4.h,
                     width: tabWidth,
                     child: Container(
                       decoration: BoxDecoration(
@@ -199,12 +200,12 @@ class _LoginModeTabsState extends State<_LoginModeTabs> with SingleTickerProvide
                         boxShadow: [
                           BoxShadow(
                             color: LoginConstants.primaryColor.withValues(alpha: 0.10),
-                            blurRadius: 8,
+                            blurRadius: 8.r,
                             offset: const Offset(0, 2),
                           ),
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 4,
+                            blurRadius: 4.r,
                             offset: const Offset(0, 1),
                           ),
                         ],
@@ -251,7 +252,7 @@ class _LoginModeTabsState extends State<_LoginModeTabs> with SingleTickerProvide
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(vertical: 12.h),
           child: AnimatedBuilder(
             animation: _animController,
             builder: (context, child) {
@@ -262,15 +263,15 @@ class _LoginModeTabsState extends State<_LoginModeTabs> with SingleTickerProvide
                     scale: scaleAnimation.value,
                     child: Icon(
                       icon,
-                      size: 18,
+                      size: 18.r,
                       color: colorAnimation.value,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6.w),
                   Text(
                     label,
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       fontWeight:
                           colorAnimation.value == LoginConstants.primaryColor ? FontWeight.w600 : FontWeight.w400,
                       color: colorAnimation.value,

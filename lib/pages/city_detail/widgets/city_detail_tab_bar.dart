@@ -2,6 +2,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市详情页 Tab 导航
 class CityDetailTabBar extends StatelessWidget {
@@ -21,25 +22,25 @@ class CityDetailTabBar extends StatelessWidget {
       isScrollable: true,
       labelColor: AppColors.cityPrimary,
       unselectedLabelColor: Colors.grey[600],
-      labelStyle: const TextStyle(
+      labelStyle: TextStyle(
         fontWeight: FontWeight.w600,
-        fontSize: 15,
+        fontSize: 15.sp,
       ),
-      unselectedLabelStyle: const TextStyle(
+      unselectedLabelStyle: TextStyle(
         fontWeight: FontWeight.w500,
-        fontSize: 15,
+        fontSize: 15.sp,
       ),
       indicatorSize: TabBarIndicatorSize.label,
       indicator: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: const Border(
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border(
           bottom: BorderSide(
             color: AppColors.cityPrimary,
             width: 3,
           ),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       tabs: [
         Tab(text: l10n.scores),
         Tab(text: l10n.guide),

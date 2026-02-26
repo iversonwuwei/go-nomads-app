@@ -320,11 +320,11 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                   ),
                   if (_hasActiveFilters)
                     Positioned(
-                      right: 8,
-                      top: 8,
+                      right: 8.w,
+                      top: 8.h,
                       child: Container(
-                        width: 8,
-                        height: 8,
+                        width: 8.w,
+                        height: 8.h,
                         decoration: const BoxDecoration(
                           color: Color(0xFFFF4458),
                           shape: BoxShape.circle,
@@ -355,16 +355,16 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           isScrollable: true,
           labelColor: const Color(0xFFFF4458),
           unselectedLabelColor: Colors.grey[600],
-          labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+          labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp),
+          unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 15.sp),
           indicatorSize: TabBarIndicatorSize.label,
           indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: const Border(
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border(
               bottom: BorderSide(color: Color(0xFFFF4458), width: 3),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
           onTap: (index) => setState(() {}),
           tabs: [
             Tab(text: l10n.allMeetups),
@@ -384,7 +384,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           return Center(
             child: CircularProgressIndicator(
               color: const Color(0xFFFF4458),
-              strokeWidth: 3.w,
+              strokeWidth: 3,
             ),
           );
         }
@@ -469,7 +469,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                         child: Center(
                           child: CircularProgressIndicator(
                             color: const Color(0xFFFF4458),
-                            strokeWidth: 2.w,
+                            strokeWidth: 2,
                           ),
                         ),
                       );
@@ -1320,16 +1320,16 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
     return Container(
       height: screenHeight * 0.85,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: Column(
         children: [
           // 顶部栏
           Container(
             padding: EdgeInsets.all(20.w),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: AppColors.borderLight, width: 1),
               ),
@@ -1539,7 +1539,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
           // 底部应用按钮
           Container(
             padding: EdgeInsets.all(20.w),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(color: AppColors.borderLight, width: 1),
               ),
@@ -1554,7 +1554,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     elevation: 0,
                   ),

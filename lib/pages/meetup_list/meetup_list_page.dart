@@ -63,8 +63,8 @@ class MeetupListPage extends GetView<MeetupListController> {
     return PreferredSize(
       preferredSize: const Size.fromHeight(48),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
-        decoration: const BoxDecoration(
+        padding: EdgeInsets.symmetric(horizontal: 0, vertical: 6.h),
+        decoration: BoxDecoration(
           color: Colors.white,
           border: Border(
             bottom: BorderSide(color: Color(0x11000000), width: 1),
@@ -75,20 +75,20 @@ class MeetupListPage extends GetView<MeetupListController> {
           isScrollable: false,
           labelColor: const Color(0xFFFF4458),
           unselectedLabelColor: Colors.grey[600],
-          labelStyle: const TextStyle(
+          labelStyle: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 13,
+            fontSize: 13.sp,
           ),
-          unselectedLabelStyle: const TextStyle(
+          unselectedLabelStyle: TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: 13,
+            fontSize: 13.sp,
           ),
           indicatorSize: TabBarIndicatorSize.label,
-          indicator: const UnderlineTabIndicator(
+          indicator: UnderlineTabIndicator(
             borderSide: BorderSide(color: Color(0xFFFF4458), width: 2.5),
-            insets: EdgeInsets.symmetric(horizontal: 8),
+            insets: EdgeInsets.symmetric(horizontal: 8.w),
           ),
-          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+          labelPadding: EdgeInsets.symmetric(horizontal: 4.w),
           tabs: [
             Tab(text: l10n.allMeetups),
             Tab(text: l10n.joined),
@@ -119,11 +119,11 @@ class _FilterButton extends GetView<MeetupListController> {
             ),
             if (controller.hasActiveFilters)
               Positioned(
-                right: 8,
-                top: 8,
+                right: 8.w,
+                top: 8.h,
                 child: Container(
-                  width: 8,
-                  height: 8,
+                  width: 8.w,
+                  height: 8.h,
                   decoration: const BoxDecoration(
                     color: Color(0xFFFF4458),
                     shape: BoxShape.circle,

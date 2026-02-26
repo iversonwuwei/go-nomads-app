@@ -4,6 +4,7 @@ import 'package:go_nomads_app/features/city/presentation/controllers/city_rating
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市评分卡片组件 - 极简现代风格
 class CityRatingsCard extends StatefulWidget {
@@ -91,9 +92,9 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(vertical: 8.h),
               itemCount: controller.statistics.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 24),
+              separatorBuilder: (context, index) => SizedBox(height: 24.h),
               itemBuilder: (context, index) {
                 final stat = controller.statistics[index];
                 log('🎯 [CityRatingsCard] 渲染第 ${index + 1} 项: ${stat.categoryName}');
@@ -120,7 +121,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     log('   - ratingCount: ${stat.ratingCount}');
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -135,25 +136,25 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                     if (stat.icon != null) ...[
                       Icon(
                         _getIconData(stat.icon!),
-                        size: 18,
+                        size: 18.r,
                         color: const Color(0xFF666666),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                     ],
                     Expanded(
                       child: Text(
                         stat.categoryName,
-                        style: const TextStyle(
-                          fontSize: 15,
+                        style: TextStyle(
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF1A1A1A),
-                          letterSpacing: 0.2,
+                          letterSpacing: 0.2.sp,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
                 // 星星评分
                 Row(
@@ -203,29 +204,29 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
             ),
           ),
 
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
 
           // 右侧：加权平均分
           SizedBox(
-            width: 48,
+            width: 48.w,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   averageRating.toStringAsFixed(1),
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: TextStyle(
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1A1A1A),
                     height: 1.2,
                     letterSpacing: -0.5,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   '${stat.ratingCount}',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w400,
                     color: Colors.grey[500],
                     height: 1.0,
@@ -268,15 +269,15 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     }
 
     return Container(
-      width: 28,
-      height: 28,
+      width: 28.w,
+      height: 28.h,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: Icon(
         starIcon,
-        size: 16,
+        size: 16.r,
         color: starColor,
       ),
     );
@@ -298,17 +299,17 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
     }
 
     return Container(
-      width: 28,
-      height: 28,
+      width: 28.w,
+      height: 28.h,
       decoration: BoxDecoration(
         color: isFilled || isHalfFilled
             ? const Color(0xFF10B981) // 更柔和的绿色
             : Colors.grey[100],
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: Icon(
         starIcon,
-        size: 16,
+        size: 16.r,
         color: isFilled || isHalfFilled ? Colors.white : Colors.grey[400],
       ),
     );
@@ -337,9 +338,9 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: 8.h),
         itemCount: 6,
-        separatorBuilder: (context, index) => const SizedBox(height: 24),
+        separatorBuilder: (context, index) => SizedBox(height: 24.h),
         itemBuilder: (context, index) => _buildSkeletonItem(),
       ),
     );
@@ -348,7 +349,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
   /// 单个评分项骨架
   Widget _buildSkeletonItem() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -360,25 +361,25 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                 Row(
                   children: [
                     Container(
-                      width: 18,
-                      height: 18,
+                      width: 18.w,
+                      height: 18.h,
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(4.r),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     Container(
-                      width: 80,
-                      height: 15,
+                      width: 80.w,
+                      height: 15.h,
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(4.r),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 // 星星骨架 - 使用实际尺寸 28x28
                 Row(
                   children: List.generate(5, (index) {
@@ -387,11 +388,11 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                         right: index < 4 ? 6 : 0,
                       ),
                       child: Container(
-                        width: 28,
-                        height: 28,
+                        width: 28.w,
+                        height: 28.h,
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(6.r),
                         ),
                       ),
                     );
@@ -400,28 +401,28 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
               ],
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           // 分数骨架
           SizedBox(
-            width: 48,
+            width: 48.w,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  width: 36,
-                  height: 20,
+                  width: 36.w,
+                  height: 20.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Container(
-                  width: 16,
-                  height: 11,
+                  width: 16.w,
+                  height: 11.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
               ],

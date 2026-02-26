@@ -4,6 +4,7 @@ import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 指定版主页面的用户列表
 class AssignModeratorUserList extends GetView<AssignModeratorController> {
@@ -36,19 +37,19 @@ class AssignModeratorUserList extends GetView<AssignModeratorController> {
         children: [
           Icon(
             hasSearchQuery ? FontAwesomeIcons.magnifyingGlass : FontAwesomeIcons.users,
-            size: 64,
+            size: 64.r,
             color: Colors.grey[400],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             hasSearchQuery ? '未找到匹配的用户' : '暂无用户',
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 16,
+              fontSize: 16.sp,
             ),
           ),
           if (hasSearchQuery) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             TextButton(
               onPressed: controller.clearSearch,
               child: const Text('清除搜索'),
@@ -61,11 +62,11 @@ class AssignModeratorUserList extends GetView<AssignModeratorController> {
 
   Widget _buildUserList() {
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       itemCount: controller.filteredUsers.length,
       separatorBuilder: (context, index) => Divider(
         height: 1,
-        indent: 72,
+        indent: 72.w,
         color: Colors.grey.shade200,
       ),
       itemBuilder: (context, index) {

@@ -5,6 +5,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 用户选择国家和城市的结果
 class LocationSelectionResult {
@@ -117,13 +118,13 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
       children: [
         Text(
           widget.required ? '$labelText *' : labelText,
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: 14.sp,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Obx(() {
           final isLoadingCountries = _locationController.isLoadingCountries.value;
           final isLoadingCities = _locationController.isLoadingCities.value;
@@ -170,18 +171,18 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                   decoration: InputDecoration(
                     hintText: l10n.selectCity,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                       borderSide: const BorderSide(color: AppColors.borderLight),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     filled: true,
                     fillColor: (!widget.enabled || isLoading) ? Colors.grey[200] : Colors.white,
                     suffixIcon: isLoading
-                        ? const Padding(
-                            padding: EdgeInsets.all(8),
+                        ? Padding(
+                            padding: EdgeInsets.all(8.w),
                             child: SizedBox(
-                              width: 20,
-                              height: 20,
+                              width: 20.w,
+                              height: 20.h,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           )
@@ -239,17 +240,17 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
     Get.bottomSheet(
       Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
           ),
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: Colors.grey[300]!),
@@ -267,8 +268,8 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                   ),
                   Text(
                     l10n.selectCity,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -312,11 +313,11 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: EdgeInsets.all(12.w),
                             child: Text(
                               l10n.country,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey[600],
                               ),
@@ -372,7 +373,7 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                                       title: Text(
                                         displayName,
                                         style: TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 14.sp,
                                           color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
                                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                                         ),
@@ -400,11 +401,11 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12.w),
                           child: Text(
                             l10n.city,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[600],
                             ),
@@ -421,7 +422,7 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                               return Center(
                                 child: Text(
                                   l10n.selectCountryFirst,
-                                  style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                                  style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
                                 ),
                               );
                             }
@@ -438,7 +439,7 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                               return Center(
                                 child: Text(
                                   l10n.noData,
-                                  style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                                  style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
                                 ),
                               );
                             }
@@ -473,15 +474,15 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                                     title: Text(
                                       city.name,
                                       style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 14.sp,
                                         color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
                                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                                       ),
                                     ),
                                     trailing: isSelected
-                                        ? const Icon(
+                                        ? Icon(
                                             FontAwesomeIcons.check,
-                                            size: 14,
+                                            size: 14.r,
                                             color: Color(0xFFFF4458),
                                           )
                                         : null,

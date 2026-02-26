@@ -6,6 +6,7 @@ import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_form_field.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 邮箱登录表单 - 响应式验证
 class LoginEmailForm extends GetView<LoginController> {
@@ -42,7 +43,7 @@ class LoginEmailForm extends GetView<LoginController> {
                   controller.showValidationErrors.value ? _getErrorText(controller.emailError.value, l10n) : null,
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 密码输入
         Obx(() => LoginFormField(
@@ -61,12 +62,12 @@ class LoginEmailForm extends GetView<LoginController> {
                   controller.showValidationErrors.value ? _getErrorText(controller.passwordError.value, l10n) : null,
             )),
 
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
 
         // 记住我 & 忘记密码
         _RememberMeRow(l10n: l10n),
 
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // 登录按钮
         _LoginButton(l10n: l10n),
@@ -95,7 +96,7 @@ class _RememberMeRow extends GetView<LoginController> {
                 )),
             Text(
               l10n.rememberMe,
-              style: const TextStyle(fontSize: 14, color: Colors.black87),
+              style: TextStyle(fontSize: 14.sp, color: Colors.black87),
             ),
           ],
         ),
@@ -105,8 +106,8 @@ class _RememberMeRow extends GetView<LoginController> {
           },
           child: Text(
             l10n.forgotPassword,
-            style: const TextStyle(
-              fontSize: 14,
+            style: TextStyle(
+              fontSize: 14.sp,
               color: LoginConstants.primaryColor,
               fontWeight: FontWeight.w600,
             ),
@@ -132,15 +133,15 @@ class _LoginButton extends GetView<LoginController> {
         style: ElevatedButton.styleFrom(
           backgroundColor: LoginConstants.primaryColor,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
           ),
           elevation: 0,
         ),
-        child: const Text(
+        child: Text(
           '点击登录/注册',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
         ),
       ),
     );

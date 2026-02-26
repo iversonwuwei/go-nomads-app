@@ -4,6 +4,7 @@ import 'package:go_nomads_app/controllers/add_coworking_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddCoworkingPricingSection extends StatelessWidget {
   final String controllerTag;
@@ -20,13 +21,13 @@ class AddCoworkingPricingSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.pricing, FontAwesomeIcons.moneyBill),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(controller: _c.dailyRateController, label: l10n.dailyRate, hint: l10n.dailyRateHint, keyboardType: TextInputType.number),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(controller: _c.monthlyRateController, label: l10n.monthlyRate, hint: l10n.monthlyRateHint, keyboardType: TextInputType.number),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildCurrencyDropdown(context, l10n),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildFreeTrialSwitch(l10n),
       ],
     );
@@ -35,9 +36,9 @@ class AddCoworkingPricingSection extends StatelessWidget {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFFFF4458), size: 24),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+        Icon(icon, color: const Color(0xFFFF4458), size: 24.r),
+        SizedBox(width: 8.w),
+        Text(title, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
       ],
     );
   }
@@ -49,7 +50,7 @@ class AddCoworkingPricingSection extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
         filled: true,
         fillColor: Colors.grey[50],
       ),
@@ -61,7 +62,7 @@ class AddCoworkingPricingSection extends StatelessWidget {
           value: _c.currency.value.isEmpty ? 'USD' : _c.currency.value,
           decoration: InputDecoration(
             labelText: l10n.currency,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
             filled: true,
             fillColor: Colors.grey[50],
           ),
@@ -83,12 +84,12 @@ class AddCoworkingPricingSection extends StatelessWidget {
 
   Widget _buildFreeTrialSwitch(AppLocalizations l10n) {
     return Obx(() => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[300]!)),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(12.r), border: Border.all(color: Colors.grey[300]!)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l10n.freeTrialAvailable, style: const TextStyle(fontSize: 16)),
+              Text(l10n.freeTrialAvailable, style: TextStyle(fontSize: 16.sp)),
               Switch(value: _c.hasFreeTrial.value, onChanged: (value) => _c.hasFreeTrial.value = value, activeColor: const Color(0xFFFF4458)),
             ],
           ),

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/report_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 举报内容类型
 enum ReportContentType {
@@ -132,9 +133,9 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: SafeArea(
         child: Column(
@@ -142,25 +143,25 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
           children: [
             // 顶部拖动条
             Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 40,
-              height: 4,
+              margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
             // 标题
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
               child: Row(
                 children: [
-                  const Icon(FontAwesomeIcons.circleExclamation, size: 20, color: Color(0xFFFF4458)),
-                  const SizedBox(width: 10),
+                  Icon(FontAwesomeIcons.circleExclamation, size: 20.r, color: Color(0xFFFF4458)),
+                  SizedBox(width: 10.w),
                   Text(
                     widget.l10n.report,
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF333333),
                     ),
@@ -170,16 +171,16 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
             ),
             if (widget.targetName != null)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Text(
                   widget.targetName!,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     color: Color(0xFF999999),
                   ),
                 ),
               ),
-            const Divider(height: 16),
+            Divider(height: 16),
             // 举报原因列表（可滚动，防止小屏溢出）
             Flexible(
               child: ListView(
@@ -190,10 +191,10 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                     .toList(),
               ),
             ),
-            const Divider(height: 1),
+            Divider(height: 1),
             // 底部按钮区域：取消 + 确认
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
               child: Row(
                 children: [
                   // 取消按钮
@@ -201,22 +202,22 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                     child: OutlinedButton(
                       onPressed: () => Get.back(),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                         side: const BorderSide(color: Color(0xFFE0E0E0)),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       child: Text(
                         widget.l10n.cancel,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 16.sp,
                           color: Color(0xFF999999),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   // 确认按钮
                   Expanded(
                     child: ElevatedButton(
@@ -224,19 +225,19 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                           ? null
                           : _onConfirm,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                         backgroundColor: const Color(0xFFFF4458),
                         disabledBackgroundColor: const Color(0xFFE0E0E0),
                         disabledForegroundColor: const Color(0xFFBBBBBB),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                         elevation: 0,
                       ),
                       child: _isSubmitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
+                          ? SizedBox(
+                              width: 20.w,
+                              height: 20.h,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: Colors.white,
@@ -244,8 +245,8 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                             )
                           : Text(
                               widget.l10n.confirm,
-                              style: const TextStyle(
-                                fontSize: 16,
+                              style: TextStyle(
+                                fontSize: 16.sp,
                                 color: Colors.white,
                               ),
                             ),
@@ -254,7 +255,7 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                 ],
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
           ],
         ),
       ),
@@ -271,30 +272,30 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
         color: isSelected ? const Color(0xFFFFF0F1) : null,
         child: Row(
           children: [
             Icon(
               reason.icon,
-              size: 20,
+              size: 20.r,
               color: isSelected ? const Color(0xFFFF4458) : const Color(0xFF666666),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14.w),
             Expanded(
               child: Text(
                 reason.label,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   color: isSelected ? const Color(0xFFFF4458) : const Color(0xFF333333),
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
             ),
             if (isSelected)
-              const Icon(FontAwesomeIcons.circleCheck, size: 18, color: Color(0xFFFF4458))
+              Icon(FontAwesomeIcons.circleCheck, size: 18.r, color: Color(0xFFFF4458))
             else
-              const Icon(FontAwesomeIcons.circle, size: 18, color: Color(0xFFDDDDDD)),
+              Icon(FontAwesomeIcons.circle, size: 18.r, color: Color(0xFFDDDDDD)),
           ],
         ),
       ),

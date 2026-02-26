@@ -8,6 +8,7 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/dialogs/notification_dialogs.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 通知列表页面控制器
 class NotificationsPageController extends GetxController {
@@ -229,9 +230,9 @@ class NotificationsPageController extends GetxController {
       AlertDialog(
         title: Row(
           children: [
-            Text(isCity ? '🚨' : '⚠️', style: const TextStyle(fontSize: 20)),
-            const SizedBox(width: 8),
-            Expanded(child: Text(notification.title, style: const TextStyle(fontSize: 16))),
+            Text(isCity ? '🚨' : '⚠️', style: TextStyle(fontSize: 20.sp)),
+            SizedBox(width: 8.w),
+            Expanded(child: Text(notification.title, style: TextStyle(fontSize: 16.sp))),
           ],
         ),
         content: Column(
@@ -240,15 +241,15 @@ class NotificationsPageController extends GetxController {
           children: [
             Text(notification.message),
             if (targetName.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text('举报对象: $targetName', style: const TextStyle(fontWeight: FontWeight.w500)),
             ],
             if (reasonLabel.isNotEmpty) ...[
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text('举报原因: $reasonLabel'),
             ],
-            const SizedBox(height: 4),
-            Text('举报人: $reporterName', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+            SizedBox(height: 4.h),
+            Text('举报人: $reporterName', style: TextStyle(color: Colors.grey[600], fontSize: 13.sp)),
           ],
         ),
         actions: [

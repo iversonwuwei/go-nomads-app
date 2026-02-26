@@ -3,6 +3,7 @@ import 'package:go_nomads_app/controllers/city_photo_submission_page_controller.
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市照片提交页面
 class CityPhotoSubmissionPage extends StatelessWidget {
@@ -78,7 +79,7 @@ class CityPhotoSubmissionPage extends StatelessWidget {
       body: Form(
         key: formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -86,7 +87,7 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                 '为数字游民社区分享你在 $cityName 的真实体验',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               TextFormField(
                 controller: controller.titleController,
                 decoration: const InputDecoration(
@@ -100,17 +101,17 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextFormField(
                 controller: controller.locationNoteController,
                 decoration: InputDecoration(
                   labelText: '位置信息 (可选)',
                   hintText: '街道、地标或更多定位线索',
                   suffixIcon: IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       FontAwesomeIcons.locationDot,
                       color: Color(0xFFFF4458),
-                      size: 20,
+                      size: 20.r,
                     ),
                     onPressed: controller.openMapPicker,
                     tooltip: '在地图上定位',
@@ -118,7 +119,7 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                 ),
                 maxLines: 2,
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               TextFormField(
                 controller: controller.descriptionController,
                 decoration: const InputDecoration(
@@ -127,7 +128,7 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                 ),
                 maxLines: 3,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Obx(() => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -146,35 +147,35 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                       ),
                     ],
                   )),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Obx(() {
                 if (!controller.isUploadingImages.value) return const SizedBox.shrink();
                 return Row(
                   children: [
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
+                    SizedBox(
+                      width: 20.w,
+                      height: 20.h,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Text(controller.uploadStatus.value ?? '正在上传...'),
                   ],
                 );
               }),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Obx(() {
                 if (controller.photoUrls.isEmpty) {
                   return Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(24.w),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
-                        Icon(FontAwesomeIcons.images, size: 48, color: Colors.grey),
-                        SizedBox(height: 12),
+                        Icon(FontAwesomeIcons.images, size: 48.r, color: Colors.grey),
+                        SizedBox(height: 12.h),
                         Text('还没有照片，点击上方"添加照片"按钮上传'),
                       ],
                     ),
@@ -182,8 +183,8 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                 }
 
                 return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+                  spacing: 12.w,
+                  runSpacing: 12.w,
                   children: controller.photoUrls
                       .asMap()
                       .entries
@@ -191,17 +192,17 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                         (entry) => Stack(
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               child: Image.network(
                                 entry.value,
-                                width: 100,
-                                height: 100,
+                                width: 100.w,
+                                height: 100.h,
                                 fit: BoxFit.cover,
                               ),
                             ),
                             Positioned(
-                              top: 4,
-                              right: 4,
+                              top: 4.h,
+                              right: 4.w,
                               child: GestureDetector(
                                 onTap: () => controller.removePhoto(entry.key),
                                 child: Container(
@@ -209,11 +210,11 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                                     color: Colors.black.withValues(alpha: 0.55),
                                     shape: BoxShape.circle,
                                   ),
-                                  padding: const EdgeInsets.all(4),
-                                  child: const Icon(
+                                  padding: EdgeInsets.all(4.w),
+                                  child: Icon(
                                     FontAwesomeIcons.xmark,
                                     color: Colors.white,
-                                    size: 16,
+                                    size: 16.r,
                                   ),
                                 ),
                               ),
@@ -224,7 +225,7 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                       .toList(),
                 );
               }),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
               Obx(() => SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
@@ -232,9 +233,9 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                         backgroundColor: AppColors.cityPrimary,
                         foregroundColor: Colors.white,
                         disabledBackgroundColor: AppColors.cityPrimary.withValues(alpha: 0.5),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       onPressed: controller.isUploadingImages.value || controller.isSubmitting.value
@@ -246,9 +247,9 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                               }
                             },
                       icon: controller.isSubmitting.value
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
+                          ? SizedBox(
+                              width: 16.w,
+                              height: 16.h,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: Colors.white,
@@ -258,7 +259,7 @@ class CityPhotoSubmissionPage extends StatelessWidget {
                       label: Text(controller.isSubmitting.value ? '提交中...' : '提交'),
                     ),
                   )),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 '提交后后端会通过高德地图自动补齐坐标，成功后你将回到城市详情页，照片会在刷新后展示。',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),

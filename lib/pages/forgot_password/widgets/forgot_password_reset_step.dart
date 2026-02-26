@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 步骤3：设置新密码 / Step 3: Set new password
 class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
@@ -10,45 +11,45 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           // 图标
           Center(
             child: Container(
-              width: 72,
-              height: 72,
+              width: 72.w,
+              height: 72.h,
               decoration: BoxDecoration(
                 color: AppColors.accent.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child:
-                  Icon(Icons.vpn_key_outlined, size: 36, color: AppColors.accent),
+                  Icon(Icons.vpn_key_outlined, size: 36.r, color: AppColors.accent),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           Center(
             child: Text(
               '请设置您的新密码',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 15.sp,
                 color: AppColors.textSecondary,
               ),
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           // 新密码
           Text(
             '新密码',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Obx(() => TextField(
                 controller: controller.newPasswordController,
                 obscureText: !controller.newPasswordVisible.value,
@@ -69,30 +70,30 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
                   filled: true,
                   fillColor: Colors.grey.shade50,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     borderSide: BorderSide(color: Colors.grey.shade200),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     borderSide: BorderSide(color: Colors.grey.shade200),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     borderSide: BorderSide(color: AppColors.accent),
                   ),
                 ),
               )),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           // 确认密码
           Text(
             '确认密码',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Obx(() => TextField(
                 controller: controller.confirmPasswordController,
                 obscureText: !controller.confirmPasswordVisible.value,
@@ -114,24 +115,24 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
                   filled: true,
                   fillColor: Colors.grey.shade50,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     borderSide: BorderSide(color: Colors.grey.shade200),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     borderSide: BorderSide(color: Colors.grey.shade200),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                     borderSide: BorderSide(color: AppColors.accent),
                   ),
                 ),
               )),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           // 提交按钮
           Obx(() => SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 48.h,
                 child: ElevatedButton(
                   onPressed: controller.isLoading.value
                       ? null
@@ -142,23 +143,23 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
                     disabledBackgroundColor:
                         AppColors.accent.withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                     elevation: 0,
                   ),
                   child: controller.isLoading.value
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
+                      ? SizedBox(
+                          width: 20.w,
+                          height: 20.h,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           '确认重置',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/change_password_page_controller.dart';
 import 'package:go_nomads_app/pages/change_password/widgets/change_password_field.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 密码表单区域 / Password form section
 class ChangePasswordForm extends GetView<ChangePasswordController> {
@@ -11,10 +12,10 @@ class ChangePasswordForm extends GetView<ChangePasswordController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: AppColors.border),
       ),
       child: Obx(() => Column(
@@ -24,21 +25,21 @@ class ChangePasswordForm extends GetView<ChangePasswordController> {
                 controller.hasPassword.value ? '修改密码' : '设置密码',
                 style: TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 controller.hasPassword.value
                     ? '请输入原密码和新密码'
                     : '您尚未设置密码，请设置登录密码',
                 style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // 原密码（仅已设置密码的用户显示）
               if (controller.hasPassword.value) ...[
@@ -49,7 +50,7 @@ class ChangePasswordForm extends GetView<ChangePasswordController> {
                   isVisible: controller.oldPasswordVisible,
                   onToggleVisible: controller.toggleOldPasswordVisible,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
               ],
 
               // 新密码
@@ -60,7 +61,7 @@ class ChangePasswordForm extends GetView<ChangePasswordController> {
                 isVisible: controller.newPasswordVisible,
                 onToggleVisible: controller.toggleNewPasswordVisible,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 确认新密码
               ChangePasswordField(

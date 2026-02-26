@@ -208,7 +208,7 @@ class MeetupListView extends GetView<MeetupListController> {
       child: Center(
         child: CircularProgressIndicator(
           color: const Color(0xFFFF4458),
-          strokeWidth: 2.w,
+          strokeWidth: 2,
         ),
       ),
     );

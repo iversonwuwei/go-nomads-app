@@ -10,6 +10,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 
 import 'travel_plan/travel_plan_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 创建旅行计划页面 - 完整页面版本
 class CreateTravelPlanPage extends StatefulWidget {
@@ -143,33 +144,33 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
             return Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     FontAwesomeIcons.wandMagicSparkles,
                     color: Color(0xFFFF4458),
-                    size: 20,
+                    size: 20.r,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n.aiTravelPlanner,
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: TextStyle(
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
                     Text(
                       l10n.planYourTrip(widget.cityName),
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: 12.sp,
                         color: Colors.grey,
                         fontWeight: FontWeight.normal,
                       ),
@@ -190,19 +191,19 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 final l10n = AppLocalizations.of(context)!;
                 return Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
+                  margin: EdgeInsets.all(16.w),
+                  padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                        blurRadius: 12,
+                        blurRadius: 12.r,
                         offset: const Offset(0, 4),
                       ),
                     ],
@@ -212,24 +213,24 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                     children: [
                       Row(
                         children: [
-                          const Icon(FontAwesomeIcons.wandMagicSparkles, color: Colors.white, size: 24),
-                          const SizedBox(width: 8),
+                          Icon(FontAwesomeIcons.wandMagicSparkles, color: Colors.white, size: 24.r),
+                          SizedBox(width: 8.w),
                           Text(
                             l10n.aiPoweredPlanning,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         l10n.tellPreferences(widget.cityName),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           height: 1.4,
                         ),
                       ),
@@ -245,14 +246,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 final l10n = AppLocalizations.of(context)!;
                 return Container(
                   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
+                        blurRadius: 10.r,
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -262,35 +263,35 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                     children: [
                       // Departure Location
                       _buildSectionTitle(l10n.departureLocation, FontAwesomeIcons.locationDot),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Row(
                         children: [
                           Expanded(
                             child: _isLoadingLocation
                                 ? Container(
-                                    height: 56,
+                                    height: 56.h,
                                     decoration: BoxDecoration(
                                       color: Colors.grey[50],
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12.r),
                                       border: Border.all(color: Colors.grey.shade200),
                                     ),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        const SizedBox(
-                                          width: 20,
-                                          height: 20,
+                                        SizedBox(
+                                          width: 20.w,
+                                          height: 20.h,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
                                             color: Color(0xFFFF4458),
                                           ),
                                         ),
-                                        const SizedBox(width: 12),
+                                        SizedBox(width: 12.w),
                                         Text(
                                           '正在获取当前位置...',
                                           style: TextStyle(
                                             color: Colors.grey[600],
-                                            fontSize: 14,
+                                            fontSize: 14.sp,
                                           ),
                                         ),
                                       ],
@@ -305,32 +306,32 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                       filled: true,
                                       fillColor: Colors.grey[50],
                                       border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12.r),
                                         borderSide: BorderSide.none,
                                       ),
                                       enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12.r),
                                         borderSide: BorderSide(color: Colors.grey.shade200),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        borderSide: const BorderSide(
+                                        borderRadius: BorderRadius.circular(12.r),
+                                        borderSide: BorderSide(
                                           color: Color(0xFFFF4458),
                                           width: 2,
                                         ),
                                       ),
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 16,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 16.h,
                                       ),
-                                      prefixIcon: const Icon(
+                                      prefixIcon: Icon(
                                         FontAwesomeIcons.locationCrosshairs,
                                         color: Color(0xFFFF4458),
-                                        size: 18,
+                                        size: 18.r,
                                       ),
                                       suffixIcon: departureLocation.isNotEmpty
                                           ? IconButton(
-                                              icon: const Icon(FontAwesomeIcons.xmark, size: 20),
+                                              icon: Icon(FontAwesomeIcons.xmark, size: 20.r),
                                               onPressed: () {
                                                 setState(() {
                                                   departureLocation = '';
@@ -341,21 +342,21 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                     ),
                                   ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Container(
-                            height: 56,
-                            width: 56,
+                            height: 56.h,
+                            width: 56.w,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                                  blurRadius: 8,
+                                  blurRadius: 8.r,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
@@ -390,21 +391,21 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         l10n.tapMapIcon,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
                           fontStyle: FontStyle.italic,
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Departure Date
                       _buildSectionTitle('Departure Date', FontAwesomeIcons.calendarDays),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       InkWell(
                         onTap: () async {
                           final DateTime? picked = await showDatePicker(
@@ -433,13 +434,13 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 16.h,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(color: Colors.grey.shade200),
                           ),
                           child: Row(
@@ -447,23 +448,23 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               Icon(
                                 FontAwesomeIcons.calendar,
                                 color: departureDate != null ? const Color(0xFFFF4458) : Colors.grey[400],
-                                size: 20,
+                                size: 20.r,
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12.w),
                               Expanded(
                                 child: Text(
                                   departureDate != null
                                       ? '${departureDate!.year}-${departureDate!.month.toString().padLeft(2, '0')}-${departureDate!.day.toString().padLeft(2, '0')}'
                                       : 'Select departure date',
                                   style: TextStyle(
-                                    fontSize: 15,
+                                    fontSize: 15.sp,
                                     color: departureDate != null ? Colors.black87 : Colors.grey[400],
                                   ),
                                 ),
                               ),
                               if (departureDate != null)
                                 IconButton(
-                                  icon: const Icon(FontAwesomeIcons.xmark, size: 20),
+                                  icon: Icon(FontAwesomeIcons.xmark, size: 20.r),
                                   onPressed: () {
                                     setState(() {
                                       departureDate = null;
@@ -475,16 +476,16 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Trip Duration
                       _buildSectionTitle(l10n.tripDuration, FontAwesomeIcons.calendar),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(color: Colors.grey.shade200),
                         ),
                         child: Column(
@@ -505,32 +506,32 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                     },
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: 12.w),
                                 Container(
-                                  width: 60,
-                                  height: 40,
+                                  width: 60.w,
+                                  height: 40.h,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFF4458),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(8.r),
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
                                     duration.toString(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
+                                      fontSize: 20.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Text(
                               duration == 1 ? l10n.day(1) : l10n.days(duration),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Color(0xFFFF4458),
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -538,11 +539,11 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Budget Level
                       _buildSectionTitle(l10n.budget, FontAwesomeIcons.dollarSign),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Row(
                         children: [
                           Expanded(
@@ -553,7 +554,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               });
                             }),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: _buildBudgetChip(l10n.medium, budget == 'medium', () {
                               setState(() {
@@ -562,7 +563,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               });
                             }),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: _buildBudgetChip(l10n.high, budget == 'high', () {
                               setState(() {
@@ -573,32 +574,32 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         l10n.enterBudget,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Row(
                         children: [
                           Container(
-                            width: 100,
-                            height: 56,
+                            width: 100.w,
+                            height: 56.h,
                             decoration: BoxDecoration(
                               color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               border: Border.all(color: Colors.grey.shade200),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 value: selectedCurrency,
                                 isExpanded: true,
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                borderRadius: BorderRadius.circular(12),
+                                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                                borderRadius: BorderRadius.circular(12.r),
                                 icon: const Icon(
                                   FontAwesomeIcons.chevronDown,
                                   color: Color(0xFFFF4458),
@@ -611,14 +612,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '\$ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'USD',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -630,14 +631,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '¥ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'CNY',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -649,14 +650,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '€ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'EUR',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -668,14 +669,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '£ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'GBP',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -687,14 +688,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '¥ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'JPY',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -710,7 +711,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: TextFormField(
                               controller: _customBudgetController,
@@ -721,23 +722,23 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                 filled: true,
                                 fillColor: Colors.grey[50],
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(12.r),
                                   borderSide: BorderSide.none,
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(12.r),
                                   borderSide: BorderSide(color: Colors.grey.shade200),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: BorderSide(
                                     color: Color(0xFFFF4458),
                                     width: 2,
                                   ),
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16.w,
+                                  vertical: 16.h,
                                 ),
                               ),
                               onChanged: (value) {
@@ -752,22 +753,22 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         ],
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Preferred Attractions (新增景点选择模块)
                       _buildSectionTitle('想去的景点', FontAwesomeIcons.city),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         '选择您在${widget.cityName}想要游览的景点类型',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 8.w,
+                        runSpacing: 8.w,
                         children: cityAttractions.map((attraction) {
                           return _buildAttractionChip(
                             attraction['name'] as String,
@@ -777,14 +778,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         }).toList(),
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Travel Style
                       _buildSectionTitle(l10n.travelStyle, FontAwesomeIcons.paintbrush),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 8.w,
+                        runSpacing: 8.w,
                         children: [
                           _buildStyleChip(l10n.culture, 'culture', FontAwesomeIcons.landmark),
                           _buildStyleChip(l10n.adventure, 'adventure', FontAwesomeIcons.mountain),
@@ -793,14 +794,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         ],
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Interests
                       _buildSectionTitle(l10n.interests, FontAwesomeIcons.heart),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 8.w,
+                        runSpacing: 8.w,
                         children: [
                           _buildInterestChip(l10n.photography),
                           _buildInterestChip(l10n.history),
@@ -824,13 +825,13 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         builder: (context) {
           final l10n = AppLocalizations.of(context)!;
           return Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
+                  blurRadius: 10.r,
                   offset: const Offset(0, -2),
                 ),
               ],
@@ -841,23 +842,23 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF4458),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   elevation: 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(FontAwesomeIcons.wandMagicSparkles, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
+                    SizedBox(width: 8.w),
                     Text(
                       l10n.generatePlan,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 0.3,
+                        letterSpacing: 0.3.sp,
                       ),
                     ),
                   ],
@@ -873,12 +874,12 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFFFF4458)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20.r, color: const Color(0xFFFF4458)),
+        SizedBox(width: 8.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -891,7 +892,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: 14.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -901,7 +902,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 )
               : null,
           color: isSelected ? null : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -910,7 +911,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
               ? [
                   BoxShadow(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                    blurRadius: 8,
+                    blurRadius: 8.r,
                     offset: const Offset(0, 2),
                   ),
                 ]
@@ -921,7 +922,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
             label,
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.black87,
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             ),
           ),
@@ -937,7 +938,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         setState(() => travelStyle = value);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -947,7 +948,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 )
               : null,
           color: isSelected ? null : Colors.grey[100],
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -958,15 +959,15 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
           children: [
             Icon(
               icon,
-              size: 16,
+              size: 16.r,
               color: isSelected ? Colors.white : Colors.black54,
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6.w),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black87,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -989,7 +990,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -999,7 +1000,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 )
               : null,
           color: isSelected ? null : Colors.grey[100],
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -1009,7 +1010,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
           label,
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.black87,
-            fontSize: 13,
+            fontSize: 13.sp,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -1030,7 +1031,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -1040,7 +1041,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 )
               : null,
           color: isSelected ? null : Colors.grey[50],
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -1049,7 +1050,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
               ? [
                   BoxShadow(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.2),
-                    blurRadius: 6,
+                    blurRadius: 6.r,
                     offset: const Offset(0, 2),
                   ),
                 ]
@@ -1060,15 +1061,15 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
           children: [
             Icon(
               icon,
-              size: 16,
+              size: 16.r,
               color: isSelected ? Colors.white : const Color(0xFFFF4458),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6.w),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black87,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),

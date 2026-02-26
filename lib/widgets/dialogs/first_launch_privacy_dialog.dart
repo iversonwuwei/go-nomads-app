@@ -11,6 +11,7 @@ import 'package:go_nomads_app/pages/legal/privacy_policy_page.dart';
 import 'package:go_nomads_app/pages/legal/sdk_list_page.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 首次启动隐私政策弹窗 key
 const String _kPrivacyConsentKey = 'first_launch_privacy_consented';
@@ -111,10 +112,10 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
     return PopScope(
       canPop: false,
       child: Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        insetPadding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 24.h),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 640),
+          constraints: BoxConstraints(maxWidth: 400.w, maxHeight: 640.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -134,23 +135,23 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color: AppColors.cityPrimary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.privacy_tip_outlined,
               color: AppColors.cityPrimary,
-              size: 24,
+              size: 24.r,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               l10n?.privacyPolicy ?? '隐私政策',
-              style: const TextStyle(
-                fontSize: 18,
+              style: TextStyle(
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
@@ -170,18 +171,18 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
           Text(
             l10n?.privacyPolicyIntro ??
                 '欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：',
-            style: const TextStyle(
-              fontSize: 14,
+            style: TextStyle(
+              fontSize: 14.sp,
               color: AppColors.textPrimary,
               height: 1.6,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 动态渲染摘要项（从 API 加载）或显示加载状态
           if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
               child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
             )
           else if (_summaryItems != null && _summaryItems!.isNotEmpty)
@@ -198,26 +199,26 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
               content: '我们重视您的隐私安全。点击下方链接查看完整隐私政策以了解详情。',
             ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // 底部提示
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: Colors.amber.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
               border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline, color: Colors.amber[700], size: 18),
-                const SizedBox(width: 8),
+                Icon(Icons.info_outline, color: Colors.amber[700], size: 18.r),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: RichText(
                     text: TextSpan(
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: Colors.amber[800],
                         height: 1.5,
                       ),
@@ -229,7 +230,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                         TextSpan(
                           text: l10n?.privacyPolicy ?? '隐私政策',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: Colors.amber[900],
                             decoration: TextDecoration.underline,
                             fontWeight: FontWeight.w600,
@@ -243,7 +244,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                         TextSpan(
                           text: '第三方SDK清单',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: Colors.amber[900],
                             decoration: TextDecoration.underline,
                             fontWeight: FontWeight.w600,
@@ -272,37 +273,37 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
     required String content,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.only(bottom: 14.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 2),
-            padding: const EdgeInsets.all(6),
+            margin: EdgeInsets.only(top: 2.h),
+            padding: EdgeInsets.all(6.w),
             decoration: BoxDecoration(
               color: AppColors.containerLight,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Icon(icon, size: 16, color: AppColors.textSecondary),
+            child: Icon(icon, size: 16.r, color: AppColors.textSecondary),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   content,
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontSize: 13.sp,
                     color: AppColors.textSecondary,
                     height: 1.5,
                   ),
@@ -323,7 +324,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
           // 同意按钮
           SizedBox(
             width: double.infinity,
-            height: 44,
+            height: 44.h,
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(true);
@@ -332,21 +333,21 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                 backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10.r)),
                 elevation: 0,
               ),
               child: Text(
                 l10n?.agreeAndContinue ?? '同意',
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    fontSize: 15.sp, fontWeight: FontWeight.w600),
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           // 不同意按钮
           SizedBox(
             width: double.infinity,
-            height: 44,
+            height: 44.h,
             child: OutlinedButton(
               onPressed: () {
                 _onDecline(context, l10n);
@@ -355,11 +356,11 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                 foregroundColor: AppColors.textSecondary,
                 side: const BorderSide(color: AppColors.border),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10.r)),
               ),
               child: Text(
                 l10n?.disagreeAndExit ?? '不同意',
-                style: const TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: 14.sp),
               ),
             ),
           ),
@@ -374,17 +375,17 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         title: Text(
           l10n?.privacyDeclineTitle ?? '温馨提示',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
         ),
         content: Text(
           l10n?.privacyDeclineMessage ??
               '如果您不同意隐私政策，将无法使用本应用的相关功能。'
                   '\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。'
                   '\n\n您确定不同意吗？',
-          style: const TextStyle(fontSize: 14, height: 1.5),
+          style: TextStyle(fontSize: 14.sp, height: 1.5),
         ),
         actions: [
           TextButton(

@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import '../../../../features/coworking/domain/entities/coworking_space.dart' as coworking;
 import '../../../../features/coworking/presentation/controllers/coworking_state_controller.dart';
 import '../../city_detail_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Coworking Tab - GetView 实现
 ///
@@ -73,36 +74,36 @@ class _EmptyCoworkingState extends StatelessWidget {
           final minHeight = (constraints.maxHeight - 120).clamp(0.0, double.infinity);
           return SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+            padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 60.h),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: minHeight),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildIllustration(),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
                   Text(
                     'No coworking spaces yet',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 24.sp,
                       fontWeight: FontWeight.w300,
                       color: Colors.grey[800],
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.5.sp,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Text(
                     'Help build the community',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       color: Colors.grey[500],
                       fontWeight: FontWeight.w400,
-                      letterSpacing: 0.2,
+                      letterSpacing: 0.2.sp,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40.h),
                   _buildAddButton(),
                 ],
               ),
@@ -115,8 +116,8 @@ class _EmptyCoworkingState extends StatelessWidget {
 
   Widget _buildIllustration() {
     return Container(
-      width: 200,
-      height: 200,
+      width: 200.w,
+      height: 200.h,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -126,17 +127,17 @@ class _EmptyCoworkingState extends StatelessWidget {
             const Color(0xFFFF4458).withValues(alpha: 0.02),
           ],
         ),
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.circular(100.r),
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           Positioned(
-            top: 40,
-            right: 40,
+            top: 40.h,
+            right: 40.w,
             child: Container(
-              width: 60,
-              height: 60,
+              width: 60.w,
+              height: 60.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
@@ -144,11 +145,11 @@ class _EmptyCoworkingState extends StatelessWidget {
             ),
           ),
           Positioned(
-            bottom: 50,
-            left: 30,
+            bottom: 50.h,
+            left: 30.w,
             child: Container(
-              width: 40,
-              height: 40,
+              width: 40.w,
+              height: 40.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFFF4458).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
@@ -157,7 +158,7 @@ class _EmptyCoworkingState extends StatelessWidget {
           ),
           Icon(
             FontAwesomeIcons.building,
-            size: 80,
+            size: 80.r,
             color: Colors.grey[300],
           ),
         ],
@@ -168,28 +169,28 @@ class _EmptyCoworkingState extends StatelessWidget {
   Widget _buildAddButton() {
     return InkWell(
       onTap: onAddPressed,
-      borderRadius: BorderRadius.circular(30),
+      borderRadius: BorderRadius.circular(30.r),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
         decoration: BoxDecoration(
           border: Border.all(
             color: const Color(0xFFFF4458).withValues(alpha: 0.3),
             width: 1.5,
           ),
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(30.r),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FontAwesomeIcons.plus, size: 20, color: Colors.grey[700]),
-            const SizedBox(width: 8),
+            Icon(FontAwesomeIcons.plus, size: 20.r, color: Colors.grey[700]),
+            SizedBox(width: 8.w),
             Text(
               'Add First Space',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 15.sp,
                 color: Colors.grey[700],
                 fontWeight: FontWeight.w500,
-                letterSpacing: 0.3,
+                letterSpacing: 0.3.sp,
               ),
             ),
           ],
@@ -220,7 +221,7 @@ class _CoworkingList extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () => coworkingController.loadCoworkingSpacesByCity(cityName),
       child: ListView.builder(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+        padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 96.h),
         itemCount: spaces.length,
         itemBuilder: (context, index) {
           final space = spaces[index];
@@ -240,22 +241,22 @@ class _CoworkingSpaceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: InkWell(
           onTap: () => Get.to(() => CoworkingDetailPage(space: space)),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: _buildCardContent(context),
         ),
       ),
@@ -274,8 +275,8 @@ class _CoworkingSpaceCard extends StatelessWidget {
             errorBuilder: (context, error, stackTrace) {
               return Container(
                 color: Colors.grey[300],
-                child: const Center(
-                  child: Icon(FontAwesomeIcons.building, size: 48, color: Colors.grey),
+                child: Center(
+                  child: Icon(FontAwesomeIcons.building, size: 48.r, color: Colors.grey),
                 ),
               );
             },
@@ -300,18 +301,18 @@ class _CoworkingSpaceCard extends StatelessWidget {
         ),
         // 右上角：验证徽章
         Positioned(
-          top: 12,
-          right: 12,
+          top: 12.h,
+          right: 12.w,
           child: CoworkingVerificationBadge(
             space: space,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
           ),
         ),
         // 底部信息面板
         Positioned(
-          left: 12,
-          right: 12,
-          bottom: 12,
+          left: 12.w,
+          right: 12.w,
+          bottom: 12.h,
           child: _buildHeroInfoPanel(),
         ),
       ],
@@ -320,10 +321,10 @@ class _CoworkingSpaceCard extends StatelessWidget {
 
   Widget _buildHeroInfoPanel() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.18),
           width: 1,
@@ -336,8 +337,8 @@ class _CoworkingSpaceCard extends StatelessWidget {
           // 名称
           Text(
             space.name,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: 18.sp,
               fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
@@ -346,20 +347,20 @@ class _CoworkingSpaceCard extends StatelessWidget {
           ),
           // 地址
           if (space.location.address.isNotEmpty) ...[
-            const SizedBox(height: 2),
+            SizedBox(height: 2.h),
             Row(
               children: [
                 Icon(
                   FontAwesomeIcons.locationDot,
-                  size: 11,
+                  size: 11.r,
                   color: Colors.white.withValues(alpha: 0.8),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4.w),
                 Expanded(
                   child: Text(
                     space.location.address,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: Colors.white.withValues(alpha: 0.8),
                     ),
                     maxLines: 1,
@@ -369,7 +370,7 @@ class _CoworkingSpaceCard extends StatelessWidget {
               ],
             ),
           ],
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           // 指标 Pills
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -381,7 +382,7 @@ class _CoworkingSpaceCard extends StatelessWidget {
                   value: space.spaceInfo.rating.toStringAsFixed(1),
                   color: Colors.amber,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 // WiFi 速度
                 _HeroPill(
                   icon: FontAwesomeIcons.wifi,
@@ -389,7 +390,7 @@ class _CoworkingSpaceCard extends StatelessWidget {
                 ),
                 // 月租价格
                 if (space.pricing.monthlyRate != null) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _HeroPill(
                     icon: FontAwesomeIcons.dollarSign,
                     value: '${space.pricing.monthlyRate!.toStringAsFixed(0)}/mo',
@@ -397,7 +398,7 @@ class _CoworkingSpaceCard extends StatelessWidget {
                 ],
                 // 24/7 开放
                 if (space.amenities.has24HourAccess) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   const _HeroPill(
                     icon: FontAwesomeIcons.clock,
                     value: '24/7',
@@ -406,7 +407,7 @@ class _CoworkingSpaceCard extends StatelessWidget {
                 ],
                 // 免费试用
                 if (space.pricing.hasFreeTrial) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   const _HeroPill(
                     icon: FontAwesomeIcons.tag,
                     value: 'Free Trial',
@@ -440,10 +441,10 @@ class _HeroPill extends StatelessWidget {
     final hasCustomColor = color != null;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
         ),
@@ -453,14 +454,14 @@ class _HeroPill extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 12,
+            size: 12.r,
             color: hasCustomColor ? pillColor : Colors.white.withValues(alpha: 0.9),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Text(
             value,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
               color: hasCustomColor ? pillColor : Colors.white,
             ),

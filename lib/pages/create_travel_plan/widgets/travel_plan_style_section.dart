@@ -3,6 +3,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 景点选择部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageController> {
@@ -24,12 +25,12 @@ class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageControlle
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _SectionTitle(title: '想去的景点', icon: FontAwesomeIcons.city),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           '选择您在${controller.cityName}想要游览的景点类型',
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _AttractionsWrap(controllerTag: controllerTag),
       ],
     );
@@ -52,8 +53,8 @@ class _AttractionsWrap extends GetView<CreateTravelPlanPageController> {
     }
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 8.w,
+      runSpacing: 8.w,
       children: controller.cityAttractions.map((attraction) {
         return _AttractionChip(
           label: attraction['name'] as String,
@@ -95,7 +96,7 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
       return GestureDetector(
         onTap: () => controller.toggleAttraction(id),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
@@ -105,7 +106,7 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
                   )
                 : null,
             color: isSelected ? null : Colors.grey[50],
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
@@ -114,7 +115,7 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
                 ? [
                     BoxShadow(
                       color: const Color(0xFFFF4458).withValues(alpha: 0.2),
-                      blurRadius: 6,
+                      blurRadius: 6.r,
                       offset: const Offset(0, 2),
                     ),
                   ]
@@ -123,13 +124,13 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: isSelected ? Colors.white : const Color(0xFFFF4458)),
-              const SizedBox(width: 6),
+              Icon(icon, size: 16.r, color: isSelected ? Colors.white : const Color(0xFFFF4458)),
+              SizedBox(width: 6.w),
               Text(
                 label,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -163,7 +164,7 @@ class TravelPlanStyleSection extends GetView<CreateTravelPlanPageController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(title: l10n.travelStyle, icon: FontAwesomeIcons.paintbrush),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _StyleChipsWrap(controllerTag: controllerTag),
       ],
     );
@@ -188,8 +189,8 @@ class _StyleChipsWrap extends GetView<CreateTravelPlanPageController> {
     }
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 8.w,
+      runSpacing: 8.w,
       children: [
         _StyleChip(
             label: l10n.culture, value: 'culture', icon: FontAwesomeIcons.landmark, controllerTag: controllerTag),
@@ -236,7 +237,7 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
       return GestureDetector(
         onTap: () => controller.setTravelStyle(value),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
@@ -246,7 +247,7 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
                   )
                 : null,
             color: isSelected ? null : Colors.grey[100],
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
@@ -255,13 +256,13 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: isSelected ? Colors.white : Colors.black54),
-              const SizedBox(width: 6),
+              Icon(icon, size: 16.r, color: isSelected ? Colors.white : Colors.black54),
+              SizedBox(width: 6.w),
               Text(
                 label,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -295,7 +296,7 @@ class TravelPlanInterestsSection extends GetView<CreateTravelPlanPageController>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(title: l10n.interests, icon: FontAwesomeIcons.heart),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _InterestsWrap(controllerTag: controllerTag),
       ],
     );
@@ -320,8 +321,8 @@ class _InterestsWrap extends GetView<CreateTravelPlanPageController> {
     }
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 8.w,
+      runSpacing: 8.w,
       children: [
         _InterestChip(label: l10n.photography, controllerTag: controllerTag),
         _InterestChip(label: l10n.history, controllerTag: controllerTag),
@@ -361,7 +362,7 @@ class _InterestChip extends GetView<CreateTravelPlanPageController> {
       return GestureDetector(
         onTap: () => controller.toggleInterest(label),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
@@ -371,7 +372,7 @@ class _InterestChip extends GetView<CreateTravelPlanPageController> {
                   )
                 : null,
             color: isSelected ? null : Colors.grey[100],
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(18.r),
             border: Border.all(
               color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
@@ -381,7 +382,7 @@ class _InterestChip extends GetView<CreateTravelPlanPageController> {
             label,
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.black87,
-              fontSize: 13,
+              fontSize: 13.sp,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -402,12 +403,12 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFFFF4458)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20.r, color: const Color(0xFFFF4458)),
+        SizedBox(width: 8.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),

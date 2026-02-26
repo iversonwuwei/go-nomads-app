@@ -6,6 +6,7 @@ import 'package:go_nomads_app/pages/forgot_password/widgets/forgot_password_acco
 import 'package:go_nomads_app/pages/forgot_password/widgets/forgot_password_code_step.dart';
 import 'package:go_nomads_app/pages/forgot_password/widgets/forgot_password_reset_step.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 忘记密码页面 / Forgot password page
 class ForgotPasswordPage extends GetView<ForgotPasswordController> {
@@ -23,7 +24,7 @@ class ForgotPasswordPage extends GetView<ForgotPasswordController> {
               _stepTitle(controller.currentStep.value),
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
               ),
             )),

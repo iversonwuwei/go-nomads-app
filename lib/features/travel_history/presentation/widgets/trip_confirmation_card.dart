@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../config/app_colors.dart';
 import '../../domain/entities/candidate_trip.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 旅行确认卡片
 /// 用于非侵入式地提醒用户确认检测到的旅行
@@ -25,16 +26,16 @@ class TripConfirmationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -43,33 +44,33 @@ class TripConfirmationCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
                       color: AppColors.cityPrimary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.flight_land,
                       color: AppColors.cityPrimary,
-                      size: 24,
+                      size: 24.r,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           l10n.travelDetected,
-                          style: const TextStyle(
-                            fontSize: 12,
+                          style: TextStyle(
+                            fontSize: 12.sp,
                             color: AppColors.textTertiary,
                           ),
                         ),
                         Text(
                           trip.displayName,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
@@ -79,7 +80,7 @@ class TripConfirmationCard extends StatelessWidget {
                   ),
                   // 关闭按钮
                   IconButton(
-                    icon: const Icon(Icons.close, size: 20),
+                    icon: Icon(Icons.close, size: 20.r),
                     color: AppColors.textTertiary,
                     onPressed: onDismiss,
                     tooltip: l10n.dismiss,
@@ -87,46 +88,46 @@ class TripConfirmationCard extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
 
               // 旅行信息
               _buildInfoRow(
                 Icons.calendar_today,
                 _formatDateRange(trip.arrivalTime, trip.departureTime),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               _buildInfoRow(
                 Icons.schedule,
                 l10n.durationDays(trip.durationDays.toString()),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               _buildInfoRow(
                 Icons.place,
                 l10n.distanceFromHome(trip.distanceFromHome.toStringAsFixed(0)),
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 提示文本
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   color: AppColors.background,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.lightbulb_outline,
-                      size: 16,
+                      size: 16.r,
                       color: AppColors.textTertiary,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
                         l10n.saveTravelQuestion,
-                        style: const TextStyle(
-                          fontSize: 13,
+                        style: TextStyle(
+                          fontSize: 13.sp,
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -135,7 +136,7 @@ class TripConfirmationCard extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 操作按钮
               Row(
@@ -144,9 +145,9 @@ class TripConfirmationCard extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: onDismiss,
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                         ),
                         side: const BorderSide(color: AppColors.border),
                       ),
@@ -158,19 +159,19 @@ class TripConfirmationCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     flex: 2,
                     child: ElevatedButton.icon(
                       onPressed: onConfirm,
-                      icon: const Icon(Icons.check, size: 18),
+                      icon: Icon(Icons.check, size: 18.r),
                       label: Text(l10n.saveTravel),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.cityPrimary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                         ),
                       ),
                     ),
@@ -187,12 +188,12 @@ class TripConfirmationCard extends StatelessWidget {
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.textTertiary),
-        const SizedBox(width: 8),
+        Icon(icon, size: 16.r, color: AppColors.textTertiary),
+        SizedBox(width: 8.w),
         Text(
           text,
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: 14.sp,
             color: AppColors.textSecondary,
           ),
         ),
@@ -234,15 +235,15 @@ class TripConfirmationBanner extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.flight_land,
                   color: Colors.white,
-                  size: 24,
+                  size: 24.r,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,17 +251,17 @@ class TripConfirmationBanner extends StatelessWidget {
                     children: [
                       Text(
                         l10n.travelDetectedBanner(trip.displayName),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                         ),
                       ),
                       Text(
                         l10n.tapToSave,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ],
@@ -277,7 +278,7 @@ class TripConfirmationBanner extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                  icon: Icon(Icons.close, color: Colors.white, size: 20.r),
                   onPressed: onDismiss,
                 ),
               ],
@@ -314,14 +315,14 @@ class PendingTripsListView extends StatelessWidget {
           children: [
             Icon(
               Icons.flight_takeoff,
-              size: 64,
+              size: 64.r,
               color: AppColors.textTertiary.withValues(alpha: 0.5),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               l10n.noPendingTrips,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.sp,
                 color: AppColors.textTertiary,
               ),
             ),
@@ -332,7 +333,7 @@ class PendingTripsListView extends StatelessWidget {
 
     return ListView.builder(
       itemCount: trips.length,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       itemBuilder: (context, index) {
         final trip = trips[index];
         return TripConfirmationCard(

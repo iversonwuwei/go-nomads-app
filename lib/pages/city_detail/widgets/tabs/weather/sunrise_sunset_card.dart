@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'weather_utils.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 日出日落信息卡片
 class SunriseSunsetCard extends StatelessWidget {
@@ -24,14 +25,14 @@ class SunriseSunsetCard extends StatelessWidget {
     final sunsetTime = WeatherUtils.formatWeatherTime(sunset, timezoneOffset);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
@@ -41,14 +42,14 @@ class SunriseSunsetCard extends StatelessWidget {
         children: [
           Text(
             l10n.sunriseSunset,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildSunriseRow(sunriseTime),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _buildSunsetRow(sunsetTime),
         ],
       ),
@@ -58,21 +59,21 @@ class SunriseSunsetCard extends StatelessWidget {
   Widget _buildSunriseRow(String time) {
     return Row(
       children: [
-        const Icon(FontAwesomeIcons.solidSun, color: Colors.orange, size: 20),
-        const SizedBox(width: 12),
+        Icon(FontAwesomeIcons.solidSun, color: Colors.orange, size: 20.r),
+        SizedBox(width: 12.w),
         Expanded(
           child: Text(
             l10n.sunrise,
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 14,
+              fontSize: 14.sp,
             ),
           ),
         ),
         Text(
           time,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -83,21 +84,21 @@ class SunriseSunsetCard extends StatelessWidget {
   Widget _buildSunsetRow(String time) {
     return Row(
       children: [
-        const Icon(FontAwesomeIcons.solidMoon, color: Color(0xFF5B6FD8), size: 20),
-        const SizedBox(width: 12),
+        Icon(FontAwesomeIcons.solidMoon, color: Color(0xFF5B6FD8), size: 20.r),
+        SizedBox(width: 12.w),
         Expanded(
           child: Text(
             l10n.sunset,
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 14,
+              fontSize: 14.sp,
             ),
           ),
         ),
         Text(
           time,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -124,14 +125,14 @@ class DataSourceCard extends StatelessWidget {
     final timezone = WeatherUtils.formatTimezone(timezoneOffset);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
@@ -141,26 +142,26 @@ class DataSourceCard extends StatelessWidget {
         children: [
           Text(
             l10n.dataSource,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             dataSource ?? 'OpenWeatherMap',
             style: TextStyle(
               color: Colors.grey[700],
-              fontSize: 15,
+              fontSize: 15.sp,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             '${l10n.timezone}: $timezone',
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 13,
+              fontSize: 13.sp,
             ),
           ),
         ],

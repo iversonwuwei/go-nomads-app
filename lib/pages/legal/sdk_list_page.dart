@@ -4,6 +4,7 @@ import 'package:go_nomads_app/models/legal_document.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 第三方SDK信息收集清单页面
 ///
@@ -60,8 +61,8 @@ class _SdkListPageState extends State<SdkListPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.info_outline, size: 48, color: AppColors.textTertiary),
-            const SizedBox(height: 12),
+            Icon(Icons.info_outline, size: 48.r, color: AppColors.textTertiary),
+            SizedBox(height: 12.h),
             Text('暂无SDK清单数据', style: TextStyle(color: AppColors.textSecondary)),
           ],
         ),
@@ -69,7 +70,7 @@ class _SdkListPageState extends State<SdkListPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: _sdkList!.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
@@ -82,12 +83,12 @@ class _SdkListPageState extends State<SdkListPage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16.h),
       child: Text(
         '为实现应用相关功能，本应用集成了以下第三方SDK。'
         '下表列出了各SDK的名称、所属公司、用途及可能收集的个人信息：',
         style: TextStyle(
-          fontSize: 13,
+          fontSize: 13.sp,
           color: AppColors.textSecondary,
           height: 1.6,
         ),
@@ -105,27 +106,27 @@ class _SdkCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: AppColors.border.withValues(alpha: 0.5)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // SDK 名称 + 公司
             Row(
               children: [
-                Icon(Icons.extension_outlined, size: 18, color: AppColors.cityPrimary),
-                const SizedBox(width: 8),
+                Icon(Icons.extension_outlined, size: 18.r, color: AppColors.cityPrimary),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     sdk.name,
-                    style: const TextStyle(
-                      fontSize: 15,
+                    style: TextStyle(
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
@@ -133,51 +134,51 @@ class _SdkCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             _buildInfoRow('所属公司', sdk.company),
             _buildInfoRow('用途', sdk.purpose),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // 收集数据项
-            const Text(
+            Text(
               '收集信息：',
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Wrap(
-              spacing: 6,
-              runSpacing: 4,
+              spacing: 6.w,
+              runSpacing: 4.w,
               children: sdk.dataCollected.map((item) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: Colors.orange.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                   border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
                 ),
                 child: Text(
                   item,
-                  style: TextStyle(fontSize: 11, color: Colors.orange[800]),
+                  style: TextStyle(fontSize: 11.sp, color: Colors.orange[800]),
                 ),
               )).toList(),
             ),
 
             // 隐私政策链接
             if (sdk.privacyUrl.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               GestureDetector(
                 onTap: () => _openUrl(sdk.privacyUrl),
                 child: Row(
                   children: [
-                    Icon(Icons.open_in_new, size: 14, color: AppColors.cityPrimary),
-                    const SizedBox(width: 4),
+                    Icon(Icons.open_in_new, size: 14.r, color: AppColors.cityPrimary),
+                    SizedBox(width: 4.w),
                     Text(
                       '查看隐私政策',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: AppColors.cityPrimary,
                         decoration: TextDecoration.underline,
                       ),
@@ -194,18 +195,18 @@ class _SdkCard extends StatelessWidget {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: EdgeInsets.only(bottom: 4.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '$label：',
-            style: TextStyle(fontSize: 13, color: AppColors.textTertiary),
+            style: TextStyle(fontSize: 13.sp, color: AppColors.textTertiary),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
             ),
           ),
         ],

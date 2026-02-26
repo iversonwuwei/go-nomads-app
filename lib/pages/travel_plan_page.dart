@@ -11,6 +11,7 @@ import 'package:go_nomads_app/widgets/share_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 旅行计划详情页
 class TravelPlanPage extends StatefulWidget {
@@ -278,56 +279,56 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
             // 进度提示
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(24.w),
                 child: Column(
                   children: [
                     // AI 图标
                     Container(
-                      width: 80,
-                      height: 80,
+                      width: 80.w,
+                      height: 80.h,
                       decoration: BoxDecoration(
                         color: AppColors.containerMedium.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         FontAwesomeIcons.wandMagicSparkles,
-                        size: 40,
+                        size: 40.r,
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // 进度文本
                     Text(
                       _progressMessage,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
                         color: AppColors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // 进度条
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                       child: LinearProgressIndicator(
                         value: _progressValue / 100,
-                        minHeight: 8,
+                        minHeight: 8.h,
                         backgroundColor: Colors.grey[200],
                         valueColor: AlwaysStoppedAnimation<Color>(
                           AppColors.textPrimary,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
 
                     // 进度百分比
                     Text(
                       '$_progressValue%',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
@@ -340,41 +341,41 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
             // Loading Content
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w),
                 child: Column(
                   children: [
                     // Overview Card Skeleton with details
-                    _buildDetailedSkeletonCard(height: 150),
-                    const SizedBox(height: 16),
+                    _buildDetailedSkeletonCard(height: 150.h),
+                    SizedBox(height: 16.h),
                     // Transportation Card Skeleton
-                    _buildDetailedSkeletonCard(height: 200),
-                    const SizedBox(height: 16),
+                    _buildDetailedSkeletonCard(height: 200.h),
+                    SizedBox(height: 16.h),
                     // Accommodation Card Skeleton
-                    _buildDetailedSkeletonCard(height: 180),
-                    const SizedBox(height: 16),
+                    _buildDetailedSkeletonCard(height: 180.h),
+                    SizedBox(height: 16.h),
                     // Itinerary Card Skeleton
-                    _buildDetailedSkeletonCard(height: 300),
-                    const SizedBox(height: 16),
+                    _buildDetailedSkeletonCard(height: 300.h),
+                    SizedBox(height: 16.h),
                     // Loading indicator
                     Center(
                       child: Column(
                         children: [
-                          const SizedBox(
-                            width: 24,
-                            height: 24,
+                          SizedBox(
+                            width: 24.w,
+                            height: 24.h,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12.h),
                           Builder(
                             builder: (context) {
                               final l10n = AppLocalizations.of(context)!;
                               return Text(
                                 l10n.generatingAiPlan,
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -400,14 +401,14 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
       builder: (context, child) {
         return Container(
           height: height,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.withValues(alpha: 0.1),
-                blurRadius: 8,
+                blurRadius: 8.r,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -418,25 +419,25 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
               // Title bar
               Row(
                 children: [
-                  _buildShimmerBox(width: 24, height: 24, borderRadius: 6),
-                  const SizedBox(width: 12),
-                  _buildShimmerBox(width: 120, height: 20, borderRadius: 4),
+                  _buildShimmerBox(width: 24.w, height: 24.h, borderRadius: 6),
+                  SizedBox(width: 12.w),
+                  _buildShimmerBox(width: 120.w, height: 20.h, borderRadius: 4),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               // Content lines
-              _buildShimmerBox(width: double.infinity, height: 14, borderRadius: 4),
-              const SizedBox(height: 10),
-              _buildShimmerBox(width: double.infinity, height: 14, borderRadius: 4),
-              const SizedBox(height: 10),
-              _buildShimmerBox(width: 200, height: 14, borderRadius: 4),
+              _buildShimmerBox(width: double.infinity, height: 14.h, borderRadius: 4),
+              SizedBox(height: 10.h),
+              _buildShimmerBox(width: double.infinity, height: 14.h, borderRadius: 4),
+              SizedBox(height: 10.h),
+              _buildShimmerBox(width: 200.w, height: 14.h, borderRadius: 4),
               const Spacer(),
               // Bottom info
               Row(
                 children: [
-                  _buildShimmerBox(width: 80, height: 12, borderRadius: 4),
+                  _buildShimmerBox(width: 80.w, height: 12.h, borderRadius: 4),
                   const Spacer(),
-                  _buildShimmerBox(width: 60, height: 12, borderRadius: 4),
+                  _buildShimmerBox(width: 60.w, height: 12.h, borderRadius: 4),
                 ],
               ),
             ],
@@ -482,27 +483,27 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               FontAwesomeIcons.circleExclamation,
-              size: 64,
+              size: 64.r,
               color: Colors.red,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               l10n.failedToGeneratePlan,
-              style: const TextStyle(
-                fontSize: 18,
+              style: TextStyle(
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               l10n.pleaseTryAgain,
               style: const TextStyle(
                 color: Colors.grey,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             ElevatedButton(
               onPressed: () => Get.back(),
               style: ElevatedButton.styleFrom(
@@ -563,15 +564,15 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
           // Plan Overview
           SliverToBoxAdapter(
             child: Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
+              margin: EdgeInsets.all(16.w),
+              padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 10,
+                    blurRadius: 10.r,
                     offset: const Offset(0, 2),
                   ),
                 ],
@@ -582,18 +583,18 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           FontAwesomeIcons.wandMagicSparkles,
                           color: Color(0xFFFF4458),
-                          size: 20,
+                          size: 20.r,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: Builder(
                           builder: (context) {
@@ -603,15 +604,15 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                               children: [
                                 Text(
                                   l10n.aiGeneratedPlan,
-                                  style: const TextStyle(
-                                    fontSize: 18,
+                                  style: TextStyle(
+                                    fontSize: 18.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   l10n.personalizedForYou,
-                                  style: const TextStyle(
-                                    fontSize: 13,
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
                                     color: Colors.grey,
                                   ),
                                 ),
@@ -622,9 +623,9 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   const Divider(),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Builder(
                     builder: (context) {
                       final l10n = AppLocalizations.of(context)!;
@@ -636,12 +637,12 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                           children: [
                             if (departureLocation != null && departureLocation.isNotEmpty) ...[
                               _buildInfoChip(FontAwesomeIcons.plane, '${l10n.from}: $departureLocation'),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12.w),
                             ],
                             _buildInfoChip(FontAwesomeIcons.calendar, '${plan.metadata.duration} ${l10n.days}'),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             _buildInfoChip(FontAwesomeIcons.dollarSign, plan.metadata.budgetLevel.displayName),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             _buildInfoChip(FontAwesomeIcons.paintbrush, plan.metadata.style.name),
                           ],
                         ),
@@ -759,7 +760,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
             ),
           ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          SliverToBoxAdapter(child: SizedBox(height: 32.h)),
         ],
       ),
     );
@@ -773,18 +774,18 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFFFF4458), size: 20),
-              const SizedBox(width: 8),
+              Icon(icon, color: const Color(0xFFFF4458), size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           content,
         ],
       ),
@@ -793,20 +794,20 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   Widget _buildInfoChip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFFFF4458)),
-          const SizedBox(width: 4),
+          Icon(icon, size: 14.r, color: const Color(0xFFFF4458)),
+          SizedBox(width: 4.w),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -820,38 +821,38 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: Colors.grey[200]!),
           ),
           child: Column(
             children: [
               _buildBudgetRow(l10n.transportation, plan.budget.transportation),
-              const Divider(height: 24),
+              Divider(height: 24),
               _buildBudgetRow(l10n.accommodation, plan.budget.accommodation),
-              const Divider(height: 24),
+              Divider(height: 24),
               _buildBudgetRow(l10n.foodAndDining, plan.budget.food),
-              const Divider(height: 24),
+              Divider(height: 24),
               _buildBudgetRow(l10n.activities, plan.budget.activities),
-              const Divider(height: 24),
+              Divider(height: 24),
               _buildBudgetRow(l10n.miscellaneous, plan.budget.miscellaneous),
-              const Divider(height: 24),
+              Divider(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     l10n.totalEstimatedCost,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     '\$${plan.budget.total.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style: TextStyle(
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFFF4458),
                     ),
@@ -872,14 +873,14 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 14.sp,
             color: Colors.grey[700],
           ),
         ),
         Text(
           '\$${amount.toStringAsFixed(0)}',
-          style: const TextStyle(
-            fontSize: 15,
+          style: TextStyle(
+            fontSize: 15.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -902,10 +903,10 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
@@ -913,31 +914,31 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
         children: [
           Row(
             children: [
-              const Icon(FontAwesomeIcons.plane, color: Color(0xFFFF4458), size: 20),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.plane, color: Color(0xFFFF4458), size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 plan.transportation.arrival?.method ?? 'N/A',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             generalInfo,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: Colors.grey[700],
             ),
           ),
 
           // 航班推荐卡片
           if (flights.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -945,7 +946,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                     const Color(0xFFFF6B7A).withValues(alpha: 0.05),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
                   color: const Color(0xFFFF4458).withValues(alpha: 0.2),
                 ),
@@ -955,34 +956,34 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         FontAwesomeIcons.plane,
                         color: Color(0xFFFF4458),
-                        size: 18,
+                        size: 18.r,
                       ),
-                      const SizedBox(width: 6),
-                      const Text(
+                      SizedBox(width: 6.w),
+                      Text(
                         '航班推荐',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFFFF4458),
                         ),
                       ),
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFF4458),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Text(
                           '${flights.length}个选择',
-                          style: const TextStyle(
-                            fontSize: 11,
+                          style: TextStyle(
+                            fontSize: 11.sp,
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),
@@ -990,7 +991,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   ...flights.asMap().entries.map((entry) {
                     final index = entry.key;
                     final flight = entry.value;
@@ -999,11 +1000,11 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                     final parts = flight.split(' - ');
                     if (parts.length < 2) {
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
+                        padding: EdgeInsets.only(bottom: 8.h),
                         child: Text(
                           flight,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             color: Colors.grey[700],
                           ),
                         ),
@@ -1029,15 +1030,15 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                       margin: EdgeInsets.only(
                         bottom: index < flights.length - 1 ? 12 : 0,
                       ),
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                         border: Border.all(color: Colors.grey[200]!),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.03),
-                            blurRadius: 4,
+                            blurRadius: 4.r,
                             offset: const Offset(0, 2),
                           ),
                         ],
@@ -1054,17 +1055,17 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                                   children: [
                                     Text(
                                       airlineAndFlight.split(' ')[0], // 航空公司
-                                      style: const TextStyle(
-                                        fontSize: 14,
+                                      style: TextStyle(
+                                        fontSize: 14.sp,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.black87,
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
+                                    SizedBox(height: 2.h),
                                     Text(
                                       airlineAndFlight.split(' ').skip(1).join(' '), // 航班号
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 12.sp,
                                         color: Colors.grey[600],
                                       ),
                                     ),
@@ -1074,18 +1075,18 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                               // 时段标签
                               if (timeSlot.isNotEmpty)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8.w,
+                                    vertical: 4.h,
                                   ),
                                   decoration: BoxDecoration(
                                     color: _getTimeSlotColor(timeSlot),
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(6.r),
                                   ),
                                   child: Text(
                                     timeSlot,
-                                    style: const TextStyle(
-                                      fontSize: 11,
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
                                       color: Colors.white,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -1093,11 +1094,11 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                                 ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           // 价格和时长
                           Wrap(
-                            spacing: 12,
-                            runSpacing: 8,
+                            spacing: 12.w,
+                            runSpacing: 8.w,
                             children: [
                               _buildInfoTag(
                                 icon: FontAwesomeIcons.dollarSign,
@@ -1115,17 +1116,17 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                           ),
                           // 备注信息
                           if (notes.isNotEmpty) ...[
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6.h),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(FontAwesomeIcons.circleInfo, size: 14, color: Colors.blue[400]),
-                                const SizedBox(width: 4),
+                                Icon(FontAwesomeIcons.circleInfo, size: 14.r, color: Colors.blue[400]),
+                                SizedBox(width: 4.w),
                                 Expanded(
                                   child: Text(
                                     notes,
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 12.sp,
                                       color: Colors.blue[700],
                                       fontStyle: FontStyle.italic,
                                     ),
@@ -1143,12 +1144,12 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
             ),
           ],
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: const Color(0xFFFF4458).withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: Builder(
               builder: (context) {
@@ -1169,27 +1170,27 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
               },
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           const Divider(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Row(
             children: [
-              const Icon(FontAwesomeIcons.trainSubway, color: Color(0xFFFF4458), size: 20),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.trainSubway, color: Color(0xFFFF4458), size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 plan.transportation.localTransport?.method ?? 'N/A',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             plan.transportation.localTransport?.details ?? 'No details available',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: Colors.grey[700],
             ),
           ),
@@ -1217,20 +1218,20 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
     Color? backgroundColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: backgroundColor ?? Colors.grey[100],
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(999.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: iconColor ?? Colors.grey[700]),
-          const SizedBox(width: 6),
+          Icon(icon, size: 12.r, color: iconColor ?? Colors.grey[700]),
+          SizedBox(width: 6.w),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12.5,
+            style: TextStyle(
+              fontSize: 12.5.sp,
               fontWeight: FontWeight.w500,
               color: Colors.black87,
             ),
@@ -1242,10 +1243,10 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   Widget _buildAccommodationCard(TravelPlan plan) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
@@ -1254,15 +1255,15 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
                   plan.accommodation.type.name,
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFFFF4458),
                   ),
@@ -1274,8 +1275,8 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
                   final l10n = AppLocalizations.of(context)!;
                   return Text(
                     '\$${plan.accommodation.pricePerNight.toStringAsFixed(0)}/${l10n.pricePerNight}',
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFFF4458),
                     ),
@@ -1284,61 +1285,61 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             plan.accommodation.recommendation,
-            style: const TextStyle(
-              fontSize: 15,
+            style: TextStyle(
+              fontSize: 15.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Row(
             children: [
-              const Icon(FontAwesomeIcons.locationDot, size: 14, color: Colors.grey),
-              const SizedBox(width: 4),
+              Icon(FontAwesomeIcons.locationDot, size: 14.r, color: Colors.grey),
+              SizedBox(width: 4.w),
               Text(
                 plan.accommodation.recommendedArea,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   color: Colors.grey[600],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 8.w,
+            runSpacing: 8.w,
             children: plan.accommodation.amenities
                 .map((amenity) => Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
                         amenity,
-                        style: const TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: 11.sp),
                       ),
                     ))
                 .toList(),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: Row(
               children: [
-                const Icon(FontAwesomeIcons.lightbulb, size: 16, color: Colors.blue),
-                const SizedBox(width: 8),
+                Icon(FontAwesomeIcons.lightbulb, size: 16.r, color: Colors.blue),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
                     plan.accommodation.bookingTips ?? '',
-                    style: const TextStyle(fontSize: 12),
+                    style: TextStyle(fontSize: 12.sp),
                   ),
                 ),
               ],
@@ -1354,11 +1355,11 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: Colors.grey[200]!),
           ),
           child: Column(
@@ -1367,51 +1368,51 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF4458),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: Text(
                       l10n.dayNumber(dayItinerary.day),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
                       dayItinerary.theme,
-                      style: const TextStyle(
-                        fontSize: 15,
+                      style: TextStyle(
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               ...dayItinerary.activities.map((activity) => _buildActivityItem(activity)),
               if (dayItinerary.notes != null && dayItinerary.notes!.isNotEmpty) ...[
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
                     color: Colors.amber[50],
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(FontAwesomeIcons.circleInfo, size: 16, color: Colors.amber),
-                      const SizedBox(width: 8),
+                      Icon(FontAwesomeIcons.circleInfo, size: 16.r, color: Colors.amber),
+                      SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
                           dayItinerary.notes!,
-                          style: const TextStyle(fontSize: 12),
+                          style: TextStyle(fontSize: 12.sp),
                         ),
                       ),
                     ],
@@ -1427,64 +1428,64 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   Widget _buildActivityItem(PlannedActivity activity) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            width: 60.w,
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
               color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(6.r),
             ),
             child: Text(
               activity.time,
-              style: const TextStyle(
-                fontSize: 11,
+              style: TextStyle(
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   activity.name,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   activity.description,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: Colors.grey[600],
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Row(
                   children: [
-                    Icon(FontAwesomeIcons.locationDot, size: 12, color: Colors.grey[500]),
-                    const SizedBox(width: 4),
+                    Icon(FontAwesomeIcons.locationDot, size: 12.r, color: Colors.grey[500]),
+                    SizedBox(width: 4.w),
                     Text(
                       activity.location,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         color: Colors.grey[500],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Icon(FontAwesomeIcons.dollarSign, size: 12, color: Colors.grey[500]),
+                    SizedBox(width: 12.w),
+                    Icon(FontAwesomeIcons.dollarSign, size: 12.r, color: Colors.grey[500]),
                     Text(
                       '\$${activity.estimatedCost.toStringAsFixed(0)}',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         color: Colors.grey[500],
                       ),
                     ),
@@ -1500,25 +1501,25 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   Widget _buildAttractionCard(AttractionRecommendation attraction) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+            borderRadius: BorderRadius.horizontal(left: Radius.circular(12.r)),
             child: Image.network(
               attraction.image ?? '',
-              width: 100,
-              height: 100,
+              width: 100.w,
+              height: 100.h,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  width: 100,
-                  height: 100,
+                  width: 100.w,
+                  height: 100.h,
                   color: Colors.grey[300],
                   child: const Icon(FontAwesomeIcons.image),
                 );
@@ -1527,41 +1528,41 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     attraction.name,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     attraction.description,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: Colors.grey[600],
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
-                      const Icon(FontAwesomeIcons.star, size: 12, color: Colors.amber),
-                      const SizedBox(width: 4),
+                      Icon(FontAwesomeIcons.star, size: 12.r, color: Colors.amber),
+                      SizedBox(width: 4.w),
                       Text(
                         attraction.rating.toString(),
-                        style: const TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: 11.sp),
                       ),
-                      const SizedBox(width: 12),
-                      const Icon(FontAwesomeIcons.dollarSign, size: 12, color: Color(0xFFFF4458)),
+                      SizedBox(width: 12.w),
+                      Icon(FontAwesomeIcons.dollarSign, size: 12.r, color: Color(0xFFFF4458)),
                       Text(
                         '\$${attraction.entryFee.toStringAsFixed(0)}',
-                        style: const TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: 11.sp),
                       ),
                     ],
                   ),
@@ -1576,25 +1577,25 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   Widget _buildRestaurantCard(RestaurantRecommendation restaurant) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+            borderRadius: BorderRadius.horizontal(left: Radius.circular(12.r)),
             child: Image.network(
               restaurant.image ?? '',
-              width: 100,
-              height: 100,
+              width: 100.w,
+              height: 100.h,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  width: 100,
-                  height: 100,
+                  width: 100.w,
+                  height: 100.h,
                   color: Colors.grey[300],
                   child: const Icon(FontAwesomeIcons.utensils),
                 );
@@ -1603,49 +1604,49 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     restaurant.name,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     restaurant.cuisine,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       color: Colors.grey[600],
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     restaurant.specialty,
-                    style: const TextStyle(
-                      fontSize: 12,
+                    style: TextStyle(
+                      fontSize: 12.sp,
                       fontStyle: FontStyle.italic,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
-                      const Icon(FontAwesomeIcons.star, size: 12, color: Colors.amber),
-                      const SizedBox(width: 4),
+                      Icon(FontAwesomeIcons.star, size: 12.r, color: Colors.amber),
+                      SizedBox(width: 4.w),
                       Text(
                         restaurant.rating.toString(),
-                        style: const TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: 11.sp),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Text(
                         restaurant.priceSymbol,
-                        style: const TextStyle(
-                          fontSize: 11,
+                        style: TextStyle(
+                          fontSize: 11.sp,
                           color: Color(0xFFFF4458),
                           fontWeight: FontWeight.w600,
                         ),
@@ -1663,30 +1664,30 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   Widget _buildTipItem(String tip) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 2),
-            width: 6,
-            height: 6,
+            margin: EdgeInsets.only(top: 2.h),
+            width: 6.w,
+            height: 6.h,
             decoration: const BoxDecoration(
               color: Color(0xFFFF4458),
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               tip,
-              style: const TextStyle(fontSize: 13),
+              style: TextStyle(fontSize: 13.sp),
             ),
           ),
         ],

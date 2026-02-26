@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 步骤2：输入验证码 / Step 2: Enter verification code
 class ForgotPasswordCodeStep extends GetView<ForgotPasswordController> {
@@ -11,47 +12,47 @@ class ForgotPasswordCodeStep extends GetView<ForgotPasswordController> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           // 图标
           Center(
             child: Container(
-              width: 72,
-              height: 72,
+              width: 72.w,
+              height: 72.h,
               decoration: BoxDecoration(
                 color: AppColors.accent.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.email_outlined, size: 36, color: AppColors.accent),
+              child: Icon(Icons.email_outlined, size: 36.r, color: AppColors.accent),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // 提示信息
           Obx(() => Center(
                 child: Text(
                   '验证码已发送至\n${controller.maskedTarget.value}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     color: AppColors.textSecondary,
                     height: 1.5,
                   ),
                 ),
               )),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           // 验证码输入
           Text(
             '验证码',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           TextField(
             controller: controller.codeController,
             keyboardType: TextInputType.number,
@@ -66,20 +67,20 @@ class ForgotPasswordCodeStep extends GetView<ForgotPasswordController> {
               filled: true,
               fillColor: Colors.grey.shade50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
                 borderSide: BorderSide(color: Colors.grey.shade200),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
                 borderSide: BorderSide(color: Colors.grey.shade200),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
                 borderSide: BorderSide(color: AppColors.accent),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           // 重新发送
           Align(
             alignment: Alignment.centerRight,
@@ -88,7 +89,7 @@ class ForgotPasswordCodeStep extends GetView<ForgotPasswordController> {
                 return Text(
                   '${controller.countdown.value}s 后重新发送',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: AppColors.textTertiary,
                   ),
                 );
@@ -99,7 +100,7 @@ class ForgotPasswordCodeStep extends GetView<ForgotPasswordController> {
                 child: Text(
                   '重新发送验证码',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: AppColors.accent,
                     fontWeight: FontWeight.w500,
                   ),
@@ -107,25 +108,25 @@ class ForgotPasswordCodeStep extends GetView<ForgotPasswordController> {
               );
             }),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // 下一步按钮
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 48.h,
             child: ElevatedButton(
               onPressed: controller.goToResetStep,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 elevation: 0,
               ),
-              child: const Text(
+              child: Text(
                 '下一步',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Innovation Detail Bottom Bar
 /// 创意项目详情页 - 底部操作栏
@@ -24,13 +25,13 @@ class InnovationDetailBottomBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
         ],
@@ -46,7 +47,7 @@ class InnovationDetailBottomBar extends StatelessWidget {
                 flex: 1,
                 child: _buildFollowButton(context),
               ),
-              if (!isCreator) const SizedBox(width: 12),
+              if (!isCreator) SizedBox(width: 12.w),
               // 联系按钮（非创建者才显示）
               if (!isCreator)
                 Expanded(
@@ -68,14 +69,14 @@ class InnovationDetailBottomBar extends StatelessWidget {
             _c.isFollowed.value
                 ? FontAwesomeIcons.solidHeart
                 : FontAwesomeIcons.heart,
-            size: 20,
+            size: 20.r,
           ),
           label: Text(
             _c.isToggling.value
                 ? '处理中...'
                 : (_c.isFollowed.value ? '已关注' : '关注'),
-            style: const TextStyle(
-              fontSize: 15,
+            style: TextStyle(
+              fontSize: 15.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -89,9 +90,9 @@ class InnovationDetailBottomBar extends StatelessWidget {
                   : Colors.grey[300]!,
               width: 1.5,
             ),
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: 12.h),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
           ),
         ));
@@ -100,20 +101,20 @@ class InnovationDetailBottomBar extends StatelessWidget {
   Widget _buildContactButton(AppLocalizations l10n) {
     return ElevatedButton.icon(
       onPressed: onContact,
-      icon: const Icon(FontAwesomeIcons.message, size: 20),
+      icon: Icon(FontAwesomeIcons.message, size: 20.r),
       label: Text(
         l10n.message,
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           fontWeight: FontWeight.bold,
         ),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF8B5CF6),
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: 14.h),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         elevation: 0,
       ),

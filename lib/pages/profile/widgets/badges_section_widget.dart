@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart' hide Badge;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 徽章部分组件
 class BadgesSectionWidget extends StatelessWidget {
@@ -24,16 +25,16 @@ class BadgesSectionWidget extends StatelessWidget {
       children: [
         Text(
           l10n.badges,
-          style: const TextStyle(
-            fontSize: 20,
+          style: TextStyle(
+            fontSize: 20.sp,
             fontWeight: FontWeight.bold,
             color: Color(0xFF1a1a1a),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 12.w,
+          runSpacing: 12.w,
           children: badges.map((badge) => _BadgeCard(badge: badge)).toList(),
         ),
       ],
@@ -50,18 +51,18 @@ class _BadgeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 4),
           ),
         ],
@@ -69,23 +70,23 @@ class _BadgeCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(badge.icon, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 10),
+          Text(badge.icon, style: TextStyle(fontSize: 24.sp)),
+          SizedBox(width: 10.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 badge.name,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 badge.description,
-                style: const TextStyle(fontSize: 11, color: Colors.white),
+                style: TextStyle(fontSize: 11.sp, color: Colors.white),
               ),
             ],
           ),

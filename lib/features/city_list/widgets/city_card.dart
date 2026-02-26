@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市卡片组件 - 使用 GetView 符合 GetX 标准
 ///
@@ -43,17 +44,17 @@ class CityCard extends GetView<CityListController> {
 
       return Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 8,
+              blurRadius: 8.r,
               offset: const Offset(0, 3),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           child: GestureDetector(
             onTap: () => _navigateToDetail(context, city),
             onLongPress: () => _handleLongPress(context, city),
@@ -94,16 +95,16 @@ class CityCard extends GetView<CityListController> {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(FontAwesomeIcons.imagePortrait, size: 36, color: Colors.grey),
+                      child: Center(
+                        child: Icon(FontAwesomeIcons.imagePortrait, size: 36.r, color: Colors.grey),
                       ),
                     );
                   },
                 )
               : Container(
                   color: Colors.grey[300],
-                  child: const Center(
-                    child: Icon(FontAwesomeIcons.imagePortrait, size: 36, color: Colors.grey),
+                  child: Center(
+                    child: Icon(FontAwesomeIcons.imagePortrait, size: 36.r, color: Colors.grey),
                   ),
                 ),
         ),
@@ -126,19 +127,19 @@ class CityCard extends GetView<CityListController> {
         ),
         // 右上角：关注按钮（纯图标）
         Positioned(
-          top: 6,
-          right: 6,
+          top: 6.h,
+          right: 6.w,
           child: _CityFollowButton(cityId: city.id),
         ),
         // 左上角：评分徽章 + 版主图标
         Positioned(
-          top: 6,
-          left: 6,
+          top: 6.h,
+          left: 6.w,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildScoreBadge(city.overallScore ?? 0.0),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               _buildModeratorBadge(city.hasModerator),
             ],
           ),
@@ -161,11 +162,11 @@ class CityCard extends GetView<CityListController> {
   /// 评分徽章 - 左上角，与底部指标同款样式
   Widget _buildScoreBadge(double score) {
     return Container(
-      height: 20,
-      padding: const EdgeInsets.symmetric(horizontal: 5),
+      height: 20.h,
+      padding: EdgeInsets.symmetric(horizontal: 5.w),
       decoration: BoxDecoration(
         color: const Color(0xFFFF4458).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
           width: 0.5,
@@ -174,12 +175,12 @@ class CityCard extends GetView<CityListController> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(FontAwesomeIcons.solidStar, size: 9, color: Colors.white),
-          const SizedBox(width: 3),
+          Icon(FontAwesomeIcons.solidStar, size: 9.r, color: Colors.white),
+          SizedBox(width: 3.w),
           Text(
             score.toStringAsFixed(1),
-            style: const TextStyle(
-              fontSize: 10,
+            style: TextStyle(
+              fontSize: 10.sp,
               fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
@@ -192,12 +193,12 @@ class CityCard extends GetView<CityListController> {
   /// 版主徽章 - 左上角评分旁，与评分同款样式
   Widget _buildModeratorBadge(bool hasModerator) {
     return Container(
-      height: 20,
-      padding: const EdgeInsets.symmetric(horizontal: 5),
+      height: 20.h,
+      padding: EdgeInsets.symmetric(horizontal: 5.w),
       decoration: BoxDecoration(
         color: (hasModerator ? const Color(0xFF4ADE80) : Colors.grey)
             .withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
           width: 0.5,
@@ -207,7 +208,7 @@ class CityCard extends GetView<CityListController> {
         hasModerator
             ? FontAwesomeIcons.userShield
             : FontAwesomeIcons.userSlash,
-        size: 10,
+        size: 10.r,
         color: Colors.white,
       ),
     );
@@ -234,8 +235,8 @@ class CityCard extends GetView<CityListController> {
           // 城市名称
           Text(
             city.name,
-            style: const TextStyle(
-              fontSize: 14,
+            style: TextStyle(
+              fontSize: 14.sp,
               fontWeight: FontWeight.w700,
               color: Colors.white,
               height: 1.2,
@@ -244,20 +245,20 @@ class CityCard extends GetView<CityListController> {
             overflow: TextOverflow.ellipsis,
           ),
           if (city.country != null && city.country!.isNotEmpty) ...[
-            const SizedBox(height: 2),
+            SizedBox(height: 2.h),
             Row(
               children: [
                 Icon(
                   FontAwesomeIcons.locationDot,
-                  size: 9,
+                  size: 9.r,
                   color: Colors.white.withValues(alpha: 0.75),
                 ),
-                const SizedBox(width: 3),
+                SizedBox(width: 3.w),
                 Expanded(
                   child: Text(
                     city.country!,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       color: Colors.white.withValues(alpha: 0.75),
                       height: 1.2,
                     ),
@@ -268,11 +269,11 @@ class CityCard extends GetView<CityListController> {
               ],
             ),
           ],
-          const SizedBox(height: 5),
+          SizedBox(height: 5.h),
           // 指标 Wrap：始终显示全部图标+默认值，异步加载后自动更新
           Wrap(
-            spacing: 4,
-            runSpacing: 3,
+            spacing: 4.w,
+            runSpacing: 3.w,
             children: [
               // 月均花费
               _MetricChip(
@@ -325,20 +326,20 @@ class CityCard extends GetView<CityListController> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
         ),
         title: Row(
           children: [
             Icon(FontAwesomeIcons.image,
-                size: 18, color: Theme.of(context).primaryColor),
-            const SizedBox(width: 10),
-            const Text('更新城市图片',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                size: 18.r, color: Theme.of(context).primaryColor),
+            SizedBox(width: 10.w),
+            Text('更新城市图片',
+                style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600)),
           ],
         ),
         content: Text(
           '是否为「${city.name}」重新生成城市图片？',
-          style: const TextStyle(fontSize: 14),
+          style: TextStyle(fontSize: 14.sp),
         ),
         actions: [
           TextButton(
@@ -350,7 +351,7 @@ class CityCard extends GetView<CityListController> {
               Navigator.pop(ctx);
               controller.generateCityImages(city.id, city.name);
             },
-            icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 14),
+            icon: Icon(FontAwesomeIcons.arrowsRotate, size: 14.r),
             label: const Text('更新'),
           ),
         ],
@@ -384,24 +385,24 @@ class CityCard extends GetView<CityListController> {
             ),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       FontAwesomeIcons.fingerprint,
-                      size: 10,
+                      size: 10.r,
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4.w),
                     Text(
                       '长按更新图片',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 10.sp,
                         fontWeight: FontWeight.w500,
                         color: Colors.white.withValues(alpha: 0.85),
                       ),
@@ -433,20 +434,20 @@ class CityCard extends GetView<CityListController> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(
-                    width: 24,
-                    height: 24,
+                  SizedBox(
+                    width: 24.w,
+                    height: 24.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor:
                           AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     '图片生成中...',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       fontWeight: FontWeight.w500,
                       color: Colors.white.withValues(alpha: 0.9),
                     ),
@@ -474,11 +475,11 @@ class _MetricChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 20,
-      padding: const EdgeInsets.symmetric(horizontal: 5),
+      height: 20.h,
+      padding: EdgeInsets.symmetric(horizontal: 5.w),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
           width: 0.5,
@@ -489,14 +490,14 @@ class _MetricChip extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 9,
+            size: 9.r,
             color: Colors.white.withValues(alpha: 0.85),
           ),
-          const SizedBox(width: 3),
+          SizedBox(width: 3.w),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 10,
+            style: TextStyle(
+              fontSize: 10.sp,
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
@@ -524,13 +525,13 @@ class _CityFollowButton extends StatelessWidget {
       return GestureDetector(
         onTap: city != null ? () => controller.toggleFollow(city) : null,
         child: Container(
-          height: 20,
-          padding: const EdgeInsets.symmetric(horizontal: 5),
+          height: 20.h,
+          padding: EdgeInsets.symmetric(horizontal: 5.w),
           decoration: BoxDecoration(
             color: isFollowed
                 ? const Color(0xFFEF4444).withValues(alpha: 0.85)
                 : Colors.black.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(6.r),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
               width: 0.5,
@@ -538,7 +539,7 @@ class _CityFollowButton extends StatelessWidget {
           ),
           child: Icon(
             isFollowed ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
-            size: 10,
+            size: 10.r,
             color: Colors.white,
           ),
         ),

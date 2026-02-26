@@ -9,6 +9,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AddReviewPage 控制器
 class AddReviewPageController extends GetxController {

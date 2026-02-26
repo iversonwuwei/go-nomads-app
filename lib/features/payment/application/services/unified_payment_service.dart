@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/payment/application/services/wechat_pay_s
 import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart';
 import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 统一支付结果
 class UnifiedPaymentResult {
@@ -279,7 +280,7 @@ class UnifiedPaymentService extends GetxService {
               result.success ? Icons.check_circle : Icons.error,
               color: result.success ? Colors.green : Colors.red,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(result.success ? '支付成功' : '支付失败'),
           ],
         ),

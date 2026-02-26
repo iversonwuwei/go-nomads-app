@@ -9,6 +9,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Flutter-map implementation of the venue picker used by the meetup form.
 class VenueMapPickerPage extends StatefulWidget {
@@ -259,9 +260,9 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         leading: const AppBackButton(color: AppColors.backButtonDark),
         title: Text(
           l10n.selectVenue,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black,
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -270,9 +271,9 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             onPressed: _confirmSelection,
             child: Text(
               l10n.confirm,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Color(0xFFFF4458),
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -286,7 +287,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.4,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: _buildMap(l10n),
             ),
           ),
@@ -307,13 +308,13 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -324,9 +325,9 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
           children: filters.map((filter) {
             final isSelected = _selectedFilter == filter['key'];
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: EdgeInsets.only(right: 8.w),
               child: FilterChip(
-                avatar: Icon(filter['icon'] as IconData, size: 14),
+                avatar: Icon(filter['icon'] as IconData, size: 14.r),
                 label: Text(filter['label'] as String),
                 selected: isSelected,
                 onSelected: (_) => _onFilterChanged(filter['key'] as String),
@@ -351,7 +352,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     // 还未初始化时显示加载指示器
     if (!_isInitialized) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Container(
           color: Colors.grey[200],
           child: Center(
@@ -359,11 +360,11 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const CircularProgressIndicator(color: Color(0xFFFF4458)),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   '${l10n.loading}...',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
@@ -382,8 +383,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       final venueLatLng = LatLng(venue.latitude, venue.longitude);
       final isSelected = venue.name == _selectedVenueName;
       return Marker(
-        width: 50,
-        height: 50,
+        width: 50.w,
+        height: 50.h,
         point: venueLatLng,
         alignment: Alignment.topCenter,
         child: GestureDetector(
@@ -410,23 +411,23 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     // 用户位置标记
     if (_userLocation != null) {
       markers.add(Marker(
-        width: 40,
-        height: 40,
+        width: 40.w,
+        height: 40.h,
         point: _userLocation!,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.blue.withValues(alpha: 0.3),
             shape: BoxShape.circle,
           ),
-          child: const Center(
-            child: Icon(FontAwesomeIcons.locationCrosshairs, color: Colors.blue, size: 20),
+          child: Center(
+            child: Icon(FontAwesomeIcons.locationCrosshairs, color: Colors.blue, size: 20.r),
           ),
         ),
       ));
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: Stack(
         children: [
           FlutterMap(
@@ -449,8 +450,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             ],
           ),
           Positioned(
-            top: 12,
-            left: 12,
+            top: 12.h,
+            left: 12.w,
             child: _mapBadge(
               icon: FontAwesomeIcons.city,
               text: _currentCityName ?? widget.cityName ?? l10n.currentLocation,
@@ -458,8 +459,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
           ),
           // 缩放控制按钮
           Positioned(
-            top: 12,
-            right: 12,
+            top: 12.h,
+            right: 12.w,
             child: Column(
               children: [
                 _zoomButton(
@@ -471,7 +472,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                     }
                   },
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 _zoomButton(
                   icon: FontAwesomeIcons.minus,
                   onTap: () {
@@ -485,8 +486,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             ),
           ),
           Positioned(
-            bottom: 12,
-            right: 12,
+            bottom: 12.h,
+            right: 12.w,
             child: _isLoadingPoi
                 ? _mapBadge(icon: FontAwesomeIcons.spinner, text: l10n.loading)
                 : _mapBadge(icon: FontAwesomeIcons.layerGroup, text: '${venues.length} ${l10n.venues}'),
@@ -501,21 +502,21 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 36.w,
+        height: 36.h,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 4,
+              blurRadius: 4.r,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Center(
-          child: Icon(icon, size: 16, color: Colors.grey[700]),
+          child: Icon(icon, size: 16.r, color: Colors.grey[700]),
         ),
       ),
     );
@@ -523,14 +524,14 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
 
   Widget _mapBadge({required IconData icon, required String text}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -538,12 +539,12 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.grey[700]),
-          const SizedBox(width: 6),
+          Icon(icon, size: 16.r, color: Colors.grey[700]),
+          SizedBox(width: 6.w),
           Text(
             text,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w600,
               color: Colors.grey[800],
             ),
@@ -566,11 +567,11 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
         ],
@@ -580,17 +581,17 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         children: [
           Center(
             child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              width: 40,
-              height: 4,
+              margin: EdgeInsets.symmetric(vertical: 12.h),
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Row(
               children: [
                 if (_showOnlySelected && selectedVenue != null) ...[
@@ -598,19 +599,19 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                   GestureDetector(
                     onTap: _showAllVenues,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(FontAwesomeIcons.chevronLeft, size: 12, color: Colors.grey[700]),
-                          const SizedBox(width: 6),
+                          Icon(FontAwesomeIcons.chevronLeft, size: 12.r, color: Colors.grey[700]),
+                          SizedBox(width: 6.w),
                           Text(
                             '${l10n.all} (${allVenues.length})',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
                           ),
                         ],
                       ),
@@ -619,17 +620,17 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                 ] else ...[
                   Text(
                     '${allVenues.length} ${l10n.venues}',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
                   ),
                 ],
                 if (_isLoadingPoi) ...[
-                  const SizedBox(width: 8),
-                  const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                  SizedBox(width: 8.w),
+                  SizedBox(width: 16.w, height: 16.h, child: CircularProgressIndicator(strokeWidth: 2)),
                 ],
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Expanded(
             child: displayVenues.isEmpty
                 ? Center(child: Text(_isLoadingPoi ? l10n.loading : l10n.noData))
@@ -655,11 +656,11 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFFF4458).withValues(alpha: 0.15) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey[300]!,
             width: isSelected ? 2.5 : 1,
@@ -668,8 +669,8 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
               ? [
                   BoxShadow(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    spreadRadius: 1,
+                    blurRadius: 12.r,
+                    spreadRadius: 1.r,
                     offset: const Offset(0, 2),
                   ),
                 ]
@@ -681,18 +682,18 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             // 图标 - 选中时添加边框
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 44,
-              height: 44,
+              width: 44.w,
+              height: 44.h,
               decoration: BoxDecoration(
                 color: isSelected
                     ? _markerColor(venue.type).withValues(alpha: 0.2)
                     : _markerColor(venue.type).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
                 border: isSelected ? Border.all(color: _markerColor(venue.type), width: 2) : null,
               ),
-              child: Icon(_markerIcon(venue.type), color: _markerColor(venue.type), size: 22),
+              child: Icon(_markerIcon(venue.type), color: _markerColor(venue.type), size: 22.r),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             // 内容区域
             Expanded(
               child: Column(
@@ -705,52 +706,52 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                       Expanded(
                         child: Text(
                           venue.name,
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: _markerColor(venue.type).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
                           venue.typeName,
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: _markerColor(venue.type)),
+                          style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w600, color: _markerColor(venue.type)),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   // 第二行：完整地址（最多2行）
                   Text(
                     venue.address,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.3),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600], height: 1.3),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   // 第三行：评分和距离
                   Row(
                     children: [
                       if (venue.rating != null) ...[
-                        Icon(FontAwesomeIcons.solidStar, size: 11, color: Colors.amber[700]),
-                        const SizedBox(width: 3),
+                        Icon(FontAwesomeIcons.solidStar, size: 11.r, color: Colors.amber[700]),
+                        SizedBox(width: 3.w),
                         Text(
                           venue.rating!.toStringAsFixed(1),
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                       ],
                       if (venue.formattedDistance.isNotEmpty) ...[
-                        Icon(FontAwesomeIcons.locationArrow, size: 10, color: Colors.grey[500]),
-                        const SizedBox(width: 4),
+                        Icon(FontAwesomeIcons.locationArrow, size: 10.r, color: Colors.grey[500]),
+                        SizedBox(width: 4.w),
                         Text(
                           venue.formattedDistance,
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                         ),
                       ],
                     ],

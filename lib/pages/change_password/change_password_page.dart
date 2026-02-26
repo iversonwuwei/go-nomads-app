@@ -6,6 +6,7 @@ import 'package:go_nomads_app/pages/change_password/widgets/change_password_emai
 import 'package:go_nomads_app/pages/change_password/widgets/change_password_form.dart';
 import 'package:go_nomads_app/pages/change_password/widgets/change_password_submit_button.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 修改/设置密码页面 / Change or set password page
 class ChangePasswordPage extends GetView<ChangePasswordController> {
@@ -23,7 +24,7 @@ class ChangePasswordPage extends GetView<ChangePasswordController> {
               controller.hasPassword.value ? '修改密码' : '设置密码',
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
               ),
             )),
@@ -34,16 +35,16 @@ class ChangePasswordPage extends GetView<ChangePasswordController> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        return const SingleChildScrollView(
-          padding: EdgeInsets.all(20),
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 8),
+              SizedBox(height: 8.h),
               ChangePasswordEmailSection(),
-              SizedBox(height: 24),
+              SizedBox(height: 24.h),
               ChangePasswordForm(),
-              SizedBox(height: 32),
+              SizedBox(height: 32.h),
               ChangePasswordSubmitButton(),
             ],
           ),

@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/membership/presentation/controllers/membe
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Deep Link 处理器
 /// 处理应用的 deep link，包括支付回调
@@ -220,11 +221,11 @@ class DeepLinkHandler {
   /// 显示处理中对话框
   static void _showProcessingDialog() {
     Get.dialog(
-      const AlertDialog(
+      AlertDialog(
         content: Row(
           children: [
             CircularProgressIndicator(),
-            SizedBox(width: 16),
+            SizedBox(width: 16.w),
             Text('Confirming payment...'),
           ],
         ),
@@ -237,10 +238,10 @@ class DeepLinkHandler {
   static void _showSuccessDialog(String? membershipType) {
     Get.dialog(
       AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 28),
-            SizedBox(width: 8),
+            Icon(Icons.check_circle, color: Colors.green, size: 28.r),
+            SizedBox(width: 8.w),
             Text('Payment Successful!'),
           ],
         ),
@@ -249,7 +250,7 @@ class DeepLinkHandler {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (membershipType != null) Text('Your $membershipType membership is now active!'),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             const Text('Thank you for your support!'),
           ],
         ),

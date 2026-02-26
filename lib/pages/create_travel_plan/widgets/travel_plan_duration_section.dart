@@ -3,6 +3,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 行程天数部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanDurationSection extends GetView<CreateTravelPlanPageController> {
@@ -26,7 +27,7 @@ class TravelPlanDurationSection extends GetView<CreateTravelPlanPageController> 
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(title: l10n.tripDuration, icon: FontAwesomeIcons.calendar),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _DurationCard(controllerTag: controllerTag),
       ],
     );
@@ -51,10 +52,10 @@ class _DurationCard extends GetView<CreateTravelPlanPageController> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
@@ -73,11 +74,11 @@ class _DurationCard extends GetView<CreateTravelPlanPageController> {
                       onChanged: (value) => controller.setDuration(value.toInt()),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   _DurationBadge(days: controller.duration.value),
                 ],
               )),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           _DurationLabel(controllerTag: controllerTag),
         ],
       ),
@@ -94,18 +95,18 @@ class _DurationBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 60,
-      height: 40,
+      width: 60.w,
+      height: 40.h,
       decoration: BoxDecoration(
         color: const Color(0xFFFF4458),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       alignment: Alignment.center,
       child: Text(
         days.toString(),
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 20,
+          fontSize: 20.sp,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -132,9 +133,9 @@ class _DurationLabel extends GetView<CreateTravelPlanPageController> {
 
     return Obx(() => Text(
           controller.duration.value == 1 ? l10n.day(1) : l10n.days(controller.duration.value),
-          style: const TextStyle(
+          style: TextStyle(
             color: Color(0xFFFF4458),
-            fontSize: 16,
+            fontSize: 16.sp,
             fontWeight: FontWeight.w600,
           ),
         ));
@@ -152,12 +153,12 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFFFF4458)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20.r, color: const Color(0xFFFF4458)),
+        SizedBox(width: 8.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),

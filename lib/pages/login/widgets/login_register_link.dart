@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 注册链接
 class LoginRegisterLink extends StatelessWidget {
@@ -13,18 +14,18 @@ class LoginRegisterLink extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
+          Text(
             "Let's Go",
-            style: TextStyle(color: Colors.black87, fontSize: 15),
+            style: TextStyle(color: Colors.black87, fontSize: 15.sp),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           GestureDetector(
             onTap: () => Get.toNamed(AppRoutes.register),
-            child: const Text(
+            child: Text(
               "Register",
               style: TextStyle(
                 color: LoginConstants.primaryColor,
-                fontSize: 15,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),

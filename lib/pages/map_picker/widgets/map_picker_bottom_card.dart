@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 底部信息卡片（显示当前选中地址 + 确认按钮）
 /// Bottom card showing selected location info and confirm button
@@ -13,16 +14,16 @@ class MapPickerBottomCard extends GetView<MapPickerController> {
     final l10n = AppLocalizations.of(context)!;
 
     return Positioned(
-      left: 16,
-      right: 16,
-      bottom: 16,
+      left: 16.w,
+      right: 16.w,
+      bottom: 16.h,
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // 地址信息卡片
             _AddressInfoCard(l10n: l10n),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             // 确认按钮
             _ConfirmButton(l10n: l10n),
           ],
@@ -42,14 +43,14 @@ class _AddressInfoCard extends GetView<MapPickerController> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 6),
           ),
         ],
@@ -67,22 +68,22 @@ class _AddressInfoCard extends GetView<MapPickerController> {
           children: [
             Text(
               l10n.selectedLocation,
-              style: const TextStyle(
-                fontSize: 14,
+              style: TextStyle(
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             // 加载状态
             if (isGeocoding || isMoving)
               Row(
                 children: [
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
+                  SizedBox(
+                    width: 16.w,
+                    height: 16.h,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
                     isMoving
                         ? '移动地图选择位置... / Move map to select...'
@@ -98,18 +99,18 @@ class _AddressInfoCard extends GetView<MapPickerController> {
                     : (address.isNotEmpty
                         ? address
                         : l10n.pickLocationOnMap),
-                style: const TextStyle(
-                  fontSize: 15,
+                style: TextStyle(
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               // 完整地址（与名称不同时显示）
               if (address.isNotEmpty && address != name)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: EdgeInsets.only(top: 4.h),
                   child: Text(
                     address,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13.sp),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -117,13 +118,13 @@ class _AddressInfoCard extends GetView<MapPickerController> {
               // 城市 · 省份
               if (city.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: EdgeInsets.only(top: 4.h),
                   child: Text(
                     [
                       if (city.isNotEmpty) city,
                       if (province.isNotEmpty) province,
                     ].join(' · '),
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13.sp),
                   ),
                 ),
             ],
@@ -150,18 +151,18 @@ class _ConfirmButton extends GetView<MapPickerController> {
         child: ElevatedButton(
           onPressed: canConfirm ? controller.confirmSelection : null,
           style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: EdgeInsets.symmetric(vertical: 14.h),
             backgroundColor: const Color(0xFFFF4458),
             disabledBackgroundColor: Colors.grey[400],
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
           ),
           child: Text(
             l10n.confirm,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
             ),
           ),

@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import '../../city_detail_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Photos Tab - GetView 实现
 class PhotosTab extends GetView<CityDetailController> {
@@ -108,16 +109,16 @@ class _EmptyPhotosState extends GetView<CityDetailController> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(FontAwesomeIcons.images, size: 56, color: Colors.grey[300]),
-                    const SizedBox(height: 12),
+                    Icon(FontAwesomeIcons.images, size: 56.r, color: Colors.grey[300]),
+                    SizedBox(height: 12.h),
                     Text(
                       'No photos yet',
-                      style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 15.sp, color: Colors.grey[600]),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       'Be the first to share a photo!',
-                      style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                      style: TextStyle(fontSize: 13.sp, color: Colors.grey[500]),
                     ),
                   ],
                 ),
@@ -165,8 +166,8 @@ class _PhotosContent extends GetView<CityDetailController> {
             children: [
               Text(
                 l10n.photos,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -190,8 +191,8 @@ class _PhotosContent extends GetView<CityDetailController> {
               children: [
                 Text(
                   group.title,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -204,12 +205,12 @@ class _PhotosContent extends GetView<CityDetailController> {
       // 照片网格
       slivers.add(
         SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
           sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              crossAxisSpacing: 12.w,
+              mainAxisSpacing: 12.w,
               childAspectRatio: 1,
             ),
             delegate: SliverChildBuilderDelegate(
@@ -241,8 +242,8 @@ class _PhotosContent extends GetView<CityDetailController> {
             ),
             child: Text(
               '$uploaderName | ${l10n.uploaded} ${_formatDate(group.latestUpload)}',
-              style: const TextStyle(
-                fontSize: 12,
+              style: TextStyle(
+                fontSize: 12.sp,
                 color: AppColors.textSecondary,
               ),
             ),
@@ -319,7 +320,7 @@ class _PhotoGridItem extends StatelessWidget {
       child: Hero(
         tag: 'city-photo-${photo.id}',
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -330,17 +331,17 @@ class _PhotoGridItem extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: 6,
-                right: 6,
+                top: 6.h,
+                right: 6.w,
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.45),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     FontAwesomeIcons.magnifyingGlassPlus,
-                    size: 14,
+                    size: 14.r,
                     color: Colors.white,
                   ),
                 ),
@@ -392,7 +393,7 @@ class _PhotoGalleryDialogState extends State<_PhotoGalleryDialog> {
     final l10n = widget.l10n;
 
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+      insetPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 24.h),
       backgroundColor: Colors.black,
       child: Column(
         children: [
@@ -430,7 +431,7 @@ class _PhotoGalleryDialogState extends State<_PhotoGalleryDialog> {
 
   Widget _buildHeader(int total) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       child: Row(
         children: [
           IconButton(
@@ -442,7 +443,7 @@ class _PhotoGalleryDialogState extends State<_PhotoGalleryDialog> {
             '${_currentIndex + 1}/$total',
             style: const TextStyle(color: Colors.white70),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
         ],
       ),
     );
@@ -450,41 +451,41 @@ class _PhotoGalleryDialogState extends State<_PhotoGalleryDialog> {
 
   Widget _buildPhotoInfo(UserCityPhoto photo, AppLocalizations l10n) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             (photo.caption?.trim().isNotEmpty ?? false) ? photo.caption!.trim() : l10n.photo,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           if ((photo.location?.isNotEmpty ?? false) || photo.placeName?.isNotEmpty == true)
             Row(
               children: [
-                const Icon(FontAwesomeIcons.locationDot, size: 16, color: Colors.white54),
-                const SizedBox(width: 6),
+                Icon(FontAwesomeIcons.locationDot, size: 16.r, color: Colors.white54),
+                SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
                     photo.placeName?.isNotEmpty == true ? photo.placeName! : (photo.location ?? ''),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 13,
+                      fontSize: 13.sp,
                     ),
                   ),
                 ),
               ],
             ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             '${l10n.uploaded} ${_formatDate(photo.createdAt)}',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white60,
-              fontSize: 12,
+              fontSize: 12.sp,
             ),
           ),
         ],

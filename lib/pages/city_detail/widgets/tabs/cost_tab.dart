@@ -8,6 +8,7 @@ import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Cost Tab - 费用标签页
 /// 使用 GetView 绑定 CityDetailController
@@ -47,14 +48,14 @@ class CostTab extends GetView<CityDetailController> {
       return RefreshIndicator(
         onRefresh: () => contentController.loadCityCostSummary(controller.cityId),
         child: ListView(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 96.h),
           children: [
             // 标题和贡献者
             _CostHeader(
               l10n: l10n,
               contributorCount: contributorCount,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 总费用卡片
             _TotalCostCard(
@@ -62,7 +63,7 @@ class CostTab extends GetView<CityDetailController> {
               total: total,
               totalExpenseCount: totalExpenseCount,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 费用分类
             _CostCategoryCard(
@@ -78,7 +79,7 @@ class CostTab extends GetView<CityDetailController> {
             _CostCategoryCard(
                 category: l10n.shopping, amount: shopping, icon: FontAwesomeIcons.bagShopping, color: Colors.pink),
             _CostCategoryCard(category: 'Other', amount: other, icon: FontAwesomeIcons.ellipsis, color: Colors.grey),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
           ],
         ),
       );
@@ -126,18 +127,18 @@ class _CostHeader extends StatelessWidget {
       children: [
         Text(
           l10n.communityCostSummary,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
           decoration: BoxDecoration(
             color: Colors.green.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
           child: Text(
             '$contributorCount ${contributorCount != 1 ? l10n.contributors : l10n.contributor}',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: Colors.green[700],
               fontWeight: FontWeight.bold,
             ),
@@ -163,36 +164,36 @@ class _TotalCostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         children: [
           Text(
             l10n.averageCommunityCost,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: Colors.white, fontSize: 16.sp),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             '\$${total.toStringAsFixed(0)}',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 36,
+              fontSize: 36.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             l10n.basedOnRealExpenses(totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 12,
+              fontSize: 12.sp,
             ),
           ),
         ],
@@ -218,21 +219,21 @@ class _CostCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       child: ListTile(
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           child: Icon(icon, color: color),
         ),
         title: Text(category, style: const TextStyle(fontWeight: FontWeight.bold)),
         trailing: Text(
           '\$${amount.toStringAsFixed(2)}',
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: AppColors.cityPrimary,
           ),

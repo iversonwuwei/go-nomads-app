@@ -5,6 +5,7 @@ import 'package:go_nomads_app/features/membership/presentation/controllers/membe
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI 配额检查服务
 /// 
@@ -86,7 +87,7 @@ class AiQuotaService {
         title: Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             const Text('AI 配额已用完'),
           ],
         ),
@@ -96,14 +97,14 @@ class AiQuotaService {
           children: [
             Text(
               '您本月的 $feature 使用次数已达上限 (${check.used}/${check.limit})。',
-              style: const TextStyle(fontSize: 15),
+              style: TextStyle(fontSize: 15.sp),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,12 +117,12 @@ class AiQuotaService {
                     ),
                   ),
                   if (check.resetDate != null) ...[
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Text(
                       '配额将于 ${_formatDate(check.resetDate!)} 重置',
                       style: TextStyle(
                         color: Colors.grey[600],
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ],

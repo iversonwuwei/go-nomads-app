@@ -2,6 +2,7 @@ import 'package:go_nomads_app/features/innovation_project/domain/entities/innova
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Innovation Detail Team Section
 /// 创意项目详情页 - 团队成员区块
@@ -27,25 +28,25 @@ class InnovationDetailTeamSection extends StatelessWidget {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: color.withAlpha(26),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Icon(icon, size: 20, color: color),
+              child: Icon(icon, size: 20.r, color: color),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
+              style: TextStyle(
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         if (team.isEmpty)
           _buildEmptyTeam(context)
         else
@@ -57,19 +58,19 @@ class InnovationDetailTeamSection extends StatelessWidget {
   Widget _buildEmptyTeam(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
         children: [
-          Icon(FontAwesomeIcons.userGroup, size: 40, color: Colors.grey[300]),
-          const SizedBox(height: 8),
+          Icon(FontAwesomeIcons.userGroup, size: 40.r, color: Colors.grey[300]),
+          SizedBox(height: 8.h),
           Text(
             AppLocalizations.of(context)!.noTeamMembersAdded,
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            style: TextStyle(fontSize: 14.sp, color: Colors.grey[500]),
           ),
         ],
       ),
@@ -79,11 +80,11 @@ class InnovationDetailTeamSection extends StatelessWidget {
   Widget _buildTeamMember(TeamMember member) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
@@ -94,31 +95,31 @@ class InnovationDetailTeamSection extends StatelessWidget {
             backgroundColor: color,
             child: Text(
               member.name.isNotEmpty ? member.name.substring(0, 1) : '?',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '${member.name} - ${member.role}',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1a1a1a),
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   member.description,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     color: Color(0xFF4a5568),
                     height: 1.5,
                   ),

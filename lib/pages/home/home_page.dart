@@ -8,6 +8,7 @@ import 'package:go_nomads_app/pages/home/widgets/home_hero_section.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_meetups_section.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_search_bar.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 首页 - 使用 GetView 实现
 /// 路由监听由 HomePageController 内部管理
@@ -47,7 +48,7 @@ class HomePage extends GetView<HomePageController> {
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
-                  vertical: 20,
+                  vertical: 20.h,
                 ),
                 child: HomeSearchBar(isMobile: isMobile),
               ),
@@ -69,7 +70,7 @@ class HomePage extends GetView<HomePageController> {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            SliverToBoxAdapter(child: SizedBox(height: 8.h)),
 
             // 搜索结果提示
             SliverToBoxAdapter(
@@ -90,7 +91,7 @@ class HomePage extends GetView<HomePageController> {
                 if (controller.localSearchQuery.value.isEmpty) {
                   return const SizedBox.shrink();
                 }
-                return const SizedBox(height: 8);
+                return SizedBox(height: 8.h);
               }),
             ),
 
@@ -108,7 +109,7 @@ class HomePage extends GetView<HomePageController> {
             ),
 
             // 底部间距
-            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            SliverToBoxAdapter(child: SizedBox(height: 40.h)),
 
             // Meetups 区域
             SliverToBoxAdapter(
@@ -118,7 +119,7 @@ class HomePage extends GetView<HomePageController> {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 60)),
+            SliverToBoxAdapter(child: SizedBox(height: 60.h)),
 
             // 特性列表
             SliverToBoxAdapter(
@@ -131,14 +132,14 @@ class HomePage extends GetView<HomePageController> {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            SliverToBoxAdapter(child: SizedBox(height: 40.h)),
 
             // 版权信息
             const SliverToBoxAdapter(
               child: CopyrightWidget(useTopMargin: false),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
           ],
         ),
       ),

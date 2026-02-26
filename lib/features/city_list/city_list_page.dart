@@ -8,6 +8,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/global_map_page.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市列表页面 - 使用 GetView 符合 GetX 标准
 class CityListPage extends GetView<CityListController> {
@@ -45,10 +46,10 @@ class CityListPage extends GetView<CityListController> {
       actions: [
         // 全球地图按钮
         IconButton(
-          icon: const FaIcon(
+          icon: FaIcon(
             FontAwesomeIcons.mapLocationDot,
             color: AppColors.textPrimary,
-            size: 20,
+            size: 20.r,
           ),
           onPressed: () {
             Get.to(() => const GlobalMapPage());
@@ -58,7 +59,7 @@ class CityListPage extends GetView<CityListController> {
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(
-          height: 1,
+          height: 1.h,
           color: AppColors.borderLight,
         ),
       ),
@@ -152,7 +153,7 @@ class _CityGridContent extends GetView<CityListController> {
                 child: CityListLoadingIndicator(),
               ),
             // 底部留白
-            const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
+            SliverPadding(padding: EdgeInsets.only(bottom: 100.h)),
           ],
         ),
       );

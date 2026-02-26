@@ -41,7 +41,7 @@ class CopyrightWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSize?.sp ?? 10.sp,
                 color: textColor ?? AppColors.textTertiary,
-                letterSpacing: 0.5,
+                letterSpacing: 0.5.sp,
               ),
             ),
             SizedBox(height: 4.h),
@@ -50,7 +50,7 @@ class CopyrightWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSize?.sp ?? 10.sp,
                 color: textColor ?? AppColors.textTertiary,
-                letterSpacing: 0.5,
+                letterSpacing: 0.5.sp,
               ),
             ),
           ],

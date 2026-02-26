@@ -5,6 +5,7 @@ import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 图片上传工具类
 ///
@@ -183,12 +184,12 @@ class ImageUploadHelper {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
+            Padding(
+              padding: EdgeInsets.all(16.0.w),
               child: Text(
                 '选择头像',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -203,7 +204,7 @@ class ImageUploadHelper {
               title: const Text('从相册选择'),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
           ],
         ),
       ),
@@ -307,14 +308,14 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
             if (_uploadedUrl != null)
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
                 child: Image.network(
                   _uploadedUrl!,
                   fit: BoxFit.cover,
@@ -322,12 +323,12 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
               )
             else
               widget.placeholder ??
-                  const Column(
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(FontAwesomeIcons.photoFilm,
-                          size: 48, color: Colors.grey),
-                      SizedBox(height: 8),
+                          size: 48.r, color: Colors.grey),
+                      SizedBox(height: 8.h),
                       Text('点击上传图片', style: TextStyle(color: Colors.grey)),
                     ],
                   ),

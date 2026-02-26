@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ShareCardGenerator {
   final ScreenshotController _screenshotController = ScreenshotController();
@@ -13,31 +14,31 @@ class ShareCardGenerator {
     String? imageUrl,
   }) {
     return Card(
-      margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: EdgeInsets.all(16.w),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (imageUrl != null)
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(imageUrl, height: 120, width: double.infinity, fit: BoxFit.cover),
+                borderRadius: BorderRadius.circular(12.r),
+                child: Image.network(imageUrl, height: 120.h, width: double.infinity, fit: BoxFit.cover),
               ),
-            const SizedBox(height: 12),
-            Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(description, style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
+            Text(title, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+            SizedBox(height: 8.h),
+            Text(description, style: TextStyle(fontSize: 16.sp)),
+            SizedBox(height: 12.h),
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 12.w),
               decoration: BoxDecoration(
                 color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Text(url, style: const TextStyle(color: Colors.blue, fontSize: 14)),
+              child: Text(url, style: TextStyle(color: Colors.blue, fontSize: 14.sp)),
             ),
           ],
         ),

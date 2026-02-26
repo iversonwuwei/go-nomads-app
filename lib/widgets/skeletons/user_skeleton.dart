@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Notification List Skeleton - 通知列表骨架屏
 class NotificationListSkeleton extends StatelessWidget {
@@ -14,9 +15,9 @@ class NotificationListSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: itemCount,
-        separatorBuilder: (context, index) => const Divider(height: 1),
+        separatorBuilder: (context, index) => Divider(height: 1),
         itemBuilder: (context, index) {
           return _NotificationItemSkeleton();
         },
@@ -30,29 +31,29 @@ class _NotificationItemSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 12),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 12.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 头像/图标
-          SkeletonCircle(size: 48),
-          SizedBox(width: 12),
+          SkeletonCircle(size: 48.r),
+          SizedBox(width: 12.w),
           // 内容
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 标题
-                SkeletonBox(width: 200, height: 16),
-                SizedBox(height: 6),
+                SkeletonBox(width: 200.w, height: 16.h),
+                SizedBox(height: 6.h),
                 // 内容
-                SkeletonBox(width: double.infinity, height: 14),
-                SizedBox(height: 4),
-                SkeletonBox(width: 180, height: 14),
-                SizedBox(height: 8),
+                SkeletonBox(width: double.infinity, height: 14.h),
+                SizedBox(height: 4.h),
+                SkeletonBox(width: 180.w, height: 14.h),
+                SizedBox(height: 8.h),
                 // 时间
-                SkeletonBox(width: 80, height: 12),
+                SkeletonBox(width: 80.w, height: 12.h),
               ],
             ),
           ),
@@ -70,26 +71,26 @@ class UserProfileSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           children: [
             // 头像和基本信息
             _ProfileHeaderSkeleton(),
-            SizedBox(height: 24),
+            SizedBox(height: 24.h),
             // 统计信息
             _ProfileStatsSkeleton(),
-            SizedBox(height: 24),
+            SizedBox(height: 24.h),
             // Bio
-            SkeletonBox(width: double.infinity, height: 16),
-            SizedBox(height: 6),
-            SkeletonBox(width: 280, height: 16),
-            SizedBox(height: 24),
+            SkeletonBox(width: double.infinity, height: 16.h),
+            SizedBox(height: 6.h),
+            SkeletonBox(width: 280.w, height: 16.h),
+            SizedBox(height: 24.h),
             // 技能标签
             _ProfileTagsSkeleton(),
-            SizedBox(height: 24),
+            SizedBox(height: 24.h),
             // 兴趣标签
             _ProfileTagsSkeleton(),
-            SizedBox(height: 24),
+            SizedBox(height: 24.h),
             // 社交链接
             _SocialLinksSkeleton(),
           ],
@@ -104,19 +105,19 @@ class _ProfileHeaderSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
         // 头像
-        SkeletonCircle(size: 100),
-        SizedBox(height: 16),
+        SkeletonCircle(size: 100.r),
+        SizedBox(height: 16.h),
         // 名字
-        SkeletonBox(width: 150, height: 24),
-        SizedBox(height: 8),
+        SkeletonBox(width: 150.w, height: 24.h),
+        SizedBox(height: 8.h),
         // 职业
-        SkeletonBox(width: 120, height: 16),
-        SizedBox(height: 6),
+        SkeletonBox(width: 120.w, height: 16.h),
+        SizedBox(height: 6.h),
         // 位置
-        SkeletonBox(width: 100, height: 14),
+        SkeletonBox(width: 100.w, height: 14.h),
       ],
     );
   }
@@ -127,28 +128,28 @@ class _ProfileStatsSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Column(
           children: [
-            SkeletonBox(width: 40, height: 24),
-            SizedBox(height: 4),
-            SkeletonBox(width: 60, height: 14),
+            SkeletonBox(width: 40.w, height: 24.h),
+            SizedBox(height: 4.h),
+            SkeletonBox(width: 60.w, height: 14.h),
           ],
         ),
         Column(
           children: [
-            SkeletonBox(width: 40, height: 24),
-            SizedBox(height: 4),
-            SkeletonBox(width: 60, height: 14),
+            SkeletonBox(width: 40.w, height: 24.h),
+            SizedBox(height: 4.h),
+            SkeletonBox(width: 60.w, height: 14.h),
           ],
         ),
         Column(
           children: [
-            SkeletonBox(width: 40, height: 24),
-            SizedBox(height: 4),
-            SkeletonBox(width: 60, height: 14),
+            SkeletonBox(width: 40.w, height: 24.h),
+            SizedBox(height: 4.h),
+            SkeletonBox(width: 60.w, height: 14.h),
           ],
         ),
       ],
@@ -161,20 +162,20 @@ class _ProfileTagsSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SkeletonBox(width: 80, height: 18),
-        SizedBox(height: 12),
+        SkeletonBox(width: 80.w, height: 18.h),
+        SizedBox(height: 12.h),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 8.w,
+          runSpacing: 8.w,
           children: [
-            SkeletonBox(width: 70, height: 28, borderRadius: 14),
-            SkeletonBox(width: 90, height: 28, borderRadius: 14),
-            SkeletonBox(width: 60, height: 28, borderRadius: 14),
-            SkeletonBox(width: 80, height: 28, borderRadius: 14),
-            SkeletonBox(width: 100, height: 28, borderRadius: 14),
+            SkeletonBox(width: 70.w, height: 28.h, borderRadius: 14),
+            SkeletonBox(width: 90.w, height: 28.h, borderRadius: 14),
+            SkeletonBox(width: 60.w, height: 28.h, borderRadius: 14),
+            SkeletonBox(width: 80.w, height: 28.h, borderRadius: 14),
+            SkeletonBox(width: 100.w, height: 28.h, borderRadius: 14),
           ],
         ),
       ],
@@ -187,20 +188,20 @@ class _SocialLinksSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SkeletonBox(width: 100, height: 18),
-        SizedBox(height: 12),
+        SkeletonBox(width: 100.w, height: 18.h),
+        SizedBox(height: 12.h),
         Row(
           children: [
-            SkeletonCircle(size: 40),
-            SizedBox(width: 12),
-            SkeletonCircle(size: 40),
-            SizedBox(width: 12),
-            SkeletonCircle(size: 40),
-            SizedBox(width: 12),
-            SkeletonCircle(size: 40),
+            SkeletonCircle(size: 40.r),
+            SizedBox(width: 12.w),
+            SkeletonCircle(size: 40.r),
+            SizedBox(width: 12.w),
+            SkeletonCircle(size: 40.r),
+            SizedBox(width: 12.w),
+            SkeletonCircle(size: 40.r),
           ],
         ),
       ],
@@ -221,13 +222,13 @@ class EditFormSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: List.generate(
             fieldCount,
             (index) => Padding(
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: EdgeInsets.only(bottom: 20.h),
               child: _FormFieldSkeleton(),
             ),
           ),
@@ -242,14 +243,14 @@ class _FormFieldSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 标签
-        SkeletonBox(width: 80, height: 14),
-        SizedBox(height: 8),
+        SkeletonBox(width: 80.w, height: 14.h),
+        SizedBox(height: 8.h),
         // 输入框
-        SkeletonBox(width: double.infinity, height: 48, borderRadius: 8),
+        SkeletonBox(width: double.infinity, height: 48.h, borderRadius: 8),
       ],
     );
   }
@@ -263,23 +264,23 @@ class TagsSelectorSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 8.w,
+          runSpacing: 8.w,
           children: [
-            SkeletonBox(width: 80, height: 36, borderRadius: 18),
-            SkeletonBox(width: 100, height: 36, borderRadius: 18),
-            SkeletonBox(width: 70, height: 36, borderRadius: 18),
-            SkeletonBox(width: 90, height: 36, borderRadius: 18),
-            SkeletonBox(width: 110, height: 36, borderRadius: 18),
-            SkeletonBox(width: 60, height: 36, borderRadius: 18),
-            SkeletonBox(width: 85, height: 36, borderRadius: 18),
-            SkeletonBox(width: 95, height: 36, borderRadius: 18),
-            SkeletonBox(width: 75, height: 36, borderRadius: 18),
-            SkeletonBox(width: 105, height: 36, borderRadius: 18),
-            SkeletonBox(width: 65, height: 36, borderRadius: 18),
-            SkeletonBox(width: 88, height: 36, borderRadius: 18),
+            SkeletonBox(width: 80.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 100.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 70.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 90.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 110.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 60.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 85.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 95.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 75.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 105.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 65.w, height: 36.h, borderRadius: 18),
+            SkeletonBox(width: 88.w, height: 36.h, borderRadius: 18),
           ],
         ),
       ),

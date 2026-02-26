@@ -6,6 +6,7 @@ import 'package:go_nomads_app/pages/legal/sdk_list_page.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 隐私政策页面 - 从后端 API 加载并动态渲染
 ///
@@ -72,10 +73,10 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 48, color: AppColors.textTertiary),
-            const SizedBox(height: 12),
+            Icon(Icons.error_outline, size: 48.r, color: AppColors.textTertiary),
+            SizedBox(height: 12.h),
             Text(_error ?? '加载失败', style: TextStyle(color: AppColors.textSecondary)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             ElevatedButton(onPressed: _loadPrivacyPolicy, child: const Text('重试')),
           ],
         ),
@@ -84,16 +85,16 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 
     final doc = _document!;
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 生效日期
           Text(
             '生效日期：${_formatDate(doc.effectiveDate)}',
-            style: TextStyle(fontSize: 13, color: AppColors.textTertiary, height: 1.5),
+            style: TextStyle(fontSize: 13.sp, color: AppColors.textTertiary, height: 1.5),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 动态渲染章节
           ...doc.sections.map((section) => Column(
@@ -106,26 +107,26 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
 
           // 第三方SDK清单入口
           if (doc.sdkList.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             OutlinedButton.icon(
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SdkListPage()),
                 );
               },
-              icon: const Icon(Icons.extension_outlined, size: 18),
+              icon: Icon(Icons.extension_outlined, size: 18.r),
               label: const Text('查看第三方SDK信息收集清单'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.cityPrimary,
                 side: const BorderSide(color: AppColors.cityPrimary),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
             ),
           ],
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           const CopyrightWidget(),
         ],
       ),
@@ -145,11 +146,11 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 6),
+      padding: EdgeInsets.only(top: 8.h, bottom: 6.h),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
@@ -166,11 +167,11 @@ class _SectionBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 14,
+        style: TextStyle(
+          fontSize: 14.sp,
           color: AppColors.textSecondary,
           height: 1.5,
         ),

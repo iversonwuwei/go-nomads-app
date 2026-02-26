@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 通用加载对话框
 ///
@@ -41,15 +42,15 @@ class AppLoadingDialog {
         canPop: barrierDismissible,
         child: Center(
           child: Container(
-            padding: const EdgeInsets.all(24),
-            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: EdgeInsets.all(24.w),
+            margin: EdgeInsets.symmetric(horizontal: 40.w),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
+                  blurRadius: 20.r,
                   offset: const Offset(0, 10),
                 ),
               ],
@@ -61,11 +62,11 @@ class AppLoadingDialog {
                   color: indicatorColor ?? AppColors.cityPrimary,
                   strokeWidth: 3,
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                     decoration: TextDecoration.none,
@@ -73,11 +74,11 @@ class AppLoadingDialog {
                   textAlign: TextAlign.center,
                 ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: Colors.grey.shade600,
                       decoration: TextDecoration.none,
                     ),

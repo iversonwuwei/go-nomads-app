@@ -32,6 +32,7 @@ import 'widgets/tabs/pros_cons_tab.dart';
 import 'widgets/tabs/reviews_tab.dart';
 import 'widgets/tabs/scores_tab.dart';
 import 'widgets/tabs/weather/weather_tab.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市详情页 - GetX 重构版
 ///
@@ -183,22 +184,22 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       isScrollable: true,
       labelColor: const Color(0xFFFF4458),
       unselectedLabelColor: Colors.grey[600],
-      labelStyle: const TextStyle(
+      labelStyle: TextStyle(
         fontWeight: FontWeight.w600,
-        fontSize: 14,
+        fontSize: 14.sp,
       ),
-      unselectedLabelStyle: const TextStyle(
+      unselectedLabelStyle: TextStyle(
         fontWeight: FontWeight.w500,
-        fontSize: 14,
+        fontSize: 14.sp,
       ),
       indicatorSize: TabBarIndicatorSize.label,
-      indicator: const UnderlineTabIndicator(
+      indicator: UnderlineTabIndicator(
         borderSide: BorderSide(color: Color(0xFFFF4458), width: 2.5),
-        insets: EdgeInsets.symmetric(horizontal: 12),
+        insets: EdgeInsets.symmetric(horizontal: 12.w),
       ),
       tabAlignment: TabAlignment.start,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      labelPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      labelPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 0),
       tabs: List.generate(tabLabels.length, (index) {
         final hasAdd = addableTabs.containsKey(index);
         return Tab(
@@ -207,31 +208,31 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
             children: [
               Text(tabLabels[index]),
               if (hasAdd) ...[
-                const SizedBox(width: 5),
+                SizedBox(width: 5.w),
                 GestureDetector(
                   onTap: addableTabs[index],
                   behavior: HitTestBehavior.opaque,
                   child: Container(
-                    width: 14,
-                    height: 14,
+                    width: 14.w,
+                    height: 14.h,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFF6B7A), Color(0xFFFF4458)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFFFF4458).withValues(alpha: 0.25),
-                          blurRadius: 3,
+                          blurRadius: 3.r,
                           offset: const Offset(0, 1),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       FontAwesomeIcons.plus,
-                      size: 7,
+                      size: 7.r,
                       color: Colors.white,
                     ),
                   ),
@@ -244,8 +245,8 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
+      decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
           bottom: BorderSide(color: Color(0x11000000), width: 1),
@@ -539,44 +540,44 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
 
           return AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
             ),
             title: Row(
               children: [
-                Icon(icon, color: const Color(0xFFFF4458), size: 28),
-                const SizedBox(width: 12),
+                Icon(icon, color: const Color(0xFFFF4458), size: 28.r),
+                SizedBox(width: 12.w),
                 Expanded(
-                  child: Text(title, style: const TextStyle(fontSize: 18)),
+                  child: Text(title, style: TextStyle(fontSize: 18.sp)),
                 ),
               ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 LinearProgressIndicator(
                   value: progress / 100,
                   backgroundColor: Colors.grey[200],
                   valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
                       '$progress%',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         color: Color(0xFFFF4458),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   message,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
               ],

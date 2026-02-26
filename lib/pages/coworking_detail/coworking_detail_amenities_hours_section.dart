@@ -3,6 +3,7 @@ import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart'
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CoworkingDetailAmenitiesSection extends StatelessWidget {
   final String controllerTag;
@@ -18,19 +19,19 @@ class CoworkingDetailAmenitiesSection extends StatelessWidget {
     return Obx(() {
       final amenities = _c.space.value.amenities.getAvailableAmenities();
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.amenities, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
+            Text(l10n.amenities, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+            SizedBox(height: 16.h),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 8.w,
+              runSpacing: 8.w,
               children: amenities.map((amenity) {
                 final (icon, color) = _getAmenityIconAndColor(amenity);
                 return Chip(
-                  avatar: Icon(icon, size: 18, color: color),
+                  avatar: Icon(icon, size: 18.r, color: color),
                   label: Text(amenity),
                   backgroundColor: color.withAlpha(26),
                   side: BorderSide(color: color.withAlpha(77)),
@@ -97,19 +98,19 @@ class CoworkingDetailOpeningHoursSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.openingHours, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
+                Text(l10n.openingHours, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+                SizedBox(height: 16.h),
                 ..._c.space.value.operationHours.hours.map((hours) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: EdgeInsets.only(bottom: 8.h),
                       child: Row(
                         children: [
-                          const Icon(FontAwesomeIcons.clock, size: 20),
-                          const SizedBox(width: 12),
-                          Text(hours, style: const TextStyle(fontSize: 15)),
+                          Icon(FontAwesomeIcons.clock, size: 20.r),
+                          SizedBox(width: 12.w),
+                          Text(hours, style: TextStyle(fontSize: 15.sp)),
                         ],
                       ),
                     )),

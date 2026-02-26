@@ -13,6 +13,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市卡片组件（网格视图）
 class HomeCityCard extends StatelessWidget {
@@ -35,12 +36,12 @@ class HomeCityCard extends StatelessWidget {
       onTap: () => _navigateToDetail(context, l10n),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           border: Border.all(color: AppColors.borderLight, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
+              blurRadius: 8.r,
               offset: const Offset(0, 2),
             ),
           ],
@@ -90,7 +91,7 @@ class HomeCityCard extends StatelessWidget {
 
   Widget _buildBackgroundImage() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -136,15 +137,15 @@ class HomeCityCard extends StatelessWidget {
 
   Widget _buildTopRow(bool isMobile) {
     return Positioned(
-      top: 8,
-      left: 8,
-      right: 8,
+      top: 8.h,
+      left: 8.w,
+      right: 8.w,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // 版主状态徽章
           _buildModeratorBadge(isMobile),
-          const SizedBox(width: 3),
+          SizedBox(width: 3.w),
           // 右侧按钮组
           _buildTopRightButtons(isMobile),
         ],
@@ -163,7 +164,7 @@ class HomeCityCard extends StatelessWidget {
           color: city.moderatorId != null
               ? const Color(0xFF10B981).withValues(alpha: 0.9)
               : Colors.orange.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(4.r),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -221,7 +222,7 @@ class HomeCityCard extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(4.r),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -259,9 +260,9 @@ class HomeCityCard extends StatelessWidget {
               Colors.black.withValues(alpha: 0.7),
             ],
           ),
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(8),
-            bottomRight: Radius.circular(8),
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(8.r),
+            bottomRight: Radius.circular(8.r),
           ),
         ),
         child: Column(
@@ -369,7 +370,7 @@ class HomeCityCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -465,13 +466,13 @@ class _GenerateImageButton extends StatelessWidget {
           padding: EdgeInsets.all(isMobile ? 4 : 6),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(4.r),
           ),
           child: isGenerating
               ? SizedBox(
                   width: isMobile ? 12 : 16,
                   height: isMobile ? 12 : 16,
-                  child: const CircularProgressIndicator(
+                  child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),

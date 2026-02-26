@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Coworking 评论创建页面
 class AddCoworkingCommentPage extends StatefulWidget {
@@ -186,12 +187,12 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
         title: Text('发表评论 - ${widget.coworkingName}'),
         actions: [
           if (_isSubmitting)
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 24.w,
+                  height: 24.h,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
@@ -199,10 +200,10 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           else
             TextButton(
               onPressed: _submitComment,
-              child: const Text(
+              child: Text(
                 '发布',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -211,13 +212,13 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 评分区域
               _buildRatingSection(),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 标题输入框
               TextField(
@@ -227,14 +228,14 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                   labelText: '评价标题',
                   hintText: '用一句话总结您的体验',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   filled: true,
                   fillColor: Colors.grey[50],
                 ),
                 enabled: !_isSubmitting,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 访问日期选择器
               InkWell(
@@ -243,7 +244,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                   decoration: InputDecoration(
                     labelText: '访问日期（可选）',
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     filled: true,
                     fillColor: Colors.grey[50],
@@ -259,7 +260,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 评论输入框
               TextField(
@@ -269,30 +270,30 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                 decoration: InputDecoration(
                   hintText: '分享您的体验...',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   filled: true,
                   fillColor: Colors.grey[50],
                 ),
                 enabled: !_isSubmitting,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 图片上传区域标题
               Row(
                 children: [
-                  const Icon(FontAwesomeIcons.images, size: 20),
-                  const SizedBox(width: 8),
+                  Icon(FontAwesomeIcons.images, size: 20.r),
+                  SizedBox(width: 8.w),
                   Text(
                     '添加图片 (${_selectedImages.length}/5)',
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
 
               // 图片网格预览
               _buildImageGrid(),
@@ -306,29 +307,29 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
   /// 构建评分区域
   Widget _buildRatingSection() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.amber[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.amber[200]!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(FontAwesomeIcons.solidStar, color: Colors.amber, size: 20),
-              SizedBox(width: 8),
+              Icon(FontAwesomeIcons.solidStar, color: Colors.amber, size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 '您的评分',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: List.generate(5, (index) {
@@ -364,7 +365,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
                         }
                       },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 4.w),
                   child: _buildStarIcon(index),
                 ),
               );
@@ -372,31 +373,31 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           ),
           if (_rating > 0)
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: EdgeInsets.only(top: 12.h),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFA000), // 深黄色背景
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Text(
                       _rating.toStringAsFixed(1),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white, // 白色文字
-                        fontSize: 18,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
                       _getRatingText(_rating),
                       style: TextStyle(
                         color: Colors.grey[700],
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ),
@@ -405,12 +406,12 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
             ),
           if (_rating == 0)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: EdgeInsets.only(top: 8.h),
               child: Text(
                 '点击星星选择评分（点击左侧半星，右侧整星）',
                 style: TextStyle(
                   color: Colors.grey[500],
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -445,7 +446,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
     return Icon(
       iconData,
       color: color,
-      size: 40,
+      size: 40.r,
     );
   }
 
@@ -507,13 +508,13 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[300]!),
       ),
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             child: Image.file(
               File(image.path),
               fit: BoxFit.cover,
@@ -523,20 +524,20 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           ),
           if (!_isSubmitting)
             Positioned(
-              top: 4,
-              right: 4,
+              top: 4.h,
+              right: 4.w,
               child: GestureDetector(
                 onTap: () => _removeImage(index),
                 child: Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: EdgeInsets.all(6.w),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     FontAwesomeIcons.xmark,
                     color: Colors.white,
-                    size: 16,
+                    size: 16.r,
                   ),
                 ),
               ),
@@ -555,7 +556,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
         height: size,
         decoration: BoxDecoration(
           color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: Colors.grey[300]!,
             style: BorderStyle.solid,
@@ -566,14 +567,14 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           children: [
             Icon(
               FontAwesomeIcons.photoFilm,
-              size: 24,
+              size: 24.r,
               color: Colors.grey[600],
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: 2.h),
             Text(
               '添加',
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 10.sp,
                 color: Colors.grey[600],
               ),
             ),
@@ -590,7 +591,7 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       height: size,
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.grey[200]!,
           style: BorderStyle.solid,
@@ -605,10 +606,10 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
       onTap: _isSubmitting ? null : _pickImages,
       child: Container(
         width: width,
-        height: 120,
+        height: 120.h,
         decoration: BoxDecoration(
           color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: Colors.grey[300]!,
             width: 2,
@@ -620,14 +621,14 @@ class _AddCoworkingCommentPageState extends State<AddCoworkingCommentPage> {
           children: [
             Icon(
               FontAwesomeIcons.photoFilm,
-              size: 40,
+              size: 40.r,
               color: Colors.grey[600],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               '添加图片',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
               ),

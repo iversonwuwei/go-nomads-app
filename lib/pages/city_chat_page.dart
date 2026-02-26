@@ -22,6 +22,7 @@ import 'package:go_nomads_app/widgets/report_dialog.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市聊天室页面 - WeChat 风格设计
 ///
@@ -186,7 +187,7 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
       _bubbles.add(_FloatingBubble(
         x: ((random + i * 137) % 100) / 100,
         y: ((random + i * 251) % 100) / 100,
-        size: 20 + ((random + i * 73) % 30).toDouble(),
+        size: 20.r + ((random + i * 73) % 30).toDouble(),
         speed: 0.3 + ((random + i * 41) % 50) / 100,
         icon: _chatIcons[i % _chatIcons.length],
       ));
@@ -234,8 +235,8 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
 
               // 返回按钮
               Positioned(
-                top: 8,
-                left: 8,
+                top: 8.h,
+                left: 8.w,
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                   onPressed: widget.onBack,
@@ -254,8 +255,8 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
                         return Transform.scale(
                           scale: _pulseAnimation.value,
                           child: Container(
-                            width: 120,
-                            height: 120,
+                            width: 120.w,
+                            height: 120.h,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
@@ -265,8 +266,8 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.white.withValues(alpha: 0.2),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
+                                  blurRadius: 20.r,
+                                  spreadRadius: 5.r,
                                 ),
                               ],
                             ),
@@ -277,8 +278,8 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
                                   return Transform.rotate(
                                     angle: _rotationAnimation.value,
                                     child: Container(
-                                      width: 80,
-                                      height: 80,
+                                      width: 80.w,
+                                      height: 80.h,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         gradient: SweepGradient(
@@ -289,11 +290,11 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
                                           ],
                                         ),
                                       ),
-                                      child: const Center(
+                                      child: Center(
                                         child: Icon(
                                           FontAwesomeIcons.comments,
                                           color: Colors.white,
-                                          size: 32,
+                                          size: 32.r,
                                         ),
                                       ),
                                     ),
@@ -306,26 +307,26 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
                       },
                     ),
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // 聊天室名称
                     Text(
                       widget.roomName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 24,
+                        fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
                         shadows: [
                           Shadow(
                             color: Colors.black26,
-                            blurRadius: 4,
+                            blurRadius: 4.r,
                             offset: Offset(0, 2),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // 加载文字动画
                     _buildLoadingText(),
@@ -373,20 +374,20 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               '正在连接',
               style: TextStyle(
                 color: Colors.white70,
-                fontSize: 16,
+                fontSize: 16.sp,
               ),
             ),
             SizedBox(
-              width: 30,
+              width: 30.w,
               child: Text(
                 '.' * dotCount,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
             ),
@@ -433,9 +434,9 @@ class _ChatRoomsListView extends StatelessWidget {
         leading: const AppBackButton(color: Colors.black),
         title: Text(
           l10n.cityChats,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black,
-            fontSize: 17,
+            fontSize: 17.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -450,9 +451,9 @@ class _ChatRoomsListView extends StatelessWidget {
           ? _buildEmptyState(context)
           : ListView.separated(
               itemCount: controller.chatRooms.length,
-              separatorBuilder: (_, __) => const Divider(
+              separatorBuilder: (_, __) => Divider(
                 height: 1,
-                indent: 72,
+                indent: 72.w,
                 color: Color(0xFFE5E5E5),
               ),
               itemBuilder: (context, index) {
@@ -470,15 +471,15 @@ class _ChatRoomsListView extends StatelessWidget {
         children: [
           Icon(
             FontAwesomeIcons.message,
-            size: 80,
+            size: 80.r,
             color: Colors.grey[400],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             '暂无聊天室',
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 16,
+              fontSize: 16.sp,
             ),
           ),
         ],
@@ -501,11 +502,11 @@ class _ChatRoomItem extends StatelessWidget {
       child: InkWell(
         onTap: () => controller.joinRoom(room),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           child: Row(
             children: [
               _buildAvatar(),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(child: _buildInfo()),
             ],
           ),
@@ -518,34 +519,34 @@ class _ChatRoomItem extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          width: 52,
-          height: 52,
+          width: 52.w,
+          height: 52.h,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF07C160), Color(0xFF059C4C)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(6.r),
           ),
-          child: const Icon(FontAwesomeIcons.users, color: Colors.white, size: 28),
+          child: Icon(FontAwesomeIcons.users, color: Colors.white, size: 28.r),
         ),
         if (room.stats.onlineUsers > 0)
           Positioned(
             right: -2,
             top: -2,
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(4.w),
               decoration: const BoxDecoration(
                 color: Color(0xFFFF3B30),
                 shape: BoxShape.circle,
               ),
-              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              constraints: BoxConstraints(minWidth: 18.w, minHeight: 18.h),
               child: Text(
                 room.stats.onlineUsers > 99 ? '99+' : '${room.stats.onlineUsers}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 10,
+                  fontSize: 10.sp,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -565,8 +566,8 @@ class _ChatRoomItem extends StatelessWidget {
             Expanded(
               child: Text(
                 room.displayName,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
@@ -574,17 +575,17 @@ class _ChatRoomItem extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(
               _formatTime(room.lastMessage?.timestamp ?? DateTime.now()),
-              style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+              style: TextStyle(fontSize: 12.sp, color: Color(0xFF999999)),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Text(
           room.lastMessage?.message ?? '${room.stats.onlineUsers} 人在线',
-          style: const TextStyle(fontSize: 14, color: Color(0xFF999999)),
+          style: TextStyle(fontSize: 14.sp, color: Color(0xFF999999)),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -803,9 +804,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
         children: [
           Text(
             roomName,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
-              fontSize: 17,
+              fontSize: 17.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -814,7 +815,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 widget.controller.onlineCount > 0 ? widget.controller.onlineCount : (room?.stats.onlineUsers ?? 0);
             return Text(
               '$onlineCount人在线',
-              style: const TextStyle(color: Color(0xFF999999), fontSize: 12),
+              style: TextStyle(color: Color(0xFF999999), fontSize: 12.sp),
             );
           }),
         ],
@@ -829,15 +830,15 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   }
 
   Widget _buildEmptyMessages() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FontAwesomeIcons.comments, size: 64, color: Color(0xFFCCCCCC)),
-          SizedBox(height: 16),
+          Icon(FontAwesomeIcons.comments, size: 64.r, color: Color(0xFFCCCCCC)),
+          SizedBox(height: 16.h),
           Text(
             '开始聊天吧',
-            style: TextStyle(color: Color(0xFF999999), fontSize: 16),
+            style: TextStyle(color: Color(0xFF999999), fontSize: 16.sp),
           ),
         ],
       ),
@@ -850,7 +851,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     return ListView.builder(
       controller: _scrollController,
       reverse: true,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: widget.controller.messages.length + _uploadingImages.length,
       itemBuilder: (context, index) {
         // 先显示上传中的图片（在最底部/最新位置）
@@ -879,43 +880,43 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   Widget _buildReplyBar() {
     final replyTo = widget.controller.replyTo!;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       color: const Color(0xFFF3F4F6),
       child: Row(
         children: [
           Container(
-            width: 3,
-            height: 40,
+            width: 3.w,
+            height: 40.h,
             decoration: BoxDecoration(
               color: const Color(0xFF07C160),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.r),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '回复 ${replyTo.author.userName}',
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF07C160),
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   replyTo.message,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF666666)),
+                  style: TextStyle(fontSize: 13.sp, color: Color(0xFF666666)),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(FontAwesomeIcons.xmark, size: 20),
+            icon: Icon(FontAwesomeIcons.xmark, size: 20.r),
             onPressed: () => widget.controller.clearReplyTo(),
           ),
         ],
@@ -925,7 +926,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
 
   Widget _buildInputBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F7F7),
         border: Border(top: BorderSide(color: const Color(0xFFE5E5E5))),
@@ -947,44 +948,44 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 });
               },
               child: Container(
-                width: 36,
-                height: 36,
+                width: 36.w,
+                height: 36.h,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Icon(
                   _isVoiceMode ? FontAwesomeIcons.keyboard : FontAwesomeIcons.microphone,
                   color: const Color(0xFF666666),
-                  size: 18,
+                  size: 18.r,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             // 输入框或录音按钮
             Expanded(
               child: _isVoiceMode ? _buildVoiceRecordButton() : _buildTextInput(),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             // 表情按钮（非语音模式且无文字时显示）
             if (!_isVoiceMode && _textController.text.trim().isEmpty) ...[
               GestureDetector(
                 onTap: _toggleEmojiPanel,
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 36.w,
+                  height: 36.h,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Icon(
                     _showEmojiPanel ? FontAwesomeIcons.keyboard : FontAwesomeIcons.faceSmile,
                     color: const Color(0xFF666666),
-                    size: 18,
+                    size: 18.r,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
             ],
             // 发送按钮或更多按钮
             if (!_isVoiceMode && _textController.text.trim().isNotEmpty)
@@ -999,16 +1000,16 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   ),
                 ),
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 36.w,
+                  height: 36.h,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     FontAwesomeIcons.plus,
                     color: Color(0xFF666666),
-                    size: 18,
+                    size: 18.r,
                   ),
                 ),
               ),
@@ -1021,25 +1022,25 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   /// 构建文字输入框
   Widget _buildTextInput() {
     return Container(
-      constraints: const BoxConstraints(maxHeight: 120, minHeight: 36),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      constraints: BoxConstraints(maxHeight: 120.h, minHeight: 36.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: TextField(
         controller: _textController,
         focusNode: _inputFocusNode,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: '说点什么...',
-          hintStyle: TextStyle(color: Color(0xFFBBBBBB), fontSize: 16),
+          hintStyle: TextStyle(color: Color(0xFFBBBBBB), fontSize: 16.sp),
           border: InputBorder.none,
           isDense: true,
           contentPadding: EdgeInsets.zero,
         ),
         maxLines: null,
         textCapitalization: TextCapitalization.sentences,
-        style: const TextStyle(fontSize: 16, height: 1.3),
+        style: TextStyle(fontSize: 16.sp, height: 1.3),
         onChanged: (_) => setState(() {}),
         onTap: () {
           // 点击输入框时收起表情面板
@@ -1064,13 +1065,13 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     return GestureDetector(
       onTap: hasText ? _sendMessage : null,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 36.w,
+        height: 36.h,
         decoration: BoxDecoration(
           color: hasText ? const Color(0xFF07C160) : const Color(0xFFE5E5E5),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(6.r),
         ),
-        child: const Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 16),
+        child: Icon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 16.r),
       ),
     );
   }
@@ -1122,7 +1123,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   /// 构建表情面板
   Widget _buildEmojiPanel() {
     return Container(
-      height: 260,
+      height: 260.h,
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
         border: Border(
@@ -1133,8 +1134,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
         children: [
           // 表情分类标签
           Container(
-            height: 44,
-            decoration: const BoxDecoration(
+            height: 44.h,
+            decoration: BoxDecoration(
               color: Colors.white,
               border: Border(
                 bottom: BorderSide(color: Color(0xFFE5E5E5), width: 0.5),
@@ -1152,7 +1153,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                 const Spacer(),
                 // 删除按钮
                 IconButton(
-                  icon: const Icon(FontAwesomeIcons.deleteLeft, size: 20, color: Color(0xFF666666)),
+                  icon: Icon(FontAwesomeIcons.deleteLeft, size: 20.r, color: Color(0xFF666666)),
                   onPressed: () {
                     final text = _textController.text;
                     if (text.isNotEmpty) {
@@ -1173,11 +1174,11 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
           // 表情网格
           Expanded(
             child: GridView.builder(
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              padding: EdgeInsets.all(8.w),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 8,
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 4,
+                mainAxisSpacing: 4.w,
+                crossAxisSpacing: 4.w,
               ),
               itemCount: _emojis.length,
               itemBuilder: (context, index) {
@@ -1186,11 +1187,11 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
                       _emojis[index],
-                      style: const TextStyle(fontSize: 28),
+                      style: TextStyle(fontSize: 28.sp),
                     ),
                   ),
                 );
@@ -1199,8 +1200,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
           ),
           // 发送按钮区域
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: const BoxDecoration(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            decoration: BoxDecoration(
               color: Colors.white,
               border: Border(
                 top: BorderSide(color: Color(0xFFE5E5E5), width: 0.5),
@@ -1215,9 +1216,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                     backgroundColor:
                         _textController.text.trim().isEmpty ? const Color(0xFFE5E5E5) : const Color(0xFF07C160),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
                   child: const Text('发送'),
@@ -1237,8 +1238,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
         // TODO: 切换表情分类
       },
       child: Container(
-        width: 44,
-        height: 44,
+        width: 44.w,
+        height: 44.h,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           border: Border(
@@ -1248,7 +1249,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             ),
           ),
         ),
-        child: Text(emoji, style: const TextStyle(fontSize: 22)),
+        child: Text(emoji, style: TextStyle(fontSize: 22.sp)),
       ),
     );
   }
@@ -1298,9 +1299,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   void _showRoomMenu() {
     Get.bottomSheet(
       Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         ),
         child: SafeArea(
           child: Column(
@@ -1308,12 +1309,12 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             children: [
               // 顶部拖动条
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 20),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(top: 12.h, bottom: 20.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE0E0E0),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               _buildMenuOption(
@@ -1364,7 +1365,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   );
                 },
               ),
-              const Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),
+              Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),
               _buildMenuOption(
                 icon: FontAwesomeIcons.rightFromBracket,
                 title: '退出聊天室',
@@ -1375,7 +1376,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   _leaveAndGoBack();
                 },
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
             ],
           ),
         ),
@@ -1393,15 +1394,15 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         child: Row(
           children: [
-            Icon(icon, color: iconColor ?? const Color(0xFF333333), size: 24),
-            const SizedBox(width: 16),
+            Icon(icon, color: iconColor ?? const Color(0xFF333333), size: 24.r),
+            SizedBox(width: 16.w),
             Text(
               title,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 color: titleColor ?? const Color(0xFF333333),
               ),
             ),
@@ -1432,15 +1433,15 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     Get.bottomSheet(
       Container(
         height: screenHeight * 0.7,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         ),
         child: Column(
           children: [
             // 顶部拖动条和标题
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
               decoration: const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: Color(0xFFEEEEEE)),
@@ -1449,18 +1450,18 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
               child: Column(
                 children: [
                   Container(
-                    width: 40,
-                    height: 4,
+                    width: 40.w,
+                    height: 4.h,
                     decoration: BoxDecoration(
                       color: const Color(0xFFE0E0E0),
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     '群成员 (${sortedMembers.length})',
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF333333),
                     ),
@@ -1473,11 +1474,11 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
               child: sortedMembers.isEmpty
                   ? _buildEmptyMembersList()
                   : ListView.separated(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(vertical: 8.h),
                       itemCount: sortedMembers.length,
-                      separatorBuilder: (_, __) => const Divider(
+                      separatorBuilder: (_, __) => Divider(
                         height: 1,
-                        indent: 72,
+                        indent: 72.w,
                         color: Color(0xFFF0F0F0),
                       ),
                       itemBuilder: (context, index) {
@@ -1544,14 +1545,14 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
         children: [
           Icon(
             FontAwesomeIcons.users,
-            size: 64,
+            size: 64.r,
             color: Colors.grey[300],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             '暂无成员',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.grey[500],
             ),
           ),
@@ -1563,7 +1564,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   /// 构建成员列表项
   Widget _buildMemberItem(OnlineUser member) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       leading: Stack(
         children: [
           SafeCircleAvatar(
@@ -1572,17 +1573,17 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             backgroundColor: const Color(0xFF07C160),
             placeholder: Text(
               member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
             errorWidget: Text(
               member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1592,8 +1593,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             right: 0,
             bottom: 0,
             child: Container(
-              width: 14,
-              height: 14,
+              width: 14.w,
+              height: 14.h,
               decoration: BoxDecoration(
                 color: member.isOnline ? const Color(0xFF07C160) : Colors.grey,
                 shape: BoxShape.circle,
@@ -1608,15 +1609,15 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
           Flexible(
             child: Text(
               member.name,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF333333),
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           // 角色标签
           if (member.isOwner)
             _buildRoleTag('群主', const Color(0xFFFF9800))
@@ -1627,15 +1628,15 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       subtitle: Text(
         member.isOnline ? '在线' : member.statusText,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: 13.sp,
           color: member.isOnline ? const Color(0xFF07C160) : Colors.grey[500],
         ),
       ),
       trailing: member.isOwner
-          ? const Icon(
+          ? Icon(
               FontAwesomeIcons.crown,
               color: Color(0xFFFF9800),
-              size: 18,
+              size: 18.r,
             )
           : null,
     );
@@ -1644,16 +1645,16 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   /// 构建角色标签
   Widget _buildRoleTag(String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 10.sp,
           color: color,
           fontWeight: FontWeight.w500,
         ),
@@ -1796,7 +1797,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     final hasError = uploadingImage.errorMessage != null;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -1806,30 +1807,30 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  constraints: const BoxConstraints(
-                    maxWidth: 200,
-                    maxHeight: 200,
+                  constraints: BoxConstraints(
+                    maxWidth: 200.w,
+                    maxHeight: 200.h,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF07C160).withValues(alpha: 0.2),
-                        blurRadius: 8,
+                        blurRadius: 8.r,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     child: Stack(
                       children: [
                         // 本地图片预览
                         Image.file(
                           File(uploadingImage.localPath),
                           fit: BoxFit.cover,
-                          width: 150,
-                          height: 150,
+                          width: 150.w,
+                          height: 150.h,
                         ),
 
                         // 上传进度遮罩
@@ -1848,24 +1849,24 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
 
                 // 状态文字
                 Text(
                   hasError ? uploadingImage.errorMessage! : '上传中...',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: hasError ? const Color(0xFFFF3838) : const Color(0xFF999999),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           // 上传状态图标
           Icon(
             hasError ? FontAwesomeIcons.circleExclamation : FontAwesomeIcons.cloudArrowUp,
-            size: 16,
+            size: 16.r,
             color: hasError
                 ? const Color(0xFFFF3838).withValues(alpha: 0.8)
                 : const Color(0xFF07C160).withValues(alpha: 0.5),
@@ -1881,8 +1882,8 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 50,
-          height: 50,
+          width: 50.w,
+          height: 50.h,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -1894,9 +1895,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
               ),
               Text(
                 '${(uploadingImage.progress * 100).toInt()}%',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1912,12 +1913,12 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
+        Icon(
           FontAwesomeIcons.circleExclamation,
           color: Colors.white,
-          size: 24,
+          size: 24.r,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1925,37 +1926,37 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             GestureDetector(
               onTap: () => _retryUpload(uploadingImage),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(FontAwesomeIcons.arrowRotateRight, size: 12, color: Color(0xFF07C160)),
-                    SizedBox(width: 4),
-                    Text('重试', style: TextStyle(fontSize: 12, color: Color(0xFF07C160))),
+                    Icon(FontAwesomeIcons.arrowRotateRight, size: 12.r, color: Color(0xFF07C160)),
+                    SizedBox(width: 4.w),
+                    Text('重试', style: TextStyle(fontSize: 12.sp, color: Color(0xFF07C160))),
                   ],
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             // 取消按钮
             GestureDetector(
               onTap: () => _removeUploadingImage(uploadingImage.id),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(FontAwesomeIcons.xmark, size: 12, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text('取消', style: TextStyle(fontSize: 12, color: Colors.white)),
+                    Icon(FontAwesomeIcons.xmark, size: 12.r, color: Colors.white),
+                    SizedBox(width: 4.w),
+                    Text('取消', style: TextStyle(fontSize: 12.sp, color: Colors.white)),
                   ],
                 ),
               ),
@@ -2173,7 +2174,7 @@ class _MessageBubble extends StatelessWidget {
     return GestureDetector(
       onLongPress: onLongPress,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 16),
+        padding: EdgeInsets.only(bottom: 16.h),
         child: Row(
           mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2181,7 +2182,7 @@ class _MessageBubble extends StatelessWidget {
             // 非本人消息显示头像在左侧
             if (!isMe) ...[
               _buildAvatar(),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
             ],
             Flexible(
               child: Column(
@@ -2190,11 +2191,11 @@ class _MessageBubble extends StatelessWidget {
                   // 非本人消息显示用户名
                   if (!isMe)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 4, left: 4),
+                      padding: EdgeInsets.only(bottom: 4.h, left: 4.w),
                       child: Text(
                         message.author.userName,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: _getNameColor(),
                           fontWeight: FontWeight.w500,
                         ),
@@ -2203,11 +2204,11 @@ class _MessageBubble extends StatelessWidget {
                   _buildMessageContent(context),
                   // 显示时间
                   Padding(
-                    padding: const EdgeInsets.only(top: 4),
+                    padding: EdgeInsets.only(top: 4.h),
                     child: Text(
                       _formatTime(message.timestamp),
-                      style: const TextStyle(
-                        fontSize: 11,
+                      style: TextStyle(
+                        fontSize: 11.sp,
                         color: Color(0xFF999999),
                       ),
                     ),
@@ -2217,7 +2218,7 @@ class _MessageBubble extends StatelessWidget {
             ),
             // 本人消息显示头像在右侧
             if (isMe) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               _buildAvatar(),
             ],
           ],
@@ -2236,10 +2237,10 @@ class _MessageBubble extends StatelessWidget {
         }
       },
       child: Container(
-        width: 40,
-        height: 40,
+        width: 40.w,
+        height: 40.h,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(6.r),
           color: isMe ? const Color(0xFF07C160) : _getAvatarBackgroundColor(),
         ),
         clipBehavior: Clip.antiAlias,
@@ -2260,9 +2261,9 @@ class _MessageBubble extends StatelessWidget {
     return Center(
       child: Text(
         initial,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 18,
+          fontSize: 18.sp,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -2343,20 +2344,20 @@ class _MessageBubble extends StatelessWidget {
   /// 文本消息
   Widget _buildTextMessage() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      constraints: const BoxConstraints(maxWidth: 260),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      constraints: BoxConstraints(maxWidth: 260.w),
       decoration: BoxDecoration(
         color: _bubbleBackgroundColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(isMe ? 16 : 4),
           topRight: Radius.circular(isMe ? 4 : 16),
-          bottomLeft: const Radius.circular(16),
-          bottomRight: const Radius.circular(16),
+          bottomLeft: Radius.circular(16.r),
+          bottomRight: Radius.circular(16.r),
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -2364,7 +2365,7 @@ class _MessageBubble extends StatelessWidget {
       child: Text(
         message.message,
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 16.sp,
           color: isMe ? Colors.black : const Color(0xFF333333),
           height: 1.4,
         ),
@@ -2383,23 +2384,23 @@ class _MessageBubble extends StatelessWidget {
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(isMe ? 16 : 4),
           topRight: Radius.circular(isMe ? 4 : 16),
-          bottomLeft: const Radius.circular(16),
-          bottomRight: const Radius.circular(16),
+          bottomLeft: Radius.circular(16.r),
+          bottomRight: Radius.circular(16.r),
         ),
         child: Container(
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
+                blurRadius: 4.r,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 200,
-              maxHeight: 300,
+            constraints: BoxConstraints(
+              maxWidth: 200.w,
+              maxHeight: 300.h,
             ),
             child: _buildNetworkImage(attachment.url),
           ),
@@ -2417,34 +2418,34 @@ class _MessageBubble extends StatelessWidget {
         if (loadingProgress == null) return child;
         // 显示灰色占位框，带图片图标
         return Container(
-          width: 200,
-          height: 150,
+          width: 200.w,
+          height: 150.h,
           decoration: BoxDecoration(
             color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-          child: const Center(
+          child: Center(
             child: Icon(
               FontAwesomeIcons.image,
               color: Colors.grey,
-              size: 40,
+              size: 40.r,
             ),
           ),
         );
       },
       errorBuilder: (context, error, stackTrace) {
         return Container(
-          width: 200,
-          height: 150,
+          width: 200.w,
+          height: 150.h,
           decoration: BoxDecoration(
             color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-          child: const Column(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40),
-              SizedBox(height: 8),
+              Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40.r),
+              SizedBox(height: 8.h),
               Text('加载失败', style: TextStyle(color: Colors.grey)),
             ],
           ),
@@ -2468,20 +2469,20 @@ class _MessageBubble extends StatelessWidget {
     if (attachment == null) return _buildTextMessage();
 
     return Container(
-      padding: const EdgeInsets.all(12),
-      constraints: const BoxConstraints(maxWidth: 240),
+      padding: EdgeInsets.all(12.w),
+      constraints: BoxConstraints(maxWidth: 240.w),
       decoration: BoxDecoration(
         color: _bubbleBackgroundColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(isMe ? 16 : 4),
           topRight: Radius.circular(isMe ? 4 : 16),
-          bottomLeft: const Radius.circular(16),
-          bottomRight: const Radius.circular(16),
+          bottomLeft: Radius.circular(16.r),
+          bottomRight: Radius.circular(16.r),
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -2490,19 +2491,19 @@ class _MessageBubble extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 44.w,
+            height: 44.h,
             decoration: BoxDecoration(
               color: const Color(0xFF4A90E2).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
-            child: const Icon(
+            child: Icon(
               FontAwesomeIcons.file,
               color: Color(0xFF4A90E2),
-              size: 22,
+              size: 22.r,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -2510,19 +2511,19 @@ class _MessageBubble extends StatelessWidget {
               children: [
                 Text(
                   attachment.fileName ?? '未知文件',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                     color: Colors.black,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   attachment.formattedFileSize,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: Colors.grey[600],
                   ),
                 ),
@@ -2549,19 +2550,19 @@ class _MessageBubble extends StatelessWidget {
         attachment.locationName ?? '位置',
       ),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 220),
+        constraints: BoxConstraints(maxWidth: 220.w),
         decoration: BoxDecoration(
           color: _bubbleBackgroundColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(isMe ? 16 : 4),
             topRight: Radius.circular(isMe ? 4 : 16),
-            bottomLeft: const Radius.circular(16),
-            bottomRight: const Radius.circular(16),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(16.r),
           ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 4,
+              blurRadius: 4.r,
               offset: const Offset(0, 2),
             ),
           ],
@@ -2577,8 +2578,8 @@ class _MessageBubble extends StatelessWidget {
                 topRight: Radius.circular(isMe ? 4 : 16),
               ),
               child: Container(
-                width: 220,
-                height: 120,
+                width: 220.w,
+                height: 120.h,
                 color: const Color(0xFFE8F5E9),
                 child: Stack(
                   children: [
@@ -2586,27 +2587,27 @@ class _MessageBubble extends StatelessWidget {
                     Image.network(
                       'https://staticmap.openstreetmap.de/staticmap.php?center=${attachment.latitude},${attachment.longitude}&zoom=15&size=220x120&markers=${attachment.latitude},${attachment.longitude},red-pushpin',
                       fit: BoxFit.cover,
-                      width: 220,
-                      height: 120,
+                      width: 220.w,
+                      height: 120.h,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: const Color(0xFFE8F5E9),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               FontAwesomeIcons.mapLocationDot,
                               color: Color(0xFF4CAF50),
-                              size: 40,
+                              size: 40.r,
                             ),
                           ),
                         );
                       },
                     ),
                     // 中心标记点
-                    const Center(
+                    Center(
                       child: Icon(
                         FontAwesomeIcons.locationDot,
                         color: Color(0xFFE53935),
-                        size: 32,
+                        size: 32.r,
                       ),
                     ),
                   ],
@@ -2615,20 +2616,20 @@ class _MessageBubble extends StatelessWidget {
             ),
             // 位置名称
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10.w),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     FontAwesomeIcons.locationDot,
                     color: Color(0xFF666666),
-                    size: 14,
+                    size: 14.r,
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
                       attachment.locationName ?? '位置',
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: 14.sp,
                         color: Colors.black87,
                       ),
                       maxLines: 2,
@@ -2649,8 +2650,8 @@ class _MessageBubble extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
       ),
       builder: (ctx) => SafeArea(
         child: Column(
@@ -2658,26 +2659,26 @@ class _MessageBubble extends StatelessWidget {
           children: [
             // 顶部拖拽条
             Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 36,
-              height: 4,
+              margin: EdgeInsets.only(top: 8.h),
+              width: 36.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.all(16),
+            Padding(
+              padding: EdgeInsets.all(16.w),
               child: Text(
                 '选择地图导航',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
               ),
             ),
-            const Divider(height: 1),
+            Divider(height: 1),
             // Apple 地图
             _MapAppOption(
               icon: FontAwesomeIcons.apple,
@@ -2713,30 +2714,30 @@ class _MessageBubble extends StatelessWidget {
               iconColor: const Color(0xFF12B7F5),
               onTap: () => _openTencentMap(ctx, latitude, longitude, name),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             // 取消按钮
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
                   backgroundColor: Colors.grey[100],
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   '取消',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     color: Colors.black54,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
           ],
         ),
       ),
@@ -2919,29 +2920,29 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: widget.screenHeight * 0.85,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: Column(
         children: [
           // 顶部拖动条
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            width: 40,
-            height: 4,
+            margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+            width: 40.w,
+            height: 4.h,
             decoration: BoxDecoration(
               color: const Color(0xFFE0E0E0),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.r),
             ),
           ),
           // 标题
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.h),
             child: Text(
               '搜索聊天记录',
               style: TextStyle(
-                fontSize: 17,
+                fontSize: 17.sp,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF333333),
               ),
@@ -2949,25 +2950,25 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
           ),
           // 搜索框
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             child: TextField(
               controller: widget.searchController,
               focusNode: _focusNode,
               decoration: InputDecoration(
                 hintText: '搜索消息内容...',
                 hintStyle: const TextStyle(color: Color(0xFF999999)),
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   FontAwesomeIcons.magnifyingGlass,
-                  size: 18,
+                  size: 18.r,
                   color: Color(0xFF999999),
                 ),
                 suffixIcon: Obx(() {
                   if (widget.controller.isSearching) {
-                    return const Padding(
-                      padding: EdgeInsets.all(12),
+                    return Padding(
+                      padding: EdgeInsets.all(12.w),
                       child: SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 20.w,
+                        height: 20.h,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Color(0xFF07C160),
@@ -2977,9 +2978,9 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                   }
                   if (widget.searchController.text.isNotEmpty) {
                     return IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         FontAwesomeIcons.xmark,
-                        size: 16,
+                        size: 16.r,
                         color: Color(0xFF999999),
                       ),
                       onPressed: () {
@@ -2993,10 +2994,10 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                 filled: true,
                 fillColor: const Color(0xFFF5F5F5),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               ),
               onSubmitted: (_) => _performSearch(),
               onChanged: (value) {
@@ -3009,7 +3010,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
           ),
           // 搜索按钮
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -3017,14 +3018,14 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF07C160),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   '搜索',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -3035,13 +3036,13 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
             final keyword = widget.controller.searchKeyword;
             if (keyword.isNotEmpty && !widget.controller.isSearching) {
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 child: Row(
                   children: [
                     Text(
                       '找到 $count 条包含"$keyword"的消息',
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: TextStyle(
+                        fontSize: 13.sp,
                         color: Color(0xFF666666),
                       ),
                     ),
@@ -3051,17 +3052,17 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
             }
             return const SizedBox.shrink();
           }),
-          const Divider(height: 1),
+          Divider(height: 1),
           // 搜索结果列表
           Expanded(
             child: Obx(() {
               if (widget.controller.isSearching) {
-                return const Center(
+                return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CircularProgressIndicator(color: Color(0xFF07C160)),
-                      SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         '搜索中...',
                         style: TextStyle(color: Color(0xFF999999)),
@@ -3106,14 +3107,14 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
         children: [
           Icon(
             FontAwesomeIcons.magnifyingGlass,
-            size: 48,
+            size: 48.r,
             color: Colors.grey[300],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             '输入关键词搜索聊天记录',
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 15.sp,
               color: Colors.grey[500],
             ),
           ),
@@ -3129,22 +3130,22 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
         children: [
           Icon(
             FontAwesomeIcons.faceSadTear,
-            size: 48,
+            size: 48.r,
             color: Colors.grey[300],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             '未找到包含"$keyword"的消息',
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 15.sp,
               color: Colors.grey[500],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             '试试其他关键词？',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 13.sp,
               color: Colors.grey[400],
             ),
           ),
@@ -3157,13 +3158,13 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
     return InkWell(
       onTap: () => widget.controller.loadMoreSearchResults(roomId: widget.roomId),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: const Center(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: Center(
           child: Text(
             '加载更多结果',
             style: TextStyle(
               color: Color(0xFF07C160),
-              fontSize: 14,
+              fontSize: 14.sp,
             ),
           ),
         ),
@@ -3175,7 +3176,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
     return InkWell(
       onTap: () => _jumpToMessage(message),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: const BoxDecoration(
           border: Border(
             bottom: BorderSide(color: Color(0xFFF0F0F0)),
@@ -3191,14 +3192,14 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
               backgroundColor: const Color(0xFF07C160),
               placeholder: Text(
                 message.author.userName.isNotEmpty ? message.author.userName[0].toUpperCase() : '?',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             // 消息内容
             Expanded(
               child: Column(
@@ -3210,8 +3211,8 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                       Expanded(
                         child: Text(
                           message.author.userName,
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF333333),
                           ),
@@ -3220,24 +3221,24 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                       ),
                       Text(
                         _formatMessageTime(message.timestamp),
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: 12.sp,
                           color: Color(0xFF999999),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   // 消息内容（高亮关键词）
                   _buildHighlightedText(message.message, keyword),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             // 跳转图标
-            const Icon(
+            Icon(
               FontAwesomeIcons.chevronRight,
-              size: 12,
+              size: 12.r,
               color: Color(0xFFCCCCCC),
             ),
           ],
@@ -3251,8 +3252,8 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
     if (keyword.isEmpty) {
       return Text(
         text,
-        style: const TextStyle(
-          fontSize: 14,
+        style: TextStyle(
+          fontSize: 14.sp,
           color: Color(0xFF666666),
         ),
         maxLines: 2,
@@ -3270,8 +3271,8 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
       if (index == -1) {
         spans.add(TextSpan(
           text: text.substring(start),
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: 14.sp,
             color: Color(0xFF666666),
           ),
         ));
@@ -3281,8 +3282,8 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
       if (index > start) {
         spans.add(TextSpan(
           text: text.substring(start, index),
-          style: const TextStyle(
-            fontSize: 14,
+          style: TextStyle(
+            fontSize: 14.sp,
             color: Color(0xFF666666),
           ),
         ));
@@ -3290,8 +3291,8 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
 
       spans.add(TextSpan(
         text: text.substring(index, index + keyword.length),
-        style: const TextStyle(
-          fontSize: 14,
+        style: TextStyle(
+          fontSize: 14.sp,
           color: Color(0xFF07C160),
           fontWeight: FontWeight.w600,
           backgroundColor: Color(0xFFE8F5E9),
@@ -3408,11 +3409,11 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
         );
       },
       errorBuilder: (context, error, stackTrace) {
-        return const Column(
+        return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.image, color: Colors.grey, size: 60),
-            SizedBox(height: 16),
+            Icon(FontAwesomeIcons.image, color: Colors.grey, size: 60.r),
+            SizedBox(height: 16.h),
             Text('图片加载失败', style: TextStyle(color: Colors.grey)),
           ],
         );
@@ -3439,28 +3440,28 @@ class _MapAppOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Container(
-        width: 44,
-        height: 44,
+        width: 44.w,
+        height: 44.h,
         decoration: BoxDecoration(
           color: iconColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
         ),
         child: Icon(
           icon,
           color: iconColor,
-          size: 22,
+          size: 22.r,
         ),
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           color: Colors.black87,
         ),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         FontAwesomeIcons.chevronRight,
-        size: 14,
+        size: 14.r,
         color: Colors.grey,
       ),
       onTap: onTap,

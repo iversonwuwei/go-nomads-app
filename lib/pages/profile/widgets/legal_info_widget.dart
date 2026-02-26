@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 法律信息入口组件（用于 Profile 页面，工信部/腾讯合规要求）
 /// Legal info entry widget (Tencent app store compliance - permanent entry)
@@ -16,11 +17,11 @@ class LegalInfoWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -35,7 +36,7 @@ class LegalInfoWidget extends StatelessWidget {
             title: l10n.termsAndConditions,
             onTap: () => Get.toNamed(AppRoutes.termsOfService),
           ),
-          const Divider(height: 1, indent: 60, endIndent: 16),
+          Divider(height: 1, indent: 60.w, endIndent: 16.w),
           // 隐私政策
           _LegalItem(
             icon: FontAwesomeIcons.shieldHalved,
@@ -72,32 +73,32 @@ class _LegalItem extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(icon, color: iconColor, size: 20),
+              child: Icon(icon, color: iconColor, size: 20.r),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14.w),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 15,
+                style: TextStyle(
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF333333),
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               FontAwesomeIcons.chevronRight,
               color: Color(0xFFCCCCCC),
-              size: 14,
+              size: 14.r,
             ),
           ],
         ),

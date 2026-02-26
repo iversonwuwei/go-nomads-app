@@ -4,6 +4,7 @@ import 'package:go_nomads_app/widgets/skills_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 技能和兴趣选择页面
 /// 用于用户注册流程或个人资料编辑
@@ -58,9 +59,9 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
             return TextButton(
               onPressed: _controller.isSaving.value ? null : _controller.saveSkillsAndInterests,
               child: _controller.isSaving.value
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                  ? SizedBox(
+                      width: 20.w,
+                      height: 20.h,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text(
@@ -95,13 +96,13 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
+              blurRadius: 10.r,
             ),
           ],
         ),
@@ -117,15 +118,15 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                         '已选择',
                         style: TextStyle(
                           color: Colors.grey[600],
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         '技能 ${_controller.selectedSkills.length}/10  ·  兴趣 ${_controller.selectedInterests.length}/15',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 16.sp,
                         ),
                       ),
                     ],
@@ -135,12 +136,12 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                         ? null
                         : _controller.saveSkillsAndInterests,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
                     ),
                     child: _controller.isSaving.value
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.h,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('保存'),

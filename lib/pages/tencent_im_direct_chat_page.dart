@@ -19,6 +19,7 @@ import 'package:tencent_cloud_chat_sdk/enum/message_elem_type.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 
 import 'member_detail_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 上传中的图片信息
 class _UploadingImage {
@@ -225,10 +226,10 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
               backgroundImage: widget.user.avatarUrl != null ? NetworkImage(widget.user.avatarUrl!) : null,
               child: widget.user.avatarUrl == null ? Text(widget.user.name[0].toUpperCase()) : null,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Text(
               widget.user.name,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -253,8 +254,8 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
                 value: 'report',
                 child: Row(
                   children: [
-                    const Icon(FontAwesomeIcons.flag, size: 20, color: Colors.orange),
-                    const SizedBox(width: 12),
+                    Icon(FontAwesomeIcons.flag, size: 20.r, color: Colors.orange),
+                    SizedBox(width: 12.w),
                     Text(l10n.reportUser, style: const TextStyle(color: Colors.orange)),
                   ],
                 ),
@@ -280,7 +281,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       return ListView.builder(
         controller: _scrollController,
         reverse: true,
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: totalCount,
         itemBuilder: (context, index) {
           // 先显示上传中的图片（在最底部/最新位置）
@@ -301,7 +302,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
     final isImage = message.elemType == MessageElemType.V2TIM_ELEM_TYPE_IMAGE;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         mainAxisAlignment: isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,21 +317,21 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
                 backgroundImage: widget.user.avatarUrl != null ? NetworkImage(widget.user.avatarUrl!) : null,
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
           ],
           Flexible(
             // 图片消息不需要气泡背景，直接渲染
             child: isImage
                 ? _buildMessageContent(message, isSelf)
                 : Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                     decoration: BoxDecoration(
                       color: isSelf ? const Color(0xFFFF3838) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 4,
+                          blurRadius: 4.r,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -338,7 +339,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
                     child: _buildMessageContent(message, isSelf),
                   ),
           ),
-          if (isSelf) const SizedBox(width: 8),
+          if (isSelf) SizedBox(width: 8.w),
         ],
       ),
     );
@@ -351,7 +352,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       case MessageElemType.V2TIM_ELEM_TYPE_TEXT:
         return Text(
           message.textElem?.text ?? '',
-          style: TextStyle(fontSize: 15, color: textColor),
+          style: TextStyle(fontSize: 15.sp, color: textColor),
         );
 
       case MessageElemType.V2TIM_ELEM_TYPE_IMAGE:
@@ -375,8 +376,8 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FontAwesomeIcons.file, size: 14, color: textColor),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.file, size: 14.r, color: textColor),
+              SizedBox(width: 8.w),
               Flexible(
                 child: Text(
                   fileName,
@@ -390,7 +391,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
 
       case MessageElemType.V2TIM_ELEM_TYPE_FACE:
         final data = message.faceElem?.data ?? '';
-        return Text(data, style: const TextStyle(fontSize: 32));
+        return Text(data, style: TextStyle(fontSize: 32.sp));
 
       default:
         return Text('[消息]', style: TextStyle(color: textColor));
@@ -407,11 +408,11 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
     return GestureDetector(
       onTap: () => _showFullScreenImage(imageUrl),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 200,
-            maxHeight: 300,
+          constraints: BoxConstraints(
+            maxWidth: 200.w,
+            maxHeight: 300.h,
           ),
           child: _buildNetworkImage(imageUrl),
         ),
@@ -428,34 +429,34 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
         if (loadingProgress == null) return child;
         // 显示灰色占位框，带图片图标
         return Container(
-          width: 200,
-          height: 150,
+          width: 200.w,
+          height: 150.h,
           decoration: BoxDecoration(
             color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-          child: const Center(
+          child: Center(
             child: Icon(
               FontAwesomeIcons.image,
               color: Colors.grey,
-              size: 40,
+              size: 40.r,
             ),
           ),
         );
       },
       errorBuilder: (context, error, stackTrace) {
         return Container(
-          width: 200,
-          height: 150,
+          width: 200.w,
+          height: 150.h,
           decoration: BoxDecoration(
             color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-          child: const Column(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40),
-              SizedBox(height: 8),
+              Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40.r),
+              SizedBox(height: 8.h),
               Text('加载失败', style: TextStyle(color: Colors.grey)),
             ],
           ),
@@ -476,9 +477,9 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
   Widget _buildInputBar() {
     return Container(
       padding: EdgeInsets.only(
-        left: 8,
-        right: 8,
-        top: 8,
+        left: 8.w,
+        right: 8.w,
+        top: 8.h,
         bottom: MediaQuery.of(context).padding.bottom + 8,
       ),
       decoration: const BoxDecoration(
@@ -491,7 +492,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
           IconButton(
             icon: Icon(
               _isVoiceMode ? FontAwesomeIcons.keyboard : FontAwesomeIcons.microphone,
-              size: 20,
+              size: 20.r,
             ),
             color: const Color(0xFF666666),
             onPressed: () {
@@ -516,7 +517,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
           IconButton(
             icon: Icon(
               _showEmojiPanel ? FontAwesomeIcons.keyboard : FontAwesomeIcons.faceSmile,
-              size: 20,
+              size: 20.r,
             ),
             color: const Color(0xFF666666),
             onPressed: () {
@@ -545,7 +546,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
           ),
           // 更多按钮（图片、文件）
           IconButton(
-            icon: const Icon(FontAwesomeIcons.plus, size: 20),
+            icon: Icon(FontAwesomeIcons.plus, size: 20.r),
             color: const Color(0xFF666666),
             onPressed: _showMoreOptions,
           ),
@@ -554,16 +555,16 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
             GestureDetector(
               onTap: () => _sendTextMessage(_messageController.text),
               child: Container(
-                width: 36,
-                height: 36,
+                width: 36.w,
+                height: 36.h,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF3838),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(18.r),
                 ),
-                child: const Icon(
+                child: Icon(
                   FontAwesomeIcons.paperPlane,
                   color: Colors.white,
-                  size: 14,
+                  size: 14.r,
                 ),
               ),
             ),
@@ -580,12 +581,12 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       decoration: InputDecoration(
         hintText: '输入消息...',
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           borderSide: BorderSide.none,
         ),
         filled: true,
         fillColor: const Color(0xFFF5F5F5),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       ),
       onTap: () {
         // 点击输入框：关闭表情面板，显示系统键盘
@@ -609,21 +610,21 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
 
   Widget _buildEmojiPanel() {
     return Container(
-      height: 260,
+      height: 260.h,
       color: Colors.white,
       child: GridView.builder(
-        padding: const EdgeInsets.all(8),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        padding: EdgeInsets.all(8.w),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 8,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
+          mainAxisSpacing: 8.w,
+          crossAxisSpacing: 8.w,
         ),
         itemCount: _emojis.length,
         itemBuilder: (context, index) {
           return GestureDetector(
             onTap: () => _insertEmoji(_emojis[index]),
             child: Center(
-              child: Text(_emojis[index], style: const TextStyle(fontSize: 24)),
+              child: Text(_emojis[index], style: TextStyle(fontSize: 24.sp)),
             ),
           );
         },
@@ -660,7 +661,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -710,16 +711,16 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       child: Column(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 56.w,
+            height: 56.h,
             decoration: BoxDecoration(
               color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(icon, color: const Color(0xFF666666)),
           ),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          SizedBox(height: 8.h),
+          Text(label, style: TextStyle(fontSize: 12.sp)),
         ],
       ),
     );
@@ -863,7 +864,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
     final hasError = uploadingImage.errorMessage != null;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -873,30 +874,30 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  constraints: const BoxConstraints(
-                    maxWidth: 200,
-                    maxHeight: 200,
+                  constraints: BoxConstraints(
+                    maxWidth: 200.w,
+                    maxHeight: 200.h,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFF3838).withValues(alpha: 0.2),
-                        blurRadius: 8,
+                        blurRadius: 8.r,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     child: Stack(
                       children: [
                         // 本地图片预览
                         Image.file(
                           File(uploadingImage.localPath),
                           fit: BoxFit.cover,
-                          width: 150,
-                          height: 150,
+                          width: 150.w,
+                          height: 150.h,
                         ),
                         // 上传进度遮罩
                         Positioned.fill(
@@ -913,21 +914,21 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   hasError ? uploadingImage.errorMessage! : '发送中...',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: hasError ? const Color(0xFFFF3838) : const Color(0xFF999999),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Icon(
             hasError ? FontAwesomeIcons.circleExclamation : FontAwesomeIcons.cloudArrowUp,
-            size: 16,
+            size: 16.r,
             color: hasError
                 ? const Color(0xFFFF3838).withValues(alpha: 0.8)
                 : const Color(0xFFFF3838).withValues(alpha: 0.5),
@@ -943,8 +944,8 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 50,
-          height: 50,
+          width: 50.w,
+          height: 50.h,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -956,9 +957,9 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
               ),
               Text(
                 '${(uploadingImage.progress * 100).toInt()}%',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -974,37 +975,37 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(FontAwesomeIcons.circleExclamation, color: Colors.white, size: 24),
-        const SizedBox(height: 8),
+        Icon(FontAwesomeIcons.circleExclamation, color: Colors.white, size: 24.r),
+        SizedBox(height: 8.h),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             GestureDetector(
               onTap: () => _retryUpload(uploadingImage),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: const Text(
+                child: Text(
                   '重试',
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             GestureDetector(
               onTap: () => _removeUploadingImage(uploadingImage.id),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: const Text(
+                child: Text(
                   '取消',
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  style: TextStyle(color: Colors.white, fontSize: 12.sp),
                 ),
               ),
             ),
@@ -1112,11 +1113,11 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
         );
       },
       errorBuilder: (context, error, stackTrace) {
-        return const Column(
+        return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.image, color: Colors.grey, size: 60),
-            SizedBox(height: 16),
+            Icon(FontAwesomeIcons.image, color: Colors.grey, size: 60.r),
+            SizedBox(height: 16.h),
             Text('图片加载失败', style: TextStyle(color: Colors.grey)),
           ],
         );

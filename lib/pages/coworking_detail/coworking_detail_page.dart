@@ -14,6 +14,7 @@ import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_pricing_sp
 import 'package:go_nomads_app/pages/osm_navigation_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CoworkingDetailPage extends StatelessWidget {
   final CoworkingSpace space;
@@ -93,7 +94,7 @@ class CoworkingDetailPage extends StatelessWidget {
                   // Comments section
                   CoworkingDetailCommentsSection(controllerTag: _controllerTag),
 
-                  const SizedBox(height: 100),
+                  SizedBox(height: 100.h),
                 ],
               ),
             ),
@@ -108,13 +109,13 @@ class CoworkingDetailPage extends StatelessWidget {
 
   Widget _buildBottomBar(BuildContext context, AppLocalizations l10n, CoworkingDetailPageController controller) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(13),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
         ],
@@ -125,16 +126,16 @@ class CoworkingDetailPage extends StatelessWidget {
             child: OutlinedButton.icon(
               icon: const Icon(FontAwesomeIcons.diamondTurnRight),
               label: Text(l10n.directions),
-              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+              style: OutlinedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 16.h)),
               onPressed: () => Get.to(() => OSMNavigationPage(coworkingSpace: controller.space.value)),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Obx(() => ElevatedButton.icon(
                   icon: const Icon(FontAwesomeIcons.globe),
                   label: Text(l10n.visitWebsite),
-                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                  style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 16.h)),
                   onPressed: controller.space.value.contactInfo.hasWebsite
                       ? () => controller.launchURL(controller.space.value.contactInfo.website)
                       : null,

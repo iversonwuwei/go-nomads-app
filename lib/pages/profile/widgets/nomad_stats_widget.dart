@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 统计数据部分组件
 class NomadStatsWidget extends StatelessWidget {
@@ -25,58 +26,66 @@ class NomadStatsWidget extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Nomad Stats',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1a1a1a),
             ),
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _StatCard(
-                emoji: '🌍',
-                value: (stats?.countriesVisited ?? 0).toString(),
-                label: 'Countries',
-                isMobile: isMobile,
-              ),
-              _StatCard(
-                emoji: '🏙️',
-                value: (stats?.citiesLived ?? 0).toString(),
-                label: l10n.cities,
-                isMobile: isMobile,
-              ),
-              _StatCard(
-                emoji: '📅',
-                value: (stats?.daysNomading ?? 0).toString(),
-                label: 'Days nomading',
-                isMobile: isMobile,
-              ),
-              _ClickableStatCard(
-                emoji: '🤝',
-                value: (stats?.activeMeetups ?? 0).toString(),
-                label: 'Meetups',
-                isMobile: isMobile,
-                onTap: () => Get.toNamed(AppRoutes.myMeetups),
-              ),
-              _StatCard(
-                emoji: '✈️',
-                value: (stats?.tripsCompleted ?? 0).toString(),
-                label: 'Trips',
-                isMobile: isMobile,
-              ),
-              _ClickableStatCard(
-                emoji: '❤️',
-                value: (stats?.favoriteCitiesCount ?? favoriteCityCount).toString(),
-                label: 'Favorites',
-                isMobile: isMobile,
-                onTap: () => Get.toNamed(AppRoutes.favorites),
-              ),
-            ],
+          SizedBox(height: 16.h),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final spacing = 12.w;
+              final cardWidth = isMobile
+                  ? (constraints.maxWidth - spacing) / 2
+                  : 150.0;
+              return Wrap(
+                spacing: spacing,
+                runSpacing: 12.w,
+                children: [
+                  _StatCard(
+                    emoji: '🌍',
+                    value: (stats?.countriesVisited ?? 0).toString(),
+                    label: 'Countries',
+                    cardWidth: cardWidth,
+                  ),
+                  _StatCard(
+                    emoji: '🏙️',
+                    value: (stats?.citiesLived ?? 0).toString(),
+                    label: l10n.cities,
+                    cardWidth: cardWidth,
+                  ),
+                  _StatCard(
+                    emoji: '📅',
+                    value: (stats?.daysNomading ?? 0).toString(),
+                    label: 'Days nomading',
+                    cardWidth: cardWidth,
+                  ),
+                  _ClickableStatCard(
+                    emoji: '🤝',
+                    value: (stats?.activeMeetups ?? 0).toString(),
+                    label: 'Meetups',
+                    cardWidth: cardWidth,
+                    onTap: () => Get.toNamed(AppRoutes.myMeetups),
+                  ),
+                  _StatCard(
+                    emoji: '✈️',
+                    value: (stats?.tripsCompleted ?? 0).toString(),
+                    label: 'Trips',
+                    cardWidth: cardWidth,
+                  ),
+                  _ClickableStatCard(
+                    emoji: '❤️',
+                    value: (stats?.favoriteCitiesCount ?? favoriteCityCount).toString(),
+                    label: 'Favorites',
+                    cardWidth: cardWidth,
+                    onTap: () => Get.toNamed(AppRoutes.favorites),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       );
@@ -89,42 +98,42 @@ class _StatCard extends StatelessWidget {
   final String emoji;
   final String value;
   final String label;
-  final bool isMobile;
+  final double cardWidth;
 
   const _StatCard({
     required this.emoji,
     required this.value,
     required this.label,
-    required this.isMobile,
+    required this.cardWidth,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: isMobile ? ((Get.width - 44) / 2) : 150,
-      padding: const EdgeInsets.all(16),
+      width: cardWidth,
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 32)),
-          const SizedBox(height: 8),
+          Text(emoji, style: TextStyle(fontSize: 32.sp)),
+          SizedBox(height: 8.h),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 24,
+            style: TextStyle(
+              fontSize: 24.sp,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1a1a1a),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 13,
+            style: TextStyle(
+              fontSize: 13.sp,
               color: Color(0xFF6b7280),
               fontWeight: FontWeight.w500,
             ),
@@ -140,14 +149,14 @@ class _ClickableStatCard extends StatelessWidget {
   final String emoji;
   final String value;
   final String label;
-  final bool isMobile;
+  final double cardWidth;
   final VoidCallback? onTap;
 
   const _ClickableStatCard({
     required this.emoji,
     required this.value,
     required this.label,
-    required this.isMobile,
+    required this.cardWidth,
     this.onTap,
   });
 
@@ -156,42 +165,42 @@ class _ClickableStatCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: isMobile ? ((Get.width - 44) / 2) : 150,
-        padding: const EdgeInsets.all(16),
+        width: cardWidth,
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 32)),
-            const SizedBox(height: 8),
+            Text(emoji, style: TextStyle(fontSize: 32.sp)),
+            SizedBox(height: 8.h),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 24,
+              style: TextStyle(
+                fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a),
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontSize: 13.sp,
                     color: Color(0xFF6b7280),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 if (onTap != null) ...[
-                  const SizedBox(width: 4),
-                  const Icon(
+                  SizedBox(width: 4.w),
+                  Icon(
                     Icons.chevron_right,
-                    size: 14,
+                    size: 14.r,
                     color: Color(0xFF6b7280),
                   ),
                 ],

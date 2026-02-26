@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/change_password_page_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 邮箱信息区域 / Email info section
 class ChangePasswordEmailSection extends GetView<ChangePasswordController> {
@@ -11,10 +12,10 @@ class ChangePasswordEmailSection extends GetView<ChangePasswordController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
@@ -22,9 +23,9 @@ class ChangePasswordEmailSection extends GetView<ChangePasswordController> {
           Icon(
             FontAwesomeIcons.envelope,
             color: AppColors.icon,
-            size: 18,
+            size: 18.r,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -32,17 +33,17 @@ class ChangePasswordEmailSection extends GetView<ChangePasswordController> {
                 '账号邮箱',
                 style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Obx(() => Text(
                     controller.userEmail.value.isNotEmpty
                         ? controller.userEmail.value
                         : '未绑定邮箱',
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   )),

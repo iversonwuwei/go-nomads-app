@@ -8,6 +8,7 @@ import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Pros & Cons Tab - 优缺点标签页
 /// 使用 GetView 绑定 CityDetailController
@@ -34,14 +35,14 @@ class ProsConsTab extends GetView<CityDetailController> {
       return RefreshIndicator(
         onRefresh: () => prosConsController.loadCityProsCons(controller.cityId),
         child: ListView(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 80),
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 80.h),
           children: [
             // 优点部分
-            const Text(
+            Text(
               '优点',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             if (prosConsController.prosList.isEmpty)
               _EmptyProsConsState(
                 icon: FontAwesomeIcons.circleCheck,
@@ -59,14 +60,14 @@ class ProsConsTab extends GetView<CityDetailController> {
                     onVote: () => _handleVote(prosConsController, item),
                   )),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 挑战部分
-            const Text(
+            Text(
               '挑战',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             if (prosConsController.consList.isEmpty)
               _EmptyProsConsState(
                 icon: FontAwesomeIcons.ban,
@@ -129,19 +130,19 @@ class _ProsConsItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         child: Row(
           children: [
             Icon(
               isPro ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.ban,
               color: isPro ? Colors.green : Colors.red,
-              size: 24,
+              size: 24.r,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
-              child: Text(item.text, style: const TextStyle(fontSize: 15)),
+              child: Text(item.text, style: TextStyle(fontSize: 15.sp)),
             ),
             _VoteBadge(
               hasVoted: hasVoted,
@@ -175,12 +176,12 @@ class _VoteBadge extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           decoration: BoxDecoration(
             color: hasVoted ? Colors.green.withValues(alpha: 0.12) : const Color(0xFFFFEEF2),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: color.withValues(alpha: 0.35)),
           ),
           child: Column(
@@ -188,17 +189,17 @@ class _VoteBadge extends StatelessWidget {
             children: [
               Icon(
                 hasVoted ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp,
-                size: 18,
+                size: 18.r,
                 color: color,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 '$count',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color),
+                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold, color: color),
               ),
               Text(
                 hasVoted ? '取消' : '投票',
-                style: TextStyle(fontSize: 10, color: color),
+                style: TextStyle(fontSize: 10.sp, color: color),
               ),
             ],
           ),
@@ -229,40 +230,40 @@ class _EmptyProsConsState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      padding: EdgeInsets.symmetric(vertical: 40.h, horizontal: 20.w),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.withValues(alpha: 0.3), width: 1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 48, color: iconColor.withValues(alpha: 0.4)),
-          const SizedBox(height: 16),
+          Icon(icon, size: 48.r, color: iconColor.withValues(alpha: 0.4)),
+          SizedBox(height: 16.h),
           Text(
             title,
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             subtitle,
-            style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           OutlinedButton.icon(
             onPressed: onTap,
-            icon: const Icon(FontAwesomeIcons.plus, size: 18),
+            icon: Icon(FontAwesomeIcons.plus, size: 18.r),
             label: Text(buttonText),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.cityPrimary,
               side: const BorderSide(color: AppColors.cityPrimary),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
             ),
           ),
         ],

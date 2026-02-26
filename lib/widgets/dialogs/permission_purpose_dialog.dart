@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 权限用途说明对话框
 ///
@@ -181,72 +182,72 @@ class _PermissionPurposeBase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      insetPadding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 24.h),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
+        constraints: BoxConstraints(maxWidth: 400.w),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // 图标
               Container(
-                width: 64,
-                height: 64,
+                width: 64.w,
+                height: 64.h,
                 decoration: BoxDecoration(
                   color: iconColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 32, color: iconColor),
+                child: Icon(icon, size: 32.r, color: iconColor),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // 标题
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
 
               // 描述
               Text(
                 description,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: 14.sp,
                   color: AppColors.textSecondary,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 用途列表
               ...purposes.map((purpose) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: EdgeInsets.only(bottom: 10.h),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          margin: const EdgeInsets.only(top: 2),
-                          padding: const EdgeInsets.all(4),
+                          margin: EdgeInsets.only(top: 2.h),
+                          padding: EdgeInsets.all(4.w),
                           decoration: BoxDecoration(
                             color: iconColor.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(6.r),
                           ),
-                          child: Icon(purpose.icon, size: 16, color: iconColor),
+                          child: Icon(purpose.icon, size: 16.r, color: iconColor),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: 10.w),
                         Expanded(
                           child: Text(
                             purpose.text,
-                            style: const TextStyle(
-                              fontSize: 13,
+                            style: TextStyle(
+                              fontSize: 13.sp,
                               color: AppColors.textPrimary,
                               height: 1.4,
                             ),
@@ -256,25 +257,25 @@ class _PermissionPurposeBase extends StatelessWidget {
                     ),
                   )),
 
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
 
               // 隐私说明
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
                   color: Colors.grey.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.shield_outlined, size: 16, color: Colors.grey[600]),
-                    const SizedBox(width: 8),
+                    Icon(Icons.shield_outlined, size: 16.r, color: Colors.grey[600]),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
                         note,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           color: Colors.grey[600],
                           height: 1.5,
                         ),
@@ -283,47 +284,47 @@ class _PermissionPurposeBase extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // 按钮
               SizedBox(
                 width: double.infinity,
-                height: 44,
+                height: 44.h,
                 child: ElevatedButton(
                   onPressed: () => Get.back(result: true),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: iconColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                     elevation: 0,
                   ),
                   child: Text(
                     confirmText,
-                    style: const TextStyle(
-                      fontSize: 15,
+                    style: TextStyle(
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               SizedBox(
                 width: double.infinity,
-                height: 44,
+                height: 44.h,
                 child: OutlinedButton(
                   onPressed: () => Get.back(result: false),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
                     side: const BorderSide(color: AppColors.border),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                   ),
                   child: Text(
                     cancelText,
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14.sp),
                   ),
                 ),
               ),

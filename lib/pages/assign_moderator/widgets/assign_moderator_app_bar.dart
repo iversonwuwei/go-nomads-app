@@ -3,6 +3,7 @@ import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 指定版主页面的 AppBar
 class AssignModeratorAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -42,7 +43,7 @@ class AssignModeratorAppBar extends StatelessWidget implements PreferredSizeWidg
         ),
         icon: Icon(
           controller.isAllSelected ? FontAwesomeIcons.squareCheck : FontAwesomeIcons.square,
-          size: 20,
+          size: 20.r,
         ),
         label: Text(
           controller.isAllSelected ? '取消全选' : '全选',

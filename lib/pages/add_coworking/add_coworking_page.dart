@@ -11,6 +11,7 @@ import 'package:go_nomads_app/pages/add_coworking/add_coworking_location_section
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_pricing_section.dart';
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_specs_section.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddCoworkingPage extends StatelessWidget {
   final String? cityId;
@@ -53,24 +54,24 @@ class AddCoworkingPage extends StatelessWidget {
               Form(
                 key: controller.formKey,
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AddCoworkingImageSection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       AddCoworkingBasicInfoSection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       AddCoworkingLocationSection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       AddCoworkingContactSection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       AddCoworkingPricingSection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       AddCoworkingSpecsSection(controllerTag: _tag),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       AddCoworkingAmenitiesSection(controllerTag: _tag),
-                      const SizedBox(height: 100),
+                      SizedBox(height: 100.h),
                     ],
                   ),
                 ),
@@ -91,7 +92,7 @@ class AddCoworkingPage extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(25), blurRadius: 10, offset: const Offset(0, -2))],
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(25), blurRadius: 10.r, offset: const Offset(0, -2))],
       ),
       child: Obx(() => ElevatedButton(
             onPressed: controller.isSubmitting.value
@@ -111,11 +112,11 @@ class AddCoworkingPage extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF4458),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
             ),
             child: Text(controller.isSubmitting.value ? l10n.submitting : l10n.submit,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
           )),
     );
   }

@@ -6,6 +6,7 @@ import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Innovation Projects List Page
 /// 创意项目列表页面 - GetX 标准模式（StatelessWidget）
@@ -38,9 +39,9 @@ class InnovationListPage extends StatelessWidget {
         leading: const AppBackButton(color: Color(0xFF1a1a1a)),
         title: Text(
           l10n.innovation,
-          style: const TextStyle(
+          style: TextStyle(
             color: Color(0xFF1a1a1a),
-            fontSize: 20,
+            fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),

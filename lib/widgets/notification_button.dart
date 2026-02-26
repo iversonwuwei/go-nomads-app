@@ -3,6 +3,7 @@ import 'package:go_nomads_app/features/notification/presentation/controllers/not
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 通知入口按钮（顶部栏使用）
 class NotificationButton extends StatelessWidget {
@@ -38,26 +39,26 @@ class NotificationButton extends StatelessWidget {
           // 未读数量徽章
           if (unreadCount > 0)
             Positioned(
-              right: 8,
-              top: 8,
+              right: 8.w,
+              top: 8.h,
               child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: unreadCount > 99 ? 4 : 6,
-                  vertical: 2,
+                  vertical: 2.h,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.red,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
-                constraints: const BoxConstraints(
-                  minWidth: 18,
-                  minHeight: 18,
+                constraints: BoxConstraints(
+                  minWidth: 18.w,
+                  minHeight: 18.h,
                 ),
                 child: Text(
                   unreadCount > 99 ? '99+' : '$unreadCount',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,

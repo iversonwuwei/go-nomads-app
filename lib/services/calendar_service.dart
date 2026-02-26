@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/dialogs/permission_purpose_dialog.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 日历服务 - 用于将事件添加到设备日历
 class CalendarService {
@@ -178,11 +179,11 @@ class CalendarService {
     final shouldAdd = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
             const Icon(Icons.calendar_today, color: Color(0xFFFF4458)),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Text(l10n.addToCalendar),
           ],
         ),
@@ -201,7 +202,7 @@ class CalendarService {
               backgroundColor: const Color(0xFFFF4458),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
             ),
             child: Text(l10n.addToCalendarButton),

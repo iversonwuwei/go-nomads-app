@@ -3,6 +3,7 @@ import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 首页搜索栏组件
 class HomeSearchBar extends GetView<HomePageController> {
@@ -13,40 +14,40 @@ class HomeSearchBar extends GetView<HomePageController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: AppColors.borderLight, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.magnifyingGlass, color: AppColors.textSecondary, size: 20),
-          const SizedBox(width: 12),
+          Icon(FontAwesomeIcons.magnifyingGlass, color: AppColors.textSecondary, size: 20.r),
+          SizedBox(width: 12.w),
           Expanded(
             child: TextField(
               controller: controller.searchController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search cities... (支持中英文搜索)',
                 hintStyle: TextStyle(
                   color: AppColors.textTertiary,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 14,
+                fontSize: 14.sp,
               ),
               onSubmitted: (value) {
                 if (value.trim().isNotEmpty) {
@@ -55,7 +56,7 @@ class HomeSearchBar extends GetView<HomePageController> {
               },
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           // 搜索按钮
           _SearchButton(controller: controller),
           // 清除按钮
@@ -83,18 +84,18 @@ class _SearchButton extends StatelessWidget {
           controller.clearSearch();
         }
       },
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(6.r),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: const Color(0xFFFF4458),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(6.r),
         ),
-        child: const Text(
+        child: Text(
           'Search',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 13,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -139,16 +140,16 @@ class _ClearButtonState extends State<_ClearButton> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         InkWell(
           onTap: () => widget.controller.clearSearch(),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           child: Container(
-            padding: const EdgeInsets.all(6),
-            child: const Icon(
+            padding: EdgeInsets.all(6.w),
+            child: Icon(
               FontAwesomeIcons.xmark,
               color: AppColors.textSecondary,
-              size: 18,
+              size: 18.r,
             ),
           ),
         ),
@@ -172,10 +173,10 @@ class HomeSearchResultHint extends GetView<HomePageController> {
       final cityCount = controller.localCities.length;
 
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
             color: const Color(0xFFFF4458).withValues(alpha: 0.3),
             width: 1,
@@ -183,12 +184,12 @@ class HomeSearchResultHint extends GetView<HomePageController> {
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               FontAwesomeIcons.magnifyingGlass,
               color: Color(0xFFFF4458),
-              size: 20,
+              size: 20.r,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: RichText(
                 text: TextSpan(
@@ -220,16 +221,16 @@ class HomeSearchResultHint extends GetView<HomePageController> {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             InkWell(
               onTap: () => controller.clearSearch(),
-              borderRadius: BorderRadius.circular(4),
-              child: const Padding(
-                padding: EdgeInsets.all(4),
+              borderRadius: BorderRadius.circular(4.r),
+              child: Padding(
+                padding: EdgeInsets.all(4.w),
                 child: Icon(
                   FontAwesomeIcons.xmark,
                   color: AppColors.textSecondary,
-                  size: 18,
+                  size: 18.r,
                 ),
               ),
             ),
@@ -249,19 +250,19 @@ class HomeToolbar extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
+        Text(
           'Popular',
           style: TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
         IconButton(
-          icon: const FaIcon(
+          icon: FaIcon(
             FontAwesomeIcons.mapLocationDot,
             color: AppColors.textSecondary,
-            size: 20,
+            size: 20.r,
           ),
           onPressed: () => Get.toNamed('/global-map'),
         ),

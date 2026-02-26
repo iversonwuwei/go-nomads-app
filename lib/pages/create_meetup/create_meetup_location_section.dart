@@ -6,6 +6,7 @@ import 'package:go_nomads_app/widgets/location_picker_field.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CreateMeetupLocationSection extends StatelessWidget {
   final String controllerTag;
@@ -36,11 +37,11 @@ class CreateMeetupLocationSection extends StatelessWidget {
               },
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // Venue
-        Text(l10n.venue, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
-        const SizedBox(height: 8),
+        Text(l10n.venue, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.black87)),
+        SizedBox(height: 8.h),
         _buildVenueInput(context, l10n),
       ],
     );
@@ -59,23 +60,23 @@ class CreateMeetupLocationSection extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: l10n.enterVenue,
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8.r),
                           borderSide: const BorderSide(color: AppColors.borderLight)),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                         borderSide: BorderSide(
                             color: _c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty
                                 ? Theme.of(context).colorScheme.error
                                 : AppColors.borderLight),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                         borderSide: BorderSide(
                             color: _c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty
                                 ? Theme.of(context).colorScheme.error
                                 : const Color(0xFFFF4458)),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -87,19 +88,19 @@ class CreateMeetupLocationSection extends StatelessWidget {
                     },
                   )),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             SizedBox(
-              height: 48,
+              height: 48.h,
               child: ElevatedButton(
                 onPressed: () => _selectVenueFromMap(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF4458),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
                 ),
-                child: const Icon(FontAwesomeIcons.map, size: 20),
+                child: Icon(FontAwesomeIcons.map, size: 20.r),
               ),
             ),
           ],
@@ -107,9 +108,9 @@ class CreateMeetupLocationSection extends StatelessWidget {
         Obx(() {
           if (_c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty) {
             return Padding(
-              padding: const EdgeInsets.only(left: 8, top: 4),
+              padding: EdgeInsets.only(left: 8.w, top: 4.h),
               child: Text(_c.venueErrorText.value!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12.sp)),
             );
           }
           return const SizedBox.shrink();

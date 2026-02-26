@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 技能选择器组件
 class SkillsSelector extends StatefulWidget {
@@ -216,9 +217,9 @@ class _SkillsSelectorState extends State<SkillsSelector> {
               children: [
                 const Text('熟练度',
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Wrap(
-                  spacing: 8,
+                  spacing: 8.w,
                   children: ['Beginner', 'Intermediate', 'Advanced', 'Expert']
                       .map((level) {
                     return ChoiceChip(
@@ -236,10 +237,10 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 const Text('经验年限',
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
                     Expanded(
@@ -255,7 +256,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       ),
                     ),
                     SizedBox(
-                      width: 60,
+                      width: 60.w,
                       child: Text(
                         selectedYears == 0 ? '< 1年' : '$selectedYears 年',
                         textAlign: TextAlign.center,
@@ -329,9 +330,9 @@ class _SkillsSelectorState extends State<SkillsSelector> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(32.0),
+          padding: EdgeInsets.all(32.0.w),
           child: CircularProgressIndicator(),
         ),
       );
@@ -344,13 +345,13 @@ class _SkillsSelectorState extends State<SkillsSelector> {
       children: [
         // 搜索框
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0.w),
           child: TextField(
             decoration: InputDecoration(
               hintText: '搜索技能...',
               prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide(color: AppColors.border),
               ),
               filled: true,
@@ -365,20 +366,20 @@ class _SkillsSelectorState extends State<SkillsSelector> {
         // 类别筛选
         if (_searchQuery.isEmpty)
           SizedBox(
-            height: 50,
+            height: 50.h,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
               children: [
                 _CategoryChip(
                   label: '全部',
                   isSelected: _selectedCategory == null,
                   onTap: () => setState(() => _selectedCategory = null),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 ..._skillsByCategory.map((category) {
                   return Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: EdgeInsets.only(right: 8.w),
                     child: _CategoryChip(
                       label: _getCategoryText(category.category),
                       isSelected: _selectedCategory == category.category,
@@ -391,38 +392,38 @@ class _SkillsSelectorState extends State<SkillsSelector> {
             ),
           ),
 
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
 
         // 已选择的技能
         if (_selectedSkills.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       '已选择',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
                       '${_selectedSkills.length}${widget.maxSelection > 0 ? ' / ${widget.maxSelection}' : ''}',
                       style: TextStyle(
                         color: AppColors.textSecondary,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 8.w,
+                  runSpacing: 8.w,
                   children: _selectedSkills.map((userSkill) {
                     return Chip(
                       avatar: Text(userSkill.icon ?? '💼'),
@@ -435,13 +436,13 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                             Text(
                               _getProficiencyText(userSkill.proficiencyLevel!),
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 10.sp,
                                 color: AppColors.textSecondary,
                               ),
                             ),
                         ],
                       ),
-                      deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
+                      deleteIcon: Icon(FontAwesomeIcons.xmark, size: 18.r),
                       onDeleted: () {
                         setState(() {
                           _selectedSkills.removeWhere(
@@ -454,7 +455,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                     );
                   }).toList(),
                 ),
-                const Divider(height: 24),
+                Divider(height: 24),
               ],
             ),
           ),
@@ -469,11 +470,11 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                   ),
                 )
               : ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
                   children: [
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 8.w,
+                      runSpacing: 8.w,
                       children: filteredSkills.map((skill) {
                         final isSelected =
                             _selectedSkills.any((s) => s.skillId == skill.id);
@@ -532,10 +533,10 @@ class _CategoryChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.accent : AppColors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected ? AppColors.accent : AppColors.border,
           ),

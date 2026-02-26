@@ -8,19 +8,20 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CoworkingVerificationBadge extends StatelessWidget {
   CoworkingVerificationBadge({
     super.key,
     required this.space,
     this.onVerified,
-    this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    this.padding,
     this.darkTheme = false,
   });
 
   final CoworkingSpace space;
   final void Function(CoworkingSpace updatedSpace)? onVerified;
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? padding;
   final bool darkTheme;
 
   final CoworkingStateController _coworkingController = Get.find<CoworkingStateController>();
@@ -163,10 +164,10 @@ class CoworkingVerificationBadge extends StatelessWidget {
       final String label = space.isVerified ? l10n.verified : l10n.unverified;
 
       final badge = Container(
-        padding: padding,
+        padding: padding ?? EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: darkTheme
               ? Border.all(
                   color: space.isVerified ? Colors.blue.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.3),
@@ -179,38 +180,38 @@ class CoworkingVerificationBadge extends StatelessWidget {
           children: [
             if (isVerifying)
               SizedBox(
-                width: 14,
-                height: 14,
+                width: 14.w,
+                height: 14.h,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
             else
-              Icon(iconData, size: 14, color: Colors.white),
-            const SizedBox(width: 4),
+              Icon(iconData, size: 14.r, color: Colors.white),
+            SizedBox(width: 4.w),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
               ),
             ),
             // 显示验证人数（未验证时显示）
             if (!space.isVerified) ...[
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
                   '$verificationVotes',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -227,7 +228,7 @@ class CoworkingVerificationBadge extends StatelessWidget {
       return Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           onTap: () => _handleTap(context),
           child: badge,
         ),

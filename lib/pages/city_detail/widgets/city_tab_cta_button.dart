@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 统一的 Tab 顶部主操作按钮样式
 class CityTabCtaButton extends StatelessWidget {
@@ -25,11 +26,11 @@ class CityTabCtaButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: foregroundColor,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
         onPressed: onPressed,
-        icon: Icon(icon, size: 14),
+        icon: Icon(icon, size: 14.r),
         label: Text(label),
       ),
     );

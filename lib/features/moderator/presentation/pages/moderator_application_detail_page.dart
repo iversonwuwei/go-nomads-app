@@ -12,6 +12,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 版主申请详情页面（管理员审核使用）
 class ModeratorApplicationDetailPage extends StatefulWidget {
@@ -113,7 +114,7 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('确定要拒绝 ${_application?.userName ?? "该用户"} 的版主申请吗？'),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 TextField(
                   controller: reasonController,
                   decoration: const InputDecoration(
@@ -261,19 +262,19 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FaIcon(FontAwesomeIcons.circleExclamation, size: 56, color: AppColors.iconSecondary),
-            const SizedBox(height: 16),
+            FaIcon(FontAwesomeIcons.circleExclamation, size: 56.r, color: AppColors.iconSecondary),
+            SizedBox(height: 16.h),
             Text(
               '加载失败',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               _error!,
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             ElevatedButton(
               onPressed: _loadApplication,
               child: const Text('重试'),
@@ -288,11 +289,11 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FaIcon(FontAwesomeIcons.inbox, size: 56, color: AppColors.iconSecondary),
-            const SizedBox(height: 16),
+            FaIcon(FontAwesomeIcons.inbox, size: 56.r, color: AppColors.iconSecondary),
+            SizedBox(height: 16.h),
             Text(
               '申请不存在',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -300,25 +301,25 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 申请状态卡片
           _buildStatusCard(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 申请人信息
           _buildApplicantCard(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 申请城市
           _buildCityCard(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 申请理由
           _buildReasonCard(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 操作按钮（仅待处理状态显示）
           if (_application!.isPending) _buildActionButtons(),
@@ -355,18 +356,18 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: FaIcon(statusIcon, color: statusColor, size: 28),
+              child: FaIcon(statusIcon, color: statusColor, size: 28.r),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,25 +375,25 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
                   Text(
                     app.statusText,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: statusColor,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     '申请时间: ${_formatDateTime(app.createdAt)}',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: Colors.grey[600],
                     ),
                   ),
                   if (app.processedAt != null) ...[
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       '处理时间: ${_formatDateTime(app.processedAt!)}',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -411,44 +412,44 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '申请人信息',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[700],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(
               children: [
                 SafeCircleAvatar(
                   imageUrl: app.userAvatar,
                   radius: 28,
-                  placeholder: const FaIcon(FontAwesomeIcons.user, size: 24),
-                  errorWidget: const FaIcon(FontAwesomeIcons.user, size: 24),
+                  placeholder: FaIcon(FontAwesomeIcons.user, size: 24.r),
+                  errorWidget: FaIcon(FontAwesomeIcons.user, size: 24.r),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         app.userName ?? '未知用户',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         'ID: ${app.userId}',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[500],
                         ),
                       ),
@@ -468,39 +469,39 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '申请管理的城市',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[700],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
                     color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: FaIcon(
                     FontAwesomeIcons.city,
                     color: AppColors.accent,
-                    size: 24,
+                    size: 24.r,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Text(
                     app.cityName ?? '未知城市',
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -518,30 +519,30 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               '申请理由',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[700],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
                 app.reason.isNotEmpty ? app.reason : '未填写申请理由',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   color: app.reason.isNotEmpty ? Colors.black87 : Colors.grey[500],
                   height: 1.5,
                 ),
@@ -550,28 +551,28 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
             // 如果被拒绝，显示拒绝原因
             if (app.isRejected && app.rejectionReason != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
                 '拒绝原因',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.red[700],
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   color: Colors.red[50],
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(color: Colors.red[200]!),
                 ),
                 child: Text(
                   app.rejectionReason!,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     color: Colors.red[800],
                     height: 1.5,
                   ),
@@ -591,37 +592,37 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
           child: OutlinedButton.icon(
             onPressed: _isProcessing ? null : _handleReject,
             icon: _isProcessing
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
+                ? SizedBox(
+                    width: 18.w,
+                    height: 18.h,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const FaIcon(FontAwesomeIcons.xmark, size: 18),
+                : FaIcon(FontAwesomeIcons.xmark, size: 18.r),
             label: const Text('拒绝'),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w),
         Expanded(
           child: FilledButton.icon(
             onPressed: _isProcessing ? null : _handleApprove,
             icon: _isProcessing
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
+                ? SizedBox(
+                    width: 18.w,
+                    height: 18.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: Colors.white,
                     ),
                   )
-                : const FaIcon(FontAwesomeIcons.check, size: 18),
+                : FaIcon(FontAwesomeIcons.check, size: 18.r),
             label: const Text('通过'),
             style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
             ),
           ),
         ),
@@ -635,17 +636,17 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
       child: OutlinedButton.icon(
         onPressed: _isProcessing ? null : _handleRevoke,
         icon: _isProcessing
-            ? const SizedBox(
-                width: 18,
-                height: 18,
+            ? SizedBox(
+                width: 18.w,
+                height: 18.h,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const FaIcon(FontAwesomeIcons.userSlash, size: 18),
+            : FaIcon(FontAwesomeIcons.userSlash, size: 18.r),
         label: const Text('撤销版主资格'),
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.red,
           side: const BorderSide(color: Colors.red),
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: EdgeInsets.symmetric(vertical: 14.h),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 步骤1：输入邮箱或手机号 / Step 1: Enter email or phone
 class ForgotPasswordAccountStep extends GetView<ForgotPasswordController> {
@@ -10,47 +11,47 @@ class ForgotPasswordAccountStep extends GetView<ForgotPasswordController> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           // 图标
           Center(
             child: Container(
-              width: 72,
-              height: 72,
+              width: 72.w,
+              height: 72.h,
               decoration: BoxDecoration(
                 color: AppColors.accent.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.lock_reset, size: 36, color: AppColors.accent),
+              child: Icon(Icons.lock_reset, size: 36.r, color: AppColors.accent),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // 说明文字
           Center(
             child: Text(
               '请输入您的邮箱或手机号\n我们将发送验证码帮助您重置密码',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 15.sp,
                 color: AppColors.textSecondary,
                 height: 1.5,
               ),
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
           // 输入框
           Text(
             '邮箱或手机号',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           TextField(
             controller: controller.accountController,
             keyboardType: TextInputType.emailAddress,
@@ -62,24 +63,24 @@ class ForgotPasswordAccountStep extends GetView<ForgotPasswordController> {
               filled: true,
               fillColor: Colors.grey.shade50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
                 borderSide: BorderSide(color: Colors.grey.shade200),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
                 borderSide: BorderSide(color: Colors.grey.shade200),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
                 borderSide: BorderSide(color: AppColors.accent),
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // 发送验证码按钮
           Obx(() => SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 48.h,
                 child: ElevatedButton(
                   onPressed: controller.isSendingCode.value
                       ? null
@@ -90,23 +91,23 @@ class ForgotPasswordAccountStep extends GetView<ForgotPasswordController> {
                     disabledBackgroundColor:
                         AppColors.accent.withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                     elevation: 0,
                   ),
                   child: controller.isSendingCode.value
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
+                      ? SizedBox(
+                          width: 20.w,
+                          height: 20.h,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           '发送验证码',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

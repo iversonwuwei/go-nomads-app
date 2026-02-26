@@ -5,6 +5,7 @@ import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_se
 import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_user_list.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 指定版主页面 - 使用 GetView 模式
 class AssignModeratorPage extends GetView<AssignModeratorController> {

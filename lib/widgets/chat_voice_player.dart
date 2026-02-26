@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 语音消息播放器
 ///
@@ -265,14 +266,14 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
       onTap: _togglePlay,
       child: Container(
         width: width,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(widget.isMe ? 16 : 4),
             topRight: Radius.circular(widget.isMe ? 4 : 16),
-            bottomLeft: const Radius.circular(16),
-            bottomRight: const Radius.circular(16),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(16.r),
           ),
         ),
         child: Row(
@@ -283,29 +284,29 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
                   Text(
                     '${widget.duration}"',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: contentColor,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   // 波形
                   Expanded(child: _buildWaveform(iconColor, true)),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   // 播放图标
                   _buildPlayIcon(iconColor),
                 ]
               : [
                   // 播放图标
                   _buildPlayIcon(iconColor),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   // 波形
                   Expanded(child: _buildWaveform(iconColor, false)),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   // 时长
                   Text(
                     '${widget.duration}"',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: contentColor,
                     ),
                   ),
@@ -319,7 +320,7 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
     return Icon(
       _isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play,
       color: color,
-      size: 14,
+      size: 14.r,
     );
   }
 
@@ -342,11 +343,11 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
             final animatedHeight = baseHeights[index] + (animValue * 6);
 
             return Container(
-              width: 3,
+              width: 3.w,
               height: animatedHeight.clamp(4.0, 20.0),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(1.5),
+                borderRadius: BorderRadius.circular(1.5.r),
               ),
             );
           }),
@@ -458,7 +459,7 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
       onTap: _togglePlay,
       child: Container(
         width: width,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: widget.isMe ? _buildRightAlignedContent() : _buildLeftAlignedContent(),
@@ -472,10 +473,10 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
     return [
       // 播放/暂停按钮
       _buildPlayButton(),
-      const SizedBox(width: 10),
+      SizedBox(width: 10.w),
       // 音频波形
       Expanded(child: _buildWaveform()),
-      const SizedBox(width: 10),
+      SizedBox(width: 10.w),
       // 时长
       _buildDuration(),
     ];
@@ -486,10 +487,10 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
     return [
       // 时长
       _buildDuration(),
-      const SizedBox(width: 10),
+      SizedBox(width: 10.w),
       // 音频波形
       Expanded(child: _buildWaveform()),
-      const SizedBox(width: 10),
+      SizedBox(width: 10.w),
       // 播放/暂停按钮
       _buildPlayButton(),
     ];
@@ -499,8 +500,8 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
   Widget _buildPlayButton() {
     if (_isLoading) {
       return SizedBox(
-        width: 24,
-        height: 24,
+        width: 24.w,
+        height: 24.h,
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor: AlwaysStoppedAnimation<Color>(widget.iconColor),
@@ -509,8 +510,8 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
     }
 
     return Container(
-      width: 32,
-      height: 32,
+      width: 32.w,
+      height: 32.h,
       decoration: BoxDecoration(
         color: widget.iconColor.withValues(alpha: 0.2),
         shape: BoxShape.circle,
@@ -519,7 +520,7 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
         child: Icon(
           _isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play,
           color: widget.iconColor,
-          size: 14,
+          size: 14.r,
         ),
       ),
     );
@@ -531,7 +532,7 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
       animation: _waveController,
       builder: (context, child) {
         return SizedBox(
-          height: 24,
+          height: 24.h,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -551,11 +552,11 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
               final animatedHeight = baseHeights[index] + (animValue * 8);
 
               return Container(
-                width: 3,
+                width: 3.w,
                 height: animatedHeight.clamp(4.0, 24.0),
                 decoration: BoxDecoration(
                   color: widget.iconColor.withValues(alpha: _isPlaying ? 1.0 : 0.7),
-                  borderRadius: BorderRadius.circular(1.5),
+                  borderRadius: BorderRadius.circular(1.5.r),
                 ),
               );
             }),
@@ -570,7 +571,7 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
     return Text(
       _formatDuration(widget.duration),
       style: TextStyle(
-        fontSize: 13,
+        fontSize: 13.sp,
         color: widget.textColor,
         fontWeight: FontWeight.w500,
       ),

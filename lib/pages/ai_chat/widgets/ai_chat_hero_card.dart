@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 顶部 Hero 卡片
 class AiChatHeroCard extends StatelessWidget {
@@ -20,11 +21,11 @@ class AiChatHeroCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [Color(0xFF0EA5E9), Color(0xFF2563EB)],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF2563EB).withValues(alpha: 0.15),
-            blurRadius: 18,
+            blurRadius: 18.r,
             offset: const Offset(0, 10),
           ),
         ],
@@ -33,7 +34,7 @@ class AiChatHeroCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildIcon(),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(child: _buildContent(theme)),
         ],
       ),
@@ -46,10 +47,10 @@ class AiChatHeroCard extends StatelessWidget {
       width: isMobile ? 48 : 56,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
       ),
-      child: const Center(
-        child: FaIcon(FontAwesomeIcons.robot, color: Colors.white, size: 22),
+      child: Center(
+        child: FaIcon(FontAwesomeIcons.robot, color: Colors.white, size: 22.r),
       ),
     );
   }
@@ -65,7 +66,7 @@ class AiChatHeroCard extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         Text(
           '用流式对话聊攻略、问路线、生成行程草稿。',
           style: theme.textTheme.bodyMedium?.copyWith(

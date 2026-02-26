@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 搜索结果列表（覆盖在地图上方）
 /// Search results overlay list with pagination support
@@ -15,14 +16,14 @@ class MapPickerSearchResults extends GetView<MapPickerController> {
       if (results.isEmpty) return const SizedBox.shrink();
 
       return Positioned(
-        left: 16,
-        right: 16,
-        top: 16,
+        left: 16.w,
+        right: 16.w,
+        top: 16.h,
         child: Material(
           elevation: 4,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 240),
+            constraints: BoxConstraints(maxHeight: 240.h),
             child: ListView.separated(
               controller: controller.searchScrollController,
               shrinkWrap: true,
@@ -64,27 +65,27 @@ class _SearchResultTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 图标
             Container(
-              width: 36,
-              height: 36,
+              width: 36.w,
+              height: 36.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFFF4458).withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 FontAwesomeIcons.locationDot,
-                size: 16,
+                size: 16.r,
                 color: Color(0xFFFF4458),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             // 文字内容
             Expanded(
               child: Column(
@@ -94,20 +95,20 @@ class _SearchResultTile extends StatelessWidget {
                     result.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 15,
+                    style: TextStyle(
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w700,
                       color: Colors.black87,
                     ),
                   ),
                   if (result.subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Text(
                       result.subtitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         color: Colors.grey[700],
                         height: 1.35,
                       ),
@@ -116,8 +117,8 @@ class _SearchResultTile extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+            SizedBox(width: 8.w),
+            Icon(Icons.chevron_right, color: Colors.grey, size: 20.r),
           ],
         ),
       ),
@@ -131,20 +132,20 @@ class _LoadMoreIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 14),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 14.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 18,
-            height: 18,
+            width: 18.w,
+            height: 18.h,
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
-          SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Text(
             '加载更多... / Loading more...',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13.sp, color: Colors.grey),
           ),
         ],
       ),

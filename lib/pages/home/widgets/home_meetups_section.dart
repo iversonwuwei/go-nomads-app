@@ -11,6 +11,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Meetups 区域组件
 class HomeMeetupsSection extends StatelessWidget {
@@ -47,10 +48,10 @@ class HomeMeetupsSection extends StatelessWidget {
       children: [
         // 标题骨架
         _buildHeaderSkeleton(),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
         // 横向卡片骨架
         SizedBox(
-          height: 300,
+          height: 300.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: 3,
@@ -69,30 +70,30 @@ class HomeMeetupsSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 180,
-              height: 28,
+              width: 180.w,
+              height: 28.h,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Container(
-              width: 120,
-              height: 14,
+              width: 120.w,
+              height: 14.h,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
             ),
           ],
         ),
         Container(
-          width: 80,
-          height: 40,
+          width: 80.w,
+          height: 40.h,
           decoration: BoxDecoration(
             color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
         ),
       ],
@@ -101,15 +102,15 @@ class HomeMeetupsSection extends StatelessWidget {
 
   Widget _buildMeetupCardSkeleton() {
     return Container(
-      width: 280,
-      margin: const EdgeInsets.only(right: 16),
+      width: 280.w,
+      margin: EdgeInsets.only(right: 16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(13),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -119,44 +120,44 @@ class HomeMeetupsSection extends StatelessWidget {
         children: [
           // 封面图
           Container(
-            height: 140,
+            height: 140.h,
             decoration: BoxDecoration(
               color: Colors.grey[200],
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 标题
                 Container(
-                  width: 200,
-                  height: 20,
+                  width: 200.w,
+                  height: 20.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 // 时间
                 Container(
-                  width: 150,
-                  height: 14,
+                  width: 150.w,
+                  height: 14.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 // 地点
                 Container(
-                  width: 180,
-                  height: 14,
+                  width: 180.w,
+                  height: 14.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
               ],
@@ -175,12 +176,12 @@ class HomeMeetupsSection extends StatelessWidget {
       children: [
         // 标题栏
         _buildHeader(context, l10n, upcomingMeetups.length),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
         // Meetup 列表
         _buildMeetupList(upcomingMeetups),
         // 移动端查看全部按钮
         if (isMobile) ...[
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           _buildViewAllButton(l10n),
         ],
       ],
@@ -196,16 +197,16 @@ class HomeMeetupsSection extends StatelessWidget {
           children: [
             Text(
               l10n.nextMeetups,
-              style: const TextStyle(
-                fontSize: 28,
+              style: TextStyle(
+                fontSize: 28.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               l10n.upcomingEventsCount(count),
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -213,7 +214,7 @@ class HomeMeetupsSection extends StatelessWidget {
           children: [
             _buildCreateButton(context, l10n),
             if (!isMobile) ...[
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               _buildViewAllButtonDesktop(l10n),
             ],
           ],
@@ -230,7 +231,7 @@ class HomeMeetupsSection extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
                   )
               : () => AppToast.warning(l10n.pleaseLoginToCreateMeetup, title: l10n.loginRequired),
-          icon: const Icon(FontAwesomeIcons.plus, size: 18),
+          icon: Icon(FontAwesomeIcons.plus, size: 18.r),
           label: Text(isMobile ? l10n.create : l10n.createMeetup),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFFF4458),
@@ -239,7 +240,7 @@ class HomeMeetupsSection extends StatelessWidget {
               horizontal: isMobile ? 12 : 16,
               vertical: isMobile ? 8 : 12,
             ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           ),
         ));
   }
@@ -247,26 +248,26 @@ class HomeMeetupsSection extends StatelessWidget {
   Widget _buildViewAllButtonDesktop(AppLocalizations l10n) {
     return OutlinedButton.icon(
       onPressed: () => Get.toNamed(AppRoutes.meetupsList),
-      icon: const Icon(FontAwesomeIcons.arrowRight, size: 20, color: Color(0xFFFF4458)),
+      icon: Icon(FontAwesomeIcons.arrowRight, size: 20.r, color: Color(0xFFFF4458)),
       label: Text(
         l10n.viewAllMeetups,
-        style: const TextStyle(
+        style: TextStyle(
           color: Color(0xFFFF4458),
-          fontSize: 15,
+          fontSize: 15.sp,
           fontWeight: FontWeight.w600,
         ),
       ),
       style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        side: const BorderSide(color: Color(0xFFFF4458), width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+        side: BorderSide(color: Color(0xFFFF4458), width: 1.5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
       ),
     );
   }
 
   Widget _buildMeetupList(List upcomingMeetups) {
     return SizedBox(
-      height: 300,
+      height: 300.h,
       child: NotificationListener<ScrollNotification>(
         onNotification: (scrollInfo) {
           if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
@@ -293,11 +294,11 @@ class HomeMeetupsSection extends StatelessWidget {
 
   Widget _buildLoadMoreIndicator() {
     return Container(
-      width: 60,
-      margin: const EdgeInsets.only(left: 12),
+      width: 60.w,
+      margin: EdgeInsets.only(left: 12.w),
       child: Center(
         child: Obx(() => _meetupController.isLoadingMore.value
-            ? const CircularProgressIndicator(
+            ? CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
               )
@@ -310,19 +311,19 @@ class HomeMeetupsSection extends StatelessWidget {
     return Center(
       child: OutlinedButton.icon(
         onPressed: () => Get.toNamed(AppRoutes.meetupsList),
-        icon: const Icon(FontAwesomeIcons.arrowRight, size: 20, color: Color(0xFFFF4458)),
+        icon: Icon(FontAwesomeIcons.arrowRight, size: 20.r, color: Color(0xFFFF4458)),
         label: Text(
           l10n.viewAllMeetups,
-          style: const TextStyle(
+          style: TextStyle(
             color: Color(0xFFFF4458),
             fontWeight: FontWeight.w600,
-            fontSize: 15,
+            fontSize: 15.sp,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          side: const BorderSide(color: Color(0xFFFF4458), width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+          side: BorderSide(color: Color(0xFFFF4458), width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
         ),
       ),
     );
@@ -367,7 +368,7 @@ class HomeMeetupEmptyState extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             'Be the first to create a meetup and connect\nwith fellow nomads in your city',
             textAlign: TextAlign.center,
@@ -383,10 +384,10 @@ class HomeMeetupEmptyState extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
             ),
-            icon: const Icon(FontAwesomeIcons.circlePlus, size: 20),
-            label: const Text(
+            icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
+            label: Text(
               'Create Meetup',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
@@ -396,7 +397,7 @@ class HomeMeetupEmptyState extends StatelessWidget {
                 vertical: isMobile ? 14 : 16,
               ),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
             ),
           ),
         ],

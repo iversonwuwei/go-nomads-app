@@ -9,6 +9,7 @@ import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 import 'add_review_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Reviews 数据管理列表页面 - 使用独立数据集
 class ManageReviewsPage extends StatefulWidget {
@@ -111,13 +112,13 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(FontAwesomeIcons.commentDots, size: 80, color: Colors.grey[300]),
-                const SizedBox(height: 16),
+                Icon(FontAwesomeIcons.commentDots, size: 80.r, color: Colors.grey[300]),
+                SizedBox(height: 16.h),
                 Text(
                   '暂无评论数据',
-                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 18.sp, color: Colors.grey[600]),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 ElevatedButton.icon(
                   onPressed: () async {
                     await NavigationUtil.toWithCallback<Map<String, dynamic>>(
@@ -142,25 +143,25 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
 
         return ListView.builder(
           controller: _controller.scrollController,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           itemCount: _controller.reviews.length + 1,
           itemBuilder: (context, index) {
             // 底部加载指示器
             if (index == _controller.reviews.length) {
               return Obx(() {
                 if (_controller.isLoadingMore.value) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
+                  return Padding(
+                    padding: EdgeInsets.all(16.w),
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
                 if (!_controller.hasMore.value) {
                   return Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     child: Center(
                       child: Text(
                         '已加载全部 ${_controller.reviews.length} 条评论',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                        style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
                       ),
                     ),
                   );

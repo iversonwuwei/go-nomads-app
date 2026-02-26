@@ -54,7 +54,7 @@ class HotelDetailPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FontAwesomeIcons.circleExclamation, size: 64, color: Colors.grey[400]),
+          Icon(FontAwesomeIcons.circleExclamation, size: 64.r, color: Colors.grey[400]),
           SizedBox(height: 16.h),
           Text(
             controller.error.value.isNotEmpty ? controller.error.value : 'Hotel not found',
@@ -81,8 +81,8 @@ class HotelDetailPage extends StatelessWidget {
           flexibleSpace: FlexibleSpaceBar(
             title: Text(
               hotel.name,
-              style: const TextStyle(
-                shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+              style: TextStyle(
+                shadows: [Shadow(color: Colors.black, blurRadius: 4.r)],
               ),
             ),
             background: hotel.images.isNotEmpty
@@ -94,7 +94,7 @@ class HotelDetailPage extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           color: Colors.grey[300],
-                          child: const Icon(FontAwesomeIcons.hotel, size: 64),
+                          child: Icon(FontAwesomeIcons.hotel, size: 64.r),
                         ),
                       );
                     },
@@ -102,7 +102,7 @@ class HotelDetailPage extends StatelessWidget {
                 : Container(
                     color: Colors.grey[300],
                     child: Center(
-                      child: Icon(FontAwesomeIcons.hotel, size: 64, color: Colors.grey[400]),
+                      child: Icon(FontAwesomeIcons.hotel, size: 64.r, color: Colors.grey[400]),
                     ),
                   ),
           ),

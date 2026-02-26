@@ -5,6 +5,7 @@ import 'package:go_nomads_app/controllers/create_meetup_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CreateMeetupImagesSection extends StatelessWidget {
   final String controllerTag;
@@ -20,13 +21,13 @@ class CreateMeetupImagesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.venuePhotos, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
-        const SizedBox(height: 8),
+        Text(l10n.venuePhotos, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.black87)),
+        SizedBox(height: 8.h),
         Obx(() => Text(
           l10n.addVenuePhotosCount(_c.existingImageUrls.length + _c.selectedImages.length),
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
         )),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Obx(() => _c.existingImageUrls.isNotEmpty || _c.selectedImages.isNotEmpty
             ? _buildImageGrid(context, l10n)
             : _buildEmptyImagePlaceholder(context, l10n)),
@@ -41,7 +42,7 @@ class CreateMeetupImagesSection extends StatelessWidget {
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 8, mainAxisSpacing: 8, childAspectRatio: 1),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 8.w, mainAxisSpacing: 8.w, childAspectRatio: 1),
         itemCount: totalImages + 1,
         itemBuilder: (context, index) {
           if (index == totalImages) {
@@ -61,15 +62,15 @@ class CreateMeetupImagesSection extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: totalImages < 10 ? const Color(0xFFFF4458) : Colors.grey.shade300, width: 2),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           color: totalImages < 10 ? const Color(0xFFFF4458).withValues(alpha: 0.05) : Colors.grey.shade100,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.photoFilm, size: 32, color: totalImages < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400),
-            const SizedBox(height: 4),
-            Text(l10n.addPhoto, style: TextStyle(fontSize: 11, color: totalImages < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400)),
+            Icon(FontAwesomeIcons.photoFilm, size: 32.r, color: totalImages < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400),
+            SizedBox(height: 4.h),
+            Text(l10n.addPhoto, style: TextStyle(fontSize: 11.sp, color: totalImages < 10 ? const Color(0xFFFF4458) : Colors.grey.shade400)),
           ],
         ),
       ),
@@ -81,7 +82,7 @@ class CreateMeetupImagesSection extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           child: isExistingImage
               ? Image.network(
                   _c.existingImageUrls[index],
@@ -103,25 +104,25 @@ class CreateMeetupImagesSection extends StatelessWidget {
               : Image.file(File(_c.selectedImages[index - _c.existingImageUrls.length].path), fit: BoxFit.cover),
         ),
         Positioned(
-          top: 4,
-          right: 4,
+          top: 4.h,
+          right: 4.w,
           child: InkWell(
             onTap: () => isExistingImage ? _c.removeExistingImage(index) : _c.removeImage(index - _c.existingImageUrls.length),
             child: Container(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(4.w),
               decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-              child: const Icon(FontAwesomeIcons.xmark, size: 16, color: Colors.white),
+              child: Icon(FontAwesomeIcons.xmark, size: 16.r, color: Colors.white),
             ),
           ),
         ),
         if (index == 0)
           Positioned(
-            bottom: 4,
-            left: 4,
+            bottom: 4.h,
+            left: 4.w,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(color: const Color(0xFFFF4458), borderRadius: BorderRadius.circular(4)),
-              child: Text(l10n.coverPhoto, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              decoration: BoxDecoration(color: const Color(0xFFFF4458), borderRadius: BorderRadius.circular(4.r)),
+              child: Text(l10n.coverPhoto, style: TextStyle(color: Colors.white, fontSize: 10.sp, fontWeight: FontWeight.w600)),
             ),
           ),
       ],
@@ -132,20 +133,20 @@ class CreateMeetupImagesSection extends StatelessWidget {
     return InkWell(
       onTap: () => _showImagePickerOptions(context, l10n),
       child: Container(
-        height: 120,
+        height: 120.h,
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.shade300, width: 2),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           color: Colors.grey.shade50,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.photoFilm, size: 48, color: Colors.grey.shade400),
-            const SizedBox(height: 8),
-            Text(l10n.addVenuePhotos, style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
-            const SizedBox(height: 4),
-            Text(l10n.tapToSelectPhoto, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+            Icon(FontAwesomeIcons.photoFilm, size: 48.r, color: Colors.grey.shade400),
+            SizedBox(height: 8.h),
+            Text(l10n.addVenuePhotos, style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+            SizedBox(height: 4.h),
+            Text(l10n.tapToSelectPhoto, style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade500)),
           ],
         ),
       ),
@@ -154,34 +155,34 @@ class CreateMeetupImagesSection extends StatelessWidget {
 
   Widget _buildUploadProgress() {
     return Obx(() => Padding(
-      padding: const EdgeInsets.only(top: 12, bottom: 4),
+      padding: EdgeInsets.only(top: 12.h, bottom: 4.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               SizedBox(
-                width: 18,
-                height: 18,
+                width: 18.w,
+                height: 18.h,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   value: _c.uploadProgress.value > 0 ? _c.uploadProgress.value : null,
                   valueColor: const AlwaysStoppedAnimation(Color(0xFFFF4458)),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Expanded(
                 child: Text(
                   'Uploading venue photos... (${(_c.uploadProgress.value * 100).clamp(0, 100).toStringAsFixed(0)}%)',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade700),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           LinearProgressIndicator(
             value: _c.uploadProgress.value > 0 ? _c.uploadProgress.value : null,
-            minHeight: 4,
+            minHeight: 4.h,
             backgroundColor: Colors.grey.shade200,
             valueColor: const AlwaysStoppedAnimation(Color(0xFFFF4458)),
           ),
@@ -193,37 +194,37 @@ class CreateMeetupImagesSection extends StatelessWidget {
   void _showImagePickerOptions(BuildContext context, AppLocalizations l10n) {
     Get.bottomSheet(
       Container(
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(20.r), topRight: Radius.circular(20.r))),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 12),
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 20),
-              Text(l10n.addVenuePhotos, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87)),
-              const SizedBox(height: 20),
+              SizedBox(height: 12.h),
+              Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2.r))),
+              SizedBox(height: 20.h),
+              Text(l10n.addVenuePhotos, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.black87)),
+              SizedBox(height: 20.h),
               ListTile(
                 leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: const Color(0xFFFF4458).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(color: const Color(0xFFFF4458).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10.r)),
                   child: const Icon(FontAwesomeIcons.images, color: Color(0xFFFF4458)),
                 ),
-                title: Text(l10n.chooseFromGallery, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                subtitle: Obx(() => Text(l10n.selectMultiplePhotos(_c.selectedImages.length), style: TextStyle(fontSize: 13, color: Colors.grey.shade600))),
+                title: Text(l10n.chooseFromGallery, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500)),
+                subtitle: Obx(() => Text(l10n.selectMultiplePhotos(_c.selectedImages.length), style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade600))),
                 onTap: () { Get.back(); _c.pickImages(context); },
               ),
               ListTile(
                 leading: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: const Color(0xFFFF4458).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(color: const Color(0xFFFF4458).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10.r)),
                   child: const Icon(FontAwesomeIcons.camera, color: Color(0xFFFF4458)),
                 ),
-                title: Text(l10n.takePhoto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                subtitle: Text(l10n.useCameraToTakePhoto, style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                title: Text(l10n.takePhoto, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500)),
+                subtitle: Text(l10n.useCameraToTakePhoto, style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade600)),
                 onTap: () { Get.back(); _c.takePhoto(context); },
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
             ],
           ),
         ),

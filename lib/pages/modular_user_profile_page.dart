@@ -11,6 +11,7 @@ import 'edit_basic_info_page.dart';
 import 'edit_interests_page.dart';
 import 'edit_skills_page.dart';
 import 'edit_social_links_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 模块化用户资料页面 - 整合所有8个模块
 class ModularUserProfilePage extends StatelessWidget {
@@ -39,19 +40,19 @@ class ModularUserProfilePage extends StatelessWidget {
   Widget _buildStatCard(String label, int value, IconData icon, Color color) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
+            Icon(icon, color: color, size: 28.r),
+            SizedBox(height: 8.h),
             Text(
               '$value',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               label,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
               textAlign: TextAlign.center,
             ),
           ],
@@ -75,7 +76,7 @@ class ModularUserProfilePage extends StatelessWidget {
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(content, maxLines: 2, overflow: TextOverflow.ellipsis),
-        trailing: const Icon(FontAwesomeIcons.arrowRight, size: 16),
+        trailing: Icon(FontAwesomeIcons.arrowRight, size: 16.r),
         onTap: onTap,
       ),
     );
@@ -103,7 +104,7 @@ class ModularUserProfilePage extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: controller.loadProfileData,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             children: [
               // 头部 - 头像和基本信息
               Center(
@@ -112,27 +113,27 @@ class ModularUserProfilePage extends StatelessWidget {
                     SafeCircleAvatar(
                       imageUrl: controller.basicInfo.value?.avatarUrl,
                       radius: 50,
-                      errorWidget: const Icon(FontAwesomeIcons.user, size: 50),
+                      errorWidget: Icon(FontAwesomeIcons.user, size: 50.r),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     Text(
                       controller.basicInfo.value?.name ?? '未设置姓名',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
                     ),
                     if (controller.basicInfo.value?.occupation != null) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         controller.basicInfo.value!.occupation!,
-                        style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                        style: TextStyle(fontSize: 16.sp, color: Colors.grey.shade600),
                       ),
                     ],
                     if (controller.basicInfo.value?.currentCity != null) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(FontAwesomeIcons.locationDot, size: 16, color: Colors.grey.shade600),
-                          const SizedBox(width: 4),
+                          Icon(FontAwesomeIcons.locationDot, size: 16.r, color: Colors.grey.shade600),
+                          SizedBox(width: 4.w),
                           Text(
                             '${controller.basicInfo.value!.currentCity}, ${controller.basicInfo.value!.currentCountry ?? ''}',
                             style: TextStyle(color: Colors.grey.shade600),
@@ -141,33 +142,33 @@ class ModularUserProfilePage extends StatelessWidget {
                       ),
                     ],
                     if (controller.basicInfo.value?.bio != null) ...[
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Text(
                         controller.basicInfo.value!.bio!,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: 14.sp),
                       ),
                     ],
                   ],
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Nomad统计
               if (controller.stats.value != null) ...[
-                const Text(
+                Text(
                   'Nomad 统计',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 3,
                   childAspectRatio: 1.2,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8.w,
+                  crossAxisSpacing: 8.w,
                   children: [
                     _buildStatCard('国家', controller.stats.value!.countriesVisited, FontAwesomeIcons.flag, Colors.blue),
                     _buildStatCard('城市', controller.stats.value!.citiesLived, FontAwesomeIcons.city, Colors.green),
@@ -181,7 +182,7 @@ class ModularUserProfilePage extends StatelessWidget {
                         '评论', controller.stats.value!.reviewsWritten, FontAwesomeIcons.commentDots, Colors.teal),
                   ],
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
               ],
 
               // 模块卡片
@@ -271,7 +272,7 @@ class ModularUserProfilePage extends StatelessWidget {
                 color: Colors.teal,
               ),
 
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
             ],
           ),
         );

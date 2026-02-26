@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'package:go_nomads_app/controllers/amap_global_page_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 高德地图全球页面 - 展示全球城市分布
 /// 使用原生 Platform View 嵌入高德地图
@@ -60,24 +61,24 @@ class AmapGlobalPage extends StatelessWidget {
           Obx(() {
             if (controller.errorMessage.value == null) return const SizedBox.shrink();
             return Positioned(
-              bottom: 100,
-              left: 20,
-              right: 20,
+              bottom: 100.h,
+              left: 20.w,
+              right: 20.w,
               child: _buildErrorBanner(controller),
             );
           }),
 
           // 右下角控制按钮
           Positioned(
-            bottom: 24,
-            right: 16,
+            bottom: 24.h,
+            right: 16.w,
             child: _buildControlButtons(controller),
           ),
 
           // 左下角统计信息
           Positioned(
-            bottom: 24,
-            left: 16,
+            bottom: 24.h,
+            left: 16.w,
             child: Obx(() => _buildStatsCard(controller)),
           ),
         ],
@@ -138,9 +139,9 @@ class AmapGlobalPage extends StatelessWidget {
       return Container(
         padding: EdgeInsets.only(
           top: MediaQuery.of(context).padding.top + 12,
-          left: 16,
-          right: 16,
-          bottom: 12,
+          left: 16.w,
+          right: 16.w,
+          bottom: 12.h,
         ),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -159,10 +160,10 @@ class AmapGlobalPage extends StatelessWidget {
                   icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
                   onPressed: () => Get.back(),
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: 8.w),
+                Text(
                   'Global Nomads',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 const Spacer(),
                 IconButton(
@@ -171,15 +172,15 @@ class AmapGlobalPage extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(
               children: [
                 _buildSummaryChip('$totalCities', 'Cities'),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 _buildSummaryChip('$totalCountries', 'Countries'),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             _buildSearchField(controller, l10n),
           ],
         ),
@@ -189,20 +190,20 @@ class AmapGlobalPage extends StatelessWidget {
 
   Widget _buildSummaryChip(String value, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12.r, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-          const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          SizedBox(width: 6.w),
+          Text(label, style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -212,9 +213,9 @@ class AmapGlobalPage extends StatelessWidget {
     return Obx(() => Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12.r, offset: const Offset(0, 4)),
             ],
           ),
           child: TextField(
@@ -225,7 +226,7 @@ class AmapGlobalPage extends StatelessWidget {
               prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
               suffixIcon: controller.searchKeyword.value.isEmpty
                   ? null
-                  : IconButton(icon: const Icon(Icons.close, size: 18), onPressed: controller.clearSearch),
+                  : IconButton(icon: Icon(Icons.close, size: 18.r), onPressed: controller.clearSearch),
             ),
             onChanged: controller.updateSearchKeyword,
           ),
@@ -237,11 +238,11 @@ class AmapGlobalPage extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildMapButton(icon: Icons.my_location, onPressed: controller.centerToUserLocation),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _buildMapButton(icon: Icons.zoom_in, onPressed: () => controller.changeZoom(1)),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _buildMapButton(icon: Icons.zoom_out, onPressed: () => controller.changeZoom(-1)),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         _buildMapButton(icon: Icons.explore, onPressed: controller.resetToWorld),
       ],
     );
@@ -250,15 +251,15 @@ class AmapGlobalPage extends StatelessWidget {
   Widget _buildMapButton({required IconData icon, required VoidCallback onPressed}) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       elevation: 4,
       shadowColor: Colors.black.withValues(alpha: 0.15),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         onTap: onPressed,
         child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Icon(icon, color: AppColors.textPrimary, size: 22),
+          padding: EdgeInsets.all(12.w),
+          child: Icon(icon, color: AppColors.textPrimary, size: 22.r),
         ),
       ),
     );
@@ -271,33 +272,33 @@ class AmapGlobalPage extends StatelessWidget {
     final regionStats = controller.getRegionStats();
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 12.r, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('By Region',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
-          const SizedBox(height: 8),
+          Text('By Region',
+              style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          SizedBox(height: 8.h),
           ...regionStats.entries.take(4).map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: EdgeInsets.only(bottom: 4.h),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 8,
-                      height: 8,
+                      width: 8.w,
+                      height: 8.h,
                       decoration: BoxDecoration(color: controller.getRegionColor(e.key), shape: BoxShape.circle),
                     ),
-                    const SizedBox(width: 8),
-                    Text('${e.key}: ${e.value}', style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
+                    SizedBox(width: 8.w),
+                    Text('${e.key}: ${e.value}', style: TextStyle(fontSize: 12.sp, color: AppColors.textPrimary)),
                   ],
                 ),
               )),
@@ -308,16 +309,16 @@ class AmapGlobalPage extends StatelessWidget {
 
   Widget _buildErrorBanner(AmapGlobalPageController controller) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.red.shade200),
       ),
       child: Row(
         children: [
           Icon(Icons.error_outline, color: Colors.red.shade700),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Obx(() => Text(
                   controller.errorMessage.value ?? 'Unknown error',

@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 语音录制配置
 class VoiceRecorderConfig {
@@ -239,12 +240,12 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
         animation: _pulseAnimation,
         builder: (context, child) {
           return Container(
-            height: 36,
+            height: 36.h,
             decoration: BoxDecoration(
               color: _isRecording
                   ? (_isCancelArea ? Colors.red.withValues(alpha: 0.15) : primaryColor.withValues(alpha: 0.15))
                   : Colors.white,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(6.r),
               border: _isRecording
                   ? Border.all(
                       color: _isCancelArea ? Colors.red : primaryColor,
@@ -256,8 +257,8 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
                       BoxShadow(
                         color: (_isCancelArea ? Colors.red : primaryColor)
                             .withValues(alpha: 0.3 * (_pulseAnimation.value - 1) * 5),
-                        blurRadius: 8 * _pulseAnimation.value,
-                        spreadRadius: 2 * (_pulseAnimation.value - 1),
+                        blurRadius: 8.r * _pulseAnimation.value,
+                        spreadRadius: 2.r * (_pulseAnimation.value - 1),
                       ),
                     ]
                   : null,
@@ -272,11 +273,11 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
   }
 
   Widget _buildIdleContent() {
-    return const Text(
+    return Text(
       '按住 说话',
       style: TextStyle(
         color: Color(0xFF999999),
-        fontSize: 15,
+        fontSize: 15.sp,
       ),
     );
   }
@@ -291,15 +292,15 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
         Icon(
           _isCancelArea ? FontAwesomeIcons.trash : FontAwesomeIcons.microphone,
           color: color,
-          size: 14,
+          size: 14.r,
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         // 时间和提示
         Text(
           _isCancelArea ? '松开取消' : '${_formatDuration(_recordDuration)} ↑ 取消',
           style: TextStyle(
             color: color,
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -488,25 +489,25 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
     final primaryColor = widget.config.primaryColor;
 
     return Container(
-      height: 280,
-      decoration: const BoxDecoration(
+      height: 280.h,
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: SafeArea(
         child: Column(
           children: [
             // 顶部拖动条
             Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             // 录音状态显示
             Expanded(
               child: Column(
@@ -517,8 +518,8 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                     animation: _waveController,
                     builder: (context, child) {
                       return Container(
-                        width: 80,
-                        height: 80,
+                        width: 80.w,
+                        height: 80.h,
                         decoration: BoxDecoration(
                           color: _isRecording
                               ? (_isCancelArea
@@ -530,14 +531,14 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                         child: Center(
                           child: Icon(
                             _isCancelArea ? FontAwesomeIcons.trash : FontAwesomeIcons.microphone,
-                            size: 32,
+                            size: 32.r,
                             color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : Colors.grey,
                           ),
                         ),
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   // 时间显示
                   Text(
                     _isRecording ? _formatDuration(_recordDuration) : '按住下方按钮开始录音',
@@ -548,11 +549,11 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                     ),
                   ),
                   if (_isRecording) ...[
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Text(
                       _isCancelArea ? '松开手指，取消发送' : '上滑取消',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: _isCancelArea ? Colors.red : const Color(0xFF999999),
                       ),
                     ),
@@ -562,7 +563,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
             ),
             // 底部录音按钮
             Padding(
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: EdgeInsets.only(bottom: 20.h),
               child: GestureDetector(
                 onLongPressStart: (details) {
                   _isLongPressing = true;
@@ -589,13 +590,13 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                 },
                 child: Container(
                   width: double.infinity,
-                  height: 50,
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  height: 50.h,
+                  margin: EdgeInsets.symmetric(horizontal: 20.w),
                   decoration: BoxDecoration(
                     color: _isRecording
                         ? (_isCancelArea ? Colors.red.withValues(alpha: 0.15) : primaryColor.withValues(alpha: 0.15))
                         : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(25.r),
                     border: _isRecording
                         ? Border.all(
                             color: _isCancelArea ? Colors.red : primaryColor,
@@ -612,13 +613,13 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                               ? (_isCancelArea ? FontAwesomeIcons.xmark : FontAwesomeIcons.microphone)
                               : FontAwesomeIcons.microphone,
                           color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : const Color(0xFF666666),
-                          size: 18,
+                          size: 18.r,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
                           _isRecording ? (_isCancelArea ? '松开取消' : '正在录音...') : '按住说话',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w500,
                             color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : const Color(0xFF666666),
                           ),

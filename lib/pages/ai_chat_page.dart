@@ -9,6 +9,7 @@ import 'package:go_nomads_app/services/ai_chat_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AiChatPage extends GetView<AiChatController> {
   const AiChatPage({super.key});
@@ -57,7 +58,7 @@ class AiChatPage extends GetView<AiChatController> {
                   reverse: true, // 从底部开始显示，自动显示最新消息
                   padding: EdgeInsets.symmetric(
                     horizontal: isMobile ? 16 : 24,
-                    vertical: 12,
+                    vertical: 12.h,
                   ),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
@@ -99,11 +100,11 @@ class _HeroCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [Color(0xFF0EA5E9), Color(0xFF2563EB)],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF2563EB).withValues(alpha: 0.15),
-            blurRadius: 18,
+            blurRadius: 18.r,
             offset: const Offset(0, 10),
           ),
         ],
@@ -116,13 +117,13 @@ class _HeroCard extends StatelessWidget {
             width: isMobile ? 48 : 56,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
             ),
-            child: const Center(
-              child: FaIcon(FontAwesomeIcons.robot, color: Colors.white, size: 22),
+            child: Center(
+              child: FaIcon(FontAwesomeIcons.robot, color: Colors.white, size: 22.r),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +135,7 @@ class _HeroCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   '用流式对话聊攻略、问路线、生成行程草稿。',
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -162,19 +163,19 @@ class _StreamingStatus extends StatelessWidget {
       }
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
         decoration: const BoxDecoration(
           color: Color(0xFFF1F5F9),
           border: Border(bottom: BorderSide(color: AppColors.border)),
         ),
         child: Row(
           children: [
-            const SizedBox(
-              width: 18,
-              height: 18,
+            SizedBox(
+              width: 18.w,
+              height: 18.h,
               child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.cityPrimary),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Text(
                 controller.streamingStatus.value.isNotEmpty
@@ -216,24 +217,24 @@ class _MessageBubble extends StatelessWidget {
     return Align(
       alignment: Alignment.centerRight,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 720),
+        constraints: BoxConstraints(maxWidth: 720),
         child: Container(
-          margin: const EdgeInsets.only(left: 60, right: 12, bottom: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          margin: EdgeInsets.only(left: 60.w, right: 12.w, bottom: 10.h),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: AppColors.cityPrimary,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
             boxShadow: [
               BoxShadow(
                 color: AppColors.cityPrimary.withValues(alpha: 0.22),
-                blurRadius: 12,
+                blurRadius: 12.r,
                 offset: const Offset(0, 8),
               ),
             ],
           ),
           child: Text(
             message.content.isNotEmpty ? message.content : '…',
-            style: const TextStyle(color: Colors.white, height: 1.5),
+            style: TextStyle(color: Colors.white, height: 1.5),
           ),
         ),
       ),
@@ -247,13 +248,13 @@ class _MessageBubble extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 720),
+        constraints: BoxConstraints(maxWidth: 720),
         child: Container(
-          margin: const EdgeInsets.only(left: 12, right: 60, bottom: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          margin: EdgeInsets.only(left: 12.w, right: 60.w, bottom: 10.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
             border: Border.all(
               color: message.isError ? const Color(0xFFFFB4B4) : AppColors.border,
             ),
@@ -319,7 +320,7 @@ class _AiMarkdownContent extends StatelessWidget {
     return MarkdownStyleSheet(
       // 段落样式
       p: baseStyle,
-      pPadding: const EdgeInsets.only(bottom: 12),
+      pPadding: EdgeInsets.only(bottom: 12.h),
 
       // 标题样式
       h1: textTheme.titleLarge?.copyWith(
@@ -327,19 +328,19 @@ class _AiMarkdownContent extends StatelessWidget {
         color: AppColors.textPrimary,
         height: 1.4,
       ),
-      h1Padding: const EdgeInsets.only(top: 8, bottom: 12),
+      h1Padding: EdgeInsets.only(top: 8.h, bottom: 12.h),
       h2: textTheme.titleMedium?.copyWith(
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
         height: 1.4,
       ),
-      h2Padding: const EdgeInsets.only(top: 8, bottom: 10),
+      h2Padding: EdgeInsets.only(top: 8.h, bottom: 10.h),
       h3: textTheme.titleSmall?.copyWith(
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
         height: 1.4,
       ),
-      h3Padding: const EdgeInsets.only(top: 6, bottom: 8),
+      h3Padding: EdgeInsets.only(top: 6.h, bottom: 8.h),
 
       // 加粗和斜体
       strong: baseStyle?.copyWith(fontWeight: FontWeight.w700),
@@ -348,14 +349,14 @@ class _AiMarkdownContent extends StatelessWidget {
       // 行内代码
       code: TextStyle(
         fontFamily: 'monospace',
-        fontSize: 13,
+        fontSize: 13.sp,
         color: const Color(0xFFE11D48),
         backgroundColor: const Color(0xFFF1F5F9),
       ),
-      codeblockPadding: const EdgeInsets.all(14),
+      codeblockPadding: EdgeInsets.all(14.w),
       codeblockDecoration: BoxDecoration(
         color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
 
       // 引用块
@@ -363,7 +364,7 @@ class _AiMarkdownContent extends StatelessWidget {
         color: AppColors.textSecondary,
         fontStyle: FontStyle.italic,
       ),
-      blockquotePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      blockquotePadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       blockquoteDecoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         border: Border(
@@ -376,7 +377,7 @@ class _AiMarkdownContent extends StatelessWidget {
 
       // 列表样式
       listBullet: baseStyle?.copyWith(color: AppColors.cityPrimary),
-      listBulletPadding: const EdgeInsets.only(right: 8),
+      listBulletPadding: EdgeInsets.only(right: 8.w),
       listIndent: 20,
 
       // 分割线
@@ -390,7 +391,7 @@ class _AiMarkdownContent extends StatelessWidget {
       tableBorder: TableBorder.all(color: AppColors.border, width: 1),
       tableHead: baseStyle?.copyWith(fontWeight: FontWeight.w600),
       tableBody: baseStyle,
-      tableCellsPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      tableCellsPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
 
       // 链接
       a: baseStyle?.copyWith(
@@ -436,10 +437,10 @@ class _CodeBlockWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: EdgeInsets.symmetric(vertical: 8.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: const Color(0xFF334155)),
       ),
       child: Column(
@@ -447,12 +448,12 @@ class _CodeBlockWidget extends StatelessWidget {
         children: [
           // 头部（语言标签 + 操作按钮）
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: const BoxDecoration(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            decoration: BoxDecoration(
               color: Color(0xFF334155),
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(9),
-                topRight: Radius.circular(9),
+                topLeft: Radius.circular(9.r),
+                topRight: Radius.circular(9.r),
               ),
             ),
             child: Row(
@@ -460,9 +461,9 @@ class _CodeBlockWidget extends StatelessWidget {
                 if (language.isNotEmpty) ...[
                   Text(
                     language,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Color(0xFF94A3B8),
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -471,26 +472,26 @@ class _CodeBlockWidget extends StatelessWidget {
                 // 复制按钮
                 InkWell(
                   onTap: () => _copyCode(context),
-                  borderRadius: BorderRadius.circular(4),
-                  child: const Padding(
-                    padding: EdgeInsets.all(4),
+                  borderRadius: BorderRadius.circular(4.r),
+                  child: Padding(
+                    padding: EdgeInsets.all(4.w),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.copy_rounded, size: 14, color: Color(0xFF94A3B8)),
-                        SizedBox(width: 4),
+                        Icon(Icons.copy_rounded, size: 14.r, color: Color(0xFF94A3B8)),
+                        SizedBox(width: 4.w),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 // 下载按钮
                 InkWell(
                   onTap: () => _downloadCode(context),
-                  borderRadius: BorderRadius.circular(4),
-                  child: const Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Icon(Icons.download_rounded, size: 14, color: Color(0xFF94A3B8)),
+                  borderRadius: BorderRadius.circular(4.r),
+                  child: Padding(
+                    padding: EdgeInsets.all(4.w),
+                    child: Icon(Icons.download_rounded, size: 14.r, color: Color(0xFF94A3B8)),
                   ),
                 ),
               ],
@@ -498,14 +499,14 @@ class _CodeBlockWidget extends StatelessWidget {
           ),
           // 代码内容
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(14.w),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SelectableText(
                 code.trim(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   color: Color(0xFFE2E8F0),
                   height: 1.5,
                 ),
@@ -562,10 +563,10 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
           children: List.generate(3, (index) {
             final active = index <= value % 3;
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 3),
+              padding: EdgeInsets.symmetric(horizontal: 3.w),
               child: Container(
-                width: 7,
-                height: 7,
+                width: 7.w,
+                height: 7.h,
                 decoration: BoxDecoration(
                   color: active ? Colors.white : Colors.white.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
@@ -597,13 +598,13 @@ class _InputBar extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(color: AppColors.border),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0x11000000), blurRadius: 12, offset: Offset(0, 4)),
+                  boxShadow: [
+                    BoxShadow(color: Color(0x11000000), blurRadius: 12.r, offset: Offset(0, 4)),
                   ],
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
                 child: Obx(() {
                   return TextField(
                     controller: controller.inputController,
@@ -619,7 +620,7 @@ class _InputBar extends StatelessWidget {
                 }),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Obx(() {
               final disabled = controller.isStreaming.value;
               return ElevatedButton(
@@ -630,10 +631,10 @@ class _InputBar extends StatelessWidget {
                     horizontal: isMobile ? 14 : 16,
                     vertical: isMobile ? 12 : 14,
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                   elevation: 0,
                 ),
-                child: const FaIcon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 16),
+                child: FaIcon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 16.r),
               );
             }),
           ],
@@ -654,25 +655,25 @@ class _EmptyHint extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: EdgeInsets.all(18.w),
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
-              boxShadow: const [BoxShadow(color: Color(0x11000000), blurRadius: 12, offset: Offset(0, 6))],
+              boxShadow: [BoxShadow(color: Color(0x11000000), blurRadius: 12.r, offset: Offset(0, 6))],
             ),
-            child: const FaIcon(FontAwesomeIcons.solidComments, color: AppColors.cityPrimary, size: 28),
+            child: FaIcon(FontAwesomeIcons.solidComments, color: AppColors.cityPrimary, size: 28.r),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           const Text('还没有对话，向 AI 提问试试', style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           ElevatedButton(
             onPressed: onStart,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.cityPrimary,
               foregroundColor: Colors.white,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
             ),
             child: const Text('开始对话'),
           ),
@@ -691,12 +692,12 @@ class _ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(18),
+              padding: EdgeInsets.all(18.w),
               decoration: BoxDecoration(
                 color: Colors.red.shade50,
                 shape: BoxShape.circle,
@@ -704,10 +705,10 @@ class _ErrorState extends StatelessWidget {
               child: FaIcon(
                 FontAwesomeIcons.triangleExclamation,
                 color: Colors.red.shade400,
-                size: 28,
+                size: 28.r,
               ),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             Text(
               message.isNotEmpty ? message : 'AI 服务暂时不可用',
               textAlign: TextAlign.center,
@@ -716,26 +717,26 @@ class _ErrorState extends StatelessWidget {
                 color: Colors.grey.shade700,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               '请检查网络连接或稍后重试',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 color: Colors.grey.shade500,
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             ElevatedButton.icon(
               onPressed: onRetry,
-              icon: const FaIcon(FontAwesomeIcons.arrowRotateRight, size: 14),
+              icon: FaIcon(FontAwesomeIcons.arrowRotateRight, size: 14.r),
               label: const Text('重试'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
               ),
             ),
           ],

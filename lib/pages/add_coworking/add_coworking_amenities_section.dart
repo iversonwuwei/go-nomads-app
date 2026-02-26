@@ -4,6 +4,7 @@ import 'package:go_nomads_app/controllers/add_coworking_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddCoworkingAmenitiesSection extends StatelessWidget {
   final String controllerTag;
@@ -20,7 +21,7 @@ class AddCoworkingAmenitiesSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.amenities, FontAwesomeIcons.listCheck),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildAmenitiesGrid(l10n),
       ],
     );
@@ -29,9 +30,9 @@ class AddCoworkingAmenitiesSection extends StatelessWidget {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFFFF4458), size: 24),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+        Icon(icon, color: const Color(0xFFFF4458), size: 24.r),
+        SizedBox(width: 8.w),
+        Text(title, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
       ],
     );
   }
@@ -59,7 +60,7 @@ class AddCoworkingAmenitiesSection extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 3.5, crossAxisSpacing: 12, mainAxisSpacing: 12),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 3.5, crossAxisSpacing: 12.w, mainAxisSpacing: 12.w),
       itemCount: amenities.length,
       itemBuilder: (context, index) => _buildAmenityChip(amenities[index]),
     );
@@ -68,19 +69,19 @@ class AddCoworkingAmenitiesSection extends StatelessWidget {
   Widget _buildAmenityChip(_AmenityItem item) {
     return Obx(() => InkWell(
           onTap: () => item.onChanged(!item.value.value),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: item.value.value ? const Color(0xFFFF4458).withAlpha(25) : Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               border: Border.all(color: item.value.value ? const Color(0xFFFF4458) : Colors.grey[300]!),
             ),
             child: Row(
               children: [
-                Icon(item.icon, size: 18, color: item.value.value ? const Color(0xFFFF4458) : Colors.grey[600]),
-                const SizedBox(width: 8),
-                Expanded(child: Text(item.label, style: TextStyle(fontSize: 13, color: item.value.value ? const Color(0xFFFF4458) : AppColors.textPrimary), overflow: TextOverflow.ellipsis)),
+                Icon(item.icon, size: 18.r, color: item.value.value ? const Color(0xFFFF4458) : Colors.grey[600]),
+                SizedBox(width: 8.w),
+                Expanded(child: Text(item.label, style: TextStyle(fontSize: 13.sp, color: item.value.value ? const Color(0xFFFF4458) : AppColors.textPrimary), overflow: TextOverflow.ellipsis)),
               ],
             ),
           ),

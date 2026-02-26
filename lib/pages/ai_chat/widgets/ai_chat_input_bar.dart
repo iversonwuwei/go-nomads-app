@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 输入框
 /// 使用 GetView 自动获取 controller
@@ -25,7 +26,7 @@ class AiChatInputBar extends GetView<AiChatController> {
         child: Row(
           children: [
             Expanded(child: _buildTextField()),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             _buildSendButton(),
           ],
         ),
@@ -37,17 +38,17 @@ class AiChatInputBar extends GetView<AiChatController> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: Color(0x11000000),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: Offset(0, 4),
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: EdgeInsets.symmetric(horizontal: 14.w),
       child: Obx(() {
         return TextField(
           controller: controller.inputController,
@@ -77,14 +78,14 @@ class AiChatInputBar extends GetView<AiChatController> {
             vertical: isMobile ? 12 : 14,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
           ),
           elevation: 0,
         ),
-        child: const FaIcon(
+        child: FaIcon(
           FontAwesomeIcons.paperPlane,
           color: Colors.white,
-          size: 16,
+          size: 16.r,
         ),
       );
     });

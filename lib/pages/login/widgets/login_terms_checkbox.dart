@@ -5,6 +5,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 登录页用户协议勾选框（工信部/腾讯合规要求）
 /// Login page terms checkbox (required for Tencent app store compliance)
@@ -25,10 +26,10 @@ class LoginTermsCheckbox extends GetView<LoginController> {
             )),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 12),
+            padding: EdgeInsets.only(top: 12.h),
             child: RichText(
               text: TextSpan(
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                style: TextStyle(fontSize: 14.sp, color: Colors.black87),
                 children: [
                   TextSpan(
                     text: '${l10n.agreeToTerms} ',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 普通 AppBar 的举报按钮
 /// Normal AppBar report button
@@ -52,16 +53,16 @@ class SliverReportButton extends StatelessWidget {
     final isScrolled = opacity > 0.5;
 
     return Container(
-      margin: const EdgeInsets.all(8),
+      margin: EdgeInsets.all(8.w),
       decoration: BoxDecoration(
         color: isScrolled
             ? Colors.orange.withValues(alpha: 0.1)
             : Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],

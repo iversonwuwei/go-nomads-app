@@ -6,6 +6,7 @@ import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市详情页 SliverAppBar，支持顶部图片左右滑动
 class CityDetailAppBar extends StatefulWidget {
@@ -75,7 +76,7 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
         ],
         flexibleSpace: FlexibleSpaceBar(
           centerTitle: true,
-          titlePadding: const EdgeInsets.only(bottom: 16),
+          titlePadding: EdgeInsets.only(bottom: 16.h),
           title: _buildCollapsedTitle(opacity),
           background: _buildBackgroundWithOverlay(),
         ),
@@ -94,9 +95,9 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
       opacity: titleOpacity,
       child: Text(
         widget.cityName,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 18,
+          fontSize: 18.sp,
           color: AppColors.cityPrimary,
           shadows: [],
         ),
@@ -163,14 +164,14 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
         ),
         // 底部信息面板
         Positioned(
-          left: 16,
-          right: 16,
-          bottom: 20,
+          left: 16.w,
+          right: 16.w,
+          bottom: 20.h,
           child: _buildHeroInfoPanel(),
         ),
         if (images.length > 1)
           Positioned(
-            bottom: 10,
+            bottom: 10.h,
             left: 0,
             right: 0,
             child: Row(
@@ -179,12 +180,12 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                 final isActive = index == _currentPage;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  height: 6,
+                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                  height: 6.h,
                   width: isActive ? 18 : 8,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: isActive ? 0.9 : 0.4),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                 );
               }),
@@ -216,7 +217,7 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.18),
                     width: 1,
@@ -227,7 +228,7 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
           ),
           // 内容区域
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(14.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -235,14 +236,14 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                 IgnorePointer(
                   child: Text(
                     widget.cityName,
-                    style: const TextStyle(
-                      fontSize: 22,
+                    style: TextStyle(
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
                     IgnorePointer(
@@ -251,7 +252,7 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                         value: displayScore.toStringAsFixed(1),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     IgnorePointer(
                       child: _StatPill(
                         label: '评论',
@@ -286,19 +287,19 @@ class _FavoriteButton extends StatelessWidget {
       final isToggling = cityController.isTogglingFavorite.value;
 
       return Container(
-        height: 44,
+        height: 44.h,
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: isToggling
-            ? const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14),
+            ? Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
                 child: Center(
                   child: SizedBox(
-                    width: 18,
-                    height: 18,
+                    width: 18.w,
+                    height: 18.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -310,7 +311,7 @@ class _FavoriteButton extends StatelessWidget {
                 icon: Icon(
                   isFavorited ? Icons.favorite : Icons.favorite_border,
                   color: isFavorited ? AppColors.cityPrimary : Colors.white,
-                  size: 22,
+                  size: 22.r,
                 ),
                 tooltip: isFavorited ? '已关注' : '关注',
                 onPressed: () => cityController.toggleFavorite(),
@@ -332,10 +333,10 @@ class _StatPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
         ),
@@ -346,15 +347,15 @@ class _StatPill extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2.h),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 16.sp,
               fontWeight: FontWeight.w700,
               color: Colors.white,
             ),

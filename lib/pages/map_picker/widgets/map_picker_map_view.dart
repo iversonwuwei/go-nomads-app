@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 地图视图组件（含中心标记和定位按钮）
 /// Map view widget with center pin (高德地图风格) and relocate FAB
@@ -23,10 +24,10 @@ class MapPickerMapView extends GetView<MapPickerController> {
                 const CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   '正在获取您的位置... / Getting your location...',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -69,8 +70,8 @@ class MapPickerMapView extends GetView<MapPickerController> {
 
           // 重新定位按钮
           Positioned(
-            right: 16,
-            bottom: 200,
+            right: 16.w,
+            bottom: 200.h,
             child: _RelocateButton(),
           ),
         ],
@@ -98,17 +99,17 @@ class _CenterPinMarker extends GetView<MapPickerController> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             FontAwesomeIcons.locationDot,
-            size: 50,
+            size: 50.r,
             color: Color(0xFFFF4458),
           ),
           Container(
-            width: 20,
-            height: 8,
+            width: 20.w,
+            height: 8.h,
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
           ),
         ],
@@ -128,17 +129,17 @@ class _RelocateButton extends GetView<MapPickerController> {
         backgroundColor: Colors.white,
         onPressed: isLoading ? null : controller.relocateToMyPosition,
         child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
+            ? SizedBox(
+                width: 20.w,
+                height: 20.h,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                 ),
               )
-            : const Icon(
+            : Icon(
                 FontAwesomeIcons.locationCrosshairs,
-                size: 18,
+                size: 18.r,
                 color: Color(0xFFFF4458),
               ),
       );

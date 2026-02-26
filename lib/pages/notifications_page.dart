@@ -7,6 +7,7 @@ import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 通知列表页面
 /// 注意: 由于 TabController 需要 TickerProvider，保持 StatefulWidget 结构
@@ -86,7 +87,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                                 tooltip: '全部标记为已读',
                                 onPressed: () => _controller.markAllAsRead(),
                               )
-                            : const SizedBox(width: 48);
+                            : SizedBox(width: 48.w);
                       }),
                     ],
                   ),
@@ -126,13 +127,13 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.circleExclamation, size: 64, color: AppColors.iconSecondary),
-              const SizedBox(height: 16),
+              Icon(FontAwesomeIcons.circleExclamation, size: 64.r, color: AppColors.iconSecondary),
+              SizedBox(height: 16.h),
               Text(
                 notificationController.errorMessage.value,
                 style: TextStyle(color: AppColors.textSecondary),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               ElevatedButton(
                 onPressed: () => notificationController.loadNotifications(isRead: isRead),
                 child: const Text('重试'),
@@ -158,8 +159,8 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FontAwesomeIcons.bell, size: 64, color: AppColors.iconSecondary),
-                        const SizedBox(height: 16),
+                        Icon(FontAwesomeIcons.bell, size: 64.r, color: AppColors.iconSecondary),
+                        SizedBox(height: 16.h),
                         Text(
                           isRead == null
                               ? '暂无通知'
@@ -183,7 +184,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
         child: ListView.separated(
           padding: EdgeInsets.all(isMobile ? 8 : 16),
           itemCount: notifications.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 8),
+          separatorBuilder: (context, index) => SizedBox(height: 8.h),
           itemBuilder: (context, index) {
             final notification = notifications[index];
             return _buildNotificationCard(notification, isMobile);
@@ -203,10 +204,10 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
       background: Container(
         decoration: BoxDecoration(
           color: Colors.red,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
+        padding: EdgeInsets.only(right: 20.w),
         child: const Icon(FontAwesomeIcons.trash, color: Colors.white),
       ),
       direction: DismissDirection.endToStart,
@@ -222,7 +223,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
           padding: EdgeInsets.all(isMobile ? 12 : 16),
           decoration: BoxDecoration(
             color: notification.isRead ? Colors.white : AppColors.accent.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: notification.isRead ? AppColors.border : AppColors.accent.withValues(alpha: 0.2),
             ),
@@ -232,8 +233,8 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
             children: [
               // 图标
               Container(
-                width: 48,
-                height: 48,
+                width: 48.w,
+                height: 48.h,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
@@ -241,12 +242,12 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                 child: Center(
                   child: Text(
                     notification.type.icon,
-                    style: const TextStyle(fontSize: 24),
+                    style: TextStyle(fontSize: 24.sp),
                   ),
                 ),
               ),
 
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
 
               // 内容
               Expanded(
@@ -270,8 +271,8 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                         // 未读指示器
                         if (!notification.isRead)
                           Container(
-                            width: 8,
-                            height: 8,
+                            width: 8.w,
+                            height: 8.h,
                             decoration: BoxDecoration(
                               color: AppColors.accent,
                               shape: BoxShape.circle,
@@ -280,7 +281,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                       ],
                     ),
 
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
 
                     // 消息内容
                     Text(
@@ -293,13 +294,13 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
 
                     // 时间
                     Text(
                       _controller.formatTime(notification.createdAt),
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: AppColors.textTertiary,
                       ),
                     ),

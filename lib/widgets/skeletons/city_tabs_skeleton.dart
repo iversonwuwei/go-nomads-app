@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// City Tab Skeleton Base - 城市详情 Tab 骨架屏基类
 class CityTabSkeleton extends StatelessWidget {
@@ -26,11 +27,11 @@ class PhotosTabSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        padding: EdgeInsets.all(16.w),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
+          crossAxisSpacing: 8.w,
+          mainAxisSpacing: 8.w,
         ),
         itemCount: 12,
         itemBuilder: (context, index) {
@@ -53,12 +54,12 @@ class ScoresTabSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           children: List.generate(
             6,
             (index) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: EdgeInsets.only(bottom: 16.h),
               child: _ScoreItemSkeleton(),
             ),
           ),
@@ -73,22 +74,22 @@ class _ScoreItemSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        SkeletonBox(width: 32, height: 32, borderRadius: 6),
-        SizedBox(width: 12),
+        SkeletonBox(width: 32.w, height: 32.h, borderRadius: 6),
+        SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SkeletonBox(width: 100, height: 16),
-              SizedBox(height: 8),
-              SkeletonBox(width: double.infinity, height: 8, borderRadius: 4),
+              SkeletonBox(width: 100.w, height: 16.h),
+              SizedBox(height: 8.h),
+              SkeletonBox(width: double.infinity, height: 8.h, borderRadius: 4),
             ],
           ),
         ),
-        SizedBox(width: 12),
-        SkeletonBox(width: 40, height: 20),
+        SizedBox(width: 12.w),
+        SkeletonBox(width: 40.w, height: 20.h),
       ],
     );
   }
@@ -102,15 +103,15 @@ class WeatherTabSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           children: [
             // 当前天气
             _CurrentWeatherSkeleton(),
-            SizedBox(height: 24),
+            SizedBox(height: 24.h),
             // 天气预报
-            SkeletonBox(width: 100, height: 20),
-            SizedBox(height: 16),
+            SkeletonBox(width: 100.w, height: 20.h),
+            SizedBox(height: 16.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -134,25 +135,25 @@ class _CurrentWeatherSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          SkeletonBox(width: 80, height: 80, borderRadius: 40),
-          SizedBox(height: 16),
-          SkeletonBox(width: 100, height: 48),
-          SizedBox(height: 8),
-          SkeletonBox(width: 80, height: 20),
-          SizedBox(height: 16),
+          SkeletonBox(width: 80.w, height: 80.h, borderRadius: 40),
+          SizedBox(height: 16.h),
+          SkeletonBox(width: 100.w, height: 48.h),
+          SizedBox(height: 8.h),
+          SkeletonBox(width: 80.w, height: 20.h),
+          SizedBox(height: 16.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SkeletonBox(width: 60, height: 14),
-              SizedBox(width: 24),
-              SkeletonBox(width: 60, height: 14),
+              SkeletonBox(width: 60.w, height: 14.h),
+              SizedBox(width: 24.w),
+              SkeletonBox(width: 60.w, height: 14.h),
             ],
           ),
         ],
@@ -166,13 +167,13 @@ class _DayForecastSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
-        SkeletonBox(width: 40, height: 14),
-        SizedBox(height: 8),
-        SkeletonBox(width: 32, height: 32, borderRadius: 16),
-        SizedBox(height: 8),
-        SkeletonBox(width: 36, height: 14),
+        SkeletonBox(width: 40.w, height: 14.h),
+        SizedBox(height: 8.h),
+        SkeletonBox(width: 32.w, height: 32.h, borderRadius: 16),
+        SizedBox(height: 8.h),
+        SkeletonBox(width: 36.w, height: 14.h),
       ],
     );
   }
@@ -191,9 +192,9 @@ class ReviewsTabSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: itemCount,
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
+        separatorBuilder: (context, index) => SizedBox(height: 16.h),
         itemBuilder: (context, index) {
           return _ReviewItemSkeleton();
         },
@@ -208,37 +209,37 @@ class _ReviewItemSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              SkeletonCircle(size: 40),
-              SizedBox(width: 12),
+              SkeletonCircle(size: 40.r),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SkeletonBox(width: 100, height: 16),
-                    SizedBox(height: 4),
-                    SkeletonBox(width: 80, height: 12),
+                    SkeletonBox(width: 100.w, height: 16.h),
+                    SizedBox(height: 4.h),
+                    SkeletonBox(width: 80.w, height: 12.h),
                   ],
                 ),
               ),
-              SkeletonBox(width: 60, height: 20),
+              SkeletonBox(width: 60.w, height: 20.h),
             ],
           ),
-          SizedBox(height: 12),
-          SkeletonBox(width: double.infinity, height: 14),
-          SizedBox(height: 4),
-          SkeletonBox(width: double.infinity, height: 14),
-          SizedBox(height: 4),
-          SkeletonBox(width: 200, height: 14),
+          SizedBox(height: 12.h),
+          SkeletonBox(width: double.infinity, height: 14.h),
+          SizedBox(height: 4.h),
+          SkeletonBox(width: double.infinity, height: 14.h),
+          SizedBox(height: 4.h),
+          SkeletonBox(width: 200.w, height: 14.h),
         ],
       ),
     );
@@ -253,30 +254,30 @@ class ProsConsTabSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Pros 标题
-            SkeletonBox(width: 60, height: 20),
-            SizedBox(height: 12),
+            SkeletonBox(width: 60.w, height: 20.h),
+            SizedBox(height: 12.h),
             // Pros 列表
             ...List.generate(
               3,
               (index) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: 12.h),
                 child: _ProsConsItemSkeleton(isPro: true),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20.h),
             // Cons 标题
-            SkeletonBox(width: 60, height: 20),
-            SizedBox(height: 12),
+            SkeletonBox(width: 60.w, height: 20.h),
+            SizedBox(height: 12.h),
             // Cons 列表
             ...List.generate(
               3,
               (index) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: 12.h),
                 child: _ProsConsItemSkeleton(isPro: false),
               ),
             ),
@@ -295,18 +296,18 @@ class _ProsConsItemSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          SkeletonBox(width: 24, height: 24, borderRadius: 12),
-          SizedBox(width: 12),
-          Expanded(child: SkeletonBox(width: double.infinity, height: 16)),
-          SizedBox(width: 12),
-          SkeletonBox(width: 40, height: 20),
+          SkeletonBox(width: 24.w, height: 24.h, borderRadius: 12),
+          SizedBox(width: 12.w),
+          Expanded(child: SkeletonBox(width: double.infinity, height: 16.h)),
+          SizedBox(width: 12.w),
+          SkeletonBox(width: 40.w, height: 20.h),
         ],
       ),
     );
@@ -326,11 +327,11 @@ class CoworkingTabSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: itemCount,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(bottom: 16.h),
             child: _CoworkingItemSkeleton(),
           );
         },
@@ -347,32 +348,32 @@ class _CoworkingItemSkeleton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(10),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: const Column(
+      child: Column(
         children: [
-          SkeletonBox(width: double.infinity, height: 140, borderRadius: 12),
+          SkeletonBox(width: double.infinity, height: 140.h, borderRadius: 12),
           Padding(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonBox(width: 180, height: 18),
-                SizedBox(height: 8),
-                SkeletonBox(width: 140, height: 14),
-                SizedBox(height: 8),
+                SkeletonBox(width: 180.w, height: 18.h),
+                SizedBox(height: 8.h),
+                SkeletonBox(width: 140.w, height: 14.h),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
-                    SkeletonBox(width: 60, height: 14),
-                    SizedBox(width: 16),
-                    SkeletonBox(width: 80, height: 14),
+                    SkeletonBox(width: 60.w, height: 14.h),
+                    SizedBox(width: 16.w),
+                    SkeletonBox(width: 80.w, height: 14.h),
                   ],
                 ),
               ],
@@ -392,17 +393,17 @@ class CostTabSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           children: [
             // 总费用卡片
             _TotalCostSkeleton(),
-            SizedBox(height: 24),
+            SizedBox(height: 24.h),
             // 费用明细
             ...List.generate(
               6,
               (index) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: EdgeInsets.only(bottom: 12.h),
                 child: _CostItemSkeleton(),
               ),
             ),
@@ -419,18 +420,18 @@ class _TotalCostSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          SkeletonBox(width: 120, height: 16),
-          SizedBox(height: 12),
-          SkeletonBox(width: 150, height: 40),
-          SizedBox(height: 8),
-          SkeletonBox(width: 80, height: 14),
+          SkeletonBox(width: 120.w, height: 16.h),
+          SizedBox(height: 12.h),
+          SkeletonBox(width: 150.w, height: 40.h),
+          SizedBox(height: 8.h),
+          SkeletonBox(width: 80.w, height: 14.h),
         ],
       ),
     );
@@ -442,21 +443,21 @@ class _CostItemSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        SkeletonBox(width: 40, height: 40, borderRadius: 8),
-        SizedBox(width: 12),
+        SkeletonBox(width: 40.w, height: 40.h, borderRadius: 8),
+        SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SkeletonBox(width: 100, height: 16),
-              SizedBox(height: 4),
-              SkeletonBox(width: 60, height: 12),
+              SkeletonBox(width: 100.w, height: 16.h),
+              SizedBox(height: 4.h),
+              SkeletonBox(width: 60.w, height: 12.h),
             ],
           ),
         ),
-        SkeletonBox(width: 80, height: 20),
+        SkeletonBox(width: 80.w, height: 20.h),
       ],
     );
   }
@@ -475,9 +476,9 @@ class ManageListSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeShimmer(
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: itemCount,
-        separatorBuilder: (context, index) => const Divider(height: 24),
+        separatorBuilder: (context, index) => Divider(height: 24),
         itemBuilder: (context, index) {
           return _ManageItemSkeleton();
         },
@@ -491,21 +492,21 @@ class _ManageItemSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SkeletonBox(width: 200, height: 18),
-              SizedBox(height: 6),
-              SkeletonBox(width: 150, height: 14),
-              SizedBox(height: 4),
-              SkeletonBox(width: 100, height: 12),
+              SkeletonBox(width: 200.w, height: 18.h),
+              SizedBox(height: 6.h),
+              SkeletonBox(width: 150.w, height: 14.h),
+              SizedBox(height: 4.h),
+              SkeletonBox(width: 100.w, height: 12.h),
             ],
           ),
         ),
-        SkeletonBox(width: 32, height: 32, borderRadius: 6),
+        SkeletonBox(width: 32.w, height: 32.h, borderRadius: 6),
       ],
     );
   }

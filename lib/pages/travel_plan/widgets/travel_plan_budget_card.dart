@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 预算卡片组件 - 无状态组件
 class TravelPlanBudgetCard extends StatelessWidget {
@@ -26,38 +27,38 @@ class TravelPlanBudgetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
         children: [
           _buildBudgetRow(transportationLabel, budget.transportation),
-          const Divider(height: 24),
+          Divider(height: 24),
           _buildBudgetRow(accommodationLabel, budget.accommodation),
-          const Divider(height: 24),
+          Divider(height: 24),
           _buildBudgetRow(foodLabel, budget.food),
-          const Divider(height: 24),
+          Divider(height: 24),
           _buildBudgetRow(activitiesLabel, budget.activities),
-          const Divider(height: 24),
+          Divider(height: 24),
           _buildBudgetRow(miscellaneousLabel, budget.miscellaneous),
-          const Divider(height: 24),
+          Divider(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 totalLabel,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 '\$${budget.total.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFFF4458),
                 ),
@@ -76,14 +77,14 @@ class TravelPlanBudgetCard extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 14.sp,
             color: Colors.grey[700],
           ),
         ),
         Text(
           '\$${amount.toStringAsFixed(0)}',
-          style: const TextStyle(
-            fontSize: 15,
+          style: TextStyle(
+            fontSize: 15.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -119,10 +120,10 @@ class TravelPlanTransportationCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
@@ -131,39 +132,39 @@ class TravelPlanTransportationCard extends StatelessWidget {
           // 到达交通
           Row(
             children: [
-              const Icon(FontAwesomeIcons.plane, color: Color(0xFFFF4458), size: 20),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.plane, color: Color(0xFFFF4458), size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 transportation.arrival?.method ?? 'N/A',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             generalInfo,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: Colors.grey[700],
             ),
           ),
 
           // 航班推荐卡片
           if (flights.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _FlightRecommendations(flights: flights),
           ],
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           // 预计费用
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: const Color(0xFFFF4458).withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -179,29 +180,29 @@ class TravelPlanTransportationCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           const Divider(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 本地交通
           Row(
             children: [
-              const Icon(FontAwesomeIcons.trainSubway, color: Color(0xFFFF4458), size: 20),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.trainSubway, color: Color(0xFFFF4458), size: 20.r),
+              SizedBox(width: 8.w),
               Text(
                 transportation.localTransport?.method ?? 'N/A',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             transportation.localTransport?.details ?? 'No details available',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: Colors.grey[700],
             ),
           ),
@@ -220,7 +221,7 @@ class _FlightRecommendations extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -228,7 +229,7 @@ class _FlightRecommendations extends StatelessWidget {
             const Color(0xFFFF6B7A).withValues(alpha: 0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: const Color(0xFFFF4458).withValues(alpha: 0.2),
         ),
@@ -238,34 +239,34 @@ class _FlightRecommendations extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 FontAwesomeIcons.plane,
                 color: Color(0xFFFF4458),
-                size: 18,
+                size: 18.r,
               ),
-              const SizedBox(width: 6),
-              const Text(
+              SizedBox(width: 6.w),
+              Text(
                 '航班推荐',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFFFF4458),
                 ),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 2,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 8.w,
+                  vertical: 2.h,
                 ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF4458),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
                   '${flights.length}个选择',
-                  style: const TextStyle(
-                    fontSize: 11,
+                  style: TextStyle(
+                    fontSize: 11.sp,
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
                   ),
@@ -273,7 +274,7 @@ class _FlightRecommendations extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           ...flights.asMap().entries.map((entry) {
             final index = entry.key;
             final flight = entry.value;
@@ -305,7 +306,7 @@ class _FlightCard extends StatelessWidget {
         child: Text(
           flight,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 13.sp,
             color: Colors.grey[700],
           ),
         ),
@@ -329,15 +330,15 @@ class _FlightCard extends StatelessWidget {
 
     return Container(
       margin: EdgeInsets.only(bottom: isLast ? 0 : 12),
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -354,17 +355,17 @@ class _FlightCard extends StatelessWidget {
                   children: [
                     Text(
                       airlineAndFlight.split(' ')[0], // 航空公司
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       airlineAndFlight.split(' ').skip(1).join(' '), // 航班号
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -374,18 +375,18 @@ class _FlightCard extends StatelessWidget {
               // 时段标签
               if (timeSlot.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 8.w,
+                    vertical: 4.h,
                   ),
                   decoration: BoxDecoration(
                     color: _getTimeSlotColor(timeSlot),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(
                     timeSlot,
-                    style: const TextStyle(
-                      fontSize: 11,
+                    style: TextStyle(
+                      fontSize: 11.sp,
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
@@ -393,11 +394,11 @@ class _FlightCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           // 价格和时长
           Wrap(
-            spacing: 12,
-            runSpacing: 8,
+            spacing: 12.w,
+            runSpacing: 8.w,
             children: [
               _InfoTag(
                 icon: FontAwesomeIcons.dollarSign,
@@ -415,17 +416,17 @@ class _FlightCard extends StatelessWidget {
           ),
           // 备注信息
           if (notes.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(FontAwesomeIcons.circleInfo, size: 14, color: Colors.blue[400]),
-                const SizedBox(width: 4),
+                Icon(FontAwesomeIcons.circleInfo, size: 14.r, color: Colors.blue[400]),
+                SizedBox(width: 4.w),
                 Expanded(
                   child: Text(
                     notes,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: Colors.blue[700],
                       fontStyle: FontStyle.italic,
                     ),
@@ -468,20 +469,20 @@ class _InfoTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: backgroundColor ?? Colors.grey[100],
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(999.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: iconColor ?? Colors.grey[700]),
-          const SizedBox(width: 6),
+          Icon(icon, size: 12.r, color: iconColor ?? Colors.grey[700]),
+          SizedBox(width: 6.w),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12.5,
+            style: TextStyle(
+              fontSize: 12.5.sp,
               fontWeight: FontWeight.w500,
               color: Colors.black87,
             ),

@@ -90,7 +90,7 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
                   },
                 );
               },
-              size: 18,
+              size: 18.r,
             );
           }
           return const SizedBox.shrink();

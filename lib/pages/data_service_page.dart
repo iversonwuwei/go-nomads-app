@@ -22,6 +22,7 @@ import 'package:go_nomads_app/widgets/copyright_widget.dart';
 
 import 'city_detail/city_detail.dart';
 import 'create_meetup/create_meetup_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class DataServicePage extends StatefulWidget {
   final bool scrollToCities;
@@ -312,10 +313,10 @@ class _DataServicePageState extends State<DataServicePage>
     final cityCount = _localCities.length;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(
           color: const Color(0xFFFF4458).withValues(alpha: 0.3),
           width: 1,
@@ -323,12 +324,12 @@ class _DataServicePageState extends State<DataServicePage>
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             FontAwesomeIcons.magnifyingGlass,
             color: Color(0xFFFF4458),
-            size: 20,
+            size: 20.r,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: RichText(
               text: TextSpan(
@@ -366,16 +367,16 @@ class _DataServicePageState extends State<DataServicePage>
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           InkWell(
             onTap: _clearSearch,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(4.r),
             child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: const Icon(
+              padding: EdgeInsets.all(4.w),
+              child: Icon(
                 FontAwesomeIcons.xmark,
                 color: AppColors.textSecondary,
-                size: 18,
+                size: 18.r,
               ),
             ),
           ),
@@ -437,7 +438,7 @@ class _DataServicePageState extends State<DataServicePage>
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
-                  vertical: 20,
+                  vertical: 20.h,
                 ),
                 child: _buildSearchBar(isMobile),
               ),
@@ -453,7 +454,7 @@ class _DataServicePageState extends State<DataServicePage>
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            SliverToBoxAdapter(child: SizedBox(height: 8.h)),
 
             // 搜索结果提示 - 使用本地搜索状态
             if (_localSearchQuery.isNotEmpty)
@@ -466,7 +467,7 @@ class _DataServicePageState extends State<DataServicePage>
                 ),
               ),
 
-            if (_localSearchQuery.isNotEmpty) const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            if (_localSearchQuery.isNotEmpty) SliverToBoxAdapter(child: SizedBox(height: 8.h)),
 
             // 城市列表锚点 (用于滚动定位)
             SliverToBoxAdapter(
@@ -485,7 +486,7 @@ class _DataServicePageState extends State<DataServicePage>
             ),
 
             // 底部间距
-            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            SliverToBoxAdapter(child: SizedBox(height: 40.h)),
 
             // Meetups 部分 - Nomads.com 风格
             SliverToBoxAdapter(
@@ -497,7 +498,7 @@ class _DataServicePageState extends State<DataServicePage>
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 60)),
+            SliverToBoxAdapter(child: SizedBox(height: 60.h)),
 
             // 特性列表
             SliverToBoxAdapter(
@@ -510,14 +511,14 @@ class _DataServicePageState extends State<DataServicePage>
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            SliverToBoxAdapter(child: SizedBox(height: 40.h)),
 
             // 版权信息
             const SliverToBoxAdapter(
               child: CopyrightWidget(useTopMargin: false),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
           ],
         );
       }),
@@ -555,18 +556,18 @@ class _DataServicePageState extends State<DataServicePage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12.w),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           FontAwesomeIcons.earthAmericas,
                           color: Colors.white,
-                          size: 32,
+                          size: 32.r,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16.w),
                       Text(
                         l10n.goNomad,
                         style: TextStyle(
@@ -589,10 +590,10 @@ class _DataServicePageState extends State<DataServicePage>
                       color: Colors.white,
                       fontSize: isMobile ? 18 : 22,
                       fontWeight: FontWeight.w400,
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.5.sp,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     l10n.livingTravelingWorld,
                     textAlign: TextAlign.center,
@@ -600,7 +601,7 @@ class _DataServicePageState extends State<DataServicePage>
                       color: Colors.white,
                       fontSize: isMobile ? 18 : 22,
                       fontWeight: FontWeight.w400,
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.5.sp,
                     ),
                   ),
 
@@ -632,7 +633,7 @@ class _DataServicePageState extends State<DataServicePage>
     if (useGridLayout) {
       // 2x2 网格布局
       return Container(
-        constraints: const BoxConstraints(maxWidth: 600),
+        constraints: BoxConstraints(maxWidth: 600),
         child: Column(
           children: [
             // 第一行: Cities + Coworkings
@@ -648,7 +649,7 @@ class _DataServicePageState extends State<DataServicePage>
                     isCompact: isVerySmall,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: _buildCompactCard(
                     isMobile: true,
@@ -661,7 +662,7 @@ class _DataServicePageState extends State<DataServicePage>
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             // 第二行: Meetups + Innovation
             Row(
               children: [
@@ -680,7 +681,7 @@ class _DataServicePageState extends State<DataServicePage>
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Builder(
                     builder: (context) {
@@ -704,7 +705,7 @@ class _DataServicePageState extends State<DataServicePage>
     } else {
       // 1x4 横向布局(桌面端)
       return Container(
-        constraints: const BoxConstraints(maxWidth: 900),
+        constraints: BoxConstraints(maxWidth: 900),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -719,7 +720,7 @@ class _DataServicePageState extends State<DataServicePage>
               ),
             ),
 
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
 
             // Coworkings
             Expanded(
@@ -732,7 +733,7 @@ class _DataServicePageState extends State<DataServicePage>
               ),
             ),
 
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
 
             // Meetups
             Expanded(
@@ -750,7 +751,7 @@ class _DataServicePageState extends State<DataServicePage>
               ),
             ),
 
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
 
             // Innovation
             Expanded(
@@ -798,11 +799,11 @@ class _DataServicePageState extends State<DataServicePage>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: color.withValues(alpha: 0.3),
-              blurRadius: 12,
+              blurRadius: 12.r,
               offset: const Offset(0, 4),
             ),
           ],
@@ -814,7 +815,7 @@ class _DataServicePageState extends State<DataServicePage>
               padding: EdgeInsets.all(isCompact ? 10 : 14),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
               ),
               child: Icon(
                 icon,
@@ -832,7 +833,7 @@ class _DataServicePageState extends State<DataServicePage>
                 color: Colors.white,
                 fontSize: isCompact ? 12 : (isMobile ? 13 : 15),
                 fontWeight: FontWeight.w700,
-                letterSpacing: 0.3,
+                letterSpacing: 0.3.sp,
               ),
             ),
           ],
@@ -873,16 +874,16 @@ class _DataServicePageState extends State<DataServicePage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: features.map((feature) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.only(bottom: 12.h),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Emoji 图标
                 Text(
                   feature['icon']!,
-                  style: const TextStyle(fontSize: 24),
+                  style: TextStyle(fontSize: 24.sp),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 // 文字描述
                 Expanded(
                   child: Text(
@@ -892,7 +893,7 @@ class _DataServicePageState extends State<DataServicePage>
                       fontSize: isMobile ? 15 : 16,
                       fontWeight: FontWeight.w400,
                       height: 1.4,
-                      letterSpacing: 0.2,
+                      letterSpacing: 0.2.sp,
                     ),
                   ),
                 ),
@@ -912,18 +913,18 @@ class _DataServicePageState extends State<DataServicePage>
       children: [
         Text(
           l10n.popular,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
         // 全球地图按钮
         IconButton(
-          icon: const FaIcon(
+          icon: FaIcon(
             FontAwesomeIcons.mapLocationDot,
             color: AppColors.textSecondary,
-            size: 20,
+            size: 20.r,
           ),
           onPressed: () {
             Get.toNamed(AppRoutes.globalMap);
@@ -936,40 +937,40 @@ class _DataServicePageState extends State<DataServicePage>
   // 搜索栏
   Widget _buildSearchBar(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: AppColors.borderLight, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.magnifyingGlass, color: AppColors.textSecondary, size: 20),
-          const SizedBox(width: 12),
+          Icon(FontAwesomeIcons.magnifyingGlass, color: AppColors.textSecondary, size: 20.r),
+          SizedBox(width: 12.w),
           Expanded(
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search cities... (支持中英文搜索)',
                 hintStyle: TextStyle(
                   color: AppColors.textTertiary,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 14,
+                fontSize: 14.sp,
               ),
               onChanged: (value) {
                 // 实时更新清除按钮的显示
@@ -983,7 +984,7 @@ class _DataServicePageState extends State<DataServicePage>
               },
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           // 搜索按钮
           InkWell(
             onTap: () {
@@ -995,18 +996,18 @@ class _DataServicePageState extends State<DataServicePage>
                 _clearSearch();
               }
             },
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(6.r),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: const Color(0xFFFF4458),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(6.r),
               ),
-              child: const Text(
+              child: Text(
                 'Search',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1014,18 +1015,18 @@ class _DataServicePageState extends State<DataServicePage>
           ),
           // 清除按钮
           if (_searchController.text.isNotEmpty) ...[
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             InkWell(
               onTap: () {
                 _clearSearch();
               },
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               child: Container(
-                padding: const EdgeInsets.all(6),
-                child: const Icon(
+                padding: EdgeInsets.all(6.w),
+                child: Icon(
                   FontAwesomeIcons.xmark,
                   color: AppColors.textSecondary,
-                  size: 18,
+                  size: 18.r,
                 ),
               ),
             ),
@@ -1050,23 +1051,23 @@ class _DataServicePageState extends State<DataServicePage>
         return SliverToBoxAdapter(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 60),
+              padding: EdgeInsets.symmetric(vertical: 60.h),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(
-                    width: 40,
-                    height: 40,
+                  SizedBox(
+                    width: 40.w,
+                    height: 40.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 3,
                       valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     l10n.loading,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: 14.sp,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -1100,8 +1101,8 @@ class _DataServicePageState extends State<DataServicePage>
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
                 childAspectRatio: isMobile ? 0.68 : 0.72,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+                crossAxisSpacing: 12.w,
+                mainAxisSpacing: 12.w,
               ),
               itemCount: displayItems.length,
               itemBuilder: (context, index) {
@@ -1112,34 +1113,34 @@ class _DataServicePageState extends State<DataServicePage>
               },
             ),
             if (hasMore) ...[
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Center(
                 child: OutlinedButton.icon(
                   onPressed: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
-                  icon: const Icon(
+                  icon: Icon(
                     FontAwesomeIcons.city,
-                    size: 20,
+                    size: 20.r,
                     color: Color(0xFFFF4458),
                   ),
                   label: Text(
                     l10n.viewAllCities,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Color(0xFFFF4458),
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.w,
+                      vertical: 12.h,
                     ),
-                    side: const BorderSide(
+                    side: BorderSide(
                       color: Color(0xFFFF4458),
                       width: 1.5,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
                 ),
@@ -1162,34 +1163,34 @@ class _DataServicePageState extends State<DataServicePage>
               },
             ),
             if (hasMore) ...[
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Center(
                 child: OutlinedButton.icon(
                   onPressed: () => _checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
-                  icon: const Icon(
+                  icon: Icon(
                     FontAwesomeIcons.city,
-                    size: 20,
+                    size: 20.r,
                     color: Color(0xFFFF4458),
                   ),
                   label: Text(
                     l10n.viewAllCities,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Color(0xFFFF4458),
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 24.w,
+                      vertical: 12.h,
                     ),
-                    side: const BorderSide(
+                    side: BorderSide(
                       color: Color(0xFFFF4458),
                       width: 1.5,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
                 ),
@@ -1211,26 +1212,26 @@ class _DataServicePageState extends State<DataServicePage>
       if (isLoadingMeetups) {
         return Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 60),
+            padding: EdgeInsets.symmetric(vertical: 60.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
-                  width: 40,
-                  height: 40,
+                SizedBox(
+                  width: 40.w,
+                  height: 40.h,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
                     valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Builder(
                   builder: (context) {
                     final l10n = AppLocalizations.of(context)!;
                     return Text(
                       l10n.loading,
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: 14.sp,
                         color: AppColors.textSecondary,
                       ),
                     );
@@ -1263,17 +1264,17 @@ class _DataServicePageState extends State<DataServicePage>
                     children: [
                       Text(
                         l10n.nextMeetups,
-                        style: const TextStyle(
-                          fontSize: 28,
+                        style: TextStyle(
+                          fontSize: 28.sp,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         l10n.upcomingEventsCount(upcomingMeetups.length),
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: TextStyle(
+                          fontSize: 14.sp,
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -1296,7 +1297,7 @@ class _DataServicePageState extends State<DataServicePage>
                                       title: l10n.loginRequired,
                                     );
                                   },
-                            icon: const Icon(FontAwesomeIcons.plus, size: 18),
+                            icon: Icon(FontAwesomeIcons.plus, size: 18.r),
                             label: Text(isMobile ? l10n.create : l10n.createMeetup),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFF4458),
@@ -1306,40 +1307,40 @@ class _DataServicePageState extends State<DataServicePage>
                                 vertical: isMobile ? 8 : 12,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(8.r),
                               ),
                             ),
                           )),
-                      if (!isMobile) const SizedBox(width: 12),
+                      if (!isMobile) SizedBox(width: 12.w),
                       if (!isMobile)
                         OutlinedButton.icon(
                           onPressed: () {
                             Get.toNamed(AppRoutes.meetupsList);
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             FontAwesomeIcons.arrowRight,
-                            size: 20,
+                            size: 20.r,
                             color: Color(0xFFFF4458),
                           ),
                           label: Text(
                             l10n.viewAllMeetups,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Color(0xFFFF4458),
-                              fontSize: 15,
+                              fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24.w,
+                              vertical: 12.h,
                             ),
-                            side: const BorderSide(
+                            side: BorderSide(
                               color: Color(0xFFFF4458),
                               width: 1.5,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(8.r),
                             ),
                           ),
                         ),
@@ -1348,11 +1349,11 @@ class _DataServicePageState extends State<DataServicePage>
                 ],
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // Meetups 列表（横向滚动 + 无限加载）
               SizedBox(
-                height: 300, // 减小卡片高度
+                height: 300.h, // 减小卡片高度
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (ScrollNotification scrollInfo) {
                     // 当滚动到接近末尾时，加载更多数据
@@ -1371,11 +1372,11 @@ class _DataServicePageState extends State<DataServicePage>
                       // 如果是最后一项且还有更多数据，显示加载指示器
                       if (index == upcomingMeetups.length) {
                         return Container(
-                          width: 60,
-                          margin: const EdgeInsets.only(left: 12),
+                          width: 60.w,
+                          margin: EdgeInsets.only(left: 12.w),
                           child: Center(
                             child: Obx(() => _meetupController.isLoadingMore.value
-                                ? const CircularProgressIndicator(
+                                ? CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                                   )
@@ -1396,7 +1397,7 @@ class _DataServicePageState extends State<DataServicePage>
 
               // 移动端的 View all 按钮
               if (isMobile) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Builder(
                   builder: (context) {
                     final l10n = AppLocalizations.of(context)!;
@@ -1405,30 +1406,30 @@ class _DataServicePageState extends State<DataServicePage>
                         onPressed: () {
                           Get.toNamed(AppRoutes.meetupsList);
                         },
-                        icon: const Icon(
+                        icon: Icon(
                           FontAwesomeIcons.arrowRight,
-                          size: 20,
+                          size: 20.r,
                           color: Color(0xFFFF4458),
                         ),
                         label: Text(
                           l10n.viewAllMeetups,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Color(0xFFFF4458),
                             fontWeight: FontWeight.w600,
-                            fontSize: 15,
+                            fontSize: 15.sp,
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24.w,
+                            vertical: 12.h,
                           ),
-                          side: const BorderSide(
+                          side: BorderSide(
                             color: Color(0xFFFF4458),
                             width: 1.5,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(8.r),
                           ),
                         ),
                       ),
@@ -1483,7 +1484,7 @@ class _DataServicePageState extends State<DataServicePage>
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // 描述
           Text(
@@ -1517,7 +1518,7 @@ class _DataServicePageState extends State<DataServicePage>
                   vertical: isMobile ? 12 : 16,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
             ),
@@ -1527,11 +1528,11 @@ class _DataServicePageState extends State<DataServicePage>
               onPressed: () {
                 Get.toNamed(AppRoutes.cityList);
               },
-              icon: const Icon(FontAwesomeIcons.circlePlus, size: 20),
+              icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
               label: Text(
                 l10n.browseCities,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1544,7 +1545,7 @@ class _DataServicePageState extends State<DataServicePage>
                 ),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
             ),
@@ -1591,7 +1592,7 @@ class _DataServicePageState extends State<DataServicePage>
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // 描述
           Text(
@@ -1616,11 +1617,11 @@ class _DataServicePageState extends State<DataServicePage>
                 ),
               );
             },
-            icon: const Icon(FontAwesomeIcons.circlePlus, size: 20),
-            label: const Text(
+            icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
+            label: Text(
               'Create Meetup',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1633,7 +1634,7 @@ class _DataServicePageState extends State<DataServicePage>
               ),
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
             ),
           ),
@@ -1702,7 +1703,7 @@ class _DataCardState extends State<_DataCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
             color: showDetails ? AppColors.accent.withValues(alpha: 0.5) : AppColors.borderLight,
             width: 1,
@@ -1719,7 +1720,7 @@ class _DataCardState extends State<_DataCard> {
           children: [
             // 背景图片
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
               child: Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -1750,9 +1751,9 @@ class _DataCardState extends State<_DataCard> {
               children: [
                 // 顶部：排名、徽章和网络 - 防止溢出
                 Positioned(
-                  top: 8,
-                  left: 8,
-                  right: 8,
+                  top: 8.h,
+                  left: 8.w,
+                  right: 8.w,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1767,7 +1768,7 @@ class _DataCardState extends State<_DataCard> {
                                 color: widget.data.moderatorId != null
                                     ? const Color(0xFF10B981).withValues(alpha: 0.9)
                                     : Colors.orange.withValues(alpha: 0.9),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(4.r),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -1826,7 +1827,7 @@ class _DataCardState extends State<_DataCard> {
                             padding: EdgeInsets.symmetric(horizontal: isMobile ? 3 : 6, vertical: isMobile ? 2 : 3),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(4.r),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -1869,9 +1870,9 @@ class _DataCardState extends State<_DataCard> {
                           Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(8),
-                        bottomRight: Radius.circular(8),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(8.r),
+                        bottomRight: Radius.circular(8.r),
                       ),
                     ),
                     child: Column(
@@ -1992,44 +1993,44 @@ class _DetailOverlay extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
         ),
         child: Stack(
           children: [
             // 顶部左侧 - 收藏图标
             Positioned(
-              top: 12,
-              left: 12,
+              top: 12.h,
+              left: 12.w,
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.4),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   FontAwesomeIcons.heart,
                   color: Colors.white,
-                  size: 20,
+                  size: 20.r,
                 ),
               ),
             ),
 
             // 顶部右侧 - 关闭按钮
             Positioned(
-              top: 12,
-              right: 12,
+              top: 12.h,
+              right: 12.w,
               child: GestureDetector(
                 onTap: onClose,
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     FontAwesomeIcons.xmark,
                     color: Colors.white,
-                    size: 20,
+                    size: 20.r,
                   ),
                 ),
               ),
@@ -2037,20 +2038,20 @@ class _DetailOverlay extends StatelessWidget {
 
             // 底部 - 评分条
             Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16,
+              left: 16.w,
+              right: 16.w,
+              bottom: 16.h,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildMetricBar('⭐ Overall', data.displayOverallScore, const Color(0xFFFBBF24)),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   _buildMetricBar('💰 Cost', data.displayCostScore, const Color(0xFF4ADE80)),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   _buildMetricBar('📡 Internet', data.displayInternetScore, const Color(0xFFFBBF24)),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   _buildMetricBar('👍 乐趣', data.displayLikedScore, const Color(0xFF4ADE80)),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   _buildMetricBar('🛡️ Safety', data.displaySafetyScore, const Color(0xFF4ADE80)),
                 ],
               ),
@@ -2065,32 +2066,32 @@ class _DetailOverlay extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 85,
+          width: 85.w,
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 13,
+              fontSize: 13.sp,
               fontWeight: FontWeight.w500,
               shadows: [
                 Shadow(
                   color: Colors.black54,
-                  blurRadius: 3,
+                  blurRadius: 3.r,
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Expanded(
           child: Stack(
             children: [
               // 背景条 - 深色半透明
               Container(
-                height: 18,
+                height: 18.h,
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(9),
+                  borderRadius: BorderRadius.circular(9.r),
                 ),
               ),
               // 进度条
@@ -2098,10 +2099,10 @@ class _DetailOverlay extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 widthFactor: value / 5.0, // 将 0-5 分转换为 0-1 比例
                 child: Container(
-                  height: 18,
+                  height: 18.h,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: BorderRadius.circular(9),
+                    borderRadius: BorderRadius.circular(9.r),
                   ),
                 ),
               ),
@@ -2148,16 +2149,16 @@ class _DataListItem extends StatelessWidget {
         });
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           border: Border.all(color: AppColors.borderLight, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
+              blurRadius: 8.r,
               offset: const Offset(0, 2),
             ),
           ],
@@ -2166,15 +2167,15 @@ class _DataListItem extends StatelessWidget {
           children: [
             // 缩略图
             ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(6.r),
               child: Image.network(
                 data.displayImageUrl,
-                width: 80,
-                height: 80,
+                width: 80.w,
+                height: 80.h,
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
 
             // 信息
             Expanded(
@@ -2183,18 +2184,18 @@ class _DataListItem extends StatelessWidget {
                 children: [
                   Text(
                     data.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     data.displayCountry,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 13,
+                      fontSize: 13.sp,
                     ),
                   ),
                 ],
@@ -2207,17 +2208,17 @@ class _DataListItem extends StatelessWidget {
               children: [
                 Text(
                   '\$${data.displayAverageCost.toStringAsFixed(0)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   l10n.perMonth,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textTertiary,
-                    fontSize: 10,
+                    fontSize: 10.sp,
                   ),
                 ),
               ],
@@ -2400,11 +2401,11 @@ class _MeetupCard extends StatelessWidget {
 
       return Container(
         width: isMobile ? 280 : 320,
-        margin: const EdgeInsets.only(right: 16),
+        margin: EdgeInsets.only(right: 16.w),
         child: Card(
           elevation: 2,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             side: BorderSide(color: AppColors.borderLight, width: 1),
           ),
           child: Column(
@@ -2416,34 +2417,34 @@ class _MeetupCard extends StatelessWidget {
                 onTap: () {
                   Get.toNamed(AppRoutes.meetupDetail, arguments: meetup);
                 },
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
                 child: Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
                       child: Image.network(
                         meetup.images.isNotEmpty
                             ? meetup.images.first
                             : 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
                         width: double.infinity,
-                        height: 140,
+                        height: 140.h,
                         fit: BoxFit.cover,
                       ),
                     ),
                     Positioned(
-                      top: 12,
-                      left: 12,
+                      top: 12.h,
+                      left: 12.w,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                         decoration: BoxDecoration(
                           color: _getTypeColor(meetup.eventType?.enName ?? meetup.type.value),
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text(
                           meetup.eventType?.name ?? meetup.type.value,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -2467,8 +2468,8 @@ class _MeetupCard extends StatelessWidget {
                       // 标题
                       Text(
                         meetup.title,
-                        style: const TextStyle(
-                          fontSize: 15,
+                        style: TextStyle(
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
                         ),
@@ -2476,7 +2477,7 @@ class _MeetupCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
 
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
 
                       // 日期、地点、组织者 - 合并为紧凑显示
                       Column(
@@ -2485,17 +2486,17 @@ class _MeetupCard extends StatelessWidget {
                           // 日期和时间
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 FontAwesomeIcons.calendar,
-                                size: 13,
+                                size: 13.r,
                                 color: AppColors.textSecondary,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4.w),
                               Expanded(
                                 child: Text(
                                   '${_formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
                                     color: AppColors.textSecondary,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -2504,24 +2505,24 @@ class _MeetupCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           // 地点（场地 + 城市, 国家）
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 FontAwesomeIcons.locationDot,
-                                size: 13,
+                                size: 13.r,
                                 color: AppColors.textSecondary,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4.w),
                               Expanded(
                                 child: Text(
                                   [
                                     if (meetup.venue.name.isNotEmpty) meetup.venue.name,
                                     meetup.location.fullDescription,
                                   ].where((s) => s.isNotEmpty).join(', '),
-                                  style: const TextStyle(
-                                    fontSize: 11,
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
                                     color: AppColors.textSecondary,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -2534,7 +2535,7 @@ class _MeetupCard extends StatelessWidget {
                         ],
                       ),
 
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
 
                       // 参加人数和组织者 - 合并为一行
                       Row(
@@ -2543,29 +2544,29 @@ class _MeetupCard extends StatelessWidget {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 FontAwesomeIcons.users,
-                                size: 13,
+                                size: 13.r,
                                 color: AppColors.textSecondary,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4.w),
                               Text(
                                 '$currentAttendees',
-                                style: const TextStyle(
-                                  fontSize: 11,
+                                style: TextStyle(
+                                  fontSize: 11.sp,
                                   color: AppColors.textSecondary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           // 剩余名额
                           if ((maxAttendees - currentAttendees) > 0)
                             Text(
                               '${maxAttendees - currentAttendees} left',
-                              style: const TextStyle(
-                                fontSize: 11,
+                              style: TextStyle(
+                                fontSize: 11.sp,
                                 color: Color(0xFFFF4458),
                                 fontWeight: FontWeight.w600,
                               ),
@@ -2576,17 +2577,17 @@ class _MeetupCard extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   FontAwesomeIcons.user,
-                                  size: 13,
+                                  size: 13.r,
                                   color: AppColors.textSecondary,
                                 ),
-                                const SizedBox(width: 3),
+                                SizedBox(width: 3.w),
                                 Flexible(
                                   child: Text(
                                     meetup.organizer.name,
-                                    style: const TextStyle(
-                                      fontSize: 11,
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
                                       color: AppColors.textSecondary,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -2636,7 +2637,7 @@ class _MeetupCard extends StatelessWidget {
       if (status == MeetupStatus.cancelled) {
         return SizedBox(
           width: double.infinity,
-          height: 32,
+          height: 32.h,
           child: ElevatedButton(
             onPressed: null,
             style: ElevatedButton.styleFrom(
@@ -2644,7 +2645,7 @@ class _MeetupCard extends StatelessWidget {
               foregroundColor: AppColors.textSecondary,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(6.r),
               ),
               disabledBackgroundColor: AppColors.borderLight,
               disabledForegroundColor: AppColors.textSecondary,
@@ -2652,12 +2653,12 @@ class _MeetupCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(FontAwesomeIcons.ban, size: 14),
-                SizedBox(width: 4),
+                Icon(FontAwesomeIcons.ban, size: 14.r),
+                SizedBox(width: 4.w),
                 Text(
                   '已取消',
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -2671,7 +2672,7 @@ class _MeetupCard extends StatelessWidget {
       if (status == MeetupStatus.completed || meetup.isEnded) {
         return SizedBox(
           width: double.infinity,
-          height: 32,
+          height: 32.h,
           child: ElevatedButton(
             onPressed: null,
             style: ElevatedButton.styleFrom(
@@ -2679,7 +2680,7 @@ class _MeetupCard extends StatelessWidget {
               foregroundColor: AppColors.textSecondary,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(6.r),
               ),
               disabledBackgroundColor: AppColors.borderLight,
               disabledForegroundColor: AppColors.textSecondary,
@@ -2687,12 +2688,12 @@ class _MeetupCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(FontAwesomeIcons.circleCheck, size: 14),
-                SizedBox(width: 4),
+                Icon(FontAwesomeIcons.circleCheck, size: 14.r),
+                SizedBox(width: 4.w),
                 Text(
                   '已结束',
-                  style: const TextStyle(
-                    fontSize: 12,
+                  style: TextStyle(
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -2708,7 +2709,7 @@ class _MeetupCard extends StatelessWidget {
           // Chat 按钮 - 组织者始终可用
           Expanded(
             child: SizedBox(
-              height: 32,
+              height: 32.h,
               child: OutlinedButton(
                 onPressed: () {
                   final authController = Get.find<AuthStateController>();
@@ -2734,26 +2735,26 @@ class _MeetupCard extends StatelessWidget {
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.blue,
-                  side: const BorderSide(
+                  side: BorderSide(
                     color: Colors.blue,
                     width: 1.5,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 6.w),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(FontAwesomeIcons.message, size: 14),
-                    SizedBox(width: 3),
+                    Icon(FontAwesomeIcons.message, size: 14.r),
+                    SizedBox(width: 3.w),
                     Flexible(
                       child: Text(
                         'Chat',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -2764,11 +2765,11 @@ class _MeetupCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: 6.w),
           // 取消活动按钮
           Expanded(
             child: SizedBox(
-              height: 32,
+              height: 32.h,
               child: ElevatedButton(
                 onPressed: () => _handleCancelMeetup(context),
                 style: ElevatedButton.styleFrom(
@@ -2776,19 +2777,19 @@ class _MeetupCard extends StatelessWidget {
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(FontAwesomeIcons.ban, size: 14),
-                    SizedBox(width: 4),
+                    Icon(FontAwesomeIcons.ban, size: 14.r),
+                    SizedBox(width: 4.w),
                     Flexible(
                       child: Text(
                         '取消活动',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -2808,7 +2809,7 @@ class _MeetupCard extends StatelessWidget {
     if (status == MeetupStatus.cancelled) {
       return SizedBox(
         width: double.infinity,
-        height: 32,
+        height: 32.h,
         child: ElevatedButton(
           onPressed: null,
           style: ElevatedButton.styleFrom(
@@ -2816,7 +2817,7 @@ class _MeetupCard extends StatelessWidget {
             foregroundColor: AppColors.textSecondary,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(6.r),
             ),
             disabledBackgroundColor: AppColors.borderLight,
             disabledForegroundColor: AppColors.textSecondary,
@@ -2824,12 +2825,12 @@ class _MeetupCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.ban, size: 14),
-              SizedBox(width: 4),
+              Icon(FontAwesomeIcons.ban, size: 14.r),
+              SizedBox(width: 4.w),
               Text(
                 '活动已取消',
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -2843,7 +2844,7 @@ class _MeetupCard extends StatelessWidget {
     if (status == MeetupStatus.completed || meetup.isEnded) {
       return SizedBox(
         width: double.infinity,
-        height: 32,
+        height: 32.h,
         child: ElevatedButton(
           onPressed: null,
           style: ElevatedButton.styleFrom(
@@ -2851,7 +2852,7 @@ class _MeetupCard extends StatelessWidget {
             foregroundColor: AppColors.textSecondary,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(6.r),
             ),
             disabledBackgroundColor: AppColors.borderLight,
             disabledForegroundColor: AppColors.textSecondary,
@@ -2859,12 +2860,12 @@ class _MeetupCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.circleCheck, size: 14),
-              SizedBox(width: 4),
+              Icon(FontAwesomeIcons.circleCheck, size: 14.r),
+              SizedBox(width: 4.w),
               Text(
                 '活动已结束',
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -2880,7 +2881,7 @@ class _MeetupCard extends StatelessWidget {
         // Chat 按钮 - 只有加入了才能点击
         Expanded(
           child: SizedBox(
-            height: 32,
+            height: 32.h,
             child: OutlinedButton(
               onPressed: isJoined
                   ? () {
@@ -2914,22 +2915,22 @@ class _MeetupCard extends StatelessWidget {
                   width: 1.5,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(6.r),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 6),
+                padding: EdgeInsets.symmetric(horizontal: 6.w),
                 backgroundColor: isJoined ? null : Colors.grey.shade50,
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FontAwesomeIcons.message, size: 14),
-                  SizedBox(width: 3),
+                  Icon(FontAwesomeIcons.message, size: 14.r),
+                  SizedBox(width: 3.w),
                   Flexible(
                     child: Text(
                       'Chat',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -2940,11 +2941,11 @@ class _MeetupCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         // Join/Leave 按钮
         Expanded(
           child: SizedBox(
-            height: 32,
+            height: 32.h,
             child: ElevatedButton(
               onPressed: (isFull && !isJoined) ? null : () => _handleToggleJoin(context, isJoined),
               style: ElevatedButton.styleFrom(
@@ -2952,9 +2953,9 @@ class _MeetupCard extends StatelessWidget {
                 foregroundColor: isJoined ? AppColors.textSecondary : Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(6.r),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 6),
+                padding: EdgeInsets.symmetric(horizontal: 6.w),
                 disabledBackgroundColor: AppColors.borderLight,
                 disabledForegroundColor: AppColors.textSecondary,
               ),
@@ -2964,9 +2965,9 @@ class _MeetupCard extends StatelessWidget {
                 children: [
                   Icon(
                     isJoined ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circlePlus,
-                    size: 14,
+                    size: 14.r,
                   ),
-                  const SizedBox(width: 3),
+                  SizedBox(width: 3.w),
                   Flexible(
                     child: Text(
                       isFull && !isJoined
@@ -2974,8 +2975,8 @@ class _MeetupCard extends StatelessWidget {
                           : isJoined
                               ? 'Leave'
                               : 'Join',
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -3141,13 +3142,13 @@ class _GenerateImageButton extends StatelessWidget {
           padding: EdgeInsets.all(isMobile ? 4 : 6),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(4.r),
           ),
           child: isGenerating
               ? SizedBox(
                   width: isMobile ? 12 : 16,
                   height: isMobile ? 12 : 16,
-                  child: const CircularProgressIndicator(
+                  child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),

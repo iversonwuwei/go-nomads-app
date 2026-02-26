@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 登录页面头部 - Logo 和标题
 class LoginHeader extends StatelessWidget {
@@ -21,31 +22,31 @@ class LoginHeader extends StatelessWidget {
             color: LoginConstants.primaryColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
+          child: Icon(
             FontAwesomeIcons.earthAmericas,
-            size: 40,
+            size: 40.r,
             color: LoginConstants.primaryColor,
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // 标题
         Text(
           l10n.welcome,
-          style: const TextStyle(
-            fontSize: 32,
+          style: TextStyle(
+            fontSize: 32.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
 
         // 副标题
         Text(
           l10n.login,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             color: Colors.grey,
             height: 1.5,
           ),

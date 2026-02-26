@@ -11,6 +11,7 @@ import 'package:go_nomads_app/pages/add_innovation/add_innovation_market_section
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_problem_solution_section.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_progress_section.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_team_section.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Add Innovation Project Page
 /// 添加创意项目页面（支持编辑模式）
@@ -72,8 +73,8 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
       actions: [
         Obx(() => controller.isSubmitting.value
             ? Container(
-                padding: const EdgeInsets.all(16),
-                child: const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                padding: EdgeInsets.all(16.w),
+                child: SizedBox(width: 20.w, height: 20.h, child: CircularProgressIndicator(strokeWidth: 2)),
               )
             : IconButton(
                 icon: const Icon(FontAwesomeIcons.check),
@@ -91,7 +92,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.h),
       child: Form(
         key: controller.formKey,
         child: Column(
@@ -99,45 +100,45 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
           children: [
             // 封面图片区域
             AddInnovationImageSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 基本信息
             _buildSectionTitle(l10n.basicInformation, FontAwesomeIcons.circleInfo),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationBasicInfoSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 问题与解决方案
             _buildSectionTitle(l10n.problemAndSolution, FontAwesomeIcons.lightbulb),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationProblemSolutionSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 市场定位
             _buildSectionTitle(l10n.marketPositioning, FontAwesomeIcons.bullseye),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationMarketSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 竞争与商业
             _buildSectionTitle(l10n.competitionAndBusiness, FontAwesomeIcons.chartLine),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationBusinessSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 进展与需求
             _buildSectionTitle(l10n.progressAndNeeds, FontAwesomeIcons.flagCheckered),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationProgressSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 团队成员
             AddInnovationTeamSection(controllerTag: tag),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // 提交按钮
             _buildSubmitButton(context, l10n, tag),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
           ],
         ),
       ),
@@ -148,18 +149,18 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: const Color(0xFF8B5CF6).withAlpha(25),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Icon(icon, size: 16, color: const Color(0xFF8B5CF6)),
+          child: Icon(icon, size: 16.r, color: const Color(0xFF8B5CF6)),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
             letterSpacing: -0.3,
           ),
@@ -178,27 +179,27 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF8B5CF6),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           elevation: 0,
         ),
         child: controller.isSubmitting.value
-            ? const Row(
+            ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                  SizedBox(width: 12),
-                  Text('提交中...', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 20.w, height: 20.h, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                  SizedBox(width: 12.w),
+                  Text('提交中...', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                 ],
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(isEditMode ? FontAwesomeIcons.floppyDisk : FontAwesomeIcons.paperPlane, size: 18),
-                  const SizedBox(width: 8),
+                  Icon(isEditMode ? FontAwesomeIcons.floppyDisk : FontAwesomeIcons.paperPlane, size: 18.r),
+                  SizedBox(width: 8.w),
                   Text(
                     isEditMode ? l10n.save : l10n.submit,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),

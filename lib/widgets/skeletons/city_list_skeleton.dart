@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市列表页骨架屏组件（使用 shimmer 包）
 class CityListSkeleton extends BaseSkeleton {
@@ -43,7 +44,7 @@ class _CityListSkeletonState extends BaseSkeletonState<CityListSkeleton> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -62,33 +63,33 @@ class _CityListSkeletonState extends BaseSkeletonState<CityListSkeleton> {
           Expanded(
             flex: 4,
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // 城市名称
-                  const SkeletonBox(
-                    width: 80,
-                    height: 14,
+                  SkeletonBox(
+                    width: 80.w,
+                    height: 14.h,
                     borderRadius: 4,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   // 国家名称
-                  const SkeletonBox(
-                    width: 50,
-                    height: 11,
+                  SkeletonBox(
+                    width: 50.w,
+                    height: 11.h,
                     borderRadius: 4,
                   ),
                   const Spacer(),
                   // 底部指标行
                   Row(
-                    children: const [
-                      SkeletonBox(width: 32, height: 16, borderRadius: 4),
-                      SizedBox(width: 6),
-                      SkeletonBox(width: 32, height: 16, borderRadius: 4),
+                    children: [
+                      SkeletonBox(width: 32.w, height: 16.h, borderRadius: 4),
+                      SizedBox(width: 6.w),
+                      SkeletonBox(width: 32.w, height: 16.h, borderRadius: 4),
                       Spacer(),
-                      SkeletonBox(width: 20, height: 16, borderRadius: 4),
+                      SkeletonBox(width: 20.w, height: 16.h, borderRadius: 4),
                     ],
                   ),
                 ],

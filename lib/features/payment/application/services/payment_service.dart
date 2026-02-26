@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
 import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 支付服务 - 处理支付流程
 class PaymentService extends GetxService {
@@ -172,7 +173,7 @@ class PaymentService extends GetxService {
               success ? Icons.check_circle : Icons.error,
               color: success ? Colors.green : Colors.red,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(success ? '支付成功' : '支付失败'),
           ],
         ),
