@@ -36,15 +36,15 @@ class TravelPlanBudgetCard extends StatelessWidget {
       child: Column(
         children: [
           _buildBudgetRow(transportationLabel, budget.transportation),
-          Divider(height: 24),
+          Divider(height: 24.h),
           _buildBudgetRow(accommodationLabel, budget.accommodation),
-          Divider(height: 24),
+          Divider(height: 24.h),
           _buildBudgetRow(foodLabel, budget.food),
-          Divider(height: 24),
+          Divider(height: 24.h),
           _buildBudgetRow(activitiesLabel, budget.activities),
-          Divider(height: 24),
+          Divider(height: 24.h),
           _buildBudgetRow(miscellaneousLabel, budget.miscellaneous),
-          Divider(height: 24),
+          Divider(height: 24.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

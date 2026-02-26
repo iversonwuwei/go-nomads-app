@@ -56,8 +56,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
   void didUpdateWidget(covariant SkillsSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (!setEquals(
-        widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
+    if (!setEquals(widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
       _restoreSelectionFromWidget(force: true);
     }
   }
@@ -95,8 +94,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
       widget.onChanged(_selectedSkills);
     } else {
       // 检查是否超过最大选择数
-      if (widget.maxSelection > 0 &&
-          _selectedSkills.length >= widget.maxSelection) {
+      if (widget.maxSelection > 0 && _selectedSkills.length >= widget.maxSelection) {
         AppToast.error('最多只能选择 ${widget.maxSelection} 个技能');
         return;
       }
@@ -215,13 +213,11 @@ class _SkillsSelectorState extends State<SkillsSelector> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('熟练度',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('熟练度', style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 8.h),
                 Wrap(
                   spacing: 8.w,
-                  children: ['Beginner', 'Intermediate', 'Advanced', 'Expert']
-                      .map((level) {
+                  children: ['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((level) {
                     return ChoiceChip(
                       label: Text(_getProficiencyText(level)),
                       selected: selectedProficiency == level,
@@ -230,16 +226,13 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       },
                       selectedColor: AppColors.accent,
                       labelStyle: TextStyle(
-                        color: selectedProficiency == level
-                            ? Colors.white
-                            : AppColors.textPrimary,
+                        color: selectedProficiency == level ? Colors.white : AppColors.textPrimary,
                       ),
                     );
                   }).toList(),
                 ),
                 SizedBox(height: 16.h),
-                const Text('经验年限',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('经验年限', style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 8.h),
                 Row(
                   children: [
@@ -383,8 +376,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                     child: _CategoryChip(
                       label: _getCategoryText(category.category),
                       isSelected: _selectedCategory == category.category,
-                      onTap: () =>
-                          setState(() => _selectedCategory = category.category),
+                      onTap: () => setState(() => _selectedCategory = category.category),
                     ),
                   );
                 }),
@@ -445,8 +437,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       deleteIcon: Icon(FontAwesomeIcons.xmark, size: 18.r),
                       onDeleted: () {
                         setState(() {
-                          _selectedSkills.removeWhere(
-                              (s) => s.skillId == userSkill.skillId);
+                          _selectedSkills.removeWhere((s) => s.skillId == userSkill.skillId);
                         });
                         widget.onChanged(_selectedSkills);
                       },
@@ -455,7 +446,7 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                     );
                   }).toList(),
                 ),
-                Divider(height: 24),
+                Divider(height: 24.h),
               ],
             ),
           ),
@@ -476,21 +467,17 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       spacing: 8.w,
                       runSpacing: 8.w,
                       children: filteredSkills.map((skill) {
-                        final isSelected =
-                            _selectedSkills.any((s) => s.skillId == skill.id);
+                        final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
                         return FilterChip(
                           avatar: Text(skill.icon ?? '💼'),
                           label: Text(skill.name),
                           selected: isSelected,
                           onSelected: (_) => _toggleSkill(skill),
-                          selectedColor:
-                              AppColors.accent.withValues(alpha: 0.2),
+                          selectedColor: AppColors.accent.withValues(alpha: 0.2),
                           checkmarkColor: AppColors.accent,
                           backgroundColor: AppColors.white,
                           side: BorderSide(
-                            color: isSelected
-                                ? AppColors.accent
-                                : AppColors.border,
+                            color: isSelected ? AppColors.accent : AppColors.border,
                           ),
                         );
                       }).toList(),

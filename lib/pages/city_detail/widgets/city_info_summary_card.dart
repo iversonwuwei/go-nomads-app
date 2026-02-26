@@ -21,7 +21,7 @@ class CityInfoSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      margin: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: Colors.white,

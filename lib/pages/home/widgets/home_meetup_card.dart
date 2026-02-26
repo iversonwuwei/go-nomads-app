@@ -162,7 +162,7 @@ class HomeMeetupCard extends StatelessWidget {
     return InkWell(
       onTap: () => Get.toNamed(AppRoutes.meetupDetail, arguments: meetup),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
+        padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 6.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,7 +298,7 @@ class HomeMeetupCard extends StatelessWidget {
     final status = meetup.status;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      padding: EdgeInsets.fromLTRB(10.w, 6.h, 10.w, 6.h),
       child: _buildButtonContent(context, l10n, status, isJoined, isFull, isOrganizer),
     );
   }

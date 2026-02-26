@@ -52,8 +52,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
   void didUpdateWidget(covariant SkillsBottomSheet oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (!setEquals(
-        widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
+    if (!setEquals(widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
       _restoreSelectionFromWidget(force: true);
     }
   }
@@ -283,7 +282,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
             ),
           ),
 
-          Divider(height: 1),
+          Divider(height: 1.h),
 
           if (_isLoading)
             const Expanded(
@@ -299,16 +298,14 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: '搜索技能...',
-                        prefixIcon:
-                            const Icon(FontAwesomeIcons.magnifyingGlass),
+                        prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
                           borderSide: BorderSide(color: AppColors.border),
                         ),
                         filled: true,
                         fillColor: AppColors.background,
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.w, vertical: 12.h),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                       ),
                       onChanged: (value) {
                         setState(() => _searchQuery = value);
@@ -327,8 +324,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                           _CategoryChip(
                             label: '全部',
                             isSelected: _selectedCategory == null,
-                            onTap: () =>
-                                setState(() => _selectedCategory = null),
+                            onTap: () => setState(() => _selectedCategory = null),
                           ),
                           SizedBox(width: 8.w),
                           ..._skillsByCategory.map((category) {
@@ -336,10 +332,8 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                               padding: EdgeInsets.only(right: 8.w),
                               child: _CategoryChip(
                                 label: _getCategoryText(category.category),
-                                isSelected:
-                                    _selectedCategory == category.category,
-                                onTap: () => setState(() =>
-                                    _selectedCategory = category.category),
+                                isSelected: _selectedCategory == category.category,
+                                onTap: () => setState(() => _selectedCategory = category.category),
                               ),
                             );
                           }),
@@ -365,21 +359,17 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                                 spacing: 8.w,
                                 runSpacing: 8.w,
                                 children: filteredSkills.map((skill) {
-                                  final isSelected = _selectedSkills
-                                      .any((s) => s.skillId == skill.id);
+                                  final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
                                   return FilterChip(
                                     avatar: Text(skill.icon ?? '💼'),
                                     label: Text(skill.name),
                                     selected: isSelected,
                                     onSelected: (_) => _toggleSkill(skill),
-                                    selectedColor:
-                                        AppColors.accent.withValues(alpha: 0.2),
+                                    selectedColor: AppColors.accent.withValues(alpha: 0.2),
                                     checkmarkColor: AppColors.accent,
                                     backgroundColor: AppColors.white,
                                     side: BorderSide(
-                                      color: isSelected
-                                          ? AppColors.accent
-                                          : AppColors.border,
+                                      color: isSelected ? AppColors.accent : AppColors.border,
                                     ),
                                   );
                                 }).toList(),

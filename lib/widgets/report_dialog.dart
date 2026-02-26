@@ -126,9 +126,7 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
   bool _isSubmitting = false;
 
   ReportReason? get _selectedReason =>
-      _selectedReasonId == null
-          ? null
-          : widget.reasons.firstWhere((r) => r.id == _selectedReasonId);
+      _selectedReasonId == null ? null : widget.reasons.firstWhere((r) => r.id == _selectedReasonId);
 
   @override
   Widget build(BuildContext context) {
@@ -180,18 +178,16 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                   ),
                 ),
               ),
-            Divider(height: 16),
+            Divider(height: 16.h),
             // 举报原因列表（可滚动，防止小屏溢出）
             Flexible(
               child: ListView(
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
-                children: widget.reasons
-                    .map((reason) => _buildReasonItem(reason))
-                    .toList(),
+                children: widget.reasons.map((reason) => _buildReasonItem(reason)).toList(),
               ),
             ),
-            Divider(height: 1),
+            Divider(height: 1.h),
             // 底部按钮区域：取消 + 确认
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
@@ -221,9 +217,7 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                   // 确认按钮
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: (_selectedReasonId == null || _isSubmitting)
-                          ? null
-                          : _onConfirm,
+                      onPressed: (_selectedReasonId == null || _isSubmitting) ? null : _onConfirm,
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         backgroundColor: const Color(0xFFFF4458),
@@ -239,7 +233,7 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                               width: 20.w,
                               height: 20.h,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
+                                strokeWidth: 2.w,
                                 color: Colors.white,
                               ),
                             )

@@ -1,13 +1,13 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市卡片组件 - 使用 GetView 符合 GetX 标准
 ///
@@ -196,8 +196,7 @@ class CityCard extends GetView<CityListController> {
       height: 20.h,
       padding: EdgeInsets.symmetric(horizontal: 5.w),
       decoration: BoxDecoration(
-        color: (hasModerator ? const Color(0xFF4ADE80) : Colors.grey)
-            .withValues(alpha: 0.85),
+        color: (hasModerator ? const Color(0xFF4ADE80) : Colors.grey).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(6.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
@@ -205,9 +204,7 @@ class CityCard extends GetView<CityListController> {
         ),
       ),
       child: Icon(
-        hasModerator
-            ? FontAwesomeIcons.userShield
-            : FontAwesomeIcons.userSlash,
+        hasModerator ? FontAwesomeIcons.userShield : FontAwesomeIcons.userSlash,
         size: 10.r,
         color: Colors.white,
       ),
@@ -217,7 +214,7 @@ class CityCard extends GetView<CityListController> {
   /// 底部信息面板 - 一目了然的紧凑布局
   Widget _buildHeroInfoPanel(City city) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
+      padding: EdgeInsets.fromLTRB(8.w, 12.h, 8.w, 8.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -278,9 +275,7 @@ class CityCard extends GetView<CityListController> {
               // 月均花费
               _MetricChip(
                 icon: FontAwesomeIcons.dollarSign,
-                value: city.averageCost != null && city.averageCost! > 0
-                    ? '${city.averageCost!.toInt()}'
-                    : '-',
+                value: city.averageCost != null && city.averageCost! > 0 ? '${city.averageCost!.toInt()}' : '-',
               ),
               // 网络评分
               _MetricChip(
@@ -292,16 +287,12 @@ class CityCard extends GetView<CityListController> {
               // 安全评分
               _MetricChip(
                 icon: FontAwesomeIcons.shield,
-                value: city.safetyScore != null && city.safetyScore! > 0
-                    ? city.safetyScore!.toStringAsFixed(1)
-                    : '-',
+                value: city.safetyScore != null && city.safetyScore! > 0 ? city.safetyScore!.toStringAsFixed(1) : '-',
               ),
               // 评论数
               _MetricChip(
                 icon: FontAwesomeIcons.comments,
-                value: city.reviewCount != null && city.reviewCount! > 0
-                    ? '${city.reviewCount}'
-                    : '0',
+                value: city.reviewCount != null && city.reviewCount! > 0 ? '${city.reviewCount}' : '0',
               ),
             ],
           ),
@@ -317,8 +308,7 @@ class CityCard extends GetView<CityListController> {
     if (user == null) return;
 
     final isAdmin = user.role.toLowerCase() == 'admin';
-    final isModerator = city.moderatorId != null &&
-        city.moderatorId == user.id;
+    final isModerator = city.moderatorId != null && city.moderatorId == user.id;
 
     if (!isAdmin && !isModerator) return;
 
@@ -330,11 +320,9 @@ class CityCard extends GetView<CityListController> {
         ),
         title: Row(
           children: [
-            Icon(FontAwesomeIcons.image,
-                size: 18.r, color: Theme.of(context).primaryColor),
+            Icon(FontAwesomeIcons.image, size: 18.r, color: Theme.of(context).primaryColor),
             SizedBox(width: 10.w),
-            Text('更新城市图片',
-                style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600)),
+            Text('更新城市图片', style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600)),
           ],
         ),
         content: Text(
@@ -367,8 +355,7 @@ class CityCard extends GetView<CityListController> {
       if (user == null) return const SizedBox.shrink();
 
       final isAdmin = user.role.toLowerCase() == 'admin';
-      final isModerator = city.moderatorId != null &&
-          city.moderatorId == user.id;
+      final isModerator = city.moderatorId != null && city.moderatorId == user.id;
 
       if (!isAdmin && !isModerator) return const SizedBox.shrink();
 
@@ -439,8 +426,7 @@ class CityCard extends GetView<CityListController> {
                     height: 24.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
                   SizedBox(height: 8.h),
@@ -453,8 +439,8 @@ class CityCard extends GetView<CityListController> {
                     ),
                   ),
                 ],
+              ),
             ),
-          ),
           ),
         ),
       );
@@ -528,9 +514,7 @@ class _CityFollowButton extends StatelessWidget {
           height: 20.h,
           padding: EdgeInsets.symmetric(horizontal: 5.w),
           decoration: BoxDecoration(
-            color: isFollowed
-                ? const Color(0xFFEF4444).withValues(alpha: 0.85)
-                : Colors.black.withValues(alpha: 0.4),
+            color: isFollowed ? const Color(0xFFEF4444).withValues(alpha: 0.85) : Colors.black.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(6.r),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
@@ -547,5 +531,3 @@ class _CityFollowButton extends StatelessWidget {
     });
   }
 }
-
-

@@ -130,7 +130,7 @@ class AppToast {
         backgroundColor: config.backgroundColor,
         messageText: content,
         margin: EdgeInsets.all(16.w),
-        borderRadius: 12,
+        borderRadius: 12.r,
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         snackPosition: SnackPosition.TOP,
         duration: duration,
@@ -192,7 +192,7 @@ class AppToast {
   /// 构建 Toast 内容（居中对称设计）
   static Widget _buildToastContent(String title, String message, _ToastConfig config) {
     // 使用支持中文的字体族，优先使用系统默认字体
-    String? fontFamily = null; // 使用系统默认字体以支持中文
+    String? fontFamily; // 使用系统默认字体以支持中文
 
     return Column(
       mainAxisSize: MainAxisSize.min,

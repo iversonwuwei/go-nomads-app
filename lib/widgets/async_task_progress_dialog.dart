@@ -58,7 +58,7 @@ class AsyncTaskProgressDialog extends StatelessWidget {
                         children: [
                           CircularProgressIndicator(
                             value: progressValue,
-                            strokeWidth: 8,
+                            strokeWidth: 8.w,
                             backgroundColor: Colors.grey[200],
                             valueColor: AlwaysStoppedAnimation<Color>(
                               _getProgressColor(progress.value),

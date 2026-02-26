@@ -130,7 +130,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
   /// 流程: Flutter -> AIService(创建任务) -> RabbitMQ -> MessageService -> SignalR -> Flutter
   Future<void> _generatePlanAsync() async {
     final aiController = Get.find<AiStateController>();
-    
+
     // 检查 AI 配额
     final canUse = await AiQuotaService().checkAndUseAI(featureName: '旅行计划生成');
     if (!canUse) {
@@ -830,15 +830,15 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
           child: Column(
             children: [
               _buildBudgetRow(l10n.transportation, plan.budget.transportation),
-              Divider(height: 24),
+              Divider(height: 24.h),
               _buildBudgetRow(l10n.accommodation, plan.budget.accommodation),
-              Divider(height: 24),
+              Divider(height: 24.h),
               _buildBudgetRow(l10n.foodAndDining, plan.budget.food),
-              Divider(height: 24),
+              Divider(height: 24.h),
               _buildBudgetRow(l10n.activities, plan.budget.activities),
-              Divider(height: 24),
+              Divider(height: 24.h),
               _buildBudgetRow(l10n.miscellaneous, plan.budget.miscellaneous),
-              Divider(height: 24),
+              Divider(height: 24.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

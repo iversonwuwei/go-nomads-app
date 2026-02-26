@@ -32,7 +32,7 @@ class ModeratorInfoCard extends StatelessWidget {
       }
 
       return Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: Colors.white,

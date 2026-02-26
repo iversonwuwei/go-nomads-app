@@ -160,7 +160,7 @@ class _PhotosContent extends GetView<CityDetailController> {
     final slivers = <Widget>[
       SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

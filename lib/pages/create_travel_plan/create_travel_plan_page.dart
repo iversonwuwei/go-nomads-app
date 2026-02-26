@@ -1,14 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 import '../travel_plan/travel_plan_page.dart';
 import 'widgets/widgets.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 创建旅行计划页面 - 使用 GetX + 组件化架构重构
 class CreateTravelPlanPage extends StatelessWidget {
@@ -51,7 +51,7 @@ class CreateTravelPlanPage extends StatelessWidget {
 
               // Form Section
               Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
                 padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Colors.white,

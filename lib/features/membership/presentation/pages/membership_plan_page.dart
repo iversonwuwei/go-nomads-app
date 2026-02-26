@@ -212,7 +212,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                       ? SizedBox(
                           width: 16.w,
                           height: 16.h,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(strokeWidth: 2.r, color: Colors.white),
                         )
                       : Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
                   label: Text(controller.isLoadingPlans ? l10n.loading : l10n.retry),
@@ -412,7 +412,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 ),
               ),
 
-              Divider(height: 1),
+              Divider(height: 1.h),
 
               // 支付方式列表
               _buildPaymentMethodTile(
@@ -1067,7 +1067,7 @@ class _MembershipPlanCard extends StatelessWidget {
                             width: 20.w,
                             height: 20.h,
                             child: CircularProgressIndicator(
-                              strokeWidth: 2,
+                              strokeWidth: 2.r,
                               color: Colors.white,
                             ),
                           )

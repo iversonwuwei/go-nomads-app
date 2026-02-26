@@ -56,8 +56,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
   void didUpdateWidget(covariant InterestsSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (!setEquals(widget.selectedInterestIds.toSet(),
-        oldWidget.selectedInterestIds.toSet())) {
+    if (!setEquals(widget.selectedInterestIds.toSet(), oldWidget.selectedInterestIds.toSet())) {
       _restoreSelectionFromWidget(force: true);
     }
   }
@@ -92,8 +91,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
   }
 
   void _toggleInterest(Interest interest) {
-    final isSelected =
-        _selectedInterests.any((i) => i.interestId == interest.id);
+    final isSelected = _selectedInterests.any((i) => i.interestId == interest.id);
 
     if (isSelected) {
       // 取消选择
@@ -103,8 +101,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
       widget.onChanged(_selectedInterests);
     } else {
       // 检查是否超过最大选择数
-      if (widget.maxSelection > 0 &&
-          _selectedInterests.length >= widget.maxSelection) {
+      if (widget.maxSelection > 0 && _selectedInterests.length >= widget.maxSelection) {
         AppToast.error('最多只能选择 ${widget.maxSelection} 个兴趣');
         return;
       }
@@ -191,8 +188,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
     return null;
   }
 
-  List<InterestsByCategory> _groupInterestsByCategory(
-      List<Interest> interests) {
+  List<InterestsByCategory> _groupInterestsByCategory(List<Interest> interests) {
     final Map<String, List<Interest>> grouped = {};
     for (final interest in interests) {
       grouped.putIfAbsent(interest.category, () => []).add(interest);
@@ -221,8 +217,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('喜爱程度',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('喜爱程度', style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 8.h),
                 Wrap(
                   spacing: 8.w,
@@ -235,9 +230,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                       },
                       selectedColor: AppColors.accent,
                       labelStyle: TextStyle(
-                        color: selectedIntensity == level
-                            ? Colors.white
-                            : AppColors.textPrimary,
+                        color: selectedIntensity == level ? Colors.white : AppColors.textPrimary,
                       ),
                     );
                   }).toList(),
@@ -293,12 +286,8 @@ class _InterestsSelectorState extends State<InterestsSelector> {
     // 搜索过滤
     if (_searchQuery.isNotEmpty) {
       allInterests = allInterests.where((interest) {
-        return interest.name
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()) ||
-            interest.category
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase());
+        return interest.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            interest.category.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
 
@@ -361,8 +350,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                     child: _CategoryChip(
                       label: _getCategoryText(category.category),
                       isSelected: _selectedCategory == category.category,
-                      onTap: () =>
-                          setState(() => _selectedCategory = category.category),
+                      onTap: () => setState(() => _selectedCategory = category.category),
                     ),
                   );
                 }),
@@ -423,8 +411,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                       deleteIcon: Icon(FontAwesomeIcons.xmark, size: 18.r),
                       onDeleted: () {
                         setState(() {
-                          _selectedInterests.removeWhere(
-                              (i) => i.interestId == userInterest.interestId);
+                          _selectedInterests.removeWhere((i) => i.interestId == userInterest.interestId);
                         });
                         widget.onChanged(_selectedInterests);
                       },
@@ -433,7 +420,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                     );
                   }).toList(),
                 ),
-                Divider(height: 24),
+                Divider(height: 24.h),
               ],
             ),
           ),
@@ -454,21 +441,17 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                       spacing: 8.w,
                       runSpacing: 8.w,
                       children: filteredInterests.map((interest) {
-                        final isSelected = _selectedInterests
-                            .any((i) => i.interestId == interest.id);
+                        final isSelected = _selectedInterests.any((i) => i.interestId == interest.id);
                         return FilterChip(
                           avatar: Text(interest.icon ?? '❤️'),
                           label: Text(interest.name),
                           selected: isSelected,
                           onSelected: (_) => _toggleInterest(interest),
-                          selectedColor:
-                              AppColors.accent.withValues(alpha: 0.2),
+                          selectedColor: AppColors.accent.withValues(alpha: 0.2),
                           checkmarkColor: AppColors.accent,
                           backgroundColor: AppColors.white,
                           side: BorderSide(
-                            color: isSelected
-                                ? AppColors.accent
-                                : AppColors.border,
+                            color: isSelected ? AppColors.accent : AppColors.border,
                           ),
                         );
                       }).toList(),

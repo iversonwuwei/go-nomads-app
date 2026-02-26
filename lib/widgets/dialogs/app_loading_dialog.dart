@@ -60,7 +60,7 @@ class AppLoadingDialog {
               children: [
                 CircularProgressIndicator(
                   color: indicatorColor ?? AppColors.cityPrimary,
-                  strokeWidth: 3,
+                  strokeWidth: 3.w,
                 ),
                 SizedBox(height: 20.h),
                 Text(

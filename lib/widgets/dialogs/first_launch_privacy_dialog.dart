@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/legal_document.dart';
@@ -11,7 +12,6 @@ import 'package:go_nomads_app/pages/legal/privacy_policy_page.dart';
 import 'package:go_nomads_app/pages/legal/sdk_list_page.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 首次启动隐私政策弹窗 key
 const String _kPrivacyConsentKey = 'first_launch_privacy_consented';
@@ -62,7 +62,7 @@ class FirstLaunchPrivacyDialog {
       log('✅ 用户同意首次启动隐私政策');
       return true;
     }
-    
+
     log('❌ 用户拒绝首次启动隐私政策');
     return false;
   }
@@ -131,7 +131,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
 
   Widget _buildHeader(AppLocalizations? l10n) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+      padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 12.h),
       child: Row(
         children: [
           Container(
@@ -164,13 +164,12 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
 
   Widget _buildContent(BuildContext context, AppLocalizations? l10n) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n?.privacyPolicyIntro ??
-                '欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：',
+            l10n?.privacyPolicyIntro ?? '欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：',
             style: TextStyle(
               fontSize: 14.sp,
               color: AppColors.textPrimary,
@@ -183,7 +182,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
           if (_isLoading)
             Padding(
               padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2.w)),
             )
           else if (_summaryItems != null && _summaryItems!.isNotEmpty)
             ..._summaryItems!.map((item) => _buildSection(
@@ -224,8 +223,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                       ),
                       children: [
                         TextSpan(
-                          text: l10n?.privacyPolicyNote ??
-                              '如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的',
+                          text: l10n?.privacyPolicyNote ?? '如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的',
                         ),
                         TextSpan(
                           text: l10n?.privacyPolicy ?? '隐私政策',
@@ -318,7 +316,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
 
   Widget _buildActions(BuildContext context, AppLocalizations? l10n) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+      padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 20.h),
       child: Column(
         children: [
           // 同意按钮
@@ -332,14 +330,12 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.r)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                 elevation: 0,
               ),
               child: Text(
                 l10n?.agreeAndContinue ?? '同意',
-                style: TextStyle(
-                    fontSize: 15.sp, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -355,8 +351,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
                 side: const BorderSide(color: AppColors.border),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.r)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
               ),
               child: Text(
                 l10n?.disagreeAndExit ?? '不同意',
