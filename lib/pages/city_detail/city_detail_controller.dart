@@ -303,6 +303,15 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   @override
   void onClose() {
     _resetAllState();
+
+    // 重置 AiStateController 的 guide 和 nearby 状态，避免残留数据
+    if (Get.isRegistered<AiStateController>()) {
+      final aiController = Get.find<AiStateController>();
+      aiController.resetGuideState();
+      aiController.resetNearbyCitiesState();
+      log('🧹 [CityDetailController] 已重置 AiStateController guide/nearby 状态');
+    }
+
     pageController.dispose();
     scrollController.dispose();
     tabController.removeListener(_onTabChanged);

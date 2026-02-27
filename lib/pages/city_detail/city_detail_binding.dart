@@ -49,5 +49,13 @@ class CityDetailBinding extends Bindings {
       ctrl.currentTabIndex.value = 0;
       log('🔄 [CityDetailBinding] 已重置 CityDetailStateController 页面状态');
     }
+
+    // 重置 AiStateController 的 guide 和 nearby 数据，确保新城市页面不会显示旧数据
+    if (Get.isRegistered<AiStateController>()) {
+      final aiCtrl = Get.find<AiStateController>();
+      aiCtrl.resetGuideState();
+      aiCtrl.resetNearbyCitiesState();
+      log('🔄 [CityDetailBinding] 已重置 AiStateController guide/nearby 状态');
+    }
   }
 }

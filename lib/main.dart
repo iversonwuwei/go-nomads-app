@@ -142,15 +142,25 @@ Future<void> _initializeBackgroundServices() async {
     log('⚠️ 位置服务初始化失败: $e');
   });
 
-  // 🔌 SignalR 实时通信 - 后台初始化
+  // 🔌 SignalR 实时通信 - 后台初始化（带重试）
   Future.microtask(() async {
     log('🔌 初始化 SignalR 实时通信...');
-    try {
-      final signalrService = SignalRService();
-      await signalrService.connect(ApiConfig.messageServiceBaseUrl);
-      log('✅ SignalR 连接成功');
-    } catch (e) {
-      log('⚠️ SignalR 连接失败: $e (将使用轮询机制作为备选)');
+    final signalrService = SignalRService();
+    const maxRetries = 3;
+    for (var i = 0; i < maxRetries; i++) {
+      try {
+        await signalrService.connect(ApiConfig.messageServiceBaseUrl);
+        log('✅ SignalR 连接成功');
+        break;
+      } catch (e) {
+        log('⚠️ SignalR 连接失败 (${i + 1}/$maxRetries): $e');
+        if (i < maxRetries - 1) {
+          // 等待后重试（递增延迟: 2s, 4s）
+          await Future.delayed(Duration(seconds: 2 * (i + 1)));
+        } else {
+          log('⚠️ SignalR 所有重试均失败，将在需要时重连');
+        }
+      }
     }
   });
 

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -8,7 +9,6 @@ import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_cont
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Guide Tab - AI 数字游民指南
 /// 使用 GetView 绑定 CityDetailController
@@ -402,9 +402,13 @@ class _BestAreaCard extends StatelessWidget {
               children: [
                 Icon(FontAwesomeIcons.locationDot, color: AppColors.cityPrimary, size: 18.r),
                 SizedBox(width: 8.w),
-                Text(
-                  area.name,
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    area.name,
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

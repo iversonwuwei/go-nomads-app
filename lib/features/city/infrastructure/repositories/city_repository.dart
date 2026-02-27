@@ -744,6 +744,37 @@ class CityRepository implements ICityRepository {
   }
 
   @override
+  Future<Result<Map<String, dynamic>>> checkImageTaskStatus(String taskId) async {
+    try {
+      log('🔍 [CityRepository] 查询图片任务状态: taskId=$taskId');
+
+      // ai-service 的任务状态查询接口: GET /api/v1/ai/images/tasks/{taskId}
+      final response = await _httpService.get(
+        '/ai/images/tasks/$taskId',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 10),
+        ),
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        log('📋 [CityRepository] 任务状态: ${data['data']?['status']}');
+        return Success(data);
+      }
+      if (data is Map) {
+        return Success(Map<String, dynamic>.from(data));
+      }
+      return Failure(UnknownException('响应格式错误'));
+    } on HttpException catch (e) {
+      log('❌ [CityRepository] 查询任务状态 HTTP 异常: ${e.statusCode}');
+      return Failure(_convertHttpException(e));
+    } catch (e) {
+      log('💥 [CityRepository] 查询任务状态异常: $e');
+      return Failure(UnknownException('查询任务状态失败: ${e.toString()}'));
+    }
+  }
+
+  @override
   Future<Result<bool>> deleteCity(String cityId) async {
     try {
       log('🗑️ [CityRepository] 删除城市: cityId=$cityId');

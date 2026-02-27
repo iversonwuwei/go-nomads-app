@@ -151,6 +151,12 @@ abstract class ICityRepository implements IRepository {
   /// 返回生成结果，包含竖屏封面图和横屏图片的 URL
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId);
 
+  /// 查询图片生成任务状态（用于轮询回退）
+  ///
+  /// [taskId] 任务ID
+  /// 返回任务状态和结果
+  Future<Result<Map<String, dynamic>>> checkImageTaskStatus(String taskId);
+
   /// 删除城市（仅管理员）
   ///
   /// [cityId] 城市ID

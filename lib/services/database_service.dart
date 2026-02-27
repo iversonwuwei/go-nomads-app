@@ -32,7 +32,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 10, // 升级到版本10 - 增强聊天消息表支持持久化和搜索
+      version: 11, // 升级到版本11 - 数字游民指南和附近城市表增加user_id支持
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -358,10 +358,11 @@ class DatabaseService {
       )
     ''');
 
-    // 数字游民指南表
+    // 数字游民指南表 - 按用户区分
     await db.execute('''
       CREATE TABLE digital_nomad_guides (
-        city_id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+        city_id TEXT NOT NULL,
         city_name TEXT NOT NULL,
         overview TEXT NOT NULL,
         visa_info TEXT NOT NULL,
@@ -370,7 +371,8 @@ class DatabaseService {
         tips TEXT NOT NULL,
         essential_info TEXT NOT NULL,
         created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (user_id, city_id)
       )
     ''');
 
@@ -399,7 +401,7 @@ class DatabaseService {
     await db.execute('CREATE INDEX idx_favorites_user ON favorites(user_id)');
     await db.execute('CREATE INDEX idx_tokens_user ON tokens(user_id)');
     await db.execute(
-        'CREATE INDEX idx_guides_city ON digital_nomad_guides(city_id)');
+        'CREATE INDEX idx_guides_city ON digital_nomad_guides(user_id, city_id)');
 
     log('Database created successfully');
   }
@@ -772,6 +774,42 @@ class DatabaseService {
         log('✅ 聊天相关表升级完成');
       } catch (e) {
         log('⚠️ 升级聊天表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 11 && newVersion >= 11) {
+      // 版本 10 -> 11: 数字游民指南表增加 user_id，支持按用户区分数据
+      try {
+        log('📖 开始升级数字游民指南表，增加 user_id 支持...');
+
+        // 删除旧表并重建（旧的缓存数据可以从后端重新获取）
+        await db.execute('DROP TABLE IF EXISTS digital_nomad_guides');
+
+        await db.execute('''
+          CREATE TABLE digital_nomad_guides (
+            user_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+            city_id TEXT NOT NULL,
+            city_name TEXT NOT NULL,
+            overview TEXT NOT NULL,
+            visa_info TEXT NOT NULL,
+            best_areas TEXT NOT NULL,
+            workspace_recommendations TEXT NOT NULL,
+            tips TEXT NOT NULL,
+            essential_info TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL,
+            PRIMARY KEY (user_id, city_id)
+          )
+        ''');
+
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_guides_user_city ON digital_nomad_guides(user_id, city_id)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_guides_updated_at ON digital_nomad_guides(updated_at DESC)');
+
+        log('✅ 数字游民指南表升级完成');
+      } catch (e) {
+        log('⚠️ 升级数字游民指南表时出错: $e');
       }
     }
   }

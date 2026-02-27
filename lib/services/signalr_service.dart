@@ -49,6 +49,42 @@ class SignalRService {
 
   SignalRService._internal();
 
+  /// 确保 SignalR 已连接并加入用户组
+  ///
+  /// 如果当前未连接，会尝试重新连接（最多 [maxRetries] 次）
+  /// 如果已连接但未加入用户组，会自动加入
+  /// 返回是否成功连接并加入用户组
+  Future<bool> ensureConnected({String? userId, int maxRetries = 3}) async {
+    // 已连接且用户组已加入
+    if (_isConnected && _hubConnection != null) {
+      // 确保用户组已加入
+      if (userId != null && userId != _currentUserId) {
+        await joinUserGroup(userId);
+      }
+      return true;
+    }
+
+    // 尝试重连
+    for (var i = 0; i < maxRetries; i++) {
+      try {
+        log('🔄 [SignalR] ensureConnected: 尝试连接 (${i + 1}/$maxRetries)...');
+        await connect(ApiConfig.messageServiceBaseUrl, userId: userId);
+        if (_isConnected) {
+          log('✅ [SignalR] ensureConnected: 连接成功');
+          return true;
+        }
+      } catch (e) {
+        log('⚠️ [SignalR] ensureConnected: 第 ${i + 1} 次连接失败: $e');
+        if (i < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 1000 * (i + 1)));
+        }
+      }
+    }
+
+    log('❌ [SignalR] ensureConnected: 所有重试均失败');
+    return false;
+  }
+
   /// 连接到 SignalR Hub
   ///
   /// [baseUrl] AI Service 基础 URL,例如 'http://localhost:8009'
