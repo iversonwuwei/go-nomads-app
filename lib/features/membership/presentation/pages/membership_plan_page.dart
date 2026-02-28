@@ -116,24 +116,64 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
               _buildBillingCycleToggle(context),
               SizedBox(height: 20.h),
 
-              // 动态生成会员计划卡片
-              ...paidPlans.asMap().entries.map((entry) {
-                final index = entry.key;
-                final plan = entry.value;
-                final isPopular = plan.level == 2; // Pro 计划标记为热门
+              // 动态生成会员计划卡片 — 带滑动切换动画
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                switchInCurve: Curves.easeInOut,
+                switchOutCurve: Curves.easeInOut,
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  // 根据当前切换方向决定滑入/滑出方向
+                  final isIncoming = child.key == ValueKey<bool>(controller.isMonthlyBilling);
+                  final isGoingToMonthly = controller.isMonthlyBilling;
 
-                return Padding(
-                  padding: EdgeInsets.only(bottom: index < paidPlans.length - 1 ? 16 : 0),
-                  child: _MembershipPlanCard(
-                    plan: plan,
-                    isCurrentPlan: currentLevel.levelValue == plan.level,
-                    isLoading: isLoading,
-                    isPopular: isPopular,
-                    isMonthly: controller.isMonthlyBilling,
-                    onSelect: () => _handleUpgrade(context, plan),
-                  ),
-                );
-              }),
+                  // 切换到月度 → 新内容从左滑入，旧内容向右滑出
+                  // 切换到年度 → 新内容从右滑入，旧内容向左滑出
+                  final beginX = isIncoming ? (isGoingToMonthly ? -0.15 : 0.15) : (isGoingToMonthly ? 0.15 : -0.15);
+
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: Offset(beginX, 0.0),
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOut,
+                      )),
+                      child: child,
+                    ),
+                  );
+                },
+                layoutBuilder: (currentChild, previousChildren) {
+                  return Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      ...previousChildren,
+                      if (currentChild != null) currentChild,
+                    ],
+                  );
+                },
+                child: Column(
+                  key: ValueKey<bool>(controller.isMonthlyBilling),
+                  children: paidPlans.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final plan = entry.value;
+                    final isPopular = plan.level == 2; // Pro 计划标记为热门
+
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: index < paidPlans.length - 1 ? 16 : 0),
+                      child: _MembershipPlanCard(
+                        plan: plan,
+                        isCurrentPlan: currentLevel.levelValue == plan.level,
+                        isLoading: isLoading,
+                        isPopular: isPopular,
+                        isMonthly: controller.isMonthlyBilling,
+                        onSelect: () => _handleUpgrade(context, plan),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
 
               SizedBox(height: 32.h),
 
@@ -318,107 +358,15 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     );
   }
 
-  /// 计费周期切换组件
+  /// 计费周期切换组件 — toggle 滑动切换效果
   Widget _buildBillingCycleToggle(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isMonthly = controller.isMonthlyBilling;
-    return Container(
-      padding: EdgeInsets.all(4.w),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => controller.setMonthlyBilling(true),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: isMonthly ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10.r),
-                  boxShadow: isMonthly
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 4.r,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Center(
-                  child: Text(
-                    l10n.billingMonthly,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: isMonthly ? FontWeight.bold : FontWeight.w500,
-                      color: isMonthly ? Colors.black87 : Colors.grey.shade600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => controller.setMonthlyBilling(false),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: !isMonthly ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10.r),
-                  boxShadow: !isMonthly
-                      ? [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 4.r,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        l10n.billingYearly,
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: !isMonthly ? FontWeight.bold : FontWeight.w500,
-                          color: !isMonthly ? Colors.black87 : Colors.grey.shade600,
-                        ),
-                      ),
-                      if (!isMonthly) ...[
-                        SizedBox(width: 6.w),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade100,
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                          child: Text(
-                            '优惠',
-                            style: TextStyle(
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return _BillingCycleToggle(
+      isMonthly: isMonthly,
+      monthlyLabel: l10n.billingMonthly,
+      yearlyLabel: l10n.billingYearly,
+      onChanged: (monthly) => controller.setMonthlyBilling(monthly),
     );
   }
 
@@ -1004,6 +952,300 @@ class _FooterSkeleton extends StatelessWidget {
         SkeletonBox(width: double.infinity, height: 14.h),
       ],
     );
+  }
+}
+
+/// 计费周期 Toggle 切换组件 — 支持手势拖拽 + 弹性动画
+class _BillingCycleToggle extends StatefulWidget {
+  final bool isMonthly;
+  final String monthlyLabel;
+  final String yearlyLabel;
+  final ValueChanged<bool> onChanged;
+
+  const _BillingCycleToggle({
+    required this.isMonthly,
+    required this.monthlyLabel,
+    required this.yearlyLabel,
+    required this.onChanged,
+  });
+
+  @override
+  State<_BillingCycleToggle> createState() => _BillingCycleToggleState();
+}
+
+class _BillingCycleToggleState extends State<_BillingCycleToggle> with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _slideAnimation;
+
+  // 拖拽进度（0.0 = 月付，1.0 = 年付）
+  double _dragValue = 0.0;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _slideAnimation = CurvedAnimation(
+      parent: _animController,
+      // 使用弹性曲线，模拟 toggle 回弹感
+      curve: Curves.easeOutBack,
+    );
+    // 初始化位置
+    _animController.value = widget.isMonthly ? 0.0 : 1.0;
+  }
+
+  @override
+  void didUpdateWidget(covariant _BillingCycleToggle oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isMonthly != widget.isMonthly && !_isDragging) {
+      _animateTo(widget.isMonthly ? 0.0 : 1.0);
+    }
+  }
+
+  void _animateTo(double target) {
+    _slideAnimation = Tween<double>(
+      begin: _animController.value,
+      end: target,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutBack,
+    ));
+    _animController.forward(from: 0.0);
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        final padding = 4.w;
+        final trackWidth = totalWidth - padding * 2;
+        final thumbWidth = trackWidth / 2;
+
+        return GestureDetector(
+          // 横向拖拽手势
+          onHorizontalDragStart: (_) {
+            _isDragging = true;
+            _dragValue = widget.isMonthly ? 0.0 : 1.0;
+          },
+          onHorizontalDragUpdate: (details) {
+            setState(() {
+              _dragValue += details.primaryDelta! / thumbWidth;
+              _dragValue = _dragValue.clamp(0.0, 1.0);
+            });
+          },
+          onHorizontalDragEnd: (details) {
+            _isDragging = false;
+            final velocity = details.primaryVelocity ?? 0;
+            // 根据速度或位置判断最终归位
+            final goToYearly = velocity > 300 || (velocity.abs() < 300 && _dragValue > 0.5);
+            final target = goToYearly ? 1.0 : 0.0;
+            _animController.value = _dragValue;
+            _animateTo(target);
+            widget.onChanged(!goToYearly);
+          },
+          child: Container(
+            height: 48.h,
+            padding: EdgeInsets.all(padding),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: AnimatedBuilder(
+              animation: _animController,
+              isDragging: _isDragging,
+              dragValue: _dragValue,
+              slideAnimation: _slideAnimation,
+              thumbWidth: thumbWidth,
+              trackWidth: trackWidth,
+              isMonthly: widget.isMonthly,
+              monthlyLabel: widget.monthlyLabel,
+              yearlyLabel: widget.yearlyLabel,
+              onTapMonthly: () => widget.onChanged(true),
+              onTapYearly: () => widget.onChanged(false),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// 内部构建器，将动画值映射到 UI
+class AnimatedBuilder extends StatelessWidget {
+  final Animation<double> animation;
+  final bool isDragging;
+  final double dragValue;
+  final Animation<double> slideAnimation;
+  final double thumbWidth;
+  final double trackWidth;
+  final bool isMonthly;
+  final String monthlyLabel;
+  final String yearlyLabel;
+  final VoidCallback onTapMonthly;
+  final VoidCallback onTapYearly;
+
+  const AnimatedBuilder({
+    super.key,
+    required this.animation,
+    required this.isDragging,
+    required this.dragValue,
+    required this.slideAnimation,
+    required this.thumbWidth,
+    required this.trackWidth,
+    required this.isMonthly,
+    required this.monthlyLabel,
+    required this.yearlyLabel,
+    required this.onTapMonthly,
+    required this.onTapYearly,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder2(
+      listenable: animation,
+      builder: (context, _) {
+        // 当前进度值：拖拽中用 dragValue，否则用动画值
+        final progress = isDragging ? dragValue : slideAnimation.value;
+        final offset = progress * (trackWidth - thumbWidth);
+        // 文字渐变：月付选中度 = 1 - progress
+        final monthlyActive = 1.0 - progress;
+        final yearlyActive = progress;
+
+        return Stack(
+          children: [
+            // 滑动 Thumb
+            Positioned(
+              left: offset,
+              top: 0,
+              bottom: 0,
+              width: thumbWidth,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8.r,
+                      offset: const Offset(0, 2),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 2.r,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 文字层
+            Row(
+              children: [
+                // 月付
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onTapMonthly,
+                    child: Center(
+                      child: Text(
+                        monthlyLabel,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: monthlyActive > 0.5 ? FontWeight.bold : FontWeight.w500,
+                          color: Color.lerp(
+                            Colors.grey.shade600,
+                            Colors.black87,
+                            monthlyActive,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // 年付
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onTapYearly,
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            yearlyLabel,
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: yearlyActive > 0.5 ? FontWeight.bold : FontWeight.w500,
+                              color: Color.lerp(
+                                Colors.grey.shade600,
+                                Colors.black87,
+                                yearlyActive,
+                              ),
+                            ),
+                          ),
+                          // 优惠标签随年付激活程度渐入
+                          if (yearlyActive > 0.3)
+                            Opacity(
+                              opacity: ((yearlyActive - 0.3) / 0.7).clamp(0.0, 1.0),
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 6.w),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade100,
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
+                                  child: Text(
+                                    '优惠',
+                                    style: TextStyle(
+                                      fontSize: 10.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green.shade700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// 简单的 AnimatedBuilder 包装，避免与 Flutter 内置命名冲突
+class AnimatedBuilder2 extends AnimatedWidget {
+  final TransitionBuilder builder;
+
+  const AnimatedBuilder2({
+    super.key,
+    required super.listenable,
+    required this.builder,
+  }) : super();
+
+  Animation<double> get animation => listenable as Animation<double>;
+
+  @override
+  Widget build(BuildContext context) {
+    return builder(context, null);
   }
 }
 
