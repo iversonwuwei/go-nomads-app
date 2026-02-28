@@ -111,6 +111,37 @@ class MembershipStateController extends GetxController {
   /// 当前选中的计费天数
   int get billingDurationDays => _isMonthlyBilling.value ? 30 : 365;
 
+  /// 当前会员的计费周期
+  BillingCycle get currentBillingCycle => _membership.value?.billingCycle ?? BillingCycle.yearly;
+
+  /// 是否可以切换到月付（年付会员在有效期内不能切换为月付）
+  bool get canSwitchToMonthly {
+    final m = _membership.value;
+    if (m == null) return true;
+    // 年付会员在有效期内不能切换为月付
+    if (m.isYearly && m.isActive) return false;
+    return true;
+  }
+
+  /// 是否可以切换到年付（月付用户可以随时升级为年付）
+  bool get canSwitchToYearly => true;
+
+  /// 检查指定计划卡片是否应该置灰（当前计划 + 匹配的计费周期 tab）
+  bool shouldGreyOutPlan(int planLevel) {
+    final m = _membership.value;
+    if (m == null) return false;
+    // 只有当计划等级匹配 AND 计费周期匹配当前 tab 时才置灰
+    if (m.level.levelValue != planLevel) return false;
+    if (!m.isActive) return false;
+    // 当前 tab 的计费周期与用户实际计费周期一致时置灰
+    if (_isMonthlyBilling.value && m.isMonthly) return true;
+    if (!_isMonthlyBilling.value && m.isYearly) return true;
+    return false;
+  }
+
+  /// 获取当前选中的 BillingCycle 枚举
+  BillingCycle get selectedBillingCycle => _isMonthlyBilling.value ? BillingCycle.monthly : BillingCycle.yearly;
+
   /// 错误信息
   String? get errorMessage => _errorMessage.value;
 
@@ -245,14 +276,16 @@ class MembershipStateController extends GetxController {
   }
 
   /// 升级会员
-  Future<bool> upgradeMembership(MembershipLevel level) async {
+  Future<bool> upgradeMembership(MembershipLevel level, {BillingCycle? billingCycle}) async {
     if (_isUpgrading.value) return false;
 
     _isUpgrading.value = true;
     _errorMessage.value = null;
 
+    final cycle = billingCycle ?? selectedBillingCycle;
+
     try {
-      final result = await _repository.upgradeMembership(level);
+      final result = await _repository.upgradeMembership(level, billingCycle: cycle);
       return result.fold(
         onSuccess: (membership) {
           _membership.value = membership;

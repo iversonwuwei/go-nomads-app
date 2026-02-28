@@ -88,7 +88,6 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         centerTitle: true,
       ),
       body: Obx(() {
-        final currentLevel = controller.level;
         final isLoading = controller.isUpgrading;
         final isLoadingPlans = controller.isLoadingPlans;
         final paidPlans = controller.paidPlans;
@@ -164,7 +163,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                       padding: EdgeInsets.only(bottom: index < paidPlans.length - 1 ? 16 : 0),
                       child: _MembershipPlanCard(
                         plan: plan,
-                        isCurrentPlan: currentLevel.levelValue == plan.level,
+                        isCurrentPlan: controller.shouldGreyOutPlan(plan.level),
                         isLoading: isLoading,
                         isPopular: isPopular,
                         isMonthly: controller.isMonthlyBilling,
@@ -334,15 +333,26 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                   ),
                 ),
                 SizedBox(height: 4.h),
-                if (membership?.isActive == true)
+                if (membership?.isActive == true) ...[
                   Text(
-                    l10n.daysRemaining(controller.remainingDays),
+                    '${membership!.billingCycle.label}会员 · ${l10n.daysRemaining(controller.remainingDays)}',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14.sp,
                     ),
-                  )
-                else if (level == MembershipLevel.free)
+                  ),
+                  if (membership.isYearly && membership.isActive)
+                    Padding(
+                      padding: EdgeInsets.only(top: 4.h),
+                      child: Text(
+                        '年度会员到期后可切换为月付',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ),
+                ] else if (level == MembershipLevel.free)
                   Text(
                     l10n.upgradeToUnlock,
                     style: TextStyle(
@@ -408,7 +418,20 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     final targetLevel = MembershipLevel.fromValue(plan.level);
     final l10n = AppLocalizations.of(context)!;
 
-    if (controller.level.levelValue >= plan.level) {
+    // 检查是否为当前计划且相同计费周期（已置灰）
+    if (controller.shouldGreyOutPlan(plan.level)) {
+      AppToast.info(l10n.alreadyHavePlan);
+      return;
+    }
+
+    // 检查计费周期切换限制：年付会员在有效期内不能切换为月付
+    if (controller.isMonthlyBilling && !controller.canSwitchToMonthly) {
+      AppToast.warning('您的年度会员尚在有效期内，到期后可切换为月付');
+      return;
+    }
+
+    // 检查是否已有相同或更高等级（不同计费周期可以切换）
+    if (controller.level.levelValue > plan.level) {
       AppToast.info(l10n.alreadyHavePlan);
       return;
     }
@@ -981,20 +1004,18 @@ class _BillingCycleToggleState extends State<_BillingCycleToggle> with SingleTic
   double _dragValue = 0.0;
   bool _isDragging = false;
 
+  // 记录当前 thumb 的逻辑位置（0.0 = 月付，1.0 = 年付）
+  double _currentPosition = 0.0;
+
   @override
   void initState() {
     super.initState();
+    _currentPosition = widget.isMonthly ? 0.0 : 1.0;
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
     );
-    _slideAnimation = CurvedAnimation(
-      parent: _animController,
-      // 使用弹性曲线，模拟 toggle 回弹感
-      curve: Curves.easeOutBack,
-    );
-    // 初始化位置
-    _animController.value = widget.isMonthly ? 0.0 : 1.0;
+    _slideAnimation = AlwaysStoppedAnimation(_currentPosition);
   }
 
   @override
@@ -1006,14 +1027,17 @@ class _BillingCycleToggleState extends State<_BillingCycleToggle> with SingleTic
   }
 
   void _animateTo(double target) {
+    final begin = _currentPosition;
     _slideAnimation = Tween<double>(
-      begin: _animController.value,
+      begin: begin,
       end: target,
     ).animate(CurvedAnimation(
       parent: _animController,
       curve: Curves.easeOutBack,
     ));
-    _animController.forward(from: 0.0);
+    _animController.forward(from: 0.0).then((_) {
+      _currentPosition = target;
+    });
   }
 
   @override
@@ -1035,7 +1059,7 @@ class _BillingCycleToggleState extends State<_BillingCycleToggle> with SingleTic
           // 横向拖拽手势
           onHorizontalDragStart: (_) {
             _isDragging = true;
-            _dragValue = widget.isMonthly ? 0.0 : 1.0;
+            _dragValue = _currentPosition;
           },
           onHorizontalDragUpdate: (details) {
             setState(() {
@@ -1049,7 +1073,7 @@ class _BillingCycleToggleState extends State<_BillingCycleToggle> with SingleTic
             // 根据速度或位置判断最终归位
             final goToYearly = velocity > 300 || (velocity.abs() < 300 && _dragValue > 0.5);
             final target = goToYearly ? 1.0 : 0.0;
-            _animController.value = _dragValue;
+            _currentPosition = _dragValue;
             _animateTo(target);
             widget.onChanged(!goToYearly);
           },

@@ -1,10 +1,10 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_plan.dart';
 import 'package:go_nomads_app/features/membership/infrastructure/dtos/user_membership_dto.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
-import 'package:dio/dio.dart';
 
 /// 会员服务 API 客户端
 /// 用于会员信息获取、升级、续费等操作
@@ -85,6 +85,7 @@ class MembershipApiService {
   Future<MembershipResponse> upgradeMembership({
     required int level,
     int durationDays = 365,
+    String billingCycle = 'yearly',
   }) async {
     try {
       final response = await _dio.post(
@@ -92,6 +93,7 @@ class MembershipApiService {
         data: {
           'level': level,
           'durationDays': durationDays,
+          'billingCycle': billingCycle,
         },
       );
       return MembershipResponse.fromJson(response.data);
@@ -156,6 +158,7 @@ class MembershipApiService {
     return UserMembershipDto(
       userId: response.userId,
       level: response.levelName.toLowerCase(),
+      billingCycle: response.billingCycle,
       startDate: response.startDate?.toIso8601String(),
       expiryDate: response.expiryDate?.toIso8601String(),
       autoRenew: response.autoRenew,
@@ -192,6 +195,7 @@ class MembershipResponse {
   final String userId;
   final int level;
   final String levelName;
+  final String billingCycle;
   final DateTime? startDate;
   final DateTime? expiryDate;
   final bool autoRenew;
@@ -210,6 +214,7 @@ class MembershipResponse {
     required this.userId,
     required this.level,
     required this.levelName,
+    this.billingCycle = 'yearly',
     this.startDate,
     this.expiryDate,
     this.autoRenew = false,
@@ -230,6 +235,7 @@ class MembershipResponse {
       userId: json['userId'] as String? ?? '',
       level: json['level'] as int? ?? 0,
       levelName: json['levelName'] as String? ?? 'Free',
+      billingCycle: json['billingCycle'] as String? ?? 'yearly',
       startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate'] as String) : null,
       expiryDate: json['expiryDate'] != null ? DateTime.tryParse(json['expiryDate'] as String) : null,
       autoRenew: json['autoRenew'] as bool? ?? false,
@@ -251,6 +257,7 @@ class MembershipResponse {
       'userId': userId,
       'level': level,
       'levelName': levelName,
+      'billingCycle': billingCycle,
       'startDate': startDate?.toIso8601String(),
       'expiryDate': expiryDate?.toIso8601String(),
       'autoRenew': autoRenew,

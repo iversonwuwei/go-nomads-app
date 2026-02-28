@@ -5,6 +5,7 @@ import 'package:go_nomads_app/features/membership/domain/entities/user_membershi
 class UserMembershipDto {
   final String userId;
   final String level;
+  final String? billingCycle;
   final String? startDate;
   final String? expiryDate;
   final bool autoRenew;
@@ -16,6 +17,7 @@ class UserMembershipDto {
   UserMembershipDto({
     required this.userId,
     required this.level,
+    this.billingCycle,
     this.startDate,
     this.expiryDate,
     this.autoRenew = false,
@@ -29,6 +31,7 @@ class UserMembershipDto {
     return UserMembershipDto(
       userId: json['userId'] as String? ?? json['user_id'] as String? ?? '',
       level: json['level'] as String? ?? 'free',
+      billingCycle: json['billingCycle'] as String? ?? json['billing_cycle'] as String?,
       startDate: json['startDate'] as String? ?? json['start_date'] as String?,
       expiryDate: json['expiryDate'] as String? ?? json['expiry_date'] as String?,
       autoRenew: json['autoRenew'] as bool? ?? json['auto_renew'] as bool? ?? false,
@@ -43,6 +46,7 @@ class UserMembershipDto {
     return {
       'userId': userId,
       'level': level,
+      'billingCycle': billingCycle,
       'startDate': startDate,
       'expiryDate': expiryDate,
       'autoRenew': autoRenew,
@@ -58,6 +62,7 @@ class UserMembershipDto {
     return UserMembership(
       userId: userId,
       level: _parseLevel(level),
+      billingCycle: BillingCycle.fromString(billingCycle),
       startDate: startDate != null ? DateTime.tryParse(startDate!) : null,
       expiryDate: expiryDate != null ? DateTime.tryParse(expiryDate!) : null,
       autoRenew: autoRenew,
@@ -73,6 +78,7 @@ class UserMembershipDto {
     return UserMembershipDto(
       userId: membership.userId,
       level: membership.level.name,
+      billingCycle: membership.billingCycle.name,
       startDate: membership.startDate?.toIso8601String(),
       expiryDate: membership.expiryDate?.toIso8601String(),
       autoRenew: membership.autoRenew,

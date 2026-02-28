@@ -16,7 +16,10 @@ abstract class MembershipRepository {
   Future<Result<UserMembership>> getCurrentMembership();
 
   /// 升级会员等级
-  Future<Result<UserMembership>> upgradeMembership(MembershipLevel level);
+  Future<Result<UserMembership>> upgradeMembership(
+    MembershipLevel level, {
+    BillingCycle billingCycle = BillingCycle.yearly,
+  });
 
   /// 取消自动续费
   Future<Result<void>> cancelAutoRenew();
