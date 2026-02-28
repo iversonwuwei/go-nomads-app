@@ -32,6 +32,9 @@ class ConversationListController extends GetxController {
   TencentIMService? _imService;
   Timer? _refreshTimer;
   StreamSubscription? _messageSubscription;
+  StreamSubscription? _conversationChangedSubscription;
+  StreamSubscription? _newConversationSubscription;
+  StreamSubscription? _syncFinishSubscription;
 
   // ==================== 生命周期 ====================
 
@@ -47,6 +50,9 @@ class ConversationListController extends GetxController {
     log('💬 ConversationListController: onClose');
     _refreshTimer?.cancel();
     _messageSubscription?.cancel();
+    _conversationChangedSubscription?.cancel();
+    _newConversationSubscription?.cancel();
+    _syncFinishSubscription?.cancel();
     super.onClose();
   }
 
@@ -95,15 +101,29 @@ class ConversationListController extends GetxController {
 
       isIMReady.value = true;
 
-      // 加载会话列表
-      await loadConversations();
+      // 监听会话变更事件（实时更新列表）
+      _setupConversationListeners();
 
       // 监听新消息以刷新列表
       _setupMessageListener();
 
-      // 定期刷新（30秒）
+      // 首次加载会话列表
+      await loadConversations();
+
+      // SDK 登录后会话数据可能尚未从服务端同步完成，
+      // 如果首次拉取为空，延迟 2 秒后重试一次
+      if (conversations.isEmpty) {
+        Future.delayed(const Duration(seconds: 2), () {
+          if (conversations.isEmpty && _imService != null && _imService!.isLoggedIn) {
+            log('💬 首次加载为空，延迟重新拉取会话列表');
+            loadConversations();
+          }
+        });
+      }
+
+      // 保底定期刷新（60秒，降低频率因为已有监听器实时更新）
       _refreshTimer = Timer.periodic(
-        const Duration(seconds: 30),
+        const Duration(seconds: 60),
         (_) => loadConversations(),
       );
     } catch (e) {
@@ -111,6 +131,31 @@ class ConversationListController extends GetxController {
       errorMessage.value = '初始化失败，请稍后重试';
       isLoading.value = false;
     }
+  }
+
+  // ==================== 会话监听 ====================
+
+  /// 监听会话变更事件以实时更新列表
+  /// - onSyncServerFinish: 服务端会话数据同步完成，此时拉取最完整
+  /// - onNewConversation: 有新会话产生（自己发起的或别人发来新对话）
+  /// - onConversationChanged: 已有会话内容变更（新消息、已读变更等）
+  void _setupConversationListeners() {
+    if (_imService == null) return;
+
+    _syncFinishSubscription = _imService!.onSyncServerFinish.listen((_) {
+      log('💬 ConversationList: 服务端同步完成，刷新列表');
+      loadConversations();
+    });
+
+    _newConversationSubscription = _imService!.onNewConversation.listen((_) {
+      log('💬 ConversationList: 新会话，刷新列表');
+      loadConversations();
+    });
+
+    _conversationChangedSubscription = _imService!.onConversationChanged.listen((_) {
+      log('💬 ConversationList: 会话变更，刷新列表');
+      loadConversations();
+    });
   }
 
   // ==================== 数据加载 ====================

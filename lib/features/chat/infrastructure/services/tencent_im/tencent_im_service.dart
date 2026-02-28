@@ -111,6 +111,7 @@ class TencentIMService extends GetxService
       if (result.code == 0) {
         _isInitialized.value = true;
         addMessageListener();
+        addConversationListener();
         log('✅ 腾讯云IM SDK初始化成功');
         return true;
       }
@@ -124,7 +125,9 @@ class TencentIMService extends GetxService
   @override
   void onClose() {
     removeMessageListener();
+    removeConversationListener();
     disposeMessageListenerStreams();
+    disposeConversationStreams();
     TencentImSDKPlugin.v2TIMManager.unInitSDK();
     super.onClose();
   }

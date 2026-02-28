@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/core/core.dart';
+import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
@@ -1206,10 +1207,13 @@ class _DataServicePageState extends State<DataServicePage>
   Widget _buildMeetupsSection(MeetupStateController meetupController, bool isMobile) {
     return Obx(() {
       final upcomingMeetups = meetupController.upcomingMeetups;
-      final isLoadingMeetups = _meetupController.isLoading.value;
+      final loadState = meetupController.loadState.value;
+
+      // 使用 loadState 判断加载状态，避免业务操作（create/update）误触发 loading
+      final isDataLoading = loadState == LoadState.initial || loadState == LoadState.loading;
 
       // 显示加载中状态
-      if (isLoadingMeetups) {
+      if (isDataLoading) {
         return Center(
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 60.h),

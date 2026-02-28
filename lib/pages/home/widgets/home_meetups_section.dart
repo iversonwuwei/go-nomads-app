@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -26,19 +27,81 @@ class HomeMeetupsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final upcomingMeetups = _meetupController.upcomingMeetups;
-      // 检查加载或刷新状态
-      final isLoading = _meetupController.isLoading.value || _meetupController.isRefreshing.value;
+      final loadState = _meetupController.loadState.value;
 
-      if (isLoading) {
+      // 1. 初始状态或首次加载中 → 显示骨架屏
+      //    使用 loadState 而非 isLoading，避免业务操作（create/update）触发骨架屏
+      if (loadState == LoadState.initial || loadState == LoadState.loading) {
         return _buildLoadingState(context);
       }
 
+      // 2. 刷新中 → 有旧数据则继续展示旧数据，否则显示骨架屏
+      if (loadState == LoadState.refreshing) {
+        if (upcomingMeetups.isEmpty) {
+          return _buildLoadingState(context);
+        }
+        // 有旧数据时继续显示，避免刷新时闪屏
+      }
+
+      // 3. 加载出错且无数据 → 显示错误状态+重试
+      if (loadState == LoadState.error && upcomingMeetups.isEmpty) {
+        return _buildErrorState(context);
+      }
+
+      // 4. 真正无数据 → 显示空状态
       if (upcomingMeetups.isEmpty) {
         return HomeMeetupEmptyState(isMobile: isMobile);
       }
 
+      // 5. 正常数据展示
       return _buildMeetupsContent(context, upcomingMeetups);
     });
+  }
+
+  /// 错误状态 - 加载失败时显示，带重试按钮
+  Widget _buildErrorState(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            FontAwesomeIcons.circleExclamation,
+            size: 48.r,
+            color: AppColors.textSecondary,
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Failed to load meetups',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            _meetupController.errorMessage.value ?? 'Please check your connection and try again',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          SizedBox(height: 24.h),
+          OutlinedButton.icon(
+            onPressed: () => _meetupController.forceRefresh(),
+            icon: Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
+            label: const Text('Retry'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFFF4458),
+              side: const BorderSide(color: Color(0xFFFF4458)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildLoadingState(BuildContext context) {

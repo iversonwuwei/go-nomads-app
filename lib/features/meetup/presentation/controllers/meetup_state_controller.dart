@@ -393,9 +393,10 @@ class MeetupStateController extends PaginatedRefreshableController {
   }
 
   /// 设置数据变更监听器
+  /// 注意：基类已通过 entityType='meetup_list' 监听列表级别的事件（invalidated/updated → refresh）
+  /// 这里只监听单个 meetup 实体事件，避免重复处理
   void _setupDataChangeListeners() {
     DataEventBus.instance.on('meetup', _handleDataChanged);
-    DataEventBus.instance.on('meetup_list', _handleDataChanged);
   }
 
   /// 处理数据变更事件
@@ -573,7 +574,7 @@ class MeetupStateController extends PaginatedRefreshableController {
     if (!_requireLogin(action: '创建活动')) return null;
 
     try {
-      isLoading.value = true;
+      // 注意：不设置 isLoading，避免影响首页列表的加载状态显示
       errorMessage.value = '';
 
       log('🎨 创建活动: $title');
@@ -621,8 +622,6 @@ class MeetupStateController extends PaginatedRefreshableController {
       log('❌ 创建活动失败: $e');
       AppToast.error('创建活动失败: ${_extractErrorMessage(e)}');
       return null;
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -647,7 +646,7 @@ class MeetupStateController extends PaginatedRefreshableController {
     if (!_requireLogin(action: '更新活动')) return null;
 
     try {
-      isLoading.value = true;
+      // 注意：不设置 isLoading，避免影响首页列表的加载状态显示
       errorMessage.value = '';
 
       log('✏️ 更新活动: $meetupId');
@@ -692,8 +691,6 @@ class MeetupStateController extends PaginatedRefreshableController {
       log('❌ 更新活动失败: $e');
       AppToast.error('更新活动失败: ${_extractErrorMessage(e)}');
       return null;
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -908,7 +905,7 @@ class MeetupStateController extends PaginatedRefreshableController {
     String? message,
   }) async {
     try {
-      isLoading.value = true;
+      // 注意：不设置 isLoading，避免影响首页列表的加载状态显示
       log('📨 发送聚会邀请: meetupId=$meetupId, inviteeId=$inviteeId');
 
       final result = await _meetupRepository.inviteToMeetup(
@@ -925,8 +922,6 @@ class MeetupStateController extends PaginatedRefreshableController {
       log('❌ 邀请发送异常: $errorMsg');
       AppToast.error(errorMsg);
       return false;
-    } finally {
-      isLoading.value = false;
     }
   }
 }

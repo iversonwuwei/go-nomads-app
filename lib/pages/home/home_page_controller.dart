@@ -294,20 +294,24 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
   /// 从其他页面返回时重新加载数据
   Future<void> onRouteResume() async {
-    log('🔄 HomePageController: 从其他页面返回，重新加载数据');
-
-    // ⭐ 立即设置 city 加载状态
-    isLoadingLocalCities.value = true;
-    localCities.clear();
+    log('🔄 HomePageController: 从其他页面返回');
 
     clearSearchOnReturn();
 
-    // 并行加载城市和活动数据
-    // meetup 的状态由 forceRefresh 内部管理（设置 isRefreshing=true）
-    await Future.wait([
-      loadHomeCities(),
-      refreshMeetups(),
-    ]);
+    // ⭐ 仅在 meetup 数据过期时才触发刷新，避免每次返回都闪屏
+    // SignalR 和 DataEventBus 已能处理实时变更（创建/更新/删除）
+    if (meetupController.isDataStale) {
+      log('🔄 HomePageController: meetup 数据已过期，触发刷新');
+      await refreshMeetups();
+    } else {
+      log('📦 HomePageController: meetup 数据仍在缓存有效期内，跳过刷新');
+    }
+
+    // 仅在城市数据为空时才重新加载（通常不会为空）
+    if (localCities.isEmpty) {
+      log('🔄 HomePageController: 城市数据为空，重新加载');
+      await loadHomeCities();
+    }
   }
 
   /// 下拉刷新 - 刷新所有数据

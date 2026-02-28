@@ -2,10 +2,8 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:get/get.dart';
-import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/conversation_list_controller.dart';
-import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
@@ -124,14 +122,7 @@ class BottomNavController extends GetxController {
     // 如果 HomePageController 已存在，触发数据刷新
     if (Get.isRegistered<HomePageController>()) {
       final homeController = Get.find<HomePageController>();
-      // 立即设置加载状态
-      homeController.isLoadingLocalCities.value = true;
-      if (Get.isRegistered<MeetupStateController>()) {
-        final meetupController = Get.find<MeetupStateController>();
-        meetupController.isLoading.value = true;
-        meetupController.loadState.value = LoadState.loading;
-      }
-      // 触发数据刷新
+      // ⭐ 不再手动设置 isLoading/loadState，让 onRouteResume 智能判断是否需要刷新
       homeController.onRouteResume();
     }
 

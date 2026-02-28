@@ -194,7 +194,6 @@ class CreateMeetupPage extends StatelessWidget {
       BuildContext context, AppLocalizations l10n, CreateMeetupPageController controller, bool isEditMode) {
     return Obx(() => SizedBox(
           width: double.infinity,
-          height: 52.h,
           child: ElevatedButton(
             onPressed: controller.isSubmitting.value || controller.isUploadingImages.value
                 ? null
@@ -204,7 +203,6 @@ class CreateMeetupPage extends StatelessWidget {
               disabledBackgroundColor: Colors.grey.shade300,
               foregroundColor: Colors.white,
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
             ),
             child: controller.isSubmitting.value || controller.isUploadingImages.value
                 ? Row(

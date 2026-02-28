@@ -249,6 +249,37 @@ class MyApp extends StatelessWidget {
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
                 useMaterial3: true,
+
+                // ── 全局统一控件高度 ──
+                // 按钮和输入框统一为 48.h 高度
+                elevatedButtonTheme: ElevatedButtonThemeData(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(0, 48.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                ),
+                outlinedButtonTheme: OutlinedButtonThemeData(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: Size(0, 48.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(
+                    minimumSize: Size(0, 48.h),
+                  ),
+                ),
+                inputDecorationTheme: InputDecorationTheme(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                  ),
+                ),
               ),
 
               // 使用 AppWrapper 来控制启动页和主内容的切换

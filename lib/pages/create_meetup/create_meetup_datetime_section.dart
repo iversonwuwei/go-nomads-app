@@ -145,7 +145,6 @@ class CreateMeetupDescriptionSection extends StatelessWidget {
           maxLines: 4,
           decoration: InputDecoration(
             hintText: l10n.enterMeetupDescription,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r), borderSide: const BorderSide(color: AppColors.borderLight)),
             contentPadding: EdgeInsets.all(16.w),
           ),
         ),

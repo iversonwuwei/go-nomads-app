@@ -59,24 +59,20 @@ class CreateMeetupLocationSection extends StatelessWidget {
                     controller: _c.venueController,
                     decoration: InputDecoration(
                       hintText: l10n.enterVenue,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                          borderSide: const BorderSide(color: AppColors.borderLight)),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(12.r),
                         borderSide: BorderSide(
                             color: _c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty
                                 ? Theme.of(context).colorScheme.error
                                 : AppColors.borderLight),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(12.r),
                         borderSide: BorderSide(
                             color: _c.venueErrorText.value != null && _c.venueErrorText.value!.isNotEmpty
                                 ? Theme.of(context).colorScheme.error
                                 : const Color(0xFFFF4458)),
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -90,14 +86,12 @@ class CreateMeetupLocationSection extends StatelessWidget {
             ),
             SizedBox(width: 12.w),
             SizedBox(
-              height: 48.h,
               child: ElevatedButton(
                 onPressed: () => _selectVenueFromMap(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF4458),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                 ),
                 child: Icon(FontAwesomeIcons.map, size: 20.r),

@@ -1,4 +1,3 @@
-import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/create_meetup_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
@@ -27,8 +26,6 @@ class CreateMeetupTitleSection extends StatelessWidget {
           controller: _c.titleController,
           decoration: InputDecoration(
             hintText: l10n.enterMeetupTitle,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r), borderSide: const BorderSide(color: AppColors.borderLight)),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -72,8 +69,6 @@ class CreateMeetupTypeSection extends StatelessWidget {
             autofocus: true,
             decoration: InputDecoration(
               hintText: '输入自定义类型',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r), borderSide: const BorderSide(color: AppColors.borderLight)),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -111,11 +106,6 @@ class CreateMeetupTypeSection extends StatelessWidget {
             child: InputDecorator(
               decoration: InputDecoration(
                 hintText: l10n.meetupTypeHint,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 filled: true,
                 fillColor: Colors.white,
                 suffixIcon: _c.isLoadingTypes.value

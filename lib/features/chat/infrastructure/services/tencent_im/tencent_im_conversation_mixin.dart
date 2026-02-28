@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im_service.dart';
+import 'package:tencent_cloud_chat_sdk/enum/V2TimConversationListener.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_conversation.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 import 'package:tencent_cloud_chat_sdk/tencent_im_sdk_plugin.dart';
@@ -8,6 +10,76 @@ import 'package:tencent_cloud_chat_sdk/tencent_im_sdk_plugin.dart';
 /// 腾讯云IM服务 - 会话管理模块扩展
 mixin TencentIMConversationMixin {
   bool get isLoggedIn;
+
+  // ==================== 会话变更事件流 ====================
+
+  final _onConversationChangedController =
+      StreamController<List<V2TimConversation>>.broadcast();
+  final _onNewConversationController =
+      StreamController<List<V2TimConversation>>.broadcast();
+  final _onSyncServerFinishController = StreamController<void>.broadcast();
+
+  /// 会话变更事件流（已有会话内容更新，如新消息、已读等）
+  Stream<List<V2TimConversation>> get onConversationChanged =>
+      _onConversationChangedController.stream;
+
+  /// 新会话事件流（新建的会话，包括自己发起的和别人发来的）
+  Stream<List<V2TimConversation>> get onNewConversation =>
+      _onNewConversationController.stream;
+
+  /// 服务端会话数据同步完成事件
+  Stream<void> get onSyncServerFinish =>
+      _onSyncServerFinishController.stream;
+
+  V2TimConversationListener? _conversationListener;
+
+  /// 注册会话监听器 — 必须在 initSDK 后调用
+  void addConversationListener() {
+    _conversationListener = V2TimConversationListener(
+      onSyncServerStart: () {
+        log('🔄 IM会话同步开始...');
+      },
+      onSyncServerFinish: () {
+        log('✅ IM会话同步完成');
+        _onSyncServerFinishController.add(null);
+      },
+      onSyncServerFailed: () {
+        log('❌ IM会话同步失败');
+      },
+      onNewConversation: (List<V2TimConversation> conversationList) {
+        log('💬 新会话: ${conversationList.length}个');
+        _onNewConversationController.add(conversationList);
+      },
+      onConversationChanged: (List<V2TimConversation> conversationList) {
+        log('💬 会话变更: ${conversationList.length}个');
+        _onConversationChangedController.add(conversationList);
+      },
+      onTotalUnreadMessageCountChanged: (int totalUnreadCount) {
+        log('💬 总未读数变更: $totalUnreadCount');
+      },
+    );
+    TencentImSDKPlugin.v2TIMManager
+        .getConversationManager()
+        .addConversationListener(listener: _conversationListener!);
+    log('✅ 会话监听器已注册');
+  }
+
+  /// 移除会话监听器
+  void removeConversationListener() {
+    if (_conversationListener != null) {
+      TencentImSDKPlugin.v2TIMManager
+          .getConversationManager()
+          .removeConversationListener(listener: _conversationListener);
+      _conversationListener = null;
+    }
+  }
+
+  /// 释放会话事件流资源
+  void disposeConversationStreams() {
+    _onConversationChangedController.close();
+    _onNewConversationController.close();
+    _onSyncServerFinishController.close();
+  }
 
   /// 获取会话列表
   Future<List<V2TimConversation>> getConversationList({
