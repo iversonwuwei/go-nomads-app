@@ -13,23 +13,18 @@ mixin TencentIMConversationMixin {
 
   // ==================== 会话变更事件流 ====================
 
-  final _onConversationChangedController =
-      StreamController<List<V2TimConversation>>.broadcast();
-  final _onNewConversationController =
-      StreamController<List<V2TimConversation>>.broadcast();
+  final _onConversationChangedController = StreamController<List<V2TimConversation>>.broadcast();
+  final _onNewConversationController = StreamController<List<V2TimConversation>>.broadcast();
   final _onSyncServerFinishController = StreamController<void>.broadcast();
 
   /// 会话变更事件流（已有会话内容更新，如新消息、已读等）
-  Stream<List<V2TimConversation>> get onConversationChanged =>
-      _onConversationChangedController.stream;
+  Stream<List<V2TimConversation>> get onConversationChanged => _onConversationChangedController.stream;
 
   /// 新会话事件流（新建的会话，包括自己发起的和别人发来的）
-  Stream<List<V2TimConversation>> get onNewConversation =>
-      _onNewConversationController.stream;
+  Stream<List<V2TimConversation>> get onNewConversation => _onNewConversationController.stream;
 
   /// 服务端会话数据同步完成事件
-  Stream<void> get onSyncServerFinish =>
-      _onSyncServerFinishController.stream;
+  Stream<void> get onSyncServerFinish => _onSyncServerFinishController.stream;
 
   V2TimConversationListener? _conversationListener;
 
@@ -58,9 +53,7 @@ mixin TencentIMConversationMixin {
         log('💬 总未读数变更: $totalUnreadCount');
       },
     );
-    TencentImSDKPlugin.v2TIMManager
-        .getConversationManager()
-        .addConversationListener(listener: _conversationListener!);
+    TencentImSDKPlugin.v2TIMManager.getConversationManager().addConversationListener(listener: _conversationListener!);
     log('✅ 会话监听器已注册');
   }
 
@@ -115,9 +108,7 @@ mixin TencentIMConversationMixin {
     final formattedUserId = TencentIMService.formatUserId(userId);
 
     try {
-      final result = await TencentImSDKPlugin.v2TIMManager
-          .getMessageManager()
-          .getC2CHistoryMessageList(
+      final result = await TencentImSDKPlugin.v2TIMManager.getMessageManager().getC2CHistoryMessageList(
             userID: formattedUserId,
             count: count,
             lastMsgID: lastMsg?.msgID,
@@ -158,9 +149,8 @@ mixin TencentIMConversationMixin {
     final formattedUserId = TencentIMService.formatUserId(userId);
 
     try {
-      final result = await TencentImSDKPlugin.v2TIMManager
-          .getMessageManager()
-          .markC2CMessageAsRead(userID: formattedUserId);
+      final result =
+          await TencentImSDKPlugin.v2TIMManager.getMessageManager().markC2CMessageAsRead(userID: formattedUserId);
 
       return result.code == 0;
     } catch (e) {

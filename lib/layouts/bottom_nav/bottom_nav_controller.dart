@@ -184,8 +184,7 @@ class BottomNavController extends GetxController {
       currentIndex.value = 0;
     } else if (currentRoute == AppRoutes.conversations) {
       currentIndex.value = 1;
-    } else if (currentRoute == AppRoutes.profile ||
-        currentRoute == AppRoutes.profileEdit) {
+    } else if (currentRoute == AppRoutes.profile || currentRoute == AppRoutes.profileEdit) {
       currentIndex.value = 2;
     } else if (currentRoute == AppRoutes.notifications) {
       currentIndex.value = 3;

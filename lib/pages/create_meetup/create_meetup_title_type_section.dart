@@ -1,10 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/create_meetup_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CreateMeetupTitleSection extends StatelessWidget {
   final String controllerTag;
@@ -55,7 +55,8 @@ class CreateMeetupTypeSection extends StatelessWidget {
       children: [
         Text(l10n.meetupType, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.black87)),
         SizedBox(height: 8.h),
-        Obx(() => _c.showCustomTypeInput.value ? _buildCustomTypeInput(context, l10n) : _buildTypeSelector(context, l10n)),
+        Obx(() =>
+            _c.showCustomTypeInput.value ? _buildCustomTypeInput(context, l10n) : _buildTypeSelector(context, l10n)),
       ],
     );
   }
@@ -153,7 +154,9 @@ class CreateMeetupTypeSection extends StatelessWidget {
     Get.bottomSheet(
       Container(
         height: 300.h,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(20.r), topRight: Radius.circular(20.r))),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(20.r), topRight: Radius.circular(20.r))),
         child: Column(
           children: [
             Container(
@@ -162,9 +165,13 @@ class CreateMeetupTypeSection extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextButton(onPressed: () => Get.back(), child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey))),
+                  TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey))),
                   Text(l10n.meetupType, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
-                  TextButton(onPressed: () => Get.back(), child: Text(l10n.confirm, style: const TextStyle(color: Color(0xFFFF4458)))),
+                  TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text(l10n.confirm, style: const TextStyle(color: Color(0xFFFF4458)))),
                 ],
               ),
             ),
@@ -175,7 +182,10 @@ class CreateMeetupTypeSection extends StatelessWidget {
                   final option = optionsWithCustom[index];
                   final isSelected = option == _c.selectedType.value;
                   return ListTile(
-                    title: Text(option, style: TextStyle(color: isSelected ? const Color(0xFFFF4458) : Colors.black87, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
+                    title: Text(option,
+                        style: TextStyle(
+                            color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
                     trailing: isSelected ? const Icon(FontAwesomeIcons.check, color: Color(0xFFFF4458)) : null,
                     onTap: () {
                       _c.selectType(option, localeCode, field);

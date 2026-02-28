@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/create_meetup_page_controller.dart';
@@ -10,7 +11,6 @@ import 'package:go_nomads_app/pages/create_meetup/create_meetup_location_section
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_title_type_section.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CreateMeetupPage extends StatelessWidget {
   final Meetup? editingMeetup;

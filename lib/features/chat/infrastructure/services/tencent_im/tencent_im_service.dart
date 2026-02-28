@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'dart:developer';
+
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/tencent_im_config.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/usersig_generator.dart';
 import 'package:tencent_cloud_chat_sdk/enum/V2TimSDKListener.dart';
 import 'package:tencent_cloud_chat_sdk/enum/log_level_enum.dart';
 import 'package:tencent_cloud_chat_sdk/tencent_im_sdk_plugin.dart';
-import 'package:go_nomads_app/config/tencent_im_config.dart';
-import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/usersig_generator.dart';
 
-import 'tencent_im_login_mixin.dart';
-import 'tencent_im_message_send_mixin.dart';
-import 'tencent_im_message_listener_mixin.dart';
 import 'tencent_im_conversation_mixin.dart';
+import 'tencent_im_login_mixin.dart';
+import 'tencent_im_message_listener_mixin.dart';
+import 'tencent_im_message_send_mixin.dart';
 
 /// 腾讯云IM服务 - 完整实现
 /// 整合所有功能模块
