@@ -1917,7 +1917,7 @@
   },
   "upgradeToUnlock": "升级以解锁更多功能",
   "selectPaymentMethod": "选择支付方式",
-  "upgradeTo": "升级到 {planName} - ${price}/年",
+  "upgradeTo": "升级到 {planName} - ¥{price}",
   "@upgradeTo": {
     "placeholders": {
       "planName": {
@@ -1943,6 +1943,16 @@
   "selectPlanLabel": "选择计划",
   "popular": "热门",
   "perYear": "/年",
+  "billingMonthly": "月付",
+  "billingYearly": "年付",
+  "saveAmount": "省 ¥{amount}",
+  "@saveAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "alreadyHavePlan": "您已拥有此计划或更高级别的计划",
   "creatingPaypalOrder": "正在创建 PayPal 订单...",
   "creatingWechatOrder": "正在创建微信支付订单...",

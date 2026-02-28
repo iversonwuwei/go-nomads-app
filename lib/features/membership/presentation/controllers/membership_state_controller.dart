@@ -37,6 +37,9 @@ class MembershipStateController extends GetxController {
   /// 是否正在升级
   final _isUpgrading = false.obs;
 
+  /// 是否为月付模式（false = 年付）
+  final _isMonthlyBilling = false.obs;
+
   /// 错误信息
   final _errorMessage = Rx<String?>(null);
 
@@ -94,6 +97,19 @@ class MembershipStateController extends GetxController {
   /// 是否正在升级
   bool get isUpgrading => _isUpgrading.value;
   RxBool get isUpgradingRx => _isUpgrading;
+
+  /// 是否为月付模式
+  bool get isMonthlyBilling => _isMonthlyBilling.value;
+  RxBool get isMonthlyBillingRx => _isMonthlyBilling;
+
+  /// 切换计费周期
+  void toggleBillingCycle() => _isMonthlyBilling.value = !_isMonthlyBilling.value;
+
+  /// 设置计费周期
+  void setMonthlyBilling(bool isMonthly) => _isMonthlyBilling.value = isMonthly;
+
+  /// 当前选中的计费天数
+  int get billingDurationDays => _isMonthlyBilling.value ? 30 : 365;
 
   /// 错误信息
   String? get errorMessage => _errorMessage.value;

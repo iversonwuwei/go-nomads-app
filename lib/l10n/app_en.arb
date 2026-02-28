@@ -1932,7 +1932,7 @@
   },
   "upgradeToUnlock": "Upgrade to unlock more features",
   "selectPaymentMethod": "Select Payment Method",
-  "upgradeTo": "Upgrade to {planName} - ${price}/year",
+  "upgradeTo": "Upgrade to {planName} - ¥{price}",
   "@upgradeTo": {
     "placeholders": {
       "planName": {
@@ -1958,6 +1958,16 @@
   "selectPlanLabel": "Select Plan",
   "popular": "POPULAR",
   "perYear": "/year",
+  "billingMonthly": "Monthly",
+  "billingYearly": "Yearly",
+  "saveAmount": "Save ¥{amount}",
+  "@saveAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "alreadyHavePlan": "You already have this or higher plan",
   "creatingPaypalOrder": "Creating PayPal order...",
   "creatingWechatOrder": "Creating WeChat Pay order...",

@@ -3815,7 +3815,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String upgradeTo(String planName, String price) {
-    return '升级到 $planName - \$$price/年';
+    return '升级到 $planName - ¥$price';
   }
 
   @override
@@ -3859,6 +3859,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get perYear => '/年';
+
+  @override
+  String get billingMonthly => '月付';
+
+  @override
+  String get billingYearly => '年付';
+
+  @override
+  String saveAmount(String amount) {
+    return '省 ¥$amount';
+  }
 
   @override
   String get alreadyHavePlan => '您已拥有此计划或更高级别的计划';

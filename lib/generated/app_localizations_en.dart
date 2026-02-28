@@ -3871,7 +3871,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String upgradeTo(String planName, String price) {
-    return 'Upgrade to $planName - \$$price/year';
+    return 'Upgrade to $planName - ¥$price';
   }
 
   @override
@@ -3916,6 +3916,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get perYear => '/year';
+
+  @override
+  String get billingMonthly => 'Monthly';
+
+  @override
+  String get billingYearly => 'Yearly';
+
+  @override
+  String saveAmount(String amount) {
+    return 'Save ¥$amount';
+  }
 
   @override
   String get alreadyHavePlan => 'You already have this or higher plan';

@@ -7541,7 +7541,7 @@ abstract class AppLocalizations {
   /// No description provided for @upgradeTo.
   ///
   /// In zh, this message translates to:
-  /// **'升级到 {planName} - \${price}/年'**
+  /// **'升级到 {planName} - ¥{price}'**
   String upgradeTo(String planName, String price);
 
   /// No description provided for @paypalPayment.
@@ -7627,6 +7627,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'/年'**
   String get perYear;
+
+  /// No description provided for @billingMonthly.
+  ///
+  /// In zh, this message translates to:
+  /// **'月付'**
+  String get billingMonthly;
+
+  /// No description provided for @billingYearly.
+  ///
+  /// In zh, this message translates to:
+  /// **'年付'**
+  String get billingYearly;
+
+  /// No description provided for @saveAmount.
+  ///
+  /// In zh, this message translates to:
+  /// **'省 ¥{amount}'**
+  String saveAmount(String amount);
 
   /// No description provided for @alreadyHavePlan.
   ///

@@ -110,7 +110,11 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
             children: [
               // 当前会员状态
               _buildCurrentStatus(context),
-              SizedBox(height: 24.h),
+              SizedBox(height: 20.h),
+
+              // 计费周期切换
+              _buildBillingCycleToggle(context),
+              SizedBox(height: 20.h),
 
               // 动态生成会员计划卡片
               ...paidPlans.asMap().entries.map((entry) {
@@ -125,6 +129,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     isCurrentPlan: currentLevel.levelValue == plan.level,
                     isLoading: isLoading,
                     isPopular: isPopular,
+                    isMonthly: controller.isMonthlyBilling,
                     onSelect: () => _handleUpgrade(context, plan),
                   ),
                 );
@@ -313,6 +318,110 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     );
   }
 
+  /// 计费周期切换组件
+  Widget _buildBillingCycleToggle(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isMonthly = controller.isMonthlyBilling;
+    return Container(
+      padding: EdgeInsets.all(4.w),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => controller.setMonthlyBilling(true),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: isMonthly ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10.r),
+                  boxShadow: isMonthly
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 4.r,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    l10n.billingMonthly,
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: isMonthly ? FontWeight.bold : FontWeight.w500,
+                      color: isMonthly ? Colors.black87 : Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => controller.setMonthlyBilling(false),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: !isMonthly ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10.r),
+                  boxShadow: !isMonthly
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 4.r,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        l10n.billingYearly,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: !isMonthly ? FontWeight.bold : FontWeight.w500,
+                          color: !isMonthly ? Colors.black87 : Colors.grey.shade600,
+                        ),
+                      ),
+                      if (!isMonthly) ...[
+                        SizedBox(width: 6.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade100,
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Text(
+                            '优惠',
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFooterNote(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
@@ -403,7 +512,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      l10n.upgradeTo(plan.name, plan.priceYearly.toStringAsFixed(0)),
+                      l10n.upgradeTo(
+                        plan.name,
+                        controller.isMonthlyBilling
+                            ? plan.priceMonthly.toStringAsFixed(0)
+                            : plan.priceYearly.toStringAsFixed(0),
+                      ),
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: Colors.grey.shade600,
@@ -565,7 +679,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    l10n.priceForPlan(plan.priceYearly.toStringAsFixed(0), plan.name),
+                    l10n.priceForPlan(
+                      controller.isMonthlyBilling
+                          ? plan.priceMonthly.toStringAsFixed(0)
+                          : plan.priceYearly.toStringAsFixed(0),
+                      plan.name,
+                    ),
                     style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -591,7 +710,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       // 发起支付
       success = await paymentService.startMembershipPayment(
         membershipLevel: plan.level,
-        durationDays: 365, // 年度订阅
+        durationDays: controller.billingDurationDays,
         isRenewal: isRenewal,
       );
     } catch (e) {
@@ -664,7 +783,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    l10n.cnyPriceForPlan(plan.priceYearly.toStringAsFixed(0), plan.name),
+                    l10n.cnyPriceForPlan(
+                      controller.isMonthlyBilling
+                          ? plan.priceMonthly.toStringAsFixed(0)
+                          : plan.priceYearly.toStringAsFixed(0),
+                      plan.name,
+                    ),
                     style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -688,7 +812,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
           .payForMembership(
         method: payment_entities.PaymentMethod.wechat,
         membershipLevel: plan.level,
-        durationDays: 365,
+        durationDays: controller.billingDurationDays,
         isRenewal: isRenewal,
       )
           .then((result) {
@@ -889,6 +1013,7 @@ class _MembershipPlanCard extends StatelessWidget {
   final bool isCurrentPlan;
   final bool isLoading;
   final bool isPopular;
+  final bool isMonthly;
   final VoidCallback onSelect;
 
   const _MembershipPlanCard({
@@ -896,6 +1021,7 @@ class _MembershipPlanCard extends StatelessWidget {
     required this.isCurrentPlan,
     required this.isLoading,
     this.isPopular = false,
+    this.isMonthly = false,
     required this.onSelect,
   });
 
@@ -1009,7 +1135,7 @@ class _MembershipPlanCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '$currencySymbol${plan.priceYearly.toStringAsFixed(0)}',
+                          '$currencySymbol${isMonthly ? plan.priceMonthly.toStringAsFixed(0) : plan.priceYearly.toStringAsFixed(0)}',
                           style: TextStyle(
                             fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
@@ -1017,12 +1143,23 @@ class _MembershipPlanCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          l10n.perYear,
+                          isMonthly ? l10n.perMonth : l10n.perYear,
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.grey.shade500,
                           ),
                         ),
+                        if (!isMonthly) ...[
+                          SizedBox(height: 2.h),
+                          Text(
+                            l10n.saveAmount((plan.priceMonthly * 12 - plan.priceYearly).toStringAsFixed(0)),
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green.shade600,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
