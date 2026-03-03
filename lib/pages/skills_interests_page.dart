@@ -1,15 +1,14 @@
+import 'package:go_nomads_app/controllers/skills_interests_page_controller.dart';
+import 'package:go_nomads_app/widgets/interests_selector.dart';
+import 'package:go_nomads_app/widgets/skills_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../models/interest_model.dart';
-import '../models/skill_model.dart';
-import '../services/interests_api_service.dart';
-import '../services/skills_api_service.dart';
-import '../widgets/interests_selector.dart';
-import '../widgets/skills_selector.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 技能和兴趣选择页面
 /// 用于用户注册流程或个人资料编辑
+/// 需要 StatefulWidget 因为 TabController 需要 SingleTickerProviderStateMixin
 class SkillsInterestsPage extends StatefulWidget {
   const SkillsInterestsPage({super.key});
 
@@ -18,86 +17,28 @@ class SkillsInterestsPage extends StatefulWidget {
 }
 
 class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTickerProviderStateMixin {
+  static const String _tag = 'SkillsInterestsPage';
   late TabController _tabController;
-  final SkillsApiService _skillsService = SkillsApiService();
-  final InterestsApiService _interestsService = InterestsApiService();
+  late final SkillsInterestsPageController _controller;
 
-  List<UserSkill> _selectedSkills = [];
-  List<UserInterest> _selectedInterests = [];
-  bool _isSaving = false;
+  SkillsInterestsPageController _useController() {
+    if (Get.isRegistered<SkillsInterestsPageController>(tag: _tag)) {
+      return Get.find<SkillsInterestsPageController>(tag: _tag);
+    }
+    return Get.put(SkillsInterestsPageController(), tag: _tag);
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _controller = _useController();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> _saveSkillsAndInterests() async {
-    if (_selectedSkills.isEmpty && _selectedInterests.isEmpty) {
-      Get.snackbar(
-        '提示',
-        '请至少选择一个技能或兴趣',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    setState(() => _isSaving = true);
-
-    try {
-      // 保存技能
-      if (_selectedSkills.isNotEmpty) {
-        final skillRequests = _selectedSkills.map((skill) {
-          return AddUserSkillRequest(
-            skillId: skill.skillId,
-            proficiencyLevel: skill.proficiencyLevel,
-            yearsOfExperience: skill.yearsOfExperience,
-          );
-        }).toList();
-
-        await _skillsService.addUserSkillsBatch(skillRequests);
-      }
-
-      // 保存兴趣
-      if (_selectedInterests.isNotEmpty) {
-        final interestRequests = _selectedInterests.map((interest) {
-          return AddUserInterestRequest(
-            interestId: interest.interestId,
-            intensityLevel: interest.intensityLevel,
-          );
-        }).toList();
-
-        await _interestsService.addUserInterestsBatch(interestRequests);
-      }
-
-      Get.snackbar(
-        '保存成功',
-        '已保存 ${_selectedSkills.length} 个技能和 ${_selectedInterests.length} 个兴趣',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-
-      // 返回上一页
-      Get.back();
-    } catch (e) {
-      print('❌ 保存失败: $e');
-      Get.snackbar(
-        '保存失败',
-        '无法保存您的选择，请稍后重试',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      setState(() => _isSaving = false);
-    }
   }
 
   @override
@@ -108,18 +49,19 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: '技能', icon: Icon(Icons.work_outline)),
-            Tab(text: '兴趣', icon: Icon(Icons.favorite_outline)),
+            Tab(text: '技能', icon: Icon(FontAwesomeIcons.briefcase)),
+            Tab(text: '兴趣', icon: Icon(FontAwesomeIcons.heart)),
           ],
         ),
         actions: [
-          if (_selectedSkills.isNotEmpty || _selectedInterests.isNotEmpty)
-            TextButton(
-              onPressed: _isSaving ? null : _saveSkillsAndInterests,
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
+          Obx(() {
+            if (!_controller.hasSelection) return const SizedBox.shrink();
+            return TextButton(
+              onPressed: _controller.isSaving.value ? null : _controller.saveSkillsAndInterests,
+              child: _controller.isSaving.value
+                  ? SizedBox(
+                      width: 20.w,
+                      height: 20.h,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text(
@@ -129,86 +71,83 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-            ),
+            );
+          }),
         ],
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
           // 技能选择器
-          SkillsSelector(
-            selectedSkillIds: _selectedSkills.map((s) => s.skillId).toList(),
-            onChanged: (skills) {
-              setState(() => _selectedSkills = skills);
-            },
-            showProficiency: true,
-            maxSelection: 10, // 最多选择10个技能
-          ),
-          
+          Obx(() => SkillsSelector(
+                selectedSkillIds: _controller.selectedSkillIds,
+                onChanged: _controller.updateSelectedSkills,
+                showProficiency: true,
+                maxSelection: 10, // 最多选择10个技能
+              )),
+
           // 兴趣选择器
-          InterestsSelector(
-            selectedInterestIds: _selectedInterests.map((i) => i.interestId).toList(),
-            onChanged: (interests) {
-              setState(() => _selectedInterests = interests);
-            },
-            showIntensity: true,
-            maxSelection: 15, // 最多选择15个兴趣
-          ),
+          Obx(() => InterestsSelector(
+                selectedInterestIds: _controller.selectedInterestIds,
+                onChanged: _controller.updateSelectedInterests,
+                showIntensity: true,
+                maxSelection: 15, // 最多选择15个兴趣
+              )),
         ],
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10.r,
             ),
           ],
         ),
         child: SafeArea(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Obx(() => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '已选择',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '已选择',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        '技能 ${_controller.selectedSkills.length}/10  ·  兴趣 ${_controller.selectedInterests.length}/15',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.sp,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '技能 ${_selectedSkills.length}/10  ·  兴趣 ${_selectedInterests.length}/15',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                  ElevatedButton(
+                    onPressed: !_controller.hasSelection || _controller.isSaving.value
+                        ? null
+                        : _controller.saveSkillsAndInterests,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
                     ),
+                    child: _controller.isSaving.value
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.h,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('保存'),
                   ),
                 ],
-              ),
-              ElevatedButton(
-                onPressed: (_selectedSkills.isEmpty && _selectedInterests.isEmpty) || _isSaving
-                    ? null
-                    : _saveSkillsAndInterests,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                ),
-                child: _isSaving
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('保存'),
-              ),
-            ],
-          ),
+              )),
         ),
       ),
     );

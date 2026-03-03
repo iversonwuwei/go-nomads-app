@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 异步任务进度对话框
 ///
@@ -20,26 +23,26 @@ class AsyncTaskProgressDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // 禁止返回键关闭
+    return PopScope(
+      canPop: false, // 禁止返回键关闭
       child: Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(24.0.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // 标题
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 进度指示器
               Obx(() {
@@ -48,14 +51,14 @@ class AsyncTaskProgressDialog extends StatelessWidget {
                   children: [
                     // 圆形进度指示器
                     SizedBox(
-                      width: 80,
-                      height: 80,
+                      width: 80.w,
+                      height: 80.h,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           CircularProgressIndicator(
                             value: progressValue,
-                            strokeWidth: 8,
+                            strokeWidth: 8.w,
                             backgroundColor: Colors.grey[200],
                             valueColor: AlwaysStoppedAnimation<Color>(
                               _getProgressColor(progress.value),
@@ -63,15 +66,15 @@ class AsyncTaskProgressDialog extends StatelessWidget {
                           ),
                           Text(
                             '${progress.value}%',
-                            style: const TextStyle(
-                              fontSize: 18,
+                            style: TextStyle(
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // 线性进度条
                     LinearProgressIndicator(
@@ -85,19 +88,19 @@ class AsyncTaskProgressDialog extends StatelessWidget {
                 );
               }),
 
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 进度消息
               Obx(() => Text(
                     message.value.isEmpty ? '处理中...' : message.value,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: Colors.grey[600],
                     ),
                   )),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 取消按钮
               if (onCancel != null)
@@ -146,19 +149,19 @@ class AsyncTaskProgressDialog extends StatelessWidget {
 
   /// 关闭对话框
   static void dismiss() {
-    print('[AsyncTaskProgressDialog] 尝试关闭对话框...');
+    log('[AsyncTaskProgressDialog] 尝试关闭对话框...');
 
     try {
       // 只关闭最顶层的对话框，不影响 snackbar
       if (Get.isDialogOpen == true) {
         // 使用 closeAllDialogs 而不是 back，避免误关闭 snackbar
         Get.until((route) => !Get.isDialogOpen!);
-        print('[AsyncTaskProgressDialog] ✅ 对话框已成功关闭');
+        log('[AsyncTaskProgressDialog] ✅ 对话框已成功关闭');
       } else {
-        print('[AsyncTaskProgressDialog] ✅ 对话框已经关闭');
+        log('[AsyncTaskProgressDialog] ✅ 对话框已经关闭');
       }
     } catch (e) {
-      print('[AsyncTaskProgressDialog] ❌ 关闭失败: $e');
+      log('[AsyncTaskProgressDialog] ❌ 关闭失败: $e');
     }
   }
 

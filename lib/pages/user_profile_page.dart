@@ -1,121 +1,255 @@
-import 'package:flutter/material.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/user_profile_page_controller.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+import 'package:flutter/material.dart' hide Badge;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../controllers/user_profile_controller.dart';
-import '../models/user_model.dart' as user_model;
-import '../widgets/app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 用户个人资料页面
-class UserProfilePage extends StatefulWidget {
+class UserProfilePage extends StatelessWidget {
   const UserProfilePage({super.key});
 
-  @override
-  State<UserProfilePage> createState() => _UserProfilePageState();
-}
+  static const bool _travelHistoryEnabled = true;
+  static const String _tag = 'UserProfilePage';
 
-class _UserProfilePageState extends State<UserProfilePage> {
-  final UserProfileController _profileController =
-      Get.find<UserProfileController>();
-
-  // 用户信息
-  final Map<String, dynamic> _userInfo = {
-    'name': 'Digital Nomad',
-    'email': 'nomad@example.com',
-    'memberSince': '2024-01-15',
-    'favoritesCount': 12,
-    'visitedCount': 8,
-    'avatar':
-        'https://ui-avatars.com/api/?name=Digital+Nomad&background=FF9800&color=fff&size=200',
-  };
+  UserProfilePageController _useController() {
+    if (Get.isRegistered<UserProfilePageController>(tag: _tag)) {
+      return Get.find<UserProfilePageController>(tag: _tag);
+    }
+    return Get.put(UserProfilePageController(args: Get.arguments), tag: _tag);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _useController();
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0a0a0a),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          isMobile ? 16 : 24,
-          isMobile ? 48 : 64, // 顶部留白替代 AppBar
-          isMobile ? 16 : 24,
-          100, // 底部留白给导航栏
-        ),
-        children: [
-          // 用户信息卡片
-          _buildUserInfoCard(isMobile),
+      backgroundColor: AppColors.background,
+      appBar: _buildAppBar(controller),
+      body: SafeArea(
+        child: Obx(() {
+          final chatUser = controller.chatTargetUser;
 
-          const SizedBox(height: 24),
+          if (controller.shouldBlockForRemoteProfile) {
+            return const UserProfileSkeleton();
+          }
 
-          // 统计信息
-          _buildStatsSection(isMobile),
+          final remoteError = controller.remoteProfileError.value;
+          if (remoteError != null) {
+            return _buildRemoteErrorState(isMobile, controller, remoteError);
+          }
 
-          const SizedBox(height: 24),
+          return ListView(
+            padding: EdgeInsets.fromLTRB(
+              isMobile ? 16 : 24,
+              isMobile ? 24 : 32,
+              isMobile ? 16 : 24,
+              100,
+            ),
+            children: [
+              _buildUserInfoCard(isMobile, chatUser, controller),
+              SizedBox(height: 24.h),
+              _buildStatsSection(isMobile, controller),
+              SizedBox(height: 24.h),
+              _buildBadgesSection(isMobile, controller),
+              if (_travelHistoryEnabled) ...[
+                SizedBox(height: 24.h),
+                _buildTravelHistorySection(isMobile, controller),
+              ],
+              SizedBox(height: 24.h),
+              _buildSkillsSection(isMobile, controller),
+              SizedBox(height: 24.h),
+              _buildInterestsSection(isMobile, controller),
+            ],
+          );
+        }),
+      ),
+    );
+  }
 
-          // 勋章 (Badges)
-          _buildBadgesSection(isMobile),
+  PreferredSizeWidget _buildAppBar(UserProfilePageController controller) {
+    return AppBar(
+      backgroundColor: AppColors.background,
+      elevation: 0,
+      iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      leading: const AppBackButton(),
+      title: Obx(() {
+        final username = controller.userInfo['username'] ?? 'Profile';
+        return Text(
+          username,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+      }),
+    );
+  }
 
-          const SizedBox(height: 24),
-
-          // 旅行历史 (Travel History)
-          _buildTravelHistorySection(isMobile),
-
-          const SizedBox(height: 24),
-
-          // 技能
-          _buildSkillsSection(isMobile),
-
-          const SizedBox(height: 24),
-
-          // 兴趣爱好
-          _buildInterestsSection(isMobile),
-
-          const SizedBox(height: 24),
-
-          // 账户操作
-          _buildAccountActionsSection(isMobile),
-
-          const SizedBox(height: 32),
-
-          // 登出按钮
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Get.defaultDialog(
-                  title: 'Logout',
-                  titleStyle: const TextStyle(color: Colors.white),
-                  backgroundColor: const Color(0xFF1a1a1a),
-                  content: const Text(
-                    'Are you sure you want to logout?',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                  textCancel: 'Cancel',
-                  textConfirm: 'Logout',
-                  cancelTextColor: Colors.white70,
-                  confirmTextColor: Colors.white,
-                  buttonColor: Colors.red,
-                  onConfirm: () {
-                    Get.back();
-                    AppToast.success(
-                      'You have been successfully logged out',
-                      title: 'Logged Out',
-                    );
-                  },
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: isMobile ? 16 : 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+  Widget _buildRemoteErrorState(bool isMobile, UserProfilePageController controller, String message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(isMobile ? 24 : 48),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(isMobile ? 20 : 32),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 16.r,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(FontAwesomeIcons.circleExclamation, color: Colors.redAccent, size: 56.r),
+              SizedBox(height: 16.h),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: isMobile ? 16 : 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              child: Text(
-                'Logout',
+              SizedBox(height: 16.h),
+              ElevatedButton.icon(
+                onPressed: controller.requestedUserId == null
+                    ? null
+                    : () => controller.fetchUserProfile(controller.requestedUserId!),
+                icon: const Icon(FontAwesomeIcons.arrowsRotate),
+                label: const Text('重新加载'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 24 : 32,
+                    vertical: isMobile ? 12 : 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Get.back(),
+                child: const Text('返回上一页'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserInfoCard(bool isMobile, User? chatUser, UserProfilePageController controller) {
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 20 : 32),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 18.r,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Obx(() {
+            final info = controller.userInfo;
+            return SafeCircleAvatar(
+              imageUrl: info['avatar'],
+              radius: isMobile ? 50 : 70,
+              backgroundColor: AppColors.containerBlueGrey,
+            );
+          }),
+          SizedBox(height: isMobile ? 16 : 24),
+          Obx(() {
+            final info = controller.userInfo;
+            return Text(
+              info['name'] ?? '',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: isMobile ? 24 : 32,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          }),
+          SizedBox(height: 6.h),
+          Obx(() {
+            final info = controller.userInfo;
+            return Text(
+              info['email'] ?? '',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: isMobile ? 14 : 16,
+              ),
+            );
+          }),
+          SizedBox(height: 12.h),
+          Obx(() {
+            final info = controller.userInfo;
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(30.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    FontAwesomeIcons.calendar,
+                    color: AppColors.accent,
+                    size: isMobile ? 14 : 16,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'Member since ${info['memberSince'] ?? '--'}',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: isMobile ? 12 : 14,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          SizedBox(height: isMobile ? 20 : 28),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: chatUser == null ? null : () => _openChat(chatUser),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: isMobile ? 14 : 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                elevation: 0,
+              ),
+              icon: const Icon(FontAwesomeIcons.message),
+              label: Text(
+                'Message',
                 style: TextStyle(
                   fontSize: isMobile ? 16 : 18,
                   fontWeight: FontWeight.w600,
@@ -128,87 +262,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildUserInfoCard(bool isMobile) {
-    return Container(
-      padding: EdgeInsets.all(isMobile ? 20 : 32),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1a1a2e), Color(0xFF16213e)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-      ),
-      child: Column(
-        children: [
-          // 头像
-          CircleAvatar(
-            radius: isMobile ? 50 : 70,
-            backgroundImage: NetworkImage(_userInfo['avatar']),
-            backgroundColor: Colors.orange,
-          ),
-
-          SizedBox(height: isMobile ? 16 : 24),
-
-          // 用户名
-          Text(
-            _userInfo['name'],
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: isMobile ? 24 : 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // 邮箱
-          Text(
-            _userInfo['email'],
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontSize: isMobile ? 14 : 16,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // 会员时间
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.calendar_today,
-                color: Colors.orange,
-                size: isMobile ? 14 : 16,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Member since ${_userInfo['memberSince']}',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: isMobile ? 12 : 14,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsSection(bool isMobile) {
+  Widget _buildStatsSection(bool isMobile, UserProfilePageController controller) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1a1a),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12.r,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,203 +283,161 @@ class _UserProfilePageState extends State<UserProfilePage> {
           Text(
             'Activity',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: isMobile ? 18 : 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           SizedBox(height: isMobile ? 16 : 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  Icons.favorite,
-                  'Favorites',
-                  _userInfo['favoritesCount'].toString(),
-                  Colors.red,
-                  isMobile,
+          Obx(() {
+            final info = controller.userInfo;
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    FontAwesomeIcons.earthAmericas,
+                    'Countries',
+                    (info['countriesCount'] ?? 0).toString(),
+                    Colors.blue,
+                    isMobile,
+                  ),
                 ),
-              ),
-              SizedBox(width: isMobile ? 12 : 16),
-              Expanded(
-                child: _buildStatItem(
-                  Icons.location_on,
-                  'Visited',
-                  _userInfo['visitedCount'].toString(),
-                  Colors.green,
-                  isMobile,
+                SizedBox(width: isMobile ? 12 : 16),
+                Expanded(
+                  child: _buildStatItem(
+                    FontAwesomeIcons.city,
+                    'Cities',
+                    (info['citiesCount'] ?? 0).toString(),
+                    Colors.orange,
+                    isMobile,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildBadgesSection(bool isMobile) {
-    return Obx(() {
-      final user = _profileController.currentUser.value;
+  Widget _buildBadgesSection(bool isMobile, UserProfilePageController controller) {
+    final user = controller.displayUser;
 
-      // 如果用户数据还未加载，显示加载状态
-      if (user == null) {
-        return Container(
-          padding: EdgeInsets.all(isMobile ? 16 : 20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1a1a1a),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      }
-
-      final badges = user.badges;
-
+    if (user == null) {
       return Container(
         padding: EdgeInsets.all(isMobile ? 16 : 20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              const Color(0xFFFFF8E1),
-              const Color(0xFFFFECB3),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFFFFB020),
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFFB020).withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: AppColors.borderLight),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.emoji_events,
-                    color: const Color(0xFFFF6F00), size: isMobile ? 24 : 28),
-                const SizedBox(width: 8),
-                Text(
-                  'Achievements & Badges',
-                  style: TextStyle(
-                    color: const Color(0xFF1a1a1a),
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: isMobile ? 16 : 20),
-            if (badges.isEmpty)
-              Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: isMobile ? 40 : 60,
-                  horizontal: isMobile ? 20 : 40,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFFFFF3E0),
-                      const Color(0xFFFFE0B2),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  border: Border.all(
-                    color: const Color(0xFFFFB020),
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.emoji_events_outlined,
-                        size: isMobile ? 48 : 64,
-                        color: const Color(0xFFFF6F00),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No badges earned yet',
-                        style: TextStyle(
-                          color: const Color(0xFF6D4C41),
-                          fontSize: isMobile ? 16 : 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Start exploring and attending events to earn badges!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: const Color(0xFF8D6E63),
-                          fontSize: isMobile ? 12 : 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: isMobile ? 3 : 5,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1,
-                ),
-                itemCount: badges.length,
-                itemBuilder: (context, index) {
-                  final badge = badges[index];
-                  return _buildBadgeCard(badge, isMobile);
-                },
-              ),
-          ],
+        child: const Center(
+          child: CircularProgressIndicator(),
         ),
       );
-    });
-  }
+    }
 
-  Widget _buildBadgeCard(user_model.Badge badge, bool isMobile) {
+    final badges = user.badges;
+
     return Container(
+      padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFFD700).withValues(alpha: 0.3),
-            const Color(0xFFFFA500).withValues(alpha: 0.3),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFFF9800),
-          width: 2,
-        ),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF9800).withValues(alpha: 0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 14.r,
+            offset: const Offset(0, 8),
           ),
         ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(FontAwesomeIcons.trophy, color: AppColors.accent, size: isMobile ? 24 : 28),
+              SizedBox(width: 8.w),
+              Text(
+                'Achievements & Badges',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: isMobile ? 18 : 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: isMobile ? 16 : 20),
+          if (badges.isEmpty)
+            Container(
+              padding: EdgeInsets.symmetric(
+                vertical: isMobile ? 40 : 60,
+                horizontal: isMobile ? 20 : 40,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                border: Border.all(color: AppColors.borderLight),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    FontAwesomeIcons.trophy,
+                    size: isMobile ? 48 : 64,
+                    color: AppColors.accent,
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'No badges earned yet',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isMobile ? 16 : 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Start exploring and attending events to earn badges!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: isMobile ? 12 : 14,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isMobile ? 3 : 5,
+                crossAxisSpacing: 12.w,
+                mainAxisSpacing: 12.w,
+                childAspectRatio: 1,
+              ),
+              itemCount: badges.length,
+              itemBuilder: (context, index) {
+                final badge = badges[index];
+                return _buildBadgeCard(badge, isMobile);
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBadgeCard(Badge badge, bool isMobile) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -421,16 +446,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
             badge.icon,
             style: TextStyle(fontSize: isMobile ? 32 : 40),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: Text(
               badge.name,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: isMobile ? 10 : 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -441,263 +466,129 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildTravelHistorySection(bool isMobile) {
-    return Obx(() {
-      final user = _profileController.currentUser.value;
+  Widget _buildTravelHistorySection(bool isMobile, UserProfilePageController controller) {
+    final user = controller.displayUser;
 
-      // 如果用户数据还未加载，显示加载状态
-      if (user == null) {
-        return Container(
-          padding: EdgeInsets.all(isMobile ? 16 : 20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1a1a1a),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      }
-
-      final travelHistory = user.travelHistory;
-
+    if (user == null) {
       return Container(
         padding: EdgeInsets.all(isMobile ? 16 : 20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              const Color(0xFFE3F2FD),
-              const Color(0xFFBBDEFB),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: const Color(0xFF2196F3),
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2196F3).withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: AppColors.borderLight),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.travel_explore,
-                        color: const Color(0xFF1976D2),
-                        size: isMobile ? 24 : 28),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Travel History',
-                      style: TextStyle(
-                        color: const Color(0xFF1a1a1a),
-                        fontSize: isMobile ? 18 : 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: isMobile ? 16 : 20),
-            if (travelHistory.isEmpty)
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: isMobile ? 40 : 60),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.flight_takeoff,
-                        size: isMobile ? 48 : 64,
-                        color: const Color(0xFF2E7D32).withValues(alpha: 0.5),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No travel history yet',
-                        style: TextStyle(
-                          color: const Color(0xFF1B5E20).withValues(alpha: 0.7),
-                          fontSize: isMobile ? 16 : 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: travelHistory.length > 5 ? 5 : travelHistory.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final travel = travelHistory[index];
-                  return _buildTravelHistoryCard(travel, isMobile);
-                },
-              ),
-            if (travelHistory.length > 5)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Center(
-                  child: TextButton(
-                    onPressed: () {
-                      AppToast.info('View all travel history coming soon');
-                    },
-                    child: Text(
-                      'View all ${travelHistory.length} trips →',
-                      style: TextStyle(
-                        color: AppColors.accent,
-                        fontSize: isMobile ? 14 : 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+        child: const Center(
+          child: CircularProgressIndicator(),
         ),
       );
-    });
-  }
+    }
 
-  Widget _buildTravelHistoryCard(
-      user_model.TravelHistory travel, bool isMobile) {
+    final latestTravel = user.latestTravelHistory;
+    final stats = user.stats;
+
     return Container(
-      padding: EdgeInsets.all(isMobile ? 12 : 16),
+      padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFFF8E1),
-            const Color(0xFFFFF3CD),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFFF9800),
-          width: 1.5,
-        ),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF9800).withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 14.r,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 城市国旗/图标
-          Container(
-            width: isMobile ? 50 : 60,
-            height: isMobile ? 50 : 60,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFFFE082),
-                  const Color(0xFFFFD54F),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFFFFA726),
-                width: 1,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                _getCountryFlag(travel.country),
-                style: TextStyle(fontSize: isMobile ? 24 : 32),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // 城市信息
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  travel.city,
-                  style: TextStyle(
-                    color: const Color(0xFF1a1a1a),
-                    fontSize: isMobile ? 16 : 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  travel.country,
-                  style: TextStyle(
-                    color: const Color(0xFF6b7280),
-                    fontSize: isMobile ? 12 : 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: isMobile ? 12 : 14,
-                      color: const Color(0xFFFF6F00),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDateRange(travel.startDate.toIso8601String(),
-                          travel.endDate?.toIso8601String()),
-                      style: TextStyle(
-                        color: const Color(0xFF9ca3af),
-                        fontSize: isMobile ? 11 : 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // 评分
-          if (travel.rating != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF9800).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: const Color(0xFFFF9800),
-                  width: 1.5,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
                 children: [
-                  const Icon(Icons.star, color: Color(0xFFFF9800), size: 14),
-                  const SizedBox(width: 4),
+                  Icon(FontAwesomeIcons.earthAmericas, color: AppColors.accent, size: isMobile ? 24 : 28),
+                  SizedBox(width: 8.w),
                   Text(
-                    travel.rating!.toStringAsFixed(1),
-                    style: const TextStyle(
-                      color: Color(0xFFFF6F00),
-                      fontSize: 12,
+                    'Travel Stats',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isMobile ? 18 : 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
+              ),
+            ],
+          ),
+          SizedBox(height: isMobile ? 16 : 20),
+          Container(
+            padding: EdgeInsets.all(isMobile ? 12 : 16),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildTravelStatItem(
+                  icon: FontAwesomeIcons.flag,
+                  value: '${stats.countriesVisited}',
+                  label: 'Countries',
+                  isMobile: isMobile,
+                ),
+                _buildStatDivider(),
+                _buildTravelStatItem(
+                  icon: FontAwesomeIcons.city,
+                  value: '${stats.citiesVisited}',
+                  label: 'Cities',
+                  isMobile: isMobile,
+                ),
+                _buildStatDivider(),
+                _buildTravelStatItem(
+                  icon: FontAwesomeIcons.calendarDays,
+                  value: '${stats.totalDistanceTraveled.toInt()}',
+                  label: 'Days',
+                  isMobile: isMobile,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: isMobile ? 16 : 20),
+          if (latestTravel != null) ...[
+            Text(
+              'Latest Location',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: isMobile ? 12 : 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 10.h),
+            _buildLatestTravelCard(latestTravel, isMobile, controller),
+          ] else
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: isMobile ? 30 : 40),
+                child: Column(
+                  children: [
+                    Icon(
+                      FontAwesomeIcons.plane,
+                      size: isMobile ? 40 : 48,
+                      color: AppColors.iconSecondary,
+                    ),
+                    SizedBox(height: 12.h),
+                    Text(
+                      'No travel history yet',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: isMobile ? 14 : 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],
@@ -705,55 +596,138 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  String _getCountryFlag(String country) {
-    // 简单的国家到国旗emoji映射
-    final Map<String, String> countryFlags = {
-      'Thailand': '🇹🇭',
-      'Indonesia': '🇮🇩',
-      'Vietnam': '🇻🇳',
-      'Portugal': '🇵🇹',
-      'Mexico': '🇲🇽',
-      'Japan': '🇯🇵',
-      'China': '🇨🇳',
-      'USA': '🇺🇸',
-      'UK': '🇬🇧',
-      'Spain': '🇪🇸',
-      'France': '🇫🇷',
-      'Germany': '🇩🇪',
-      'Italy': '🇮🇹',
-      'Brazil': '🇧🇷',
-      'Australia': '🇦🇺',
-    };
-    return countryFlags[country] ?? '🌍';
+  Widget _buildTravelStatItem({
+    required IconData icon,
+    required String value,
+    required String label,
+    required bool isMobile,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, size: isMobile ? 16 : 18, color: AppColors.accent),
+        SizedBox(height: 6.h),
+        Text(
+          value,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: isMobile ? 20 : 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          label,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: isMobile ? 11 : 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 
-  String _formatDateRange(String startDate, String? endDate) {
-    try {
-      final start = DateTime.parse(startDate);
-      final startFormatted = '${start.month}/${start.year}';
-
-      if (endDate == null || endDate.isEmpty) {
-        return '$startFormatted - Present';
-      }
-
-      final end = DateTime.parse(endDate);
-      final endFormatted = '${end.month}/${end.year}';
-
-      return '$startFormatted - $endFormatted';
-    } catch (e) {
-      return startDate;
-    }
+  Widget _buildStatDivider() {
+    return Container(
+      height: 40.h,
+      width: 1.w,
+      color: AppColors.border,
+    );
   }
 
-  Widget _buildStatItem(
-      IconData icon, String label, String value, Color color, bool isMobile) {
+  Widget _buildLatestTravelCard(LatestTravelHistory travel, bool isMobile, UserProfilePageController controller) {
+    return GestureDetector(
+      onTap: travel.canNavigateToCityDetail ? () => Get.toNamed(AppRoutes.cityDetail, arguments: travel.cityId) : null,
+      child: Container(
+        padding: EdgeInsets.all(isMobile ? 14 : 18),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: AppColors.borderLight),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: isMobile ? 54 : 64,
+              height: isMobile ? 54 : 64,
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Center(
+                child: Text(
+                  controller.getCountryFlag(travel.country),
+                  style: TextStyle(fontSize: isMobile ? 28 : 36),
+                ),
+              ),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    travel.city,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: isMobile ? 17 : 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    travel.country,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: isMobile ? 13 : 15,
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Row(
+                    children: [
+                      Icon(
+                        travel.isOngoing ? FontAwesomeIcons.locationDot : FontAwesomeIcons.calendar,
+                        size: isMobile ? 12 : 14,
+                        color: travel.isOngoing ? Colors.green : AppColors.accent,
+                      ),
+                      SizedBox(width: 6.w),
+                      Text(
+                        travel.isOngoing
+                            ? 'Currently here'
+                            : controller.formatTravelDates(
+                                travel.arrivalTime, travel.departureTime, travel.durationDays),
+                        style: TextStyle(
+                          color: travel.isOngoing ? Colors.green : AppColors.textTertiary,
+                          fontSize: isMobile ? 12 : 14,
+                          fontWeight: travel.isOngoing ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (travel.canNavigateToCityDetail)
+              Icon(
+                FontAwesomeIcons.chevronRight,
+                size: isMobile ? 14 : 16,
+                color: AppColors.iconSecondary,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatItem(IconData icon, String label, String value, Color color, bool isMobile) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
-          color: color.withValues(alpha: 0.3),
+          color: color.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -763,16 +737,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
           Text(
             value,
             style: TextStyle(
-              color: color,
+              color: AppColors.textPrimary,
               fontSize: isMobile ? 24 : 32,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: AppColors.textSecondary,
               fontSize: isMobile ? 12 : 14,
             ),
           ),
@@ -781,256 +755,155 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildSkillsSection(bool isMobile) {
-    return Obx(() {
-      final user = _profileController.currentUser.value;
+  Widget _buildSkillsSection(bool isMobile, UserProfilePageController controller) {
+    final user = controller.displayUser;
 
-      // 如果用户数据还未加载，显示加载状态
-      if (user == null) {
-        return Container(
-          padding: EdgeInsets.all(isMobile ? 16 : 20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1a1a1a),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      }
-
-      final skills = user.skills;
-
+    if (user == null) {
       return Container(
         padding: EdgeInsets.all(isMobile ? 16 : 20),
         decoration: BoxDecoration(
-          color: const Color(0xFF1a1a1a),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-          ),
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: AppColors.borderLight),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Skills',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 18 : 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: isMobile ? 12 : 16),
-            if (skills.isEmpty)
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 32),
-                  child: Text(
-                    'No skills added yet',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: isMobile ? 14 : 16,
-                    ),
-                  ),
-                ),
-              )
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: skills.map((skill) {
-                  return Chip(
-                    label: Text(skill.skillName),
-                    avatar: skill.icon != null ? Text(skill.icon!) : null,
-                    backgroundColor: AppColors.accent.withValues(alpha: 0.2),
-                    labelStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                    side: BorderSide(
-                      color: AppColors.accent.withValues(alpha: 0.3),
-                    ),
-                  );
-                }).toList(),
-              ),
-          ],
+        child: const Center(
+          child: CircularProgressIndicator(),
         ),
       );
-    });
-  }
+    }
 
-  Widget _buildInterestsSection(bool isMobile) {
-    return Obx(() {
-      final user = _profileController.currentUser.value;
+    final skills = user.skills;
 
-      // 如果用户数据还未加载，显示加载状态
-      if (user == null) {
-        return Container(
-          padding: EdgeInsets.all(isMobile ? 16 : 20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1a1a1a),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      }
-
-      final interests = user.interests;
-
-      return Container(
-        padding: EdgeInsets.all(isMobile ? 16 : 20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1a1a1a),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Interests',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 18 : 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: isMobile ? 12 : 16),
-            if (interests.isEmpty)
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 32),
-                  child: Text(
-                    'No interests added yet',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: isMobile ? 14 : 16,
-                    ),
-                  ),
-                ),
-              )
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: interests.map((interest) {
-                  return Chip(
-                    label: Text(interest.interestName),
-                    avatar: interest.icon != null ? Text(interest.icon!) : null,
-                    backgroundColor: Colors.purple.withValues(alpha: 0.2),
-                    labelStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                    side: BorderSide(
-                      color: Colors.purple.withValues(alpha: 0.3),
-                    ),
-                  );
-                }).toList(),
-              ),
-          ],
-        ),
-      );
-    });
-  }
-
-  Widget _buildAccountActionsSection(bool isMobile) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1a1a1a),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Account',
+            'Skills',
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: isMobile ? 18 : 22,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: isMobile ? 16 : 20),
-          _buildActionTile(
-            'Privacy Settings',
-            Icons.privacy_tip,
-            () => _showComingSoon('Privacy Settings'),
-            isMobile,
-          ),
-          const Divider(color: Colors.white24, height: 24),
-          _buildActionTile(
-            'Help & Support',
-            Icons.help,
-            () => _showComingSoon('Help & Support'),
-            isMobile,
-          ),
-          const Divider(color: Colors.white24, height: 24),
-          _buildActionTile(
-            'About',
-            Icons.info,
-            () => _showComingSoon('About'),
-            isMobile,
-          ),
+          SizedBox(height: isMobile ? 12 : 16),
+          if (skills.isEmpty)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 32),
+                child: Text(
+                  'No skills added yet',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: isMobile ? 14 : 16,
+                  ),
+                ),
+              ),
+            )
+          else
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.w,
+              children: skills.map((skill) {
+                return Chip(
+                  label: Text(skill.name),
+                  backgroundColor: AppColors.accent.withValues(alpha: 0.12),
+                  labelStyle: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14.sp,
+                  ),
+                  side: BorderSide(
+                    color: AppColors.accent.withValues(alpha: 0.25),
+                  ),
+                );
+              }).toList(),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildActionTile(
-    String title,
-    IconData icon,
-    VoidCallback onTap,
-    bool isMobile,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white70, size: isMobile ? 20 : 24),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isMobile ? 16 : 18,
+  Widget _buildInterestsSection(bool isMobile, UserProfilePageController controller) {
+    final user = controller.displayUser;
+
+    if (user == null) {
+      return Container(
+        padding: EdgeInsets.all(isMobile ? 16 : 20),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: AppColors.borderLight),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final interests = user.interests;
+
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 16 : 20),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Interests',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: isMobile ? 18 : 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: isMobile ? 12 : 16),
+          if (interests.isEmpty)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 32),
+                child: Text(
+                  'No interests added yet',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: isMobile ? 14 : 16,
+                  ),
                 ),
               ),
+            )
+          else
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.w,
+              children: interests.map((interest) {
+                return Chip(
+                  label: Text(interest.name),
+                  backgroundColor: AppColors.containerBlueGrey.withValues(alpha: 0.15),
+                  labelStyle: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14.sp,
+                  ),
+                  side: BorderSide(
+                    color: AppColors.containerBlueGrey.withValues(alpha: 0.3),
+                  ),
+                );
+              }).toList(),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.white54,
-              size: isMobile ? 20 : 24,
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
-  void _showComingSoon(String feature) {
-    AppToast.info(
-      '$feature will be available in a future update',
-      title: 'Coming Soon',
-    );
+  void _openChat(User user) {
+    Get.toNamed(AppRoutes.directChat, arguments: user);
   }
 }

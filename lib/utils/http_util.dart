@@ -1,4 +1,6 @@
-import 'package:df_admin_mobile/utils/token_util.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/utils/token_util.dart';
 import 'package:dio/dio.dart';
 
 class HttpUtil {
@@ -26,21 +28,21 @@ class HttpUtil {
             options.headers['Authorization'] = 'Bearer ${tokens[0]}';
             options.headers['X-Refresh-Token'] = tokens[1];
           } catch (e) {
-            print('Token 解密失败: $e');
+            log('Token 解密失败: $e');
           }
         }
         // 可添加日志、统一参数等
-        print('请求: [${options.method}] ${options.uri}');
+        log('请求: [${options.method}] ${options.uri}');
         handler.next(options);
       },
       onResponse: (response, handler) {
         // 响应拦截，可统一处理业务错误码
-        print('响应: ${response.statusCode} ${response.data}');
+        log('响应: ${response.statusCode} ${response.data}');
         handler.next(response);
       },
       onError: (DioException e, handler) {
         // 错误拦截
-        print('请求错误: ${e.message}');
+        log('请求错误: ${e.message}');
         handler.next(e);
       },
     ));

@@ -1,0 +1,564 @@
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/infrastructure/models/meetup_dto.dart';
+import 'package:go_nomads_app/services/http_service.dart';
+import 'package:get/get.dart';
+
+/// Meetup Repository 实现
+/// 使用 HttpService 进行数据访问
+class MeetupRepository implements IMeetupRepository {
+  final HttpService _httpService = Get.find();
+
+  @override
+  Future<List<Meetup>> getMeetups({
+    String? status,
+    String? cityId,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      log('📡 调用 HttpService GET /events...');
+      log('   status: $status, cityId: $cityId, page: $page');
+
+      final queryParams = <String, dynamic>{
+        'status': status ?? 'upcoming',
+        'page': page,
+        'pageSize': pageSize,
+      };
+      if (cityId != null) {
+        queryParams['cityId'] = cityId;
+      }
+
+      // 调用 HttpService 获取活动数据
+      final response = await _httpService.get(
+        '/events',
+        queryParameters: queryParams,
+      );
+
+      // 提取活动列表 (HttpService 已自动解包 data 字段)
+      final data = response.data as Map<String, dynamic>;
+      final items = (data['items'] as List?) ?? [];
+      log('✅ 获取到 ${items.length} 个活动');
+
+      // 转换为领域实体
+      final meetups = items
+          .map((json) {
+            try {
+              final dto = MeetupDto.fromJson(json as Map<String, dynamic>);
+              final meetup = dto.toDomain();
+              // 打印每个活动的 isParticipant 状态
+              log('   活动: ${meetup.title} - isParticipant: ${json['isParticipant']} -> isJoined: ${meetup.isJoined}');
+              return meetup;
+            } catch (e) {
+              log('❌ 解析 meetup 失败: $e');
+              log('   JSON: $json');
+              return null;
+            }
+          })
+          .whereType<Meetup>()
+          .toList();
+
+      return meetups;
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getMeetups 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Meetup?> getMeetupById(String meetupId) async {
+    try {
+      log('📡 调用 HttpService GET /events/$meetupId');
+
+      final response = await _httpService.get('/events/$meetupId');
+      final data = response.data as Map<String, dynamic>;
+
+      final dto = MeetupDto.fromJson(data);
+      return dto.toDomain();
+    } catch (e) {
+      log('❌ MeetupRepository.getMeetupById 失败: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<Meetup> createMeetup({
+    required String title,
+    required String description,
+    required String cityId,
+    required String venue,
+    required String venueAddress,
+    required MeetupType type,
+    String? eventTypeId, // 新增
+    required DateTime startTime,
+    DateTime? endTime,
+    required int maxAttendees,
+    String? imageUrl,
+    List<String>? images,
+    List<String>? tags,
+  }) async {
+    try {
+      log('📡 创建活动: $title');
+
+      // 构建 API 请求数据
+      final requestData = {
+        'title': title,
+        'description': description.isNotEmpty ? description : null,
+        'location': venue,
+        'address': venueAddress,
+        'category': eventTypeId ?? _mapTypeToCategory(type), // 优先使用 eventTypeId
+        'startTime': startTime.toUtc().toIso8601String(),
+        'endTime': endTime?.toUtc().toIso8601String(),
+        'maxParticipants': maxAttendees,
+        'locationType': 'physical',
+        'meetingLink': null,
+      };
+
+      // 添加可选字段
+      if (cityId.isNotEmpty && cityId.contains('-')) {
+        requestData['cityId'] = cityId;
+      }
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        requestData['imageUrl'] = imageUrl;
+      }
+      if (images != null && images.isNotEmpty) {
+        requestData['images'] = images;
+      }
+      if (tags != null && tags.isNotEmpty) {
+        requestData['tags'] = tags;
+      }
+
+      log('📤 请求数据: $requestData');
+
+      // 调用 HttpService POST
+      final response = await _httpService.post('/events', data: requestData);
+      final data = response.data as Map<String, dynamic>;
+
+      log('✅ 活动创建成功, ID: ${data['id']}');
+      log('📦 后端返回的数据: $data');
+      log('🔍 organizer 信息: ${data['organizer']}');
+      log('🔍 organizerId: ${data['organizerId']}');
+
+      // 转换为领域实体
+      final dto = MeetupDto.fromJson(data);
+      final meetup = dto.toDomain();
+
+      log('✅ 转换后的 Meetup:');
+      log('   - ID: ${meetup.id}');
+      log('   - Title: ${meetup.title}');
+      log('   - Organizer ID: ${meetup.organizer.id}');
+      log('   - Organizer Name: ${meetup.organizer.name}');
+
+      return meetup;
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.createMeetup 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> rsvpToMeetup(String meetupId) async {
+    try {
+      log('📡 RSVP 活动: $meetupId');
+
+      // 后端需要一个非空的请求体
+      await _httpService.post(
+        '/events/$meetupId/join',
+        data: {}, // 发送空的 JSON 对象
+      );
+      log('✅ RSVP 成功');
+      return true;
+    } catch (e) {
+      log('❌ MeetupRepository.rsvpToMeetup 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> cancelRsvp(String meetupId) async {
+    try {
+      log('📡 取消 RSVP: $meetupId');
+
+      // 使用 DELETE 方法取消参加
+      await _httpService.delete('/events/$meetupId/join');
+      log('✅ 取消 RSVP 成功');
+      return true;
+    } catch (e) {
+      log('❌ MeetupRepository.cancelRsvp 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Meetup>> getUserMeetups(String userId) async {
+    try {
+      log('📡 获取用户活动: $userId');
+
+      // TODO: 需要 API 支持按用户ID查询
+      // 暂时返回空列表
+      log('⚠️ getUserMeetups 尚未实现 API 支持');
+      return [];
+    } catch (e) {
+      log('❌ MeetupRepository.getUserMeetups 失败: $e');
+      return [];
+    }
+  }
+
+  @override
+  Future<List<Meetup>> getJoinedMeetups({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      log('📡 调用 HttpService GET /events/joined...');
+      log('   page: $page, pageSize: $pageSize');
+
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'pageSize': pageSize,
+      };
+
+      // 调用 HttpService 获取已加入的活动数据
+      final response = await _httpService.get(
+        '/events/joined',
+        queryParameters: queryParams,
+      );
+
+      // 提取活动列表 (HttpService 已自动解包 data 字段)
+      final data = response.data as Map<String, dynamic>;
+      final eventsJson = (data['items'] as List?) ?? [];
+
+      // 将 JSON 转换为 DTO 再转换为领域实体
+      final meetups = eventsJson
+          .map((json) {
+            try {
+              return MeetupDto.fromJson(json as Map<String, dynamic>).toDomain();
+            } catch (e) {
+              log('❌ 解析 meetup 失败: $e');
+              log('   JSON: $json');
+              return null;
+            }
+          })
+          .whereType<Meetup>()
+          .toList();
+
+      log('✅ 获取到 ${meetups.length} 个已加入的活动');
+      return meetups;
+    } catch (e) {
+      log('❌ MeetupRepository.getJoinedMeetups 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Meetup>> getCancelledMeetupsByUser(
+    String userId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      log('📡 调用 HttpService GET /events/cancelled...');
+      log('   userId: $userId');
+      log('   page: $page, pageSize: $pageSize');
+
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'pageSize': pageSize,
+      };
+
+      // 调用 HttpService 获取用户取消的活动数据(userId 从后端 UserContext 获取)
+      final response = await _httpService.get(
+        '/events/cancelled',
+        queryParameters: queryParams,
+      );
+
+      log('📦 收到响应: ${response.data}');
+
+      // 提取活动列表 (HttpService 已自动解包 data 字段)
+      final data = response.data as Map<String, dynamic>;
+      final eventsJson = (data['items'] as List?) ?? [];
+
+      log('📝 解析到 ${eventsJson.length} 个活动记录');
+
+      // 将 JSON 转换为 DTO 再转换为领域实体
+      final meetups = eventsJson
+          .map((json) {
+            try {
+              return MeetupDto.fromJson(json as Map<String, dynamic>).toDomain();
+            } catch (e) {
+              log('❌ 解析 meetup 失败: $e');
+              log('   JSON: $json');
+              return null;
+            }
+          })
+          .whereType<Meetup>()
+          .toList();
+
+      log('✅ 获取到 ${meetups.length} 个已取消的活动');
+      return meetups;
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getCancelledMeetupsByUser 失败: $e');
+      log('Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Meetup> updateMeetup(
+    String meetupId,
+    Map<String, dynamic> updates,
+  ) async {
+    try {
+      log('📡 更新活动: $meetupId');
+      log('   更新内容: $updates');
+
+      // 调用后端 PUT /events/{id} 接口
+      final response = await _httpService.put('/events/$meetupId', data: updates);
+
+      // 后端返回格式: { success: true, data: {...} }
+      final data = response.data;
+      Map<String, dynamic> eventData;
+
+      if (data is Map<String, dynamic>) {
+        eventData = (data['data'] as Map<String, dynamic>?) ?? data;
+      } else {
+        throw Exception('更新活动返回格式错误');
+      }
+
+      log('✅ 活动更新成功');
+      return MeetupDto.fromJson(eventData).toDomain();
+    } catch (e) {
+      log('❌ MeetupRepository.updateMeetup 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> cancelMeetup(String meetupId) async {
+    try {
+      log('📡 取消活动: $meetupId');
+
+      // 调用后端 API 取消活动 - 使用专用的 cancel 端点
+      await _httpService.post('/events/$meetupId/cancel');
+
+      log('✅ 活动已取消');
+      return true;
+    } catch (e) {
+      log('❌ MeetupRepository.cancelMeetup 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> deleteMeetup(String meetupId) async {
+    try {
+      log('🗑️ 删除活动(管理员): $meetupId');
+
+      // 调用后端 DELETE /events/{id} API (逻辑删除)
+      await _httpService.delete('/events/$meetupId');
+
+      log('✅ 活动已删除');
+      return true;
+    } catch (e) {
+      log('❌ MeetupRepository.deleteMeetup 失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Meetup>> getMyCreatedMeetups() async {
+    try {
+      log('📡 调用 HttpService GET /events/me/created...');
+
+      final response = await _httpService.get('/events/me/created');
+
+      // 后端返回格式: { success: true, data: [...] }
+      final data = response.data;
+      List items;
+
+      if (data is Map<String, dynamic>) {
+        items = (data['data'] as List?) ?? (data['items'] as List?) ?? [];
+      } else if (data is List) {
+        items = data;
+      } else {
+        items = [];
+      }
+
+      log('✅ 获取到 ${items.length} 个我创建的活动');
+
+      final meetups = items
+          .map((json) {
+            try {
+              final dto = MeetupDto.fromJson(json as Map<String, dynamic>);
+              return dto.toDomain();
+            } catch (e) {
+              log('❌ 解析 meetup 失败: $e');
+              return null;
+            }
+          })
+          .whereType<Meetup>()
+          .toList();
+
+      return meetups;
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getMyCreatedMeetups 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  // ========== 邀请相关方法实现 ==========
+
+  @override
+  Future<MeetupInvitation> inviteToMeetup({
+    required String meetupId,
+    required String inviteeId,
+    String? message,
+  }) async {
+    try {
+      log('📡 调用 HttpService POST /events/$meetupId/invitations');
+      log('   inviteeId: $inviteeId, message: $message');
+
+      final response = await _httpService.post(
+        '/events/$meetupId/invitations',
+        data: {
+          'inviteeId': inviteeId,
+          if (message != null && message.isNotEmpty) 'message': message,
+        },
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      log('✅ 邀请发送成功: ${data['id']}');
+
+      return MeetupInvitation.fromJson(data);
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.inviteToMeetup 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<MeetupInvitation> respondToInvitation({
+    required String invitationId,
+    required bool accept,
+  }) async {
+    try {
+      final response = accept ? 'accept' : 'reject';
+      log('📡 调用 HttpService POST /events/invitations/$invitationId/respond');
+      log('   response: $response');
+
+      final apiResponse = await _httpService.post(
+        '/events/invitations/$invitationId/respond',
+        data: {
+          'response': response,
+        },
+      );
+
+      final data = apiResponse.data as Map<String, dynamic>;
+      log('✅ 邀请响应成功: $response');
+
+      return MeetupInvitation.fromJson(data);
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.respondToInvitation 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<MeetupInvitation>> getReceivedInvitations({String? status}) async {
+    try {
+      log('📡 调用 HttpService GET /events/invitations/received');
+
+      final queryParams = <String, dynamic>{};
+      if (status != null) {
+        queryParams['status'] = status;
+      }
+
+      final response = await _httpService.get(
+        '/events/invitations/received',
+        queryParameters: queryParams,
+      );
+
+      final data = response.data;
+      List items;
+
+      if (data is List) {
+        items = data;
+      } else if (data is Map<String, dynamic>) {
+        items = (data['items'] as List?) ?? (data['data'] as List?) ?? [];
+      } else {
+        items = [];
+      }
+
+      log('✅ 获取到 ${items.length} 条收到的邀请');
+
+      return items.map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>)).toList();
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getReceivedInvitations 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<MeetupInvitation>> getSentInvitations({String? status}) async {
+    try {
+      log('📡 调用 HttpService GET /events/invitations/sent');
+
+      final queryParams = <String, dynamic>{};
+      if (status != null) {
+        queryParams['status'] = status;
+      }
+
+      final response = await _httpService.get(
+        '/events/invitations/sent',
+        queryParameters: queryParams,
+      );
+
+      final data = response.data;
+      List items;
+
+      if (data is List) {
+        items = data;
+      } else if (data is Map<String, dynamic>) {
+        items = (data['items'] as List?) ?? (data['data'] as List?) ?? [];
+      } else {
+        items = [];
+      }
+
+      log('✅ 获取到 ${items.length} 条发出的邀请');
+
+      return items.map((json) => MeetupInvitation.fromJson(json as Map<String, dynamic>)).toList();
+    } catch (e, stackTrace) {
+      log('❌ MeetupRepository.getSentInvitations 失败: $e');
+      log('   堆栈: $stackTrace');
+      rethrow;
+    }
+  }
+
+  /// 将 MeetupType 映射到 API 的 category
+  String _mapTypeToCategory(MeetupType type) {
+    switch (type.value) {
+      case 'networking':
+        return 'business';
+      case 'workshop':
+        return 'tech';
+      case 'social':
+        return 'social';
+      case 'coworking':
+        return 'business';
+      case 'sports':
+        return 'other';
+      case 'culture':
+        return 'other';
+      default:
+        return 'other';
+    }
+  }
+}

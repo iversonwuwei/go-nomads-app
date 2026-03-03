@@ -1,15 +1,16 @@
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/controllers/room_type_list_page_controller.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../config/app_colors.dart';
-import '../models/hotel_model.dart';
-import '../services/database/hotel_dao.dart';
-import '../widgets/app_toast.dart';
-
 /// 房型列表页面
-class RoomTypeListPage extends StatefulWidget {
-  final int hotelId;
+class RoomTypeListPage extends StatelessWidget {
+  final String hotelId;
   final String hotelName;
 
   const RoomTypeListPage({
@@ -18,57 +19,39 @@ class RoomTypeListPage extends StatefulWidget {
     required this.hotelName,
   });
 
-  @override
-  State<RoomTypeListPage> createState() => _RoomTypeListPageState();
-}
+  String get _tag => 'RoomTypeListPage_$hotelId';
 
-class _RoomTypeListPageState extends State<RoomTypeListPage> {
-  final RxBool _isLoading = false.obs;
-  final RxList<RoomType> _roomTypes = <RoomType>[].obs;
-
-  final HotelDao _hotelDao = HotelDao();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadRoomTypes();
-  }
-
-  // 加载房型数据
-  Future<void> _loadRoomTypes() async {
-    _isLoading.value = true;
-    try {
-      final roomTypesData =
-          await _hotelDao.getRoomTypesByHotelId(widget.hotelId);
-      final roomTypes =
-          roomTypesData.map((data) => RoomType.fromMap(data)).toList();
-      _roomTypes.value = roomTypes;
-    } catch (e) {
-      AppToast.error('加载房型失败: $e');
-    } finally {
-      _isLoading.value = false;
+  RoomTypeListPageController get _controller {
+    if (!Get.isRegistered<RoomTypeListPageController>(tag: _tag)) {
+      Get.put(
+        RoomTypeListPageController(hotelId: hotelId, hotelName: hotelName),
+        tag: _tag,
+      );
     }
+    return Get.find<RoomTypeListPageController>(tag: _tag);
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(widget.hotelName),
+        title: Text(hotelName),
         elevation: 0,
       ),
       body: Obx(() {
-        if (_isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+        if (controller.isLoading.value) {
+          return const HotelListSkeleton();
         }
 
-        if (_roomTypes.isEmpty) {
+        if (controller.roomTypes.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.hotel, size: 48.w, color: Colors.grey),
+                Icon(FontAwesomeIcons.hotel, size: 48.w, color: Colors.grey),
                 SizedBox(height: 12.h),
                 Text(
                   '暂无房型',
@@ -81,9 +64,9 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
 
         return ListView.builder(
           padding: EdgeInsets.all(16.w),
-          itemCount: _roomTypes.length,
+          itemCount: controller.roomTypes.length,
           itemBuilder: (context, index) {
-            final roomType = _roomTypes[index];
+            final roomType = controller.roomTypes[index];
             return _buildRoomTypeCard(roomType);
           },
         );
@@ -122,8 +105,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                       return Container(
                         height: 180.h,
                         color: Colors.grey[300],
-                        child: Icon(Icons.image_not_supported,
-                            size: 48.w, color: Colors.grey),
+                        child: Icon(FontAwesomeIcons.imagePortrait, size: 48.w, color: Colors.grey),
                       );
                     },
                   ),
@@ -145,8 +127,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                   ),
                   if (!roomType.isAvailable)
                     Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(4.r),
@@ -182,20 +163,20 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                 runSpacing: 8.h,
                 children: [
                   _buildInfoChip(
-                    icon: Icons.single_bed,
+                    icon: FontAwesomeIcons.bed,
                     label: roomType.bedType,
                   ),
                   _buildInfoChip(
-                    icon: Icons.people,
+                    icon: FontAwesomeIcons.users,
                     label: '最多${roomType.maxOccupancy}人',
                   ),
                   _buildInfoChip(
-                    icon: Icons.square_foot,
+                    icon: FontAwesomeIcons.rulerCombined,
                     label: '${roomType.size.toStringAsFixed(0)}㎡',
                   ),
                   if (roomType.isAvailable)
                     _buildInfoChip(
-                      icon: Icons.hotel,
+                      icon: FontAwesomeIcons.hotel,
                       label: '${roomType.availableRooms}间可用',
                       color: Colors.green,
                     ),
@@ -210,8 +191,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                   runSpacing: 6.h,
                   children: roomType.amenities.take(6).map((amenity) {
                     return Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.blue[50],
                         borderRadius: BorderRadius.circular(4.r),
@@ -260,8 +240,7 @@ class _RoomTypeListPageState extends State<RoomTypeListPage> {
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 24.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.r),
                       ),

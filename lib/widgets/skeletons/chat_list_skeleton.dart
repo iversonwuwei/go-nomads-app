@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 聊天室列表骨架屏组件
 class ChatListSkeleton extends BaseSkeleton {
@@ -14,7 +15,7 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
   @override
   Widget buildSkeleton(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: 5,
       itemBuilder: (context, index) {
         return _buildChatRoomCard();
@@ -24,10 +25,9 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
 
   Widget _buildChatRoomCard() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       child: SkeletonCard(
-        shimmerController: shimmerController,
-        height: 140,
+        height: 140.h,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -35,52 +35,46 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
             Row(
               children: [
                 SkeletonCircle(
-                  shimmerController: shimmerController,
-                  size: 48,
+                  size: 48.r,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SkeletonBox(
-                        shimmerController: shimmerController,
-                        width: 150,
-                        height: 16,
+                        width: 150.w,
+                        height: 16.h,
                         borderRadius: 4,
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       SkeletonBox(
-                        shimmerController: shimmerController,
-                        width: 100,
-                        height: 12,
+                        width: 100.w,
+                        height: 12.h,
                         borderRadius: 4,
                       ),
                     ],
                   ),
                 ),
                 SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 60,
-                  height: 24,
+                  width: 60.w,
+                  height: 24.h,
                   borderRadius: 12,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // 最后消息
             SkeletonBox(
-              shimmerController: shimmerController,
               width: double.infinity,
-              height: 14,
+              height: 14.h,
               borderRadius: 4,
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             SkeletonBox(
-              shimmerController: shimmerController,
-              width: 200,
-              height: 14,
+              width: 200.w,
+              height: 14.h,
               borderRadius: 4,
             ),
             const Spacer(),
@@ -89,16 +83,14 @@ class _ChatListSkeletonState extends BaseSkeletonState<ChatListSkeleton> {
             Row(
               children: [
                 SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 80,
-                  height: 12,
+                  width: 80.w,
+                  height: 12.h,
                   borderRadius: 4,
                 ),
                 const Spacer(),
                 SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 100,
-                  height: 12,
+                  width: 100.w,
+                  height: 12.h,
                   borderRadius: 4,
                 ),
               ],

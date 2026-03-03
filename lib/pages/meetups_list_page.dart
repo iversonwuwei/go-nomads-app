@@ -1,17 +1,26 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/location_controller.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
+import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/edit_button.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:intl/intl.dart';
-
-import '../config/app_colors.dart';
-import '../controllers/location_controller.dart';
-import '../generated/app_localizations.dart';
-import '../models/meetup_model.dart';
-import '../routes/app_routes.dart';
-import '../services/events_api_service.dart';
-import '../widgets/app_toast.dart';
-import 'create_meetup_page.dart';
-import 'meetup_detail_page.dart';
 
 /// Meetups 列表页面
 class MeetupsListPage extends StatefulWidget {
@@ -22,12 +31,44 @@ class MeetupsListPage extends StatefulWidget {
 }
 
 class _MeetupsListPageState extends State<MeetupsListPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, RouteAwareRefreshMixin<MeetupsListPage> {
   late TabController _tabController;
-  final RxBool _isLoading = false.obs;
-  final RxList<MeetupModel> _meetups = <MeetupModel>[].obs;
 
-  // 筛选条�?
+  // 每个 tab 独立的数据和分页状态
+  final Map<int, RxList<Meetup>> _tabMeetups = {
+    0: <Meetup>[].obs, // Upcoming
+    1: <Meetup>[].obs, // Joined
+    2: <Meetup>[].obs, // Past
+    3: <Meetup>[].obs, // Cancelled
+  };
+
+  final Map<int, RxBool> _tabLoading = {
+    0: false.obs,
+    1: false.obs,
+    2: false.obs,
+    3: false.obs,
+  };
+
+  final Map<int, int> _tabPage = {
+    0: 1,
+    1: 1,
+    2: 1,
+    3: 1,
+  };
+
+  final Map<int, bool> _tabHasMore = {
+    0: true,
+    1: true,
+    2: true,
+    3: true,
+  };
+
+  // 下拉刷新状态标志
+  bool _isRefreshing = false;
+
+  final Map<int, ScrollController> _tabScrollControllers = {};
+
+  // 筛选条件
   final RxList<String> _selectedCountries = <String>[].obs;
   final RxList<String> _selectedCities = <String>[].obs;
   final RxList<String> _selectedTypes = <String>[].obs;
@@ -35,49 +76,74 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   final RxInt _maxAttendees = 100.obs;
 
   // 可用选项
-  final List<String> availableCountries = [
-    'Thailand',
-    'Indonesia',
-    'Vietnam',
-    'Portugal',
-    'Mexico',
-    'Japan'
-  ];
-  final List<String> availableCities = [
-    'Bangkok',
-    'Chiang Mai',
-    'Bali',
-    'Lisbon',
-    'Tokyo',
-    'Ho Chi Minh'
-  ];
-  final List<String> availableTypes = [
-    'Coffee',
-    'Coworking',
-    'Activity',
-    'Language Exchange',
-    'Dinner',
-    'Workshop'
-  ];
+  final List<String> availableCountries = ['Thailand', 'Indonesia', 'Vietnam', 'Portugal', 'Mexico', 'Japan'];
+  final List<String> availableCities = ['Bangkok', 'Chiang Mai', 'Bali', 'Lisbon', 'Tokyo', 'Ho Chi Minh'];
+  final List<String> availableTypes = ['Coffee', 'Coworking', 'Activity', 'Language Exchange', 'Dinner', 'Workshop'];
 
-  // 位置控制�?
+  // 位置控制器
   final LocationController _locationController = Get.put(LocationController());
 
-  // Events API 服务
-  final EventsApiService _eventsApiService = EventsApiService();
+  // Meetup Repository
+  final IMeetupRepository _meetupRepository = Get.find();
+
+  // Auth Controller
+  final AuthStateController _authController = Get.find();
+
+  // 当前用户ID
+  String? get _currentUserId => _authController.currentUser.value?.id;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _loadMeetups();
-    _autoSelectCurrentCountry();
+    log('🔵 MeetupsListPage initState 被调用');
+    _tabController = TabController(length: 4, vsync: this);
+
+    // 为每个 tab 创建滚动控制器
+    for (int i = 0; i < 4; i++) {
+      _tabScrollControllers[i] = ScrollController();
+      _setupScrollListener(i);
+    }
+
+    // 监听 tab 切换
+    _tabController.addListener(_onTabChanged);
+
+    // 异步加载数据,不阻塞页面显示
+    Future.microtask(() {
+      _loadTabData(_tabController.index);
+      _autoSelectCurrentCountry();
+    });
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
+    for (var controller in _tabScrollControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  /// 设置滚动监听器实现无限滚动
+  void _setupScrollListener(int tabIndex) {
+    _tabScrollControllers[tabIndex]!.addListener(() {
+      final controller = _tabScrollControllers[tabIndex]!;
+      if (controller.position.pixels >= controller.position.maxScrollExtent - 200) {
+        // 距离底部200px时加载下一页
+        _loadMoreData(tabIndex);
+      }
+    });
+  }
+
+  /// Tab 切换事件处理
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) {
+      final index = _tabController.index;
+      // 如果该 tab 还没有数据,则加载
+      if (_tabMeetups[index]!.isEmpty && !_tabLoading[index]!.value) {
+        _loadTabData(index);
+      }
+    }
   }
 
   // 自动选择当前国家
@@ -92,7 +158,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     });
   }
 
-  // 重置筛选条�?
+  // 重置筛选条件
   void _resetFilters() {
     _selectedCountries.clear();
     _selectedCities.clear();
@@ -102,7 +168,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     _autoSelectCurrentCountry();
   }
 
-  // 是否有活动筛选条�?
+  // 是否有活动筛选条件
   bool get _hasActiveFilters {
     return _selectedCountries.isNotEmpty ||
         _selectedCities.isNotEmpty ||
@@ -111,193 +177,116 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         _maxAttendees.value != 100;
   }
 
-  Future<void> _loadMeetups() async {
-    _isLoading.value = true;
+  /// 加载指定 tab 的数据
+  Future<void> _loadTabData(int tabIndex, {bool refresh = false}) async {
+    log('📡 _loadTabData 被调用: tabIndex=$tabIndex, refresh=$refresh');
+    log('   _tabLoading[$tabIndex]=${_tabLoading[tabIndex]!.value}, _tabHasMore[$tabIndex]=${_tabHasMore[tabIndex]}');
+
+    if (_tabLoading[tabIndex]!.value) {
+      log('   ⏭️ 跳过：正在加载中');
+      return;
+    }
+    if (!refresh && !_tabHasMore[tabIndex]!) {
+      log('   ⏭️ 跳过：没有更多数据');
+      return;
+    }
+
+    _tabLoading[tabIndex]!.value = true;
 
     try {
-      // 从后端API加载活动数据
-      final response = await _eventsApiService.getEvents(
-        status: 'upcoming',
-        pageSize: 100, // 获取更多数据
-      );
-
-      // HttpService 的拦截器已经解包�?API 响应
-      // response 现在直接�?data 对象: {items: [], totalCount: 3, page: 1, ...}
-      print('📦 Response data: $response');
-
-      final items = response['items'] as List<dynamic>? ?? [];
-
-      // 打印第一个活动的完整数据结构（用于调试）
-      if (items.isNotEmpty) {
-        print('🔍 第一个活动的完整数据:');
-        print(items[0]);
+      if (refresh) {
+        _tabPage[tabIndex] = 1;
+        _tabHasMore[tabIndex] = true;
       }
 
-      // 转换�?MeetupModel 列表
-      _meetups.value = items.map((item) {
-        return _convertApiEventToMeetupModel(item as Map<String, dynamic>);
-      }).toList();
+      final page = _tabPage[tabIndex]!;
+      List<Meetup> meetups = [];
 
-      print(
-          '�?从后端API加载�?${_meetups.length} 个活�?(总数: ${response['totalCount']})');
+      // 根据 tab 索引调用不同的后端接口
+      switch (tabIndex) {
+        case 0: // Upcoming - 所有未取消和未过期的活动 (upcoming + ongoing)
+          meetups = await _meetupRepository.getMeetups(
+            status: 'upcoming,ongoing',
+            page: page,
+            pageSize: 20,
+          );
+          break;
+        case 1: // Joined - 已加入的活动（不包含已过期和取消的）
+          meetups = await _meetupRepository.getJoinedMeetups(
+            page: page,
+            pageSize: 20,
+          );
+          break;
+        case 2: // Past - 已结束的活动
+          meetups = await _meetupRepository.getMeetups(
+            status: 'completed',
+            page: page,
+            pageSize: 20,
+          );
+          break;
+        case 3: // Cancelled - 当前用户取消参与的活动
+          if (_currentUserId == null) {
+            log('⚠️ 用户未登录，无法加载已取消的活动');
+            meetups = [];
+          } else {
+            log('🔍 正在加载用户 $_currentUserId 取消的活动...');
+            meetups = await _meetupRepository.getCancelledMeetupsByUser(
+              _currentUserId!,
+              page: page,
+              pageSize: 20,
+            );
+            log('✅ 成功加载 ${meetups.length} 个已取消的活动');
+          }
+          break;
+      }
+
+      if (refresh) {
+        _tabMeetups[tabIndex]!.value = meetups;
+      } else {
+        _tabMeetups[tabIndex]!.addAll(meetups);
+      }
+
+      // 如果返回数据少于 pageSize,说明没有更多数据了
+      if (meetups.length < 20) {
+        _tabHasMore[tabIndex] = false;
+      } else {
+        _tabPage[tabIndex] = page + 1;
+      }
+
+      log('✅ Tab $tabIndex 加载了 ${meetups.length} 个活动 (页码: $page)');
     } catch (e, stackTrace) {
-      print('�?从API加载失败: $e');
-      print('Stack trace: $stackTrace');
+      log('❌ Tab $tabIndex 加载失败: $e');
+      log('Stack trace: $stackTrace');
       AppToast.error('加载活动失败');
-      _meetups.value = [];
     } finally {
-      _isLoading.value = false;
+      _tabLoading[tabIndex]!.value = false;
     }
   }
 
-  /// 将后端API的Event数据转换为MeetupModel
-  MeetupModel _convertApiEventToMeetupModel(Map<String, dynamic> event) {
-    // 解析城市信息
-    final cityData = event['city'] as Map<String, dynamic>?;
-    final cityName = cityData?['name'] as String? ?? '';
-    final country = cityData?['country'] as String? ?? '';
-
-    // 解析组织者信�?
-    final organizerData = event['organizer'] as Map<String, dynamic>?;
-    final organizerName = organizerData?['name'] as String? ?? 'Unknown';
-    final organizerId = organizerData?['id']?.toString() ??
-        event['organizerId']?.toString() ??
-        '0';
-
-    // 获取 imageUrl（用于列表页的封面图�?
-    final imageUrl = event['imageUrl']?.toString();
-
-    // 获取 images 数组（用于详情页的图片轮播）
-    List<String> images = [];
-    final imagesList = event['images'];
-    if (imagesList is List) {
-      images = imagesList
-          .where((img) => img != null && img.toString().isNotEmpty)
-          .map((img) => img.toString())
-          .toList();
-    }
-
-    // 🔍 调试日志:打印所有可能的参与者字�?
-    print('🔍 Event ${event['id']} - isParticipant: ${event['isParticipant']}');
-    print('  participantCount: ${event['participantCount']}');
-    print('  currentParticipants: ${event['currentParticipants']}');
-    print('  participantsCount: ${event['participantsCount']}');
-    print('  attendeesCount: ${event['attendeesCount']}');
-    print('  participants: ${event['participants']}');
-    print('  maxParticipants: ${event['maxParticipants']}');
-
-    // 获取当前参与者数�?- 支持多个可能的字段名（优先使�?participantCount，与 detail page 保持一致）
-    final currentParticipants = (event['participantCount'] as int?) ??
-        (event['currentParticipants'] as int?) ??
-        (event['participantsCount'] as int?) ??
-        (event['attendeesCount'] as int?) ??
-        (event['participants'] as int?) ??
-        0;
-
-    // 确保参与者数量不为负�?
-    final maxParticipants = event['maxParticipants'] as int? ?? 20;
-    final validCurrentParticipants =
-        currentParticipants.clamp(0, maxParticipants);
-
-    print(
-        '  �?最终使�? currentAttendees=$validCurrentParticipants, maxAttendees=$maxParticipants');
-
-    return MeetupModel(
-      id: event['id']?.toString() ?? '',
-      title: event['title'] as String? ?? '',
-      type: event['category'] as String? ?? 'Meetup',
-      description: event['description'] as String? ?? '',
-      city: cityName,
-      country: country,
-      venue: event['location'] as String? ?? '',
-      venueAddress: event['address'] as String? ?? '',
-      dateTime: DateTime.parse(
-          event['startTime'] as String? ?? DateTime.now().toIso8601String()),
-      maxAttendees: maxParticipants,
-      currentAttendees: validCurrentParticipants,
-      organizerId: organizerId,
-      organizerName: organizerName,
-      organizerAvatar: 'https://i.pravatar.cc/150?u=$organizerId',
-      imageUrl: imageUrl, // 封面图（列表页使用）
-      images: images, // 完整图片数组（详情页使用�?
-      attendeeIds: [], // 需要单独查�?
-      isJoined: event['isParticipant'] as bool? ?? false,
-      createdAt: DateTime.parse(
-          event['createdAt'] as String? ?? DateTime.now().toIso8601String()),
-    );
+  /// 加载更多数据(无限滚动)
+  Future<void> _loadMoreData(int tabIndex) async {
+    await _loadTabData(tabIndex);
   }
 
-  List<MeetupModel> get _filteredMeetups {
-    final now = DateTime.now();
-    List<MeetupModel> filtered = [];
+  /// 刷新当前 tab 数据
+  Future<void> _refreshCurrentTab() async {
+    _isRefreshing = true;
+    await _loadTabData(_tabController.index, refresh: true);
+    _isRefreshing = false;
+  }
 
-    // 先按标签页筛�?
-    switch (_tabController.index) {
-      case 0: // All
-        filtered = _meetups.where((m) => m.dateTime.isAfter(now)).toList();
-        break;
-      case 1: // Joined
-        filtered = _meetups
-            .where((m) => m.isJoined && m.dateTime.isAfter(now))
-            .toList();
-        break;
-      case 2: // Past
-        filtered = _meetups.where((m) => m.dateTime.isBefore(now)).toList();
-        break;
-      default:
-        filtered = _meetups.toList();
-    }
+  @override
+  Future<void> onRouteResume() async {
+    await _refreshCurrentTab();
+  }
 
-    // 按国家筛�?
-    if (_selectedCountries.isNotEmpty) {
-      filtered = filtered
-          .where((m) => _selectedCountries.contains(m.country))
-          .toList();
-    }
-
-    // 按城市筛�?
-    if (_selectedCities.isNotEmpty) {
-      filtered =
-          filtered.where((m) => _selectedCities.contains(m.city)).toList();
-    }
-
-    // 按类型筛�?
-    if (_selectedTypes.isNotEmpty) {
-      filtered =
-          filtered.where((m) => _selectedTypes.contains(m.type)).toList();
-    }
-
-    // 按时间范围筛�?
-    if (_timeFilter.value != 'all') {
-      switch (_timeFilter.value) {
-        case 'today':
-          filtered = filtered.where((m) {
-            final diff = m.dateTime.difference(now);
-            return diff.inHours >= 0 && diff.inHours < 24;
-          }).toList();
-          break;
-        case 'week':
-          filtered = filtered.where((m) {
-            final diff = m.dateTime.difference(now);
-            return diff.inDays >= 0 && diff.inDays < 7;
-          }).toList();
-          break;
-        case 'month':
-          filtered = filtered.where((m) {
-            final diff = m.dateTime.difference(now);
-            return diff.inDays >= 0 && diff.inDays < 30;
-          }).toList();
-          break;
-      }
-    }
-
-    // 按最大人数筛�?
-    if (_maxAttendees.value < 100) {
-      filtered =
-          filtered.where((m) => m.maxAttendees <= _maxAttendees.value).toList();
-    }
-
-    return filtered;
+  /// 重写 didPush，当页面被 push 进入时也刷新数据
+  /// 这解决了从 Home 重复进入时数据不刷新的问题
+  @override
+  void didPush() {
+    super.didPush();
+    // 页面首次进入时，initState 已经加载了数据
+    // 这里不需要重复加载
   }
 
   @override
@@ -309,11 +298,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon:
-              Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 24.sp),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(),
         title: Text(
           l10n.meetups,
           style: TextStyle(
@@ -327,21 +312,19 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                 children: [
                   IconButton(
                     icon: Icon(
-                      Icons.tune_outlined,
-                      color: _hasActiveFilters
-                          ? const Color(0xFFFF4458)
-                          : AppColors.textSecondary,
+                      FontAwesomeIcons.sliders,
+                      color: _hasActiveFilters ? const Color(0xFFFF4458) : AppColors.textSecondary,
                       size: 24.sp,
                     ),
                     onPressed: _showFilterDrawer,
                   ),
                   if (_hasActiveFilters)
                     Positioned(
-                      right: 8,
-                      top: 8,
+                      right: 8.w,
+                      top: 8.h,
                       child: Container(
-                        width: 8,
-                        height: 8,
+                        width: 8.w,
+                        height: 8.h,
                         decoration: const BoxDecoration(
                           color: Color(0xFFFF4458),
                           shape: BoxShape.circle,
@@ -351,61 +334,85 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                 ],
               )),
           IconButton(
-            icon: Icon(Icons.add_circle_outline,
-                color: const Color(0xFFFF4458), size: 24.sp),
+            icon: Icon(FontAwesomeIcons.circlePlus, color: const Color(0xFFFF4458), size: 24.sp),
             onPressed: () async {
               // 跳转到创建页面，等待返回结果
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CreateMeetupPage(),
-                ),
+              await NavigationUtil.toWithCallback<bool>(
+                page: () => const CreateMeetupPage(),
+                onResult: (result) {
+                  // 如果创建成功，刷新列表
+                  if (result.needsRefresh) {
+                    _refreshCurrentTab();
+                  }
+                },
               );
-              // 如果创建成功，刷新列表
-              if (result == true) {
-                _loadMeetups();
-              }
             },
           ),
           SizedBox(width: 8.w),
         ],
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
           labelColor: const Color(0xFFFF4458),
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: const Color(0xFFFF4458),
-          labelStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: TextStyle(fontSize: 14.sp),
+          unselectedLabelColor: Colors.grey[600],
+          labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp),
+          unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 15.sp),
+          indicatorSize: TabBarIndicatorSize.label,
+          indicator: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border(
+              bottom: BorderSide(color: Color(0xFFFF4458), width: 3),
+            ),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
           onTap: (index) => setState(() {}),
           tabs: [
             Tab(text: l10n.allMeetups),
             Tab(text: l10n.joined),
             Tab(text: l10n.past),
+            const Tab(text: '已取消'),
           ],
         ),
       ),
       body: Obx(() {
-        if (_isLoading.value) {
+        final currentTabIndex = _tabController.index;
+        final isLoading = _tabLoading[currentTabIndex]!.value;
+        final meetups = _tabMeetups[currentTabIndex]!;
+
+        // 首次加载时显示中间加载指示器
+        if (isLoading && meetups.isEmpty && !_isRefreshing) {
           return Center(
             child: CircularProgressIndicator(
               color: const Color(0xFFFF4458),
-              strokeWidth: 3.w,
+              strokeWidth: 3,
             ),
           );
         }
 
-        final meetups = _filteredMeetups;
-
         if (meetups.isEmpty) {
-          return _buildEmptyState();
+          return RefreshIndicator(
+            color: const Color(0xFFFF4458),
+            onRefresh: _refreshCurrentTab,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: _buildEmptyState(),
+                  ),
+                );
+              },
+            ),
+          );
         }
 
         return RefreshIndicator(
           color: const Color(0xFFFF4458),
-          onRefresh: _loadMeetups,
+          onRefresh: _refreshCurrentTab,
           child: Column(
             children: [
-              // 工具�?
+              // 工具栏
               Container(
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -426,21 +433,10 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                     ),
                     Row(
                       children: [
-                        // View toggle (could add list/grid view later)
-                        IconButton(
-                          icon: Icon(
-                            Icons.grid_view_outlined,
-                            color: AppColors.textSecondary,
-                            size: 20.sp,
-                          ),
-                          onPressed: () {
-                            // Toggle view - could implement grid view
-                          },
-                        ),
                         // Sort
                         PopupMenuButton<String>(
                           icon: Icon(
-                            Icons.sort_outlined,
+                            FontAwesomeIcons.arrowDownWideShort,
                             color: AppColors.textSecondary,
                             size: 20.sp,
                           ),
@@ -448,12 +444,9 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                             // Handle sort
                           },
                           itemBuilder: (context) => [
-                            PopupMenuItem(
-                                value: 'date', child: Text(l10n.date)),
-                            PopupMenuItem(
-                                value: 'popular', child: Text(l10n.popular)),
-                            PopupMenuItem(
-                                value: 'nearby', child: Text(l10n.nearby)),
+                            PopupMenuItem(value: 'date', child: Text(l10n.date)),
+                            PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
+                            PopupMenuItem(value: 'nearby', child: Text(l10n.nearby)),
                           ],
                         ),
                       ],
@@ -465,10 +458,22 @@ class _MeetupsListPageState extends State<MeetupsListPage>
               // Meetups list
               Expanded(
                 child: ListView.builder(
-                  padding:
-                      EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 100), // 底部留白给导航栏
-                  itemCount: meetups.length,
+                  controller: _tabScrollControllers[currentTabIndex],
+                  padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 100), // 底部留白给导航栏
+                  itemCount: meetups.length + (isLoading ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index == meetups.length) {
+                      // 加载更多指示器
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: const Color(0xFFFF4458),
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      );
+                    }
                     return _buildMeetupCard(meetups[index]);
                   },
                 ),
@@ -483,45 +488,83 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   Widget _buildEmptyState() {
     final l10n = AppLocalizations.of(context)!;
 
+    String emptyMessage;
+    String emptyHint;
+    IconData emptyIcon;
+
+    switch (_tabController.index) {
+      case 1: // Joined
+        emptyMessage = l10n.noJoinedMeetupsYet;
+        emptyHint = '参加一些活动来认识新朋友吧！';
+        emptyIcon = FontAwesomeIcons.calendarPlus;
+        break;
+      case 2: // Past
+        emptyMessage = l10n.noPastMeetups;
+        emptyHint = '还没有参加过任何活动';
+        emptyIcon = FontAwesomeIcons.clockRotateLeft;
+        break;
+      case 3: // Cancelled
+        emptyMessage = '暂无已取消的活动';
+        emptyHint = '这里会显示你取消参与的活动记录';
+        emptyIcon = FontAwesomeIcons.calendarXmark;
+        break;
+      default: // All/Upcoming
+        emptyMessage = l10n.noMeetupsAvailable;
+        emptyHint = '目前没有即将举行的活动';
+        emptyIcon = FontAwesomeIcons.calendarDay;
+        break;
+    }
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.event_busy,
-            size: 80.sp,
-            color: AppColors.textTertiary,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            _tabController.index == 1
-                ? l10n.noJoinedMeetupsYet
-                : _tabController.index == 2
-                    ? l10n.noPastMeetups
-                    : l10n.noMeetupsAvailable,
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: AppColors.textSecondary,
+      child: Padding(
+        padding: EdgeInsets.all(32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              emptyIcon,
+              size: 80.sp,
+              color: AppColors.textTertiary,
             ),
-          ),
-        ],
+            SizedBox(height: 24.h),
+            Text(
+              emptyMessage,
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              emptyHint,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AppColors.textTertiary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildMeetupCard(MeetupModel meetup) {
-    // 使用自管理生命周期的 StatefulWidget，参�?data_service_page 的设�?
+  Widget _buildMeetupCard(Meetup meetup) {
+    // 使用自管理生命周期的 StatefulWidget，参考 data_service_page 的设计
     return _MeetupListCard(
       meetup: meetup,
-      eventsApiService: _eventsApiService,
+      currentTabIndex: _tabController.index, // 传递当前 Tab 索引
       onUpdated: (updatedMeetup) {
-        // 回调更新父级�?_meetups 列表
-        final index = _meetups.indexWhere((m) => m.id == updatedMeetup.id);
+        // 回调更新当前 tab 的列表
+        final currentTabIndex = _tabController.index;
+        final meetups = _tabMeetups[currentTabIndex]!;
+        final index = meetups.indexWhere((m) => m.id == updatedMeetup.id);
         if (index != -1) {
-          _meetups[index] = updatedMeetup;
-          _meetups.refresh();
+          meetups[index] = updatedMeetup;
         }
       },
+      onRefresh: _refreshCurrentTab,
     );
   }
 
@@ -545,16 +588,18 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 }
 
-// 自管理生命周期的 Meetup Card - 参�?data_service_page 的设�?
+// 自管理生命周期的 Meetup Card - 参考 data_service_page 的设计
 class _MeetupListCard extends StatefulWidget {
-  final MeetupModel meetup;
-  final EventsApiService eventsApiService;
-  final Function(MeetupModel) onUpdated;
+  final Meetup meetup;
+  final int currentTabIndex; // 0: 全部, 1: 已加入, 2: 过往, 3: 已取消
+  final Function(Meetup) onUpdated;
+  final Future<void> Function()? onRefresh;
 
   const _MeetupListCard({
     required this.meetup,
-    required this.eventsApiService,
+    required this.currentTabIndex,
     required this.onUpdated,
+    this.onRefresh,
   });
 
   @override
@@ -562,44 +607,57 @@ class _MeetupListCard extends StatefulWidget {
 }
 
 class _MeetupListCardState extends State<_MeetupListCard> {
-  // 卡片自己的状�?- 符合 DDD 原则
+  // 卡片自己的状态 - 符合 DDD 原则
   late bool _isJoined;
   late int _currentAttendees;
   late int _maxAttendees;
+  late bool _isOrganizer;
+
+  // Tab 索引常量
+  static const int _tabCancelled = 3; // 已取消 Tab
+  static const int _tabPast = 2; // 过往 Tab
+
+  // 是否在"已取消"Tab 或 活动本身已取消
+  bool get _isInCancelledContext => widget.currentTabIndex == _tabCancelled || widget.meetup.isCancelled;
+
+  // 是否在"过往"Tab 或 活动已结束
+  bool get _isInPastContext => widget.currentTabIndex == _tabPast || widget.meetup.isEnded;
 
   @override
   void initState() {
     super.initState();
 
-    // 初始化本地状�?
+    // 初始化本地状态 - 直接使用后端返回的字段
     _isJoined = widget.meetup.isJoined;
-    _currentAttendees = widget.meetup.currentAttendees;
-    _maxAttendees = widget.meetup.maxAttendees;
+    _isOrganizer = widget.meetup.isOrganizer;
+    _currentAttendees = widget.meetup.capacity.currentAttendees;
+    _maxAttendees = widget.meetup.capacity.maxAttendees;
 
-    print('🔍 MeetupListCard initState:');
-    print('   ID: ${widget.meetup.id}');
-    print('   Title: ${widget.meetup.title}');
-    print('   isJoined: $_isJoined');
-    print('   Attendees: $_currentAttendees / $_maxAttendees');
+    log('🔍 MeetupListCard initState:');
+    log('   ID: ${widget.meetup.id}');
+    log('   Title: ${widget.meetup.title}');
+    log('   isJoined (from backend): $_isJoined');
+    log('   isOrganizer (from backend): $_isOrganizer');
+    log('   Attendees: $_currentAttendees / $_maxAttendees');
   }
 
   @override
   void didUpdateWidget(_MeetupListCard oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // �?widget 更新时，检查数据是否变�?
+    // 当 widget 更新时，检查数据是否变化
     if (oldWidget.meetup.id == widget.meetup.id) {
-      // 同一�?meetup，更新状�?
-      if (_isJoined != widget.meetup.isJoined ||
-          _currentAttendees != widget.meetup.currentAttendees) {
-        print('🔄 Meetup ${widget.meetup.title} 数据更新:');
-        print('   isJoined: $_isJoined -> ${widget.meetup.isJoined}');
-        print(
-            '   Attendees: $_currentAttendees -> ${widget.meetup.currentAttendees}');
+      // 同一个 meetup，使用后端返回的 isJoined 字段更新状态
+      final newIsJoined = widget.meetup.isJoined;
+      final newCurrentAttendees = widget.meetup.capacity.currentAttendees;
+      if (_isJoined != newIsJoined || _currentAttendees != newCurrentAttendees) {
+        log('🔄 Meetup ${widget.meetup.title} 数据更新:');
+        log('   isJoined: $_isJoined -> $newIsJoined');
+        log('   Attendees: $_currentAttendees -> $newCurrentAttendees');
         setState(() {
-          _isJoined = widget.meetup.isJoined;
-          _currentAttendees = widget.meetup.currentAttendees;
-          _maxAttendees = widget.meetup.maxAttendees;
+          _isJoined = newIsJoined;
+          _currentAttendees = newCurrentAttendees;
+          _maxAttendees = widget.meetup.capacity.maxAttendees;
         });
       }
     }
@@ -607,32 +665,38 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
   Future<void> _handleToggleJoin() async {
     final l10n = AppLocalizations.of(context)!;
+    final meetupRepository = Get.find<IMeetupRepository>();
+    final meetupController = Get.find<MeetupStateController>();
 
-    // 判断是加入还是退�?
+    // 判断是加入还是退出
     final isJoining = !_isJoined;
 
     try {
-      // 调用 API
+      // 调用 Repository
       if (isJoining) {
-        await widget.eventsApiService.joinEvent(widget.meetup.id);
-        print('�?成功加入活动: ${widget.meetup.title}');
+        await meetupRepository.rsvpToMeetup(widget.meetup.id);
+        log('✅ 成功加入活动: ${widget.meetup.title}');
+        // 更新 Controller 的 rsvpedMeetupIds
+        if (!meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
+          meetupController.rsvpedMeetupIds.add(widget.meetup.id);
+        }
       } else {
-        await widget.eventsApiService.leaveEvent(widget.meetup.id);
-        print('�?成功退出活�? ${widget.meetup.title}');
+        await meetupRepository.cancelRsvp(widget.meetup.id);
+        log('✅ 成功退出活动: ${widget.meetup.title}');
+        // 更新 Controller 的 rsvpedMeetupIds
+        meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
       }
 
-      // API 调用成功，更新本地状�?
+      // API 调用成功，更新本地状态
       setState(() {
         _isJoined = isJoining;
         _currentAttendees = _currentAttendees + (isJoining ? 1 : -1);
       });
 
-      // 通知父级更新全局列表
-      final updatedMeetup = widget.meetup.copyWith(
-        isJoined: isJoining,
-        currentAttendees: _currentAttendees,
-      );
-      widget.onUpdated(updatedMeetup);
+      // 刷新列表数据
+      if (widget.onRefresh != null) {
+        await widget.onRefresh!();
+      }
 
       // 显示成功消息
       if (isJoining) {
@@ -647,17 +711,104 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         );
       }
     } catch (e) {
-      print('❌ 加入/退出活动失败: $e');
+      log('❌ 加入/退出活动失败: $e');
+
+      // 特殊处理:如果是"已经参加"的错误,说明状态不同步,需要纠正前端状态
+      final errorMessage = e.toString();
+      if (errorMessage.contains('已经参加') || errorMessage.contains('already joined')) {
+        log('⚠️ 检测到状态不同步:用户实际已加入,但前端状态为未加入,正在纠正...');
+        setState(() {
+          _isJoined = true; // 纠正为已加入状态
+        });
+        // 更新 Controller
+        if (!meetupController.rsvpedMeetupIds.contains(widget.meetup.id)) {
+          meetupController.rsvpedMeetupIds.add(widget.meetup.id);
+        }
+        // 刷新数据以获取最新状态
+        if (widget.onRefresh != null) {
+          await widget.onRefresh!();
+        }
+        AppToast.info('您已经加入了这个活动');
+        return;
+      }
+
+      // 特殊处理:如果是"未参加"的错误,说明状态不同步,需要纠正前端状态
+      if (errorMessage.contains('未参加') ||
+          errorMessage.contains('not joined') ||
+          errorMessage.contains('not a participant')) {
+        log('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
+        setState(() {
+          _isJoined = false; // 纠正为未加入状态
+        });
+        // 更新 Controller
+        meetupController.rsvpedMeetupIds.remove(widget.meetup.id);
+        // 刷新数据以获取最新状态
+        if (widget.onRefresh != null) {
+          await widget.onRefresh!();
+        }
+        AppToast.info('您尚未加入这个活动');
+        return;
+      }
+
+      // 其他错误正常提示
       AppToast.error(
         _isJoined ? '退出活动失败' : '加入活动失败',
       );
     }
   }
 
+  Future<void> _handleCancelMeetup() async {
+    final l10n = AppLocalizations.of(context)!;
+    final meetupRepository = Get.find<IMeetupRepository>();
+
+    // 显示确认对话框
+    final confirmed = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('取消活动'),
+        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await meetupRepository.cancelMeetup(widget.meetup.id);
+      log('✅ 成功取消活动: ${widget.meetup.title}');
+
+      // 显示成功消息
+      AppToast.success(
+        '活动已取消',
+        title: '成功',
+      );
+
+      // 刷新列表数据
+      if (widget.onRefresh != null) {
+        await widget.onRefresh!();
+      }
+    } catch (e) {
+      log('❌ 取消活动失败: $e');
+      AppToast.error('取消活动失败');
+    }
+  }
+
   void _openChat() {
     final l10n = AppLocalizations.of(context)!;
 
-    if (!_isJoined) {
+    // 组织者或已加入的成员都可以访问聊天室
+    if (!_isJoined && !_isOrganizer) {
       AppToast.warning(
         l10n.joinToAccessChat,
         title: l10n.joinRequired,
@@ -665,7 +816,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       return;
     }
 
-    // 跳转到群聊页�?
+    // 跳转到群聊页面
     Get.toNamed(
       AppRoutes.cityChat,
       arguments: {
@@ -685,8 +836,26 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
-      onTap: () {
-        Get.to(() => MeetupDetailPage(meetup: widget.meetup));
+      onTap: () async {
+        // 等待 detail 页面返回结果
+        await NavigationUtil.toWithCallback<Meetup>(
+          page: () => MeetupDetailPage(meetup: widget.meetup),
+          binding: MeetupDetailBinding(),
+          onResult: (result) {
+            if (result.hasData) {
+              // 如果返回了更新后的 meetup，直接更新缓存
+              widget.onUpdated(result.data!);
+              // 同步更新本地状态
+              if (mounted) {
+                setState(() {
+                  _isJoined = result.data!.isJoined;
+                  _currentAttendees = result.data!.capacity.currentAttendees;
+                  _maxAttendees = result.data!.capacity.maxAttendees;
+                });
+              }
+            }
+          },
+        );
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 16.h),
@@ -708,21 +877,54 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 图片 - 列表页只使用 imageUrl，如果为空显示占位图�?
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-              child: widget.meetup.imageUrl != null &&
-                      widget.meetup.imageUrl!.isNotEmpty
-                  ? Image.network(
-                      widget.meetup.imageUrl!,
-                      width: double.infinity,
-                      height: 180.h,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildPlaceholderImage();
-                      },
-                    )
-                  : _buildPlaceholderImage(),
+            // 图片 - 使用 images 数组的第一张图片
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+                  child: (widget.meetup.images.isNotEmpty && widget.meetup.images.first.isNotEmpty)
+                      ? Image.network(
+                          widget.meetup.images.first,
+                          width: double.infinity,
+                          height: 180.h,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildPlaceholderImage();
+                          },
+                        )
+                      : _buildPlaceholderImage(),
+                ),
+                // 如果已取消，显示标识
+                if (widget.meetup.status == MeetupStatus.cancelled)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+                      ),
+                      child: Center(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20.w,
+                            vertical: 10.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            '已取消',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
 
             Padding(
@@ -730,7 +932,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 标题和类�?
+                  // 标题和类型
                   Row(
                     children: [
                       Expanded(
@@ -746,7 +948,13 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                         ),
                       ),
                       SizedBox(width: 8.w),
-                      _buildTypeChip(widget.meetup.type),
+                      _buildTypeChip(
+                        // 优先使用 eventType 的国际化名称
+                        widget.meetup.eventType?.getDisplayName(
+                              Localizations.localeOf(context).languageCode,
+                            ) ??
+                            widget.meetup.type.value,
+                      ),
                     ],
                   ),
 
@@ -754,27 +962,30 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
                   // 时间
                   _buildInfoRow(
-                    Icons.schedule,
-                    _formatDateTime(widget.meetup.dateTime),
-                    widget.meetup.isStartingSoon
-                        ? const Color(0xFFFF4458)
-                        : null,
+                    FontAwesomeIcons.clock,
+                    _formatDateTime(widget.meetup.schedule.startTime),
+                    widget.meetup.isStartingSoon ? const Color(0xFFFF4458) : null,
                   ),
 
                   SizedBox(height: 8.h),
 
-                  // 地点
-                  _buildInfoRow(Icons.location_on, widget.meetup.venue, null),
+                  // 地点（场地 + 城市, 国家）
+                  _buildInfoRow(
+                    FontAwesomeIcons.locationDot,
+                    [
+                      if (widget.meetup.venue.name.isNotEmpty) widget.meetup.venue.name,
+                      widget.meetup.location.fullDescription,
+                    ].where((s) => s.isNotEmpty).join(', '),
+                    null,
+                  ),
 
                   SizedBox(height: 8.h),
 
-                  // 参与人数和剩余名�?- 使用本地状�?
+                  // 参与人数和剩余名额 - 使用本地状态
                   _buildInfoRow(
-                    Icons.people,
-                    '$_currentAttendees/$_maxAttendees attendees �?$_remainingSlots spots left',
-                    _isFull
-                        ? Colors.orange
-                        : (_remainingSlots <= 3 ? Colors.red : null),
+                    FontAwesomeIcons.users,
+                    '$_currentAttendees/$_maxAttendees attendees · $_remainingSlots spots left',
+                    _isFull ? Colors.orange : (_remainingSlots <= 3 ? Colors.red : null),
                   ),
 
                   SizedBox(height: 16.h),
@@ -782,24 +993,52 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                   // 组织者和操作按钮
                   Row(
                     children: [
-                      CircleAvatar(
+                      SafeCircleAvatar(
+                        imageUrl: widget.meetup.organizer.avatarUrl,
                         radius: 16.r,
-                        backgroundImage:
-                            NetworkImage(widget.meetup.organizerAvatar),
                       ),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
-                          widget.meetup.organizerName,
+                          widget.meetup.organizer.name,
                           style: TextStyle(
                             fontSize: 13.sp,
                             color: AppColors.textSecondary,
                           ),
                         ),
                       ),
-                      _buildJoinButton(l10n),
-                      SizedBox(width: 8.w),
-                      _buildChatButton(),
+                      // === 过往/已取消 Tab: 只显示一个置灰状态按钮 ===
+                      if (_isInCancelledContext)
+                        _buildCancelledBadge(l10n)
+                      else if (_isInPastContext)
+                        _buildEndedBadge(l10n)
+                      // === 正常 Tab: 显示完整操作按钮 ===
+                      else ...[
+                        // 编辑按钮 - 只有组织者可见
+                        if (_isOrganizer)
+                          AppEditButton(
+                            onPressed: () async {
+                              await NavigationUtil.toWithCallback<bool>(
+                                page: () => CreateMeetupPage(editingMeetup: widget.meetup),
+                                onResult: (result) {
+                                  if (result.needsRefresh) {
+                                    widget.onRefresh?.call();
+                                  }
+                                },
+                              );
+                            },
+                            size: 14.r,
+                            mini: true,
+                          ),
+                        if (_isOrganizer) SizedBox(width: 8.w),
+                        // 聊天按钮 - 只有已加入或组织者可见
+                        if (_isJoined || _isOrganizer) _buildChatButton(),
+                        if (_isJoined || _isOrganizer) SizedBox(width: 8.w),
+                        // 加入按钮 - 只有非组织者可见
+                        if (!_isOrganizer) _buildJoinButton(l10n),
+                        // 取消活动按钮 - 只有组织者可见
+                        if (_isOrganizer) _buildCancelButton(l10n),
+                      ],
                     ],
                   ),
                 ],
@@ -821,7 +1060,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       ),
       child: Center(
         child: Icon(
-          Icons.event,
+          FontAwesomeIcons.calendarDays,
           size: 64.sp,
           color: const Color(0xFFBDBDBD),
         ),
@@ -831,46 +1070,55 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
   Widget _buildTypeChip(String type) {
     Color color;
-    // 根据后端返回�?category 类型设置颜色
-    switch (type.toLowerCase()) {
-      case 'coffee':
-        color = Colors.brown;
-        break;
-      case 'coworking':
-      case 'business':
-        color = Colors.blue;
-        break;
-      case 'activity':
-      case 'outdoor':
-        color = Colors.green;
-        break;
-      case 'language':
-        color = Colors.purple;
-        break;
-      case 'social':
-        color = Colors.orange;
-        break;
-      case 'tech':
-      case 'workshop':
-        color = Colors.indigo;
-        break;
-      case 'food':
-      case 'dinner':
-        color = Colors.red;
-        break;
-      case 'sports':
-        color = Colors.teal;
-        break;
-      case 'culture':
-      case 'art':
-        color = Colors.pink;
-        break;
-      case 'other':
-        color = AppColors.textSecondary;
-        break;
-      default:
-        // 为其他未知类型使用紫色调
-        color = const Color(0xFF9C27B0);
+    // 根据类型名称设置颜色（支持中英文）
+    final typeLower = type.toLowerCase();
+    if (typeLower.contains('coffee') || typeLower.contains('咖啡')) {
+      color = Colors.brown;
+    } else if (typeLower.contains('coworking') ||
+        typeLower.contains('business') ||
+        typeLower.contains('共享办公') ||
+        typeLower.contains('商务')) {
+      color = Colors.blue;
+    } else if (typeLower.contains('activity') ||
+        typeLower.contains('outdoor') ||
+        typeLower.contains('户外') ||
+        typeLower.contains('徒步')) {
+      color = Colors.green;
+    } else if (typeLower.contains('language') || typeLower.contains('语言')) {
+      color = Colors.purple;
+    } else if (typeLower.contains('social') ||
+        typeLower.contains('社交') ||
+        typeLower.contains('networking') ||
+        typeLower.contains('网络')) {
+      color = Colors.orange;
+    } else if (typeLower.contains('tech') ||
+        typeLower.contains('workshop') ||
+        typeLower.contains('技术') ||
+        typeLower.contains('工作坊')) {
+      color = Colors.indigo;
+    } else if (typeLower.contains('food') ||
+        typeLower.contains('dinner') ||
+        typeLower.contains('美食') ||
+        typeLower.contains('饮品')) {
+      color = Colors.red;
+    } else if (typeLower.contains('sports') ||
+        typeLower.contains('fitness') ||
+        typeLower.contains('运动') ||
+        typeLower.contains('健身')) {
+      color = Colors.teal;
+    } else if (typeLower.contains('culture') ||
+        typeLower.contains('art') ||
+        typeLower.contains('文化') ||
+        typeLower.contains('艺术')) {
+      color = Colors.pink;
+    } else if (typeLower.contains('yoga') ||
+        typeLower.contains('meditation') ||
+        typeLower.contains('瑜伽') ||
+        typeLower.contains('冥想')) {
+      color = const Color(0xFF4CAF50);
+    } else {
+      // 默认颜色
+      color = const Color(0xFF9C27B0);
     }
 
     return Container(
@@ -911,24 +1159,8 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   }
 
   Widget _buildJoinButton(AppLocalizations l10n) {
-    if (widget.meetup.isEnded) {
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: AppColors.borderLight,
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        child: Text(
-          l10n.ended,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      );
-    }
-
+    // 如果在"已取消"Tab 或活动已取消 - 显示"已取消"标签
+    // 如果活动已满且用户未加入
     if (_isFull && !_isJoined) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
@@ -947,23 +1179,21 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       );
     }
 
+    // 普通用户：显示加入/已加入按钮
     return GestureDetector(
       onTap: _handleToggleJoin,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+        padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
           color: _isJoined
-              ? const Color(0xFFFF4458).withValues(alpha: 0.1)
-              : const Color(0xFFFF4458),
-          borderRadius: BorderRadius.circular(20.r),
+              ? const Color(0xFFFF4458).withValues(alpha: 0.15)
+              : const Color(0xFFFF4458).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(10.r),
         ),
-        child: Text(
-          _isJoined ? l10n.joined : l10n.join,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: _isJoined ? const Color(0xFFFF4458) : Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+        child: FaIcon(
+          _isJoined ? FontAwesomeIcons.userCheck : FontAwesomeIcons.userPlus,
+          size: 14.sp,
+          color: _isJoined ? const Color(0xFFFF4458) : const Color(0xFFFF4458),
         ),
       ),
     );
@@ -973,15 +1203,72 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     return GestureDetector(
       onTap: _openChat,
       child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4.w),
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: Colors.blue.withValues(alpha: 0.1),
-          shape: BoxShape.circle,
+          color: Colors.blue.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(10.r),
         ),
-        child: Icon(
-          Icons.chat_bubble_outline,
-          size: 18.sp,
+        child: FaIcon(
+          FontAwesomeIcons.message,
+          size: 14.sp,
           color: Colors.blue,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCancelButton(AppLocalizations l10n) {
+    return GestureDetector(
+      onTap: _handleCancelMeetup,
+      child: Container(
+        padding: EdgeInsets.all(8.w),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: FaIcon(
+          FontAwesomeIcons.ban,
+          size: 14.sp,
+          color: Colors.red,
+        ),
+      ),
+    );
+  }
+
+  // 已取消标识按钮 - 置灰显示文字
+  Widget _buildCancelledBadge(AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        l10n.statusCancelled,
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: Colors.grey,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  // 已结束标识按钮 - 置灰显示文字
+  Widget _buildEndedBadge(AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        l10n.ended,
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: Colors.grey,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -1002,7 +1289,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
   }
 }
 
-// Meetup 筛选抽屉组�?
+// Meetup 筛选抽屉组件
 class _MeetupFilterDrawer extends StatelessWidget {
   final RxList<String> selectedCountries;
   final RxList<String> selectedCities;
@@ -1033,16 +1320,16 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
     return Container(
       height: screenHeight * 0.85,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: Column(
         children: [
-          // 顶部�?
+          // 顶部栏
           Container(
             padding: EdgeInsets.all(20.w),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: AppColors.borderLight, width: 1),
               ),
@@ -1072,7 +1359,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, size: 24.sp),
+                      icon: Icon(FontAwesomeIcons.xmark, size: 24.sp),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -1081,14 +1368,14 @@ class _MeetupFilterDrawer extends StatelessWidget {
             ),
           ),
 
-          // 筛选选项（可滚动�?
+          // 筛选选项（可滚动）
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(20.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 国家筛�?
+                  // 国家筛选
                   _buildSectionTitle(l10n.country),
                   SizedBox(height: 12.h),
                   Text(
@@ -1104,8 +1391,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                         spacing: 8.w,
                         runSpacing: 8.h,
                         children: availableCountries.map((country) {
-                          final isSelected =
-                              selectedCountries.contains(country);
+                          final isSelected = selectedCountries.contains(country);
                           return FilterChip(
                             label: Text(country),
                             selected: isSelected,
@@ -1116,22 +1402,15 @@ class _MeetupFilterDrawer extends StatelessWidget {
                                 selectedCountries.remove(country);
                               }
                             },
-                            selectedColor:
-                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                             checkmarkColor: const Color(0xFFFF4458),
                             labelStyle: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.textSecondary,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               fontSize: 13.sp,
                             ),
                             side: BorderSide(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.borderLight,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.borderLight,
                             ),
                           );
                         }).toList(),
@@ -1139,7 +1418,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 城市筛�?
+                  // 城市筛选
                   _buildSectionTitle(l10n.city),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1157,22 +1436,15 @@ class _MeetupFilterDrawer extends StatelessWidget {
                                 selectedCities.remove(city);
                               }
                             },
-                            selectedColor:
-                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                             checkmarkColor: const Color(0xFFFF4458),
                             labelStyle: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.textSecondary,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               fontSize: 13.sp,
                             ),
                             side: BorderSide(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.borderLight,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.borderLight,
                             ),
                           );
                         }).toList(),
@@ -1180,7 +1452,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 类型筛�?
+                  // 类型筛选
                   _buildSectionTitle(l10n.meetupType),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1198,22 +1470,15 @@ class _MeetupFilterDrawer extends StatelessWidget {
                                 selectedTypes.remove(type);
                               }
                             },
-                            selectedColor:
-                                const Color(0xFFFF4458).withValues(alpha: 0.1),
+                            selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                             checkmarkColor: const Color(0xFFFF4458),
                             labelStyle: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.textSecondary,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               fontSize: 13.sp,
                             ),
                             side: BorderSide(
-                              color: isSelected
-                                  ? const Color(0xFFFF4458)
-                                  : AppColors.borderLight,
+                              color: isSelected ? const Color(0xFFFF4458) : AppColors.borderLight,
                             ),
                           );
                         }).toList(),
@@ -1221,7 +1486,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 时间筛�?
+                  // 时间筛选
                   _buildSectionTitle(l10n.timeRange),
                   SizedBox(height: 12.h),
                   Obx(() => Wrap(
@@ -1237,16 +1502,14 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
                   SizedBox(height: 24.h),
 
-                  // 最大人数筛�?
+                  // 最大人数筛选
                   _buildSectionTitle(l10n.maximumAttendees),
                   SizedBox(height: 12.h),
                   Obx(() => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            maxAttendees.value >= 100
-                                ? l10n.peoplePlus
-                                : l10n.peopleCount('${maxAttendees.value}'),
+                            maxAttendees.value >= 100 ? l10n.peoplePlus : l10n.peopleCount('${maxAttendees.value}'),
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
@@ -1276,7 +1539,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
           // 底部应用按钮
           Container(
             padding: EdgeInsets.all(20.w),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(color: AppColors.borderLight, width: 1),
               ),
@@ -1291,7 +1554,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     elevation: 0,
                   ),

@@ -1,8 +1,32 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart' as getx;
+import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/core/auth/token_manager.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 
-import '../config/api_config.dart';
-import '../models/api_response_meta.dart';
+import 'token_storage_service.dart';
+
+/// API 响应元数据
+class ApiResponseMeta {
+  final bool success;
+  final String message;
+  final List<String> errors;
+  final int? statusCode;
+
+  ApiResponseMeta({
+    required this.success,
+    required this.message,
+    required this.errors,
+    this.statusCode,
+  });
+}
 
 /// HTTP 服务类
 /// 基于 Dio 封装的 HTTP 请求服务
@@ -14,10 +38,18 @@ class HttpService {
   String? _authToken;
   String? _userId;
 
+  // Token 刷新回调
+  Future<String?> Function()? _onTokenRefreshCallback;
+
+  // 用于防止重复刷新
+  bool _isRefreshing = false;
+
+  // 用于防止重复跳转登录页
+  bool _isRedirectingToLogin = false;
+
   static const String apiResponseMetaKey = '__apiResponseMeta';
   static const String apiResponseRawKey = '__apiResponseRaw';
-  static const String disableApiResponseUnwrapKey =
-      '__disableApiResponseUnwrap';
+  static const String disableApiResponseUnwrapKey = '__disableApiResponseUnwrap';
 
   HttpService._internal() {
     _dio = Dio(
@@ -36,31 +68,109 @@ class HttpService {
     _setupInterceptors();
   }
 
+  /// 处理 401 未授权错误 - 清除认证并跳转登录页
+  Future<void> _handleUnauthorized({String? reason}) async {
+    // 防止重复跳转
+    if (_isRedirectingToLogin) {
+      if (kDebugMode) {
+        log('⏭️ 已在跳转登录页，跳过重复操作');
+      }
+      return;
+    }
+
+    _isRedirectingToLogin = true;
+
+    if (kDebugMode) {
+      log('🔥 处理 401 错误: ${reason ?? "Token 无效或已过期"}');
+    }
+
+    // 使用 TokenManager 统一清除所有认证信息
+    final tokenManager = TokenManager();
+    await tokenManager.clearToken();
+
+    // 更新 AuthStateController 状态
+    try {
+      final authController = getx.Get.find<AuthStateController>();
+      authController.isAuthenticated.value = false;
+      authController.currentUser.value = null;
+      authController.currentToken.value = null;
+    } catch (e) {
+      if (kDebugMode) {
+        log('⚠️ 无法更新 AuthStateController: $e');
+      }
+    }
+
+    // 延迟显示提示并跳转（确保在正确的上下文中）
+    Future.delayed(Duration.zero, () {
+      try {
+        // 显示提示
+        AppToast.error(reason ?? 'Your session has expired. Please login again.');
+
+        // 跳转到登录页
+        getx.Get.offAllNamed(AppRoutes.login);
+
+        // 重置标志
+        Future.delayed(const Duration(seconds: 1), () {
+          _isRedirectingToLogin = false;
+        });
+      } catch (e) {
+        if (kDebugMode) {
+          log('❌ 跳转登录页失败: $e');
+        }
+        _isRedirectingToLogin = false;
+      }
+    });
+  }
+
   /// 设置拦截器
   void _setupInterceptors() {
     // 请求拦截器
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
+          // 记录请求开始时间用于耗时统计
+          options.extra['__startTime'] = DateTime.now().millisecondsSinceEpoch;
+
+          // 从 SQLite/SharedPreferences 动态获取 token 与用户 ID，确保请求可按用户隔离
+          final tokenService = TokenStorageService();
+          final token = await tokenService.getAccessToken();
+          final userId = await tokenService.getUserId();
+
           // 添加认证 token
-          if (_authToken != null && _authToken!.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $_authToken';
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+            // 同步更新内存中的 token（用于向后兼容）
+            _authToken = token;
           }
 
-          // 添加用户ID header
-          if (_userId != null && _userId!.isNotEmpty) {
-            options.headers['X-User-Id'] = _userId;
+          // 添加用户ID header（AI Chat 依赖此头区分不同登录用户的对话）
+          if (userId != null && userId.isNotEmpty) {
+            options.headers['X-User-Id'] = userId;
+            _userId = userId;
+          }
+
+          // HTTP 方法重写：将 PUT/DELETE/PATCH 转换为 POST + X-HTTP-Method-Override 头
+          // 用于解决某些网络环境（如部分 ISP、IDC 防火墙）不支持这些方法的问题
+          if (ApiConfig.useHttpMethodOverride) {
+            final method = options.method.toUpperCase();
+            if (method == 'PUT' || method == 'DELETE' || method == 'PATCH') {
+              if (kDebugMode) {
+                log('🔄 HTTP Method Override: $method -> POST (X-HTTP-Method-Override: $method)');
+              }
+              options.headers['X-HTTP-Method-Override'] = method;
+              options.method = 'POST';
+            }
           }
 
           // 打印请求日志 (仅开发环境)
           if (kDebugMode) {
-            print('🚀 REQUEST[${options.method}] => ${options.uri}');
-            print('Headers: ${options.headers}');
+            log('🚀 REQUEST[${options.method}] => ${options.uri}');
+            log('Headers: ${options.headers}');
             if (options.data != null) {
-              print('Data: ${options.data}');
+              log('Data: ${options.data}');
             }
             if (options.queryParameters.isNotEmpty) {
-              print('Query: ${options.queryParameters}');
+              log('Query: ${options.queryParameters}');
             }
           }
 
@@ -69,14 +179,14 @@ class HttpService {
         onResponse: (response, handler) {
           // 打印响应日志 (仅开发环境)
           if (kDebugMode) {
-            print(
-                '✅ RESPONSE[${response.statusCode}] => ${response.requestOptions.uri}');
-            print('Data: ${response.data}');
+            final start = response.requestOptions.extra['__startTime'] as int?;
+            final duration = start != null ? DateTime.now().millisecondsSinceEpoch - start : null;
+            final elapsed = duration != null ? ' (${duration}ms)' : '';
+            log('✅ RESPONSE[${response.statusCode}]$elapsed => ${response.requestOptions.uri}');
+            log('Data: ${response.data}');
           }
 
-          final disableUnwrap =
-              response.requestOptions.extra[disableApiResponseUnwrapKey] ==
-                  true;
+          final disableUnwrap = response.requestOptions.extra[disableApiResponseUnwrapKey] == true;
           if (!disableUnwrap) {
             final envelope = _unwrapApiResponse(response);
 
@@ -90,13 +200,9 @@ class HttpService {
                     response: response,
                     type: DioExceptionType.badResponse,
                     error: HttpException(
-                      envelope.meta.message.isNotEmpty
-                          ? envelope.meta.message
-                          : _handleStatusCode(response.statusCode),
+                      envelope.meta.message.isNotEmpty ? envelope.meta.message : _handleStatusCode(response.statusCode),
                       response.statusCode,
-                      envelope.meta.errors.isEmpty
-                          ? null
-                          : envelope.meta.errors,
+                      envelope.meta.errors.isEmpty ? null : envelope.meta.errors,
                     ),
                   ),
                 );
@@ -107,13 +213,19 @@ class HttpService {
           return handler.next(response);
         },
         onError: (error, handler) async {
-          // 打印错误日志
-          if (kDebugMode) {
-            print(
-                '❌ ERROR[${error.response?.statusCode}] => ${error.requestOptions.uri}');
-            print('Message: ${error.message}');
+          // 打印错误日志（排除 DELETE 请求的 404，这是正常的幂等删除场景）
+          final isDelete404 = error.requestOptions.method == 'DELETE' && error.response?.statusCode == 404;
+          if (kDebugMode && !isDelete404) {
+            final start = error.requestOptions.extra['__startTime'] as int?;
+            final duration = start != null ? DateTime.now().millisecondsSinceEpoch - start : null;
+            final elapsed = duration != null ? ' (${duration}ms)' : '';
+            log('❌ ERROR[${error.response?.statusCode}]$elapsed => ${error.requestOptions.uri}');
+            log('Message: ${error.message}');
             if (error.response?.data != null) {
-              print('Response: ${error.response?.data}');
+              // 完整打印响应数据，包括错误详情
+              final responseData = error.response!.data;
+              log('完整响应数据:');
+              log(jsonEncode(responseData));
             }
           }
 
@@ -127,9 +239,7 @@ class HttpService {
                   response: response,
                   type: error.type,
                   error: HttpException(
-                    envelope.meta.message.isNotEmpty
-                        ? envelope.meta.message
-                        : _handleStatusCode(response.statusCode),
+                    envelope.meta.message.isNotEmpty ? envelope.meta.message : _handleStatusCode(response.statusCode),
                     response.statusCode,
                     envelope.meta.errors.isEmpty ? null : envelope.meta.errors,
                   ),
@@ -141,10 +251,87 @@ class HttpService {
 
           // 401 未授权 - token 过期或无效
           if (error.response?.statusCode == 401) {
-            // TODO: 实现 token 刷新逻辑
-            // 可以在这里尝试刷新 token 并重试请求
             if (kDebugMode) {
-              print('⚠️ 401 Unauthorized - Token may be expired');
+              log('⚠️ 401 Unauthorized - 认证失败');
+              log('完整响应数据: ${error.response?.data}');
+            }
+
+            // 检查是否有 refresh token
+            final tokenService = TokenStorageService();
+            final refreshToken = await tokenService.getRefreshToken();
+
+            // 如果没有 refresh token，说明用户未登录，直接跳转登录页
+            if (refreshToken == null || refreshToken.isEmpty) {
+              if (kDebugMode) {
+                log('❌ 无 refresh token，跳转登录页面');
+              }
+              await _handleUnauthorized(reason: 'Please login to continue');
+              return handler.next(error);
+            }
+
+            // 有 refresh token 且有刷新回调，尝试自动刷新
+            if (_onTokenRefreshCallback != null && !_isRefreshing) {
+              try {
+                _isRefreshing = true;
+                if (kDebugMode) {
+                  log('🔄 检测到 refresh token，尝试自动刷新...');
+                }
+
+                final newToken = await _onTokenRefreshCallback!();
+
+                if (newToken != null && newToken.isNotEmpty) {
+                  if (kDebugMode) {
+                    log('✅ Token 刷新成功，重试请求');
+                  }
+
+                  // 更新请求头
+                  error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+                  _authToken = newToken;
+
+                  // 重试原始请求
+                  final opts = Options(
+                    method: error.requestOptions.method,
+                    headers: error.requestOptions.headers,
+                  );
+
+                  final response = await _dio.request(
+                    error.requestOptions.path,
+                    data: error.requestOptions.data,
+                    queryParameters: error.requestOptions.queryParameters,
+                    options: opts,
+                  );
+
+                  _isRefreshing = false;
+                  return handler.resolve(response);
+                } else {
+                  if (kDebugMode) {
+                    log('❌ Token 刷新失败，清除认证信息并跳转登录页');
+                  }
+                  _isRefreshing = false;
+                  await _handleUnauthorized(reason: 'Session expired. Please login again.');
+                  return handler.next(error);
+                }
+              } catch (refreshError) {
+                if (kDebugMode) {
+                  log('❌ Token 刷新异常: $refreshError');
+                }
+                _isRefreshing = false;
+                await _handleUnauthorized(reason: 'Authentication failed. Please login again.');
+                return handler.next(error);
+              }
+            } else if (_onTokenRefreshCallback == null) {
+              // 没有刷新回调，直接跳转登录
+              if (kDebugMode) {
+                log('❌ 无 Token 刷新回调，跳转登录页面');
+              }
+              await _handleUnauthorized(reason: 'Please login to continue');
+              return handler.next(error);
+            } else if (_isRefreshing) {
+              // 正在刷新中，等待刷新完成
+              if (kDebugMode) {
+                log('⏳ Token 正在刷新中，等待完成...');
+              }
+              return handler.next(error);
             }
           }
 
@@ -165,6 +352,18 @@ class HttpService {
   /// 清除 Token
   void clearAuthToken() {
     _authToken = null;
+  }
+
+  /// 设置 Token 刷新回调
+  /// 当收到 401 错误时，会调用此回调尝试刷新 token
+  /// 回调应返回新的 access token，如果刷新失败返回 null
+  void setTokenRefreshCallback(Future<String?> Function() callback) {
+    _onTokenRefreshCallback = callback;
+  }
+
+  /// 清除 Token 刷新回调
+  void clearTokenRefreshCallback() {
+    _onTokenRefreshCallback = null;
   }
 
   /// 设置用户ID
@@ -253,6 +452,75 @@ class HttpService {
       );
     } on DioException catch (e) {
       throw _handleError(e);
+    }
+  }
+
+  /// SSE (Server-Sent Events) 流式请求
+  /// 用于接收服务器推送的实时数据流
+  Stream<String> getServerSentEvents(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? data,
+  }) async* {
+    try {
+      final tokenService = TokenStorageService();
+      final token = await tokenService.getAccessToken();
+
+      final uri = Uri.parse('${_dio.options.baseUrl}$path');
+      final fullUri = uri.replace(queryParameters: queryParameters);
+
+      if (kDebugMode) {
+        log('🔄 SSE REQUEST => $fullUri');
+      }
+
+      final client = HttpClient();
+      final request = await client.postUrl(fullUri);
+
+      // 设置请求头
+      request.headers.set('Content-Type', 'application/json');
+      request.headers.set('Accept', 'text/event-stream');
+      request.headers.set('Cache-Control', 'no-cache');
+      if (token != null && token.isNotEmpty) {
+        request.headers.set('Authorization', 'Bearer $token');
+      }
+      if (_userId != null && _userId!.isNotEmpty) {
+        request.headers.set('X-User-Id', _userId!);
+      }
+
+      // 发送请求体（使用 UTF-8 编码）
+      if (data != null) {
+        final jsonData = utf8.encode(jsonEncode(data));
+        request.add(jsonData);
+      }
+
+      final response = await request.close();
+
+      if (response.statusCode != 200) {
+        throw HttpException(
+          'SSE request failed',
+          response.statusCode,
+        );
+      }
+
+      // 处理 SSE 流
+      await for (final chunk in response.transform(utf8.decoder)) {
+        final lines = chunk.split('\n');
+        for (final line in lines) {
+          if (line.startsWith('data: ')) {
+            final data = line.substring(6).trim();
+            if (data.isNotEmpty && data != '[DONE]') {
+              yield data;
+            }
+          }
+        }
+      }
+
+      client.close();
+    } catch (e) {
+      if (kDebugMode) {
+        log('❌ SSE ERROR: $e');
+      }
+      rethrow;
     }
   }
 
@@ -357,6 +625,7 @@ class HttpService {
     }
 
     String errorMessage;
+    List<String> errors = [];
 
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
@@ -369,7 +638,32 @@ class HttpService {
         errorMessage = '响应超时，请稍后重试';
         break;
       case DioExceptionType.badResponse:
-        errorMessage = _handleStatusCode(error.response?.statusCode);
+        // 尝试解析后端返回的详细错误信息
+        if (error.response?.data != null) {
+          final responseData = error.response!.data;
+
+          // 检查是否有 errors 字段（后端验证错误格式）
+          if (responseData is Map<String, dynamic> && responseData['errors'] != null) {
+            final errorsData = responseData['errors'];
+            if (errorsData is Map<String, dynamic>) {
+              // 提取所有验证错误
+              errorsData.forEach((field, messages) {
+                if (messages is List) {
+                  errors.addAll(messages.map((e) => '$field: $e'));
+                } else if (messages is String) {
+                  errors.add('$field: $messages');
+                }
+              });
+              errorMessage = errors.isNotEmpty ? errors.join('\n') : '请求参数错误';
+            } else {
+              errorMessage = _handleStatusCode(error.response?.statusCode);
+            }
+          } else {
+            errorMessage = _handleStatusCode(error.response?.statusCode);
+          }
+        } else {
+          errorMessage = _handleStatusCode(error.response?.statusCode);
+        }
         break;
       case DioExceptionType.cancel:
         errorMessage = '请求已取消';
@@ -385,7 +679,7 @@ class HttpService {
         errorMessage = '网络请求失败';
     }
 
-    return HttpException(errorMessage, error.response?.statusCode);
+    return HttpException(errorMessage, error.response?.statusCode, errors);
   }
 
   /// 处理 HTTP 状态码
@@ -423,8 +717,7 @@ class HttpException implements Exception {
   final int? statusCode;
   final List<String> errors;
 
-  HttpException(this.message, [this.statusCode, List<String>? errors])
-      : errors = errors ?? const [];
+  HttpException(this.message, [this.statusCode, List<String>? errors]) : errors = errors ?? const [];
 
   bool get hasErrors => errors.isNotEmpty;
 

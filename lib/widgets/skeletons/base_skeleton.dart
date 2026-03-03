@@ -1,6 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// 基础骨架屏组件
+/// 安全的 Shimmer 包装器
+/// 使用 StatefulWidget 来确保在组件销毁时正确停止动画
+class SafeShimmer extends StatefulWidget {
+  final Widget child;
+  final Color? baseColor;
+  final Color? highlightColor;
+
+  const SafeShimmer({
+    super.key,
+    required this.child,
+    this.baseColor,
+    this.highlightColor,
+  });
+
+  @override
+  State<SafeShimmer> createState() => _SafeShimmerState();
+}
+
+class _SafeShimmerState extends State<SafeShimmer> {
+  bool _mounted = true;
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_mounted) return const SizedBox.shrink();
+
+    return RepaintBoundary(
+      child: Shimmer.fromColors(
+        baseColor: widget.baseColor ?? Colors.grey[300]!,
+        highlightColor: widget.highlightColor ?? Colors.grey[100]!,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// 基础骨架屏组件（使用 shimmer 包）
 /// 所有页面特定的骨架屏都应继承此类
 abstract class BaseSkeleton extends StatefulWidget {
   const BaseSkeleton({super.key});
@@ -9,37 +52,43 @@ abstract class BaseSkeleton extends StatefulWidget {
   State<BaseSkeleton> createState();
 }
 
-abstract class BaseSkeletonState<T extends BaseSkeleton> extends State<T>
-    with SingleTickerProviderStateMixin {
-  late AnimationController shimmerController;
+abstract class BaseSkeletonState<T extends BaseSkeleton> extends State<T> {
+  /// Shimmer 基础颜色
+  Color get shimmerBaseColor => Colors.grey[300]!;
 
-  @override
-  void initState() {
-    super.initState();
-    shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    shimmerController.dispose();
-    super.dispose();
-  }
+  /// Shimmer 高亮颜色
+  Color get shimmerHighlightColor => Colors.grey[100]!;
 
   @override
   Widget build(BuildContext context) {
-    return buildSkeleton(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final mediaQuery = MediaQuery.of(context);
+        final availableHeight = constraints.hasBoundedHeight && constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : mediaQuery.size.height - mediaQuery.padding.vertical;
+        final viewportHeight = availableHeight > 0 ? availableHeight : mediaQuery.size.height;
+
+        // Keep skeletons as tall as the current viewport so the shimmer always covers the full page.
+        return SizedBox(
+          height: viewportHeight,
+          width: double.infinity,
+          child: SafeShimmer(
+            baseColor: shimmerBaseColor,
+            highlightColor: shimmerHighlightColor,
+            child: buildSkeleton(context),
+          ),
+        );
+      },
+    );
   }
 
   /// 子类需要实现此方法来构建特定的骨架屏布局
   Widget buildSkeleton(BuildContext context);
 }
 
-/// 骨架屏卡片容器
+/// 骨架屏卡片容器（简化版，不再需要 AnimationController）
 class SkeletonCard extends StatelessWidget {
-  final AnimationController shimmerController;
   final double? height;
   final double? width;
   final Widget? child;
@@ -48,7 +97,6 @@ class SkeletonCard extends StatelessWidget {
 
   const SkeletonCard({
     super.key,
-    required this.shimmerController,
     this.height,
     this.width,
     this.child,
@@ -58,63 +106,29 @@ class SkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (child != null) {
-      return Container(
-        height: height,
-        width: width,
-        padding: padding ?? const EdgeInsets.all(16),
-        margin: margin,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: child,
-      );
-    }
-
-    return AnimatedBuilder(
-      animation: shimmerController,
-      builder: (context, _) {
-        return Container(
-          height: height,
-          width: width,
-          margin: margin,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.grey[300]!,
-                Colors.grey[100]!,
-                Colors.grey[300]!,
-              ],
-              begin: Alignment(-1.0 + shimmerController.value * 2, 0),
-              end: Alignment(1.0 + shimmerController.value * 2, 0),
-              stops: const [0.0, 0.5, 1.0],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+    return Container(
+      height: height,
+      width: width,
+      padding: padding ?? EdgeInsets.all(16.w),
+      margin: margin,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 8.r,
+            offset: const Offset(0, 2),
           ),
-        );
-      },
+        ],
+      ),
+      child: child,
     );
   }
 }
 
-/// 骨架屏基础盒子组件
+/// 骨架屏基础盒子组件（简化版）
 class SkeletonBox extends StatelessWidget {
-  final AnimationController shimmerController;
   final double? width;
   final double? height;
   final double borderRadius;
@@ -122,7 +136,6 @@ class SkeletonBox extends StatelessWidget {
 
   const SkeletonBox({
     super.key,
-    required this.shimmerController,
     this.width,
     this.height,
     this.borderRadius = 4,
@@ -131,41 +144,25 @@ class SkeletonBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: shimmerController,
-      builder: (context, _) {
-        return Container(
-          width: width,
-          height: height,
-          margin: margin,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.grey[300]!,
-                Colors.grey[100]!,
-                Colors.grey[300]!,
-              ],
-              begin: Alignment(-1.0 + shimmerController.value * 2, 0),
-              end: Alignment(1.0 + shimmerController.value * 2, 0),
-              stops: const [0.0, 0.5, 1.0],
-            ),
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
-        );
-      },
+    return Container(
+      width: width,
+      height: height,
+      margin: margin,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
     );
   }
 }
 
 /// 骨架屏圆形组件（用于头像等）
 class SkeletonCircle extends StatelessWidget {
-  final AnimationController shimmerController;
   final double size;
   final EdgeInsetsGeometry? margin;
 
   const SkeletonCircle({
     super.key,
-    required this.shimmerController,
     required this.size,
     this.margin,
   });
@@ -173,7 +170,6 @@ class SkeletonCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SkeletonBox(
-      shimmerController: shimmerController,
       width: size,
       height: size,
       borderRadius: size / 2,
@@ -184,14 +180,12 @@ class SkeletonCircle extends StatelessWidget {
 
 /// 骨架屏分隔线
 class SkeletonDivider extends StatelessWidget {
-  final AnimationController shimmerController;
   final double? width;
   final double height;
   final EdgeInsetsGeometry? margin;
 
   const SkeletonDivider({
     super.key,
-    required this.shimmerController,
     this.width,
     this.height = 1,
     this.margin,
@@ -200,7 +194,6 @@ class SkeletonDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SkeletonBox(
-      shimmerController: shimmerController,
       width: width ?? double.infinity,
       height: height,
       borderRadius: 0,

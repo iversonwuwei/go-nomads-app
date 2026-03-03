@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
@@ -26,7 +28,7 @@ class CityNameHelper {
       _cityNames = Map<String, String>.from(jsonData['cityNames']);
       _currentLocale = locale;
     } catch (e) {
-      print('⚠️ 加载城市名称映射失败: $e');
+      log('⚠️ 加载城市名称映射失败: $e');
       _cityNames = {};
     }
   }
@@ -37,7 +39,7 @@ class CityNameHelper {
   /// 返回对应语言的城市名称，如果找不到则返回原始英文名称
   static String getLocalizedCityName(String englishName) {
     if (_cityNames == null) {
-      print('⚠️ 城市名称映射未加载，请先调用 loadCityNames()');
+      log('⚠️ 城市名称映射未加载，请先调用 loadCityNames()');
       return englishName;
     }
     return _cityNames![englishName] ?? englishName;

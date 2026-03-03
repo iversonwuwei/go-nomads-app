@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:path/path.dart';
@@ -31,7 +32,7 @@ class DatabaseService {
     // 打开数据库,如果不存在则创建
     return await openDatabase(
       path,
-      version: 7, // 升级到版本7 - 添加后台任务表
+      version: 11, // 升级到版本11 - 数字游民指南和附近城市表增加user_id支持
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -39,11 +40,11 @@ class DatabaseService {
 
   /// 创建数据库表
   Future<void> _onCreate(Database db, int version) async {
-    // 用户表
+    // 用户表 - 使用 TEXT 作为主键以支持 UUID
     await db.execute('''
       CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        phone TEXT UNIQUE NOT NULL,
+        id TEXT PRIMARY KEY,
+        phone TEXT UNIQUE,
         password TEXT,
         nickname TEXT,
         avatar TEXT,
@@ -276,20 +277,56 @@ class DatabaseService {
       )
     ''');
 
-    // 聊天消息表
+    // 聊天消息表 - 支持持久化和搜索
     await db.execute('''
       CREATE TABLE chat_messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         room_id TEXT NOT NULL,
-        sender_id INTEGER NOT NULL,
+        sender_id TEXT NOT NULL,
         sender_name TEXT NOT NULL,
         sender_avatar TEXT,
         message TEXT NOT NULL,
         message_type TEXT DEFAULT 'text',
-        created_at TEXT NOT NULL,
-        FOREIGN KEY (sender_id) REFERENCES users (id)
+        reply_to_id TEXT,
+        reply_to_message TEXT,
+        reply_to_user_name TEXT,
+        mentions TEXT,
+        attachment_json TEXT,
+        timestamp TEXT NOT NULL,
+        is_synced INTEGER DEFAULT 1,
+        created_at TEXT NOT NULL
       )
     ''');
+
+    // 聊天消息索引 - 支持高效搜索
+    await db.execute('CREATE INDEX idx_chat_messages_room_id ON chat_messages(room_id)');
+    await db.execute('CREATE INDEX idx_chat_messages_timestamp ON chat_messages(timestamp DESC)');
+    await db.execute('CREATE INDEX idx_chat_messages_sender_id ON chat_messages(sender_id)');
+    await db.execute('CREATE INDEX idx_chat_messages_message ON chat_messages(message)');
+
+    // 聊天室缓存表
+    await db.execute('''
+      CREATE TABLE chat_rooms (
+        id TEXT PRIMARY KEY,
+        room_type TEXT NOT NULL,
+        city TEXT,
+        country TEXT,
+        meetup_id TEXT,
+        meetup_title TEXT,
+        online_users INTEGER DEFAULT 0,
+        total_members INTEGER DEFAULT 0,
+        last_message_id TEXT,
+        last_message_content TEXT,
+        last_message_time TEXT,
+        last_message_sender TEXT,
+        updated_at TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    // 聊天室索引
+    await db.execute('CREATE INDEX idx_chat_rooms_room_type ON chat_rooms(room_type)');
+    await db.execute('CREATE INDEX idx_chat_rooms_updated_at ON chat_rooms(updated_at DESC)');
 
     // 收藏表
     await db.execute('''
@@ -313,6 +350,7 @@ class DatabaseService {
         refresh_token TEXT NOT NULL,
         token_type TEXT NOT NULL,
         expires_in INTEGER NOT NULL,
+        expires_at TEXT,
         user_name TEXT,
         user_email TEXT,
         created_at TEXT NOT NULL,
@@ -320,20 +358,21 @@ class DatabaseService {
       )
     ''');
 
-    // 数字游民指南表
+    // 数字游民指南表 - 按用户区分
     await db.execute('''
       CREATE TABLE digital_nomad_guides (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        city_id TEXT NOT NULL UNIQUE,
+        user_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+        city_id TEXT NOT NULL,
         city_name TEXT NOT NULL,
-        overview TEXT,
-        best_areas TEXT,
-        visa_info TEXT,
-        workspace_recommendations TEXT,
-        tips TEXT,
-        essential_info TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        overview TEXT NOT NULL,
+        visa_info TEXT NOT NULL,
+        best_areas TEXT NOT NULL,
+        workspace_recommendations TEXT NOT NULL,
+        tips TEXT NOT NULL,
+        essential_info TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (user_id, city_id)
       )
     ''');
 
@@ -362,9 +401,9 @@ class DatabaseService {
     await db.execute('CREATE INDEX idx_favorites_user ON favorites(user_id)');
     await db.execute('CREATE INDEX idx_tokens_user ON tokens(user_id)');
     await db.execute(
-        'CREATE INDEX idx_guides_city ON digital_nomad_guides(city_id)');
+        'CREATE INDEX idx_guides_city ON digital_nomad_guides(user_id, city_id)');
 
-    print('Database created successfully');
+    log('Database created successfully');
   }
 
   /// 升级数据库
@@ -380,17 +419,17 @@ class DatabaseService {
         if (!hasRegion) {
           // 添加 region 列
           await db.execute('ALTER TABLE cities ADD COLUMN region TEXT');
-          print('✅ 已添加 cities.region 字段');
+          log('✅ 已添加 cities.region 字段');
         }
       } catch (e) {
-        print('⚠️ 升级数据库时出错: $e');
+        log('⚠️ 升级数据库时出错: $e');
       }
     }
 
     if (oldVersion < 3 && newVersion >= 3) {
       // 版本 2 -> 3: 添加酒店相关表
       try {
-        print('🏨 开始添加酒店相关表...');
+        log('🏨 开始添加酒店相关表...');
 
         // 酒店表
         await db.execute('''
@@ -481,16 +520,16 @@ class DatabaseService {
         await db.execute(
             'CREATE INDEX IF NOT EXISTS idx_hotel_bookings_hotel_id ON hotel_bookings (hotel_id)');
 
-        print('✅ 酒店相关表创建完成');
+        log('✅ 酒店相关表创建完成');
       } catch (e) {
-        print('⚠️ 创建酒店表时出错: $e');
+        log('⚠️ 创建酒店表时出错: $e');
       }
     }
 
     if (oldVersion < 4 && newVersion >= 4) {
       // 版本 3 -> 4: 添加 tokens 表
       try {
-        print('🔑 开始添加 tokens 表...');
+        log('🔑 开始添加 tokens 表...');
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS tokens (
@@ -500,6 +539,7 @@ class DatabaseService {
             refresh_token TEXT NOT NULL,
             token_type TEXT NOT NULL,
             expires_in INTEGER NOT NULL,
+            expires_at TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
           )
@@ -508,16 +548,16 @@ class DatabaseService {
         await db.execute(
             'CREATE INDEX IF NOT EXISTS idx_tokens_user ON tokens(user_id)');
 
-        print('✅ tokens 表创建完成');
+        log('✅ tokens 表创建完成');
       } catch (e) {
-        print('⚠️ 创建 tokens 表时出错: $e');
+        log('⚠️ 创建 tokens 表时出错: $e');
       }
     }
 
     if (oldVersion < 5 && newVersion >= 5) {
       // 版本 4 -> 5: 为 tokens 表添加用户信息字段
       try {
-        print('🔑 开始为 tokens 表添加用户信息字段...');
+        log('🔑 开始为 tokens 表添加用户信息字段...');
 
         // 检查字段是否已存在
         final result = await db.rawQuery("PRAGMA table_info(tokens)");
@@ -526,54 +566,74 @@ class DatabaseService {
 
         if (!hasUserName) {
           await db.execute('ALTER TABLE tokens ADD COLUMN user_name TEXT');
-          print('✅ 添加 user_name 字段');
+          log('✅ 添加 user_name 字段');
         }
 
         if (!hasUserEmail) {
           await db.execute('ALTER TABLE tokens ADD COLUMN user_email TEXT');
-          print('✅ 添加 user_email 字段');
+          log('✅ 添加 user_email 字段');
         }
 
-        print('✅ tokens 表字段升级完成');
+        log('✅ tokens 表字段升级完成');
       } catch (e) {
-        print('⚠️ 升级 tokens 表时出错: $e');
+        log('⚠️ 升级 tokens 表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 8 && newVersion >= 8) {
+      // 版本 7 -> 8: 为 tokens 表添加 expires_at 字段
+      try {
+        log('🔑 开始为 tokens 表添加 expires_at 字段...');
+
+        final result = await db.rawQuery("PRAGMA table_info(tokens)");
+        final hasExpiresAt = result.any((col) => col['name'] == 'expires_at');
+
+        if (!hasExpiresAt) {
+          await db.execute('ALTER TABLE tokens ADD COLUMN expires_at TEXT');
+          log('✅ 添加 expires_at 字段');
+        }
+
+        log('✅ tokens 表 expires_at 字段检查完成');
+      } catch (e) {
+        log('⚠️ 升级 tokens 表的 expires_at 字段时出错: $e');
       }
     }
 
     if (oldVersion < 6 && newVersion >= 6) {
       // 版本 5 -> 6: 添加数字游民指南表
       try {
-        print('📖 开始添加数字游民指南表...');
+        log('📖 开始添加数字游民指南表...');
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS digital_nomad_guides (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            city_id TEXT NOT NULL UNIQUE,
+            city_id TEXT PRIMARY KEY,
             city_name TEXT NOT NULL,
-            overview TEXT,
-            best_areas TEXT,
-            visa_info TEXT,
-            workspace_recommendations TEXT,
-            tips TEXT,
-            essential_info TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
+            overview TEXT NOT NULL,
+            visa_info TEXT NOT NULL,
+            best_areas TEXT NOT NULL,
+            workspace_recommendations TEXT NOT NULL,
+            tips TEXT NOT NULL,
+            essential_info TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
           )
         ''');
 
         await db.execute(
-            'CREATE INDEX IF NOT EXISTS idx_guides_city ON digital_nomad_guides(city_id)');
+            'CREATE INDEX IF NOT EXISTS idx_guides_city_id ON digital_nomad_guides(city_id)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_guides_updated_at ON digital_nomad_guides(updated_at DESC)');
 
-        print('✅ 数字游民指南表创建完成');
+        log('✅ 数字游民指南表创建完成');
       } catch (e) {
-        print('⚠️ 创建数字游民指南表时出错: $e');
+        log('⚠️ 创建数字游民指南表时出错: $e');
       }
     }
 
     // 版本 6 -> 7: 添加后台任务表
     if (oldVersion < 7) {
       try {
-        print('📋 开始添加后台任务表...');
+        log('📋 开始添加后台任务表...');
 
         await db.execute('''
           CREATE TABLE IF NOT EXISTS background_tasks (
@@ -593,9 +653,163 @@ class DatabaseService {
         await db.execute(
             'CREATE INDEX IF NOT EXISTS idx_tasks_status ON background_tasks(status)');
 
-        print('✅ 后台任务表创建完成');
+        log('✅ 后台任务表创建完成');
       } catch (e) {
-        print('⚠️ 创建后台任务表时出错: $e');
+        log('⚠️ 创建后台任务表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 9 && newVersion >= 9) {
+      // 版本 8 -> 9: 重建 users 表，将 id 从 INTEGER 改为 TEXT 以支持 UUID
+      try {
+        log('👤 开始迁移 users 表...');
+
+        // 1. 备份现有数据
+        final existingUsers = await db.query('users');
+
+        // 2. 删除旧表
+        await db.execute('DROP TABLE IF EXISTS users');
+
+        // 3. 创建新表（id 为 TEXT）
+        await db.execute('''
+          CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            phone TEXT UNIQUE,
+            password TEXT,
+            nickname TEXT,
+            avatar TEXT,
+            email TEXT,
+            bio TEXT,
+            city TEXT,
+            country TEXT,
+            occupation TEXT,
+            skills TEXT,
+            interests TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
+        ''');
+
+        // 4. 如果有旧数据，尝试迁移（注意：INTEGER id 无法直接转换为 UUID）
+        if (existingUsers.isNotEmpty) {
+          log('⚠️ 检测到 ${existingUsers.length} 个旧用户记录，但无法迁移（ID 类型不兼容）');
+          log('ℹ️ 用户需要重新登录以创建新的用户记录');
+        }
+
+        log('✅ users 表迁移完成');
+      } catch (e) {
+        log('⚠️ 迁移 users 表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 10 && newVersion >= 10) {
+      // 版本 9 -> 10: 增强聊天消息表，支持持久化和搜索
+      try {
+        log('💬 开始升级聊天相关表...');
+
+        // 备份现有消息（仅用于日志记录，新表结构不兼容旧数据）
+        try {
+          final existingCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM chat_messages'));
+          if (existingCount != null && existingCount > 0) {
+            log('ℹ️ 旧的 chat_messages 表有 $existingCount 条记录，将被清除（表结构不兼容）');
+          }
+        } catch (e) {
+          log('ℹ️ 旧的 chat_messages 表不存在或为空');
+        }
+
+        // 删除旧表
+        await db.execute('DROP TABLE IF EXISTS chat_messages');
+
+        // 创建新的聊天消息表
+        await db.execute('''
+          CREATE TABLE chat_messages (
+            id TEXT PRIMARY KEY,
+            room_id TEXT NOT NULL,
+            sender_id TEXT NOT NULL,
+            sender_name TEXT NOT NULL,
+            sender_avatar TEXT,
+            message TEXT NOT NULL,
+            message_type TEXT DEFAULT 'text',
+            reply_to_id TEXT,
+            reply_to_message TEXT,
+            reply_to_user_name TEXT,
+            mentions TEXT,
+            attachment_json TEXT,
+            timestamp TEXT NOT NULL,
+            is_synced INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL
+          )
+        ''');
+
+        // 创建聊天消息索引
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_room_id ON chat_messages(room_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_timestamp ON chat_messages(timestamp DESC)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_id ON chat_messages(sender_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_messages_message ON chat_messages(message)');
+
+        // 创建聊天室缓存表
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS chat_rooms (
+            id TEXT PRIMARY KEY,
+            room_type TEXT NOT NULL,
+            city TEXT,
+            country TEXT,
+            meetup_id TEXT,
+            meetup_title TEXT,
+            online_users INTEGER DEFAULT 0,
+            total_members INTEGER DEFAULT 0,
+            last_message_id TEXT,
+            last_message_content TEXT,
+            last_message_time TEXT,
+            last_message_sender TEXT,
+            updated_at TEXT NOT NULL,
+            created_at TEXT NOT NULL
+          )
+        ''');
+
+        // 创建聊天室索引
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_rooms_room_type ON chat_rooms(room_type)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_rooms_updated_at ON chat_rooms(updated_at DESC)');
+
+        log('✅ 聊天相关表升级完成');
+      } catch (e) {
+        log('⚠️ 升级聊天表时出错: $e');
+      }
+    }
+
+    if (oldVersion < 11 && newVersion >= 11) {
+      // 版本 10 -> 11: 数字游民指南表增加 user_id，支持按用户区分数据
+      try {
+        log('📖 开始升级数字游民指南表，增加 user_id 支持...');
+
+        // 删除旧表并重建（旧的缓存数据可以从后端重新获取）
+        await db.execute('DROP TABLE IF EXISTS digital_nomad_guides');
+
+        await db.execute('''
+          CREATE TABLE digital_nomad_guides (
+            user_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+            city_id TEXT NOT NULL,
+            city_name TEXT NOT NULL,
+            overview TEXT NOT NULL,
+            visa_info TEXT NOT NULL,
+            best_areas TEXT NOT NULL,
+            workspace_recommendations TEXT NOT NULL,
+            tips TEXT NOT NULL,
+            essential_info TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL,
+            PRIMARY KEY (user_id, city_id)
+          )
+        ''');
+
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_guides_user_city ON digital_nomad_guides(user_id, city_id)');
+        await db.execute(
+            'CREATE INDEX IF NOT EXISTS idx_guides_updated_at ON digital_nomad_guides(updated_at DESC)');
+
+        log('✅ 数字游民指南表升级完成');
+      } catch (e) {
+        log('⚠️ 升级数字游民指南表时出错: $e');
       }
     }
   }
@@ -621,7 +835,7 @@ class DatabaseService {
       await txn.delete('cities');
       await txn.delete('users');
     });
-    print('All data cleared');
+    log('All data cleared');
   }
 
   /// 删除数据库文件
@@ -630,7 +844,7 @@ class DatabaseService {
     String path = join(documentsDirectory.path, 'df_admin.db');
     await databaseFactory.deleteDatabase(path);
     _database = null;
-    print('Database deleted');
+    log('Database deleted');
   }
 
   // ==================== 数字游民指南相关方法 ====================
@@ -667,9 +881,9 @@ class DatabaseService {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-      print('✅ Guide 已保存到 SQLite: cityId=${guideData['city_id']}');
+      log('✅ Guide 已保存到 SQLite: cityId=${guideData['city_id']}');
     } catch (e) {
-      print('❌ 保存 Guide 失败: $e');
+      log('❌ 保存 Guide 失败: $e');
       rethrow;
     }
   }
@@ -687,7 +901,7 @@ class DatabaseService {
       );
 
       if (results.isEmpty) {
-        print('ℹ️ SQLite 中未找到 Guide: cityId=$cityId');
+        log('ℹ️ SQLite 中未找到 Guide: cityId=$cityId');
         return null;
       }
 
@@ -707,10 +921,10 @@ class DatabaseService {
             _deserializeStringMap(row['essential_info'] as String?),
       };
 
-      print('✅ 从 SQLite 加载 Guide: cityId=$cityId');
+      log('✅ 从 SQLite 加载 Guide: cityId=$cityId');
       return guideJson;
     } catch (e) {
-      print('❌ 加载 Guide 失败: $e');
+      log('❌ 加载 Guide 失败: $e');
       return null;
     }
   }
@@ -726,9 +940,9 @@ class DatabaseService {
         whereArgs: [cityId],
       );
 
-      print('✅ Guide 已删除: cityId=$cityId');
+      log('✅ Guide 已删除: cityId=$cityId');
     } catch (e) {
-      print('❌ 删除 Guide 失败: $e');
+      log('❌ 删除 Guide 失败: $e');
     }
   }
 
@@ -751,7 +965,7 @@ class DatabaseService {
     try {
       return jsonDecode(json) as List<dynamic>;
     } catch (e) {
-      print('❌ 反序列化 List 失败: $e');
+      log('❌ 反序列化 List 失败: $e');
       return [];
     }
   }
@@ -761,7 +975,7 @@ class DatabaseService {
     try {
       return jsonDecode(json) as Map<String, dynamic>;
     } catch (e) {
-      print('❌ 反序列化 Map 失败: $e');
+      log('❌ 反序列化 Map 失败: $e');
       return {};
     }
   }
@@ -772,7 +986,7 @@ class DatabaseService {
       final list = jsonDecode(json) as List<dynamic>;
       return list.map((e) => e.toString()).toList();
     } catch (e) {
-      print('❌ 反序列化 String List 失败: $e');
+      log('❌ 反序列化 String List 失败: $e');
       return [];
     }
   }
@@ -783,7 +997,7 @@ class DatabaseService {
       final map = jsonDecode(json) as Map<String, dynamic>;
       return map.map((k, v) => MapEntry(k, v.toString()));
     } catch (e) {
-      print('❌ 反序列化 String Map 失败: $e');
+      log('❌ 反序列化 String Map 失败: $e');
       return {};
     }
   }
@@ -808,9 +1022,9 @@ class DatabaseService {
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      print('💾 后台任务已保存: ${taskData['id']}');
+      log('💾 后台任务已保存: ${taskData['id']}');
     } catch (e) {
-      print('❌ 保存后台任务失败: $e');
+      log('❌ 保存后台任务失败: $e');
     }
   }
 
@@ -825,9 +1039,9 @@ class DatabaseService {
         where: 'id = ?',
         whereArgs: [taskId],
       );
-      print('✅ 后台任务已更新: $taskId');
+      log('✅ 后台任务已更新: $taskId');
     } catch (e) {
-      print('❌ 更新后台任务失败: $e');
+      log('❌ 更新后台任务失败: $e');
     }
   }
 
@@ -841,10 +1055,10 @@ class DatabaseService {
         whereArgs: ['running'],
         orderBy: 'created_at DESC',
       );
-      print('📋 加载到 ${tasks.length} 个未完成的后台任务');
+      log('📋 加载到 ${tasks.length} 个未完成的后台任务');
       return tasks;
     } catch (e) {
-      print('❌ 加载后台任务失败: $e');
+      log('❌ 加载后台任务失败: $e');
       return [];
     }
   }
@@ -858,9 +1072,9 @@ class DatabaseService {
         where: 'id = ?',
         whereArgs: [taskId],
       );
-      print('🗑️ 后台任务已删除: $taskId');
+      log('🗑️ 后台任务已删除: $taskId');
     } catch (e) {
-      print('❌ 删除后台任务失败: $e');
+      log('❌ 删除后台任务失败: $e');
     }
   }
 
@@ -875,9 +1089,9 @@ class DatabaseService {
         where: 'status IN (?, ?) AND created_at < ?',
         whereArgs: ['completed', 'failed', sevenDaysAgo],
       );
-      print('🧹 旧的后台任务已清理');
+      log('🧹 旧的后台任务已清理');
     } catch (e) {
-      print('❌ 清理旧任务失败: $e');
+      log('❌ 清理旧任务失败: $e');
     }
   }
 }

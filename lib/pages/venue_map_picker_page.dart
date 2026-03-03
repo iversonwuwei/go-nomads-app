@@ -1,195 +1,252 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/services/amap_poi_service.dart';
+import 'package:go_nomads_app/services/location_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
-
-/// Venue地图选择器页�?
-///
-/// 显示地图并展示餐厅、Coworking和酒店的锚点
-/// 用户可以点击选择一个地点作为Meet Up的Venue
+/// Flutter-map implementation of the venue picker used by the meetup form.
 class VenueMapPickerPage extends StatefulWidget {
   final String? cityName;
 
-  const VenueMapPickerPage({
-    super.key,
-    this.cityName,
-  });
+  const VenueMapPickerPage({super.key, this.cityName});
 
   @override
   State<VenueMapPickerPage> createState() => _VenueMapPickerPageState();
 }
 
 class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
-  String _selectedFilter = 'All'; // All, Restaurants, Coworking, Hotels
-  String? _selectedVenue;
-  int _mapViewId = 0;
+  // 高德地图瓦片 - 使用多个服务器提高加载速度
+  static const _tileUrl =
+      'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}';
+  static const _subdomains = ['1', '2', '3', '4'];
 
-  // 模拟POI数据(实际应该从后端获�?
-  final List<Map<String, dynamic>> _venues = [
-    // 餐厅
-    {
-      'name': 'Thip Samai',
-      'type': 'Restaurant',
-      'address': '313 Maha Chai Rd, Samran Rat',
-      'rating': 4.5,
-      'latitude': 13.7563,
-      'longitude': 100.5018,
-      'priceRange': '\$\$',
-    },
-    {
-      'name': 'Jay Fai',
-      'type': 'Restaurant',
-      'address': '327 Maha Chai Rd, Samran Rat',
-      'rating': 4.7,
-      'latitude': 13.7573,
-      'longitude': 100.5028,
-      'priceRange': '\$\$\$',
-    },
-    {
-      'name': 'Som Tam Nua',
-      'type': 'Restaurant',
-      'address': '392/14 Siam Square Soi 5',
-      'rating': 4.3,
-      'latitude': 13.7453,
-      'longitude': 100.5318,
-      'priceRange': '\$',
-    },
+  // POI 数据
+  Map<String, List<PoiResult>> _poiData = {};
+  bool _isLoadingPoi = false;
 
-    // Coworking Spaces
-    {
-      'name': 'Hubba Coworking',
-      'type': 'Coworking',
-      'address': '8 Sukhumvit 33 Alley, Khlong Tan',
-      'rating': 4.6,
-      'latitude': 13.7297,
-      'longitude': 100.5650,
-      'priceRange': '\$150/month',
-    },
-    {
-      'name': 'AIS D.C.',
-      'type': 'Coworking',
-      'address': '23 Phaya Thai Rd, Pathum Wan',
-      'rating': 4.4,
-      'latitude': 13.7465,
-      'longitude': 100.5329,
-      'priceRange': '\$100/month',
-    },
-    {
-      'name': 'The Hive',
-      'type': 'Coworking',
-      'address': 'Thonglor, Sukhumvit 55',
-      'rating': 4.5,
-      'latitude': 13.7308,
-      'longitude': 100.5850,
-      'priceRange': '\$200/month',
-    },
+  // 用户位置
+  LatLng? _userLocation;
+  // ignore: unused_field - 留待后续实现位置加载状态
+  bool _isLoadingLocation = true;
+  String? _currentCityName;
 
-    // 酒店
-    {
-      'name': 'Mandarin Oriental',
-      'type': 'Hotel',
-      'address': '48 Oriental Avenue, Bang Rak',
-      'rating': 4.8,
-      'latitude': 13.7243,
-      'longitude': 100.5157,
-      'priceRange': '\$\$\$\$',
-    },
-    {
-      'name': 'The Peninsula',
-      'type': 'Hotel',
-      'address': '333 Charoennakorn Rd, Khlong San',
-      'rating': 4.7,
-      'latitude': 13.7210,
-      'longitude': 100.5089,
-      'priceRange': '\$\$\$\$',
-    },
-    {
-      'name': 'Lub d Bangkok',
-      'type': 'Hotel',
-      'address': '4 Decho Rd, Si Lom, Bang Rak',
-      'rating': 4.2,
-      'latitude': 13.7238,
-      'longitude': 100.5265,
-      'priceRange': '\$\$',
-    },
+  final MapController _mapController = MapController();
+  final ScrollController _listScrollController = ScrollController();
+  late LatLng _initialCenter;
+  String _selectedFilter = 'All';
+  String? _selectedVenueName;
+
+  // 是否只显示选中项（从地图点击触发）
+  bool _showOnlySelected = false;
+
+  // 地图是否已初始化（位置已获取）
+  bool _isInitialized = false;
+
+  // ========== 测试模式开关 ==========
+  // 设置为 true 使用测试坐标，false 使用真实定位
+  static const bool _useTestLocation = true;
+
+  // 测试坐标列表（可切换不同城市测试）
+  static const List<Map<String, dynamic>> _testLocations = [
+    {'name': '上海 - 陆家嘴', 'lat': 31.2397, 'lng': 121.4998},
+    {'name': '北京 - 王府井', 'lat': 39.9139, 'lng': 116.4120},
+    {'name': '广州 - 天河', 'lat': 23.1291, 'lng': 113.2644},
+    {'name': '深圳 - 福田', 'lat': 22.5431, 'lng': 114.0579},
+    {'name': '杭州 - 西湖', 'lat': 30.2590, 'lng': 120.1290},
+    {'name': '成都 - 春熙路', 'lat': 30.6571, 'lng': 104.0668},
   ];
-
-  List<Map<String, dynamic>> get _filteredVenues {
-    if (_selectedFilter == 'All') return _venues;
-    return _venues
-        .where((v) => v['type'] == _selectedFilter.replaceAll('s', ''))
-        .toList();
-  }
-
-  Color _getMarkerColor(String type) {
-    switch (type) {
-      case 'Restaurant':
-        return const Color(0xFFFF4458);
-      case 'Coworking':
-        return const Color(0xFF4A90E2);
-      case 'Hotel':
-        return const Color(0xFF50C878);
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getMarkerIcon(String type) {
-    switch (type) {
-      case 'Restaurant':
-        return Icons.restaurant;
-      case 'Coworking':
-        return Icons.work;
-      case 'Hotel':
-        return Icons.hotel;
-      default:
-        return Icons.place;
-    }
-  }
+  // 选择测试位置索引 (0-5)
+  static const int _testLocationIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _mapViewId = DateTime.now().millisecondsSinceEpoch;
-    print('🗺️ VenueMapPicker: 初始化地图, viewId: $_mapViewId');
+    _initialCenter = const LatLng(13.7563, 100.5018); // 默认曼谷
+    // 延迟初始化，等待地图渲染完成
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeLocation();
+    });
   }
 
   @override
   void dispose() {
-    print('🗑️ VenueMapPicker: 销毁地图');
+    _listScrollController.dispose();
     super.dispose();
   }
 
-  void _selectVenue(Map<String, dynamic> venue) {
+  /// 初始化：获取用户位置并加载周边 POI
+  Future<void> _initializeLocation() async {
+    setState(() => _isLoadingLocation = true);
+
+    try {
+      double lat, lng;
+
+      if (_useTestLocation) {
+        // 使用测试坐标
+        final testLoc = _testLocations[_testLocationIndex];
+        lat = testLoc['lat'] as double;
+        lng = testLoc['lng'] as double;
+        _currentCityName = (testLoc['name'] as String).split(' - ').first;
+        debugPrint('📍 使用测试位置: ${testLoc['name']} ($lat, $lng)');
+      } else {
+        // 使用真实定位
+        final locationService = Get.find<LocationService>();
+        final position = await locationService.getCurrentLocation();
+        if (position == null) {
+          debugPrint('❌ 无法获取位置');
+          // 即使获取失败也标记为已初始化，使用默认位置
+          if (mounted) {
+            setState(() {
+              _isInitialized = true;
+              _isLoadingLocation = false;
+            });
+          }
+          return;
+        }
+        lat = position.latitude;
+        lng = position.longitude;
+      }
+
+      if (mounted) {
+        final userLatLng = LatLng(lat, lng);
+        setState(() {
+          _userLocation = userLatLng;
+          _initialCenter = userLatLng;
+          _isInitialized = true;
+        });
+        // 加载周边 POI（不阻塞）
+        _loadNearbyPoi(lat, lng);
+      }
+    } catch (e) {
+      debugPrint('❌ 获取位置失败: $e');
+      // 即使出错也标记为已初始化
+      if (mounted) {
+        setState(() => _isInitialized = true);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  /// 加载周边 POI
+  Future<void> _loadNearbyPoi(double lat, double lng) async {
+    setState(() => _isLoadingPoi = true);
+    debugPrint('🚀 开始加载周边 POI: lat=$lat, lng=$lng');
+
+    try {
+      final results = await AmapPoiService.instance.searchAllTypes(
+        latitude: lat,
+        longitude: lng,
+        radius: 3000,
+        limitPerType: 15,
+      );
+
+      debugPrint('📊 POI 加载结果:');
+      results.forEach((type, list) {
+        debugPrint('   - $type: ${list.length} 个');
+      });
+
+      if (mounted) setState(() => _poiData = results);
+    } catch (e) {
+      debugPrint('❌ 加载 POI 失败: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingPoi = false);
+    }
+  }
+
+  /// 获取筛选后的 POI 列表
+  List<PoiResult> get _filteredVenues {
+    if (_selectedFilter == 'All') {
+      return _poiData.values.expand((list) => list).toList();
+    }
+    return _poiData[_selectedFilter] ?? [];
+  }
+
+  void _onFilterChanged(String filter) {
+    if (_selectedFilter == filter) return;
     setState(() {
-      _selectedVenue = venue['name'];
+      _selectedFilter = filter;
+      _selectedVenueName = null;
     });
+  }
+
+  void _selectVenue(PoiResult venue, {bool moveCamera = true, bool fromMap = false}) {
+    setState(() {
+      _selectedVenueName = venue.name;
+      // 从地图点击时，只显示选中项
+      if (fromMap) {
+        _showOnlySelected = true;
+      }
+    });
+    if (moveCamera) {
+      _mapController.move(LatLng(venue.latitude, venue.longitude), 15);
+    }
+  }
+
+  /// 显示全部列表
+  void _showAllVenues() {
+    setState(() => _showOnlySelected = false);
   }
 
   void _confirmSelection() {
     final l10n = AppLocalizations.of(context)!;
-    if (_selectedVenue == null) {
-      AppToast.warning(
-        l10n.pleaseSelectVenue,
-        title: l10n.noSelection,
-      );
+    final name = _selectedVenueName;
+    if (name == null) {
+      AppToast.warning(l10n.pleaseSelectVenue, title: l10n.noSelection);
       return;
     }
+    final venues = _filteredVenues;
+    final venue = venues.firstWhereOrNull((v) => v.name == name);
+    if (venue == null) return;
 
-    final venue = _venues.firstWhere((v) => v['name'] == _selectedVenue);
     Get.back(result: {
-      'name': venue['name'],
-      'address': venue['address'],
-      'type': venue['type'],
-      'latitude': venue['latitude'],
-      'longitude': venue['longitude'],
+      'name': venue.name,
+      'address': venue.address,
+      'type': venue.typeName,
+      'latitude': venue.latitude,
+      'longitude': venue.longitude,
     });
+  }
+
+  Color _markerColor(String type) {
+    switch (type) {
+      case 'restaurant':
+        return const Color(0xFFFF6B6B);
+      case 'cafe':
+        return const Color(0xFF8B4513);
+      case 'hotel':
+        return const Color(0xFF8338EC);
+      case 'shopping':
+        return const Color(0xFFFF9500);
+      case 'attraction':
+        return const Color(0xFF34C759);
+      default:
+        return const Color(0xFFFF4458);
+    }
+  }
+
+  IconData _markerIcon(String type) {
+    switch (type) {
+      case 'restaurant':
+        return FontAwesomeIcons.utensils;
+      case 'cafe':
+        return FontAwesomeIcons.mugHot;
+      case 'hotel':
+        return FontAwesomeIcons.hotel;
+      case 'shopping':
+        return FontAwesomeIcons.bagShopping;
+      case 'attraction':
+        return FontAwesomeIcons.mountain;
+      default:
+        return FontAwesomeIcons.locationDot;
+    }
   }
 
   @override
@@ -200,16 +257,12 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
-              color: AppColors.backButtonDark),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: AppColors.backButtonDark),
         title: Text(
           l10n.selectVenue,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black,
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -218,54 +271,50 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
             onPressed: _confirmSelection,
             child: Text(
               l10n.confirm,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Color(0xFFFF4458),
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 过滤�?
-            _buildFilterChips(),
-
-            // 地图视图 - 固定高度
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.4,
-              child: _buildMapPlaceholder(),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFilterChips(l10n),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.4,
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: _buildMap(l10n),
             ),
-
-            // Venue列表 - 不使用Expanded,让它根据内容自适应高度
-            _buildVenueList(),
-          ],
-        ),
+          ),
+          Expanded(child: _buildVenueList(l10n)),
+        ],
       ),
     );
   }
 
-  Widget _buildFilterChips() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildFilterChips(AppLocalizations l10n) {
     final filters = [
-      {'key': 'All', 'label': l10n.all},
-      {'key': 'Restaurants', 'label': l10n.restaurants},
-      {'key': 'Coworking', 'label': 'Coworking'},
-      {'key': 'Hotels', 'label': l10n.hotels},
+      {'key': 'All', 'label': l10n.all, 'icon': FontAwesomeIcons.layerGroup},
+      {'key': 'hotel', 'label': l10n.hotels, 'icon': FontAwesomeIcons.hotel},
+      {'key': 'cafe', 'label': 'Cafes', 'icon': FontAwesomeIcons.mugHot},
+      {'key': 'restaurant', 'label': l10n.restaurants, 'icon': FontAwesomeIcons.utensils},
+      {'key': 'shopping', 'label': 'Shopping', 'icon': FontAwesomeIcons.bagShopping},
+      {'key': 'attraction', 'label': 'Attractions', 'icon': FontAwesomeIcons.mountain},
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -276,15 +325,12 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
           children: filters.map((filter) {
             final isSelected = _selectedFilter == filter['key'];
             return Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: EdgeInsets.only(right: 8.w),
               child: FilterChip(
-                label: Text(filter['label']!),
+                avatar: Icon(filter['icon'] as IconData, size: 14.r),
+                label: Text(filter['label'] as String),
                 selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedFilter = filter['key']!;
-                  });
-                },
+                onSelected: (_) => _onFilterChanged(filter['key'] as String),
                 backgroundColor: Colors.white,
                 selectedColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
                 labelStyle: TextStyle(
@@ -292,8 +338,7 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
                 side: BorderSide(
-                  color:
-                      isSelected ? const Color(0xFFFF4458) : Colors.grey[300]!,
+                  color: isSelected ? const Color(0xFFFF4458) : Colors.grey[300]!,
                 ),
               ),
             );
@@ -303,127 +348,205 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     );
   }
 
-  Widget _buildMapPlaceholder() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          // 真实的高德地�?- 让原生组件自己处理所有手�?
-          PlatformViewLink(
-            viewType: 'amap_city_view',
-            surfaceFactory: (context, controller) {
-              return AndroidViewSurface(
-                controller: controller as AndroidViewController,
-                gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                  // ScaleGestureRecognizer 包含了平移和缩放功能
-                  Factory<ScaleGestureRecognizer>(
-                    () => ScaleGestureRecognizer(),
+  Widget _buildMap(AppLocalizations l10n) {
+    // 还未初始化时显示加载指示器
+    if (!_isInitialized) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          color: Colors.grey[200],
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(color: Color(0xFFFF4458)),
+                SizedBox(height: 16.h),
+                Text(
+                  '${l10n.loading}...',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
                   ),
-                  Factory<TapGestureRecognizer>(
-                    () => TapGestureRecognizer(),
-                  ),
-                },
-                hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-              );
-            },
-            onCreatePlatformView: (params) {
-              return PlatformViewsService.initSurfaceAndroidView(
-                id: params.id,
-                viewType: 'amap_city_view',
-                layoutDirection: TextDirection.ltr,
-                creationParams: {
-                  'cityName': widget.cityName ?? 'Bangkok',
-                  'viewId': _mapViewId,
-                },
-                creationParamsCodec: const StandardMessageCodec(),
-                onFocus: () {
-                  params.onFocusChanged(true);
-                },
-              )
-                ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-                ..create();
-            },
-          ),
-
-          // 顶部遮罩显示城市信息
-          Positioned(
-            top: 12,
-            left: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.location_city,
-                    size: 16,
-                    color: Colors.grey[700],
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    widget.cityName ?? 'Bangkok',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+        ),
+      );
+    }
 
-          // 地图类型指示�?
+    final venues = _filteredVenues;
+
+    // POI 标记
+    final markers = venues.map((venue) {
+      final venueLatLng = LatLng(venue.latitude, venue.longitude);
+      final isSelected = venue.name == _selectedVenueName;
+      return Marker(
+        width: 50.w,
+        height: 50.h,
+        point: venueLatLng,
+        alignment: Alignment.topCenter,
+        child: GestureDetector(
+          onTap: () => _selectVenue(venue, moveCamera: false, fromMap: true),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _markerIcon(venue.type),
+                color: _markerColor(venue.type),
+                size: isSelected ? 24 : 20,
+              ),
+              Icon(
+                FontAwesomeIcons.locationDot,
+                color: isSelected ? _markerColor(venue.type) : Colors.grey[700],
+                size: isSelected ? 24 : 20,
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+
+    // 用户位置标记
+    if (_userLocation != null) {
+      markers.add(Marker(
+        width: 40.w,
+        height: 40.h,
+        point: _userLocation!,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.3),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Icon(FontAwesomeIcons.locationCrosshairs, color: Colors.blue, size: 20.r),
+          ),
+        ),
+      ));
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12.r),
+      child: Stack(
+        children: [
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: _initialCenter,
+              initialZoom: 14,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+              ),
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: _tileUrl,
+                subdomains: _subdomains,
+                userAgentPackageName: 'df_admin_mobile',
+                tileProvider: NetworkTileProvider(),
+              ),
+              MarkerLayer(markers: markers),
+            ],
+          ),
           Positioned(
-            bottom: 12,
-            right: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(6),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.layers_outlined,
-                    size: 14,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${_filteredVenues.length} ${AppLocalizations.of(context)!.venues}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+            top: 12.h,
+            left: 12.w,
+            child: _mapBadge(
+              icon: FontAwesomeIcons.city,
+              text: _currentCityName ?? widget.cityName ?? l10n.currentLocation,
+            ),
+          ),
+          // 缩放控制按钮
+          Positioned(
+            top: 12.h,
+            right: 12.w,
+            child: Column(
+              children: [
+                _zoomButton(
+                  icon: FontAwesomeIcons.plus,
+                  onTap: () {
+                    final currentZoom = _mapController.camera.zoom;
+                    if (currentZoom < 18) {
+                      _mapController.move(_mapController.camera.center, currentZoom + 1);
+                    }
+                  },
+                ),
+                SizedBox(height: 8.h),
+                _zoomButton(
+                  icon: FontAwesomeIcons.minus,
+                  onTap: () {
+                    final currentZoom = _mapController.camera.zoom;
+                    if (currentZoom > 3) {
+                      _mapController.move(_mapController.camera.center, currentZoom - 1);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 12.h,
+            right: 12.w,
+            child: _isLoadingPoi
+                ? _mapBadge(icon: FontAwesomeIcons.spinner, text: l10n.loading)
+                : _mapBadge(icon: FontAwesomeIcons.layerGroup, text: '${venues.length} ${l10n.venues}'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 缩放按钮
+  Widget _zoomButton({required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36.w,
+        height: 36.h,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 4.r,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Icon(icon, size: 16.r, color: Colors.grey[700]),
+        ),
+      ),
+    );
+  }
+
+  Widget _mapBadge({required IconData icon, required String text}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(8.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4.r,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16.r, color: Colors.grey[700]),
+          SizedBox(width: 6.w),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
             ),
           ),
         ],
@@ -431,173 +554,209 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
     );
   }
 
-  Widget _buildVenueList() {
+  Widget _buildVenueList(AppLocalizations l10n) {
+    final allVenues = _filteredVenues;
+    final selectedName = _selectedVenueName;
+
+    // 获取选中的场地
+    final selectedVenue = selectedName != null ? allVenues.firstWhereOrNull((v) => v.name == selectedName) : null;
+
+    // 如果只显示选中项且有选中的场地
+    final displayVenues = (_showOnlySelected && selectedVenue != null) ? [selectedVenue] : allVenues;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // 拖拽指示�?
           Center(
             child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              width: 40,
-              height: 4,
+              margin: EdgeInsets.symmetric(vertical: 12.h),
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
           ),
-
-          // 标题
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              '${_filteredVenues.length} Venues',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Row(
+              children: [
+                if (_showOnlySelected && selectedVenue != null) ...[
+                  // 显示"返回列表"按钮
+                  GestureDetector(
+                    onTap: _showAllVenues,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(FontAwesomeIcons.chevronLeft, size: 12.r, color: Colors.grey[700]),
+                          SizedBox(width: 6.w),
+                          Text(
+                            '${l10n.all} (${allVenues.length})',
+                            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  Text(
+                    '${allVenues.length} ${l10n.venues}',
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
+                  ),
+                ],
+                if (_isLoadingPoi) ...[
+                  SizedBox(width: 8.w),
+                  SizedBox(width: 16.w, height: 16.h, child: CircularProgressIndicator(strokeWidth: 2)),
+                ],
+              ],
             ),
           ),
-
-          const SizedBox(height: 12),
-
-          // Venue列表 - 使用 ListView.builder 配合 shrinkWrap �?NeverScrollableScrollPhysics
-          ListView.builder(
-            shrinkWrap: true, // �?ListView 根据内容自适应高度
-            physics:
-                const NeverScrollableScrollPhysics(), // 禁用 ListView 自己的滚�?使用外层 SingleChildScrollView
-            padding: const EdgeInsets.only(
-              left: 16,
-              right: 16,
-              bottom: 16,
-            ),
-            itemCount: _filteredVenues.length,
-            itemBuilder: (context, index) {
-              final venue = _filteredVenues[index];
-              final isSelected = _selectedVenue == venue['name'];
-
-              return _buildVenueCard(venue, isSelected);
-            },
+          SizedBox(height: 12.h),
+          Expanded(
+            child: displayVenues.isEmpty
+                ? Center(child: Text(_isLoadingPoi ? l10n.loading : l10n.noData))
+                : ListView.builder(
+                    controller: _listScrollController,
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    itemCount: displayVenues.length,
+                    itemBuilder: (context, index) {
+                      final venue = displayVenues[index];
+                      final isSelected = selectedName == venue.name;
+                      return _venueCard(venue, isSelected);
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildVenueCard(Map<String, dynamic> venue, bool isSelected) {
+  Widget _venueCard(PoiResult venue, bool isSelected) {
     return GestureDetector(
       onTap: () => _selectVenue(venue),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFFFF4458).withValues(alpha: 0.05)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? const Color(0xFFFF4458).withValues(alpha: 0.15) : Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
+            width: isSelected ? 2.5 : 1,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+                    blurRadius: 12.r,
+                    spreadRadius: 1.r,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 图标
-            Container(
-              width: 48,
-              height: 48,
+            // 图标 - 选中时添加边框
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 44.w,
+              height: 44.h,
               decoration: BoxDecoration(
-                color: _getMarkerColor(venue['type']).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: isSelected
+                    ? _markerColor(venue.type).withValues(alpha: 0.2)
+                    : _markerColor(venue.type).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10.r),
+                border: isSelected ? Border.all(color: _markerColor(venue.type), width: 2) : null,
               ),
-              child: Icon(
-                _getMarkerIcon(venue['type']),
-                color: _getMarkerColor(venue['type']),
-                size: 24,
-              ),
+              child: Icon(_markerIcon(venue.type), color: _markerColor(venue.type), size: 22.r),
             ),
-
-            const SizedBox(width: 12),
-
-            // 信息
+            SizedBox(width: 12.w),
+            // 内容区域
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    venue['name'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    venue['address'],
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
+                  // 第一行：名称 + 类型标签
                   Row(
                     children: [
-                      Icon(Icons.star, size: 14, color: Colors.amber[700]),
-                      const SizedBox(width: 4),
-                      Text(
-                        venue['rating'].toString(),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: Text(
+                          venue.name,
+                          style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        venue['priceRange'],
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
+                      SizedBox(width: 8.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: _markerColor(venue.type).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        child: Text(
+                          venue.typeName,
+                          style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w600, color: _markerColor(venue.type)),
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: 6.h),
+                  // 第二行：完整地址（最多2行）
+                  Text(
+                    venue.address,
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600], height: 1.3),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 6.h),
+                  // 第三行：评分和距离
+                  Row(
+                    children: [
+                      if (venue.rating != null) ...[
+                        Icon(FontAwesomeIcons.solidStar, size: 11.r, color: Colors.amber[700]),
+                        SizedBox(width: 3.w),
+                        Text(
+                          venue.rating!.toStringAsFixed(1),
+                          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                        ),
+                        SizedBox(width: 12.w),
+                      ],
+                      if (venue.formattedDistance.isNotEmpty) ...[
+                        Icon(FontAwesomeIcons.locationArrow, size: 10.r, color: Colors.grey[500]),
+                        SizedBox(width: 4.w),
+                        Text(
+                          venue.formattedDistance,
+                          style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
-              ),
-            ),
-
-            // 类型标签
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: _getMarkerColor(venue['type']).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                venue['type'],
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: _getMarkerColor(venue['type']),
-                ),
               ),
             ),
           ],

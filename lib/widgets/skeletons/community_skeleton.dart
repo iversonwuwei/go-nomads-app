@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 社区内容骨架屏组件
 class CommunitySkeleton extends BaseSkeleton {
@@ -14,7 +15,7 @@ class _CommunitySkeletonState extends BaseSkeletonState<CommunitySkeleton> {
   @override
   Widget buildSkeleton(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       itemCount: 4,
       itemBuilder: (context, index) {
         return _buildCommunityPostCard();
@@ -24,9 +25,8 @@ class _CommunitySkeletonState extends BaseSkeletonState<CommunitySkeleton> {
 
   Widget _buildCommunityPostCard() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: EdgeInsets.only(bottom: 20.h),
       child: SkeletonCard(
-        shimmerController: shimmerController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -34,102 +34,90 @@ class _CommunitySkeletonState extends BaseSkeletonState<CommunitySkeleton> {
             Row(
               children: [
                 SkeletonCircle(
-                  shimmerController: shimmerController,
-                  size: 40,
+                  size: 40.r,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SkeletonBox(
-                        shimmerController: shimmerController,
-                        width: 120,
-                        height: 14,
+                        width: 120.w,
+                        height: 14.h,
                         borderRadius: 4,
                       ),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       SkeletonBox(
-                        shimmerController: shimmerController,
-                        width: 180,
-                        height: 12,
+                        width: 180.w,
+                        height: 12.h,
                         borderRadius: 4,
                       ),
                     ],
                   ),
                 ),
                 SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 50,
-                  height: 28,
+                  width: 50.w,
+                  height: 28.h,
                   borderRadius: 6,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 内容图片
             SkeletonBox(
-              shimmerController: shimmerController,
               width: double.infinity,
-              height: 200,
+              height: 200.h,
               borderRadius: 12,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 标题
             SkeletonBox(
-              shimmerController: shimmerController,
               width: double.infinity,
-              height: 18,
+              height: 18.h,
               borderRadius: 4,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // 内容
             SkeletonBox(
-              shimmerController: shimmerController,
               width: double.infinity,
-              height: 14,
+              height: 14.h,
               borderRadius: 4,
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             SkeletonBox(
-              shimmerController: shimmerController,
               width: double.infinity,
-              height: 14,
+              height: 14.h,
               borderRadius: 4,
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             SkeletonBox(
-              shimmerController: shimmerController,
-              width: 250,
-              height: 14,
+              width: 250.w,
+              height: 14.h,
               borderRadius: 4,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 底部统计信息
             Row(
               children: [
                 SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 60,
-                  height: 12,
+                  width: 60.w,
+                  height: 12.h,
                   borderRadius: 4,
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 60,
-                  height: 12,
+                  width: 60.w,
+                  height: 12.h,
                   borderRadius: 4,
                 ),
                 const Spacer(),
                 SkeletonBox(
-                  shimmerController: shimmerController,
-                  width: 80,
-                  height: 12,
+                  width: 80.w,
+                  height: 12.h,
                   borderRadius: 4,
                 ),
               ],

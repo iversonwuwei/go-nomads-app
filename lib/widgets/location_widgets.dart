@@ -1,8 +1,9 @@
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/location_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../controllers/location_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 位置权限请求对话框
 class LocationPermissionDialog extends StatelessWidget {
@@ -14,54 +15,54 @@ class LocationPermissionDialog extends StatelessWidget {
 
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // 图标
             Container(
-              width: 80,
-              height: 80,
+              width: 80.w,
+              height: 80.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFFF4458).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.location_on,
-                size: 40,
+              child: Icon(
+                FontAwesomeIcons.locationDot,
+                size: 40.r,
                 color: Color(0xFFFF4458),
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 标题
-            const Text(
+            Text(
               '需要位置权限',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // 描述
-            const Text(
+            Text(
               '我们需要访问您的位置信息,以便为您推荐附近的城市和提供基于位置的服务',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: AppColors.textSecondary,
                 height: 1.5,
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 按钮
             Row(
@@ -70,10 +71,10 @@ class LocationPermissionDialog extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => Get.back(),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       side: const BorderSide(color: AppColors.border),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
                     ),
                     child: const Text(
@@ -82,7 +83,7 @@ class LocationPermissionDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
@@ -91,9 +92,9 @@ class LocationPermissionDialog extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF4458),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
                     ),
                     child: const Text(
@@ -122,28 +123,28 @@ class LocationInfoWidget extends StatelessWidget {
     return Obx(() {
       if (controller.isLoading.value) {
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: AppColors.border),
           ),
-          child: const Row(
+          child: Row(
             children: [
               SizedBox(
-                width: 20,
-                height: 20,
+                width: 20.w,
+                height: 20.h,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                 ),
               ),
-              SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Text(
                 '正在获取位置...',
                 style: TextStyle(
                   color: AppColors.textSecondary,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                 ),
               ),
             ],
@@ -151,28 +152,30 @@ class LocationInfoWidget extends StatelessWidget {
         );
       }
 
-      if (!controller.hasPermission.value || controller.currentPosition.value == null) {
+      if (!controller.hasPermission.value ||
+          controller.currentPosition.value == null) {
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+                color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.location_off,
+              Icon(
+                FontAwesomeIcons.locationDot,
                 color: Color(0xFFFF4458),
-                size: 20,
+                size: 20.r,
               ),
-              const SizedBox(width: 12),
-              const Expanded(
+              SizedBox(width: 12.w),
+              Expanded(
                 child: Text(
                   '位置未启用',
                   style: TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                 ),
               ),
@@ -189,52 +192,52 @@ class LocationInfoWidget extends StatelessWidget {
       }
 
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
-              child: const Icon(
-                Icons.location_on,
+              child: Icon(
+                FontAwesomeIcons.locationDot,
                 color: Color(0xFFFF4458),
-                size: 20,
+                size: 20.r,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     controller.currentCity.value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     controller.currentCountry.value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 12,
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],
               ),
             ),
             IconButton(
-              icon: const Icon(Icons.refresh, size: 20),
+              icon: Icon(FontAwesomeIcons.arrowsRotate, size: 20.r),
               color: AppColors.textSecondary,
               onPressed: () => controller.refreshLocation(),
             ),

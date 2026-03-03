@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'base_skeleton.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 网格列表骨架屏组件（适用于图片网格等）
 class GridSkeleton extends BaseSkeleton {
@@ -21,11 +22,11 @@ class _GridSkeletonState extends BaseSkeletonState<GridSkeleton> {
   @override
   Widget buildSkeleton(BuildContext context) {
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: widget.crossAxisCount,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: 16.w,
+        mainAxisSpacing: 16.w,
         childAspectRatio: widget.childAspectRatio,
       ),
       itemCount: 6,
@@ -37,28 +38,24 @@ class _GridSkeletonState extends BaseSkeletonState<GridSkeleton> {
 
   Widget _buildGridItem() {
     return SkeletonCard(
-      shimmerController: shimmerController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SkeletonBox(
-            shimmerController: shimmerController,
             width: double.infinity,
-            height: 140,
+            height: 140.h,
             borderRadius: 12,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           SkeletonBox(
-            shimmerController: shimmerController,
             width: double.infinity,
-            height: 16,
+            height: 16.h,
             borderRadius: 4,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           SkeletonBox(
-            shimmerController: shimmerController,
-            width: 100,
-            height: 14,
+            width: 100.w,
+            height: 14.h,
             borderRadius: 4,
           ),
         ],

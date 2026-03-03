@@ -1,0 +1,37 @@
+# EditorConfig - 统一编码配置，防止中文乱码
+# https://editorconfig.org
+
+root = true
+
+# 所有文件的默认配置
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Dart 文件
+[*.dart]
+indent_size = 2
+charset = utf-8
+
+# YAML 文件
+[*.{yaml,yml}]
+indent_size = 2
+charset = utf-8
+
+# JSON 文件
+[*.json]
+indent_size = 2
+charset = utf-8
+
+# Markdown 文件
+[*.md]
+trim_trailing_whitespace = false
+charset = utf-8
+
+# Windows 批处理文件 (保持 CRLF)
+[*.{bat,cmd}]
+end_of_line = crlf

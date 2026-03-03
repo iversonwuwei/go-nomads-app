@@ -1,51 +1,32 @@
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/controllers/city_search_page_controller.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
-import '../config/app_colors.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市搜索和筛选页面
-class CitySearchPage extends StatefulWidget {
+class CitySearchPage extends StatelessWidget {
   const CitySearchPage({super.key});
 
-  @override
-  State<CitySearchPage> createState() => _CitySearchPageState();
-}
+  static const String _tag = 'CitySearchPage';
 
-class _CitySearchPageState extends State<CitySearchPage> {
-  final TextEditingController _searchController = TextEditingController();
-
-  // 筛选条件
-  String _selectedRegion = 'All';
-  RangeValues _priceRange = const RangeValues(0, 5000);
-  double _minInternetSpeed = 0;
-  String _selectedClimate = 'All';
-
-  final List<String> _regions = [
-    'All',
-    'Asia',
-    'Europe',
-    'North America',
-    'South America',
-    'Africa',
-    'Oceania',
-  ];
-
-  final List<String> _climates = [
-    'All',
-    'Tropical',
-    'Dry',
-    'Temperate',
-    'Continental',
-    'Polar',
-  ];
+  CitySearchPageController get _controller {
+    if (!Get.isRegistered<CitySearchPageController>(tag: _tag)) {
+      Get.put(CitySearchPageController(), tag: _tag);
+    }
+    return Get.find<CitySearchPageController>(tag: _tag);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final controller = _controller;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0a0a0a),
@@ -60,11 +41,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
-              color: AppColors.backButtonLight),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: AppColors.backButtonLight),
       ),
       body: CustomScrollView(
         slivers: [
@@ -75,42 +52,38 @@ class _CitySearchPageState extends State<CitySearchPage> {
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF1a1a1a),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
-                child: TextField(
-                  controller: _searchController,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                child: Obx(() => TextField(
+                  controller: controller.searchController,
+                  style: TextStyle(color: Colors.white, fontSize: 16.sp),
                   decoration: InputDecoration(
                     hintText: l10n.search,
                     hintStyle: TextStyle(
                       color: Colors.white.withValues(alpha: 0.4),
                     ),
                     prefixIcon: Icon(
-                      Icons.search,
+                      FontAwesomeIcons.magnifyingGlass,
                       color: Colors.white.withValues(alpha: 0.6),
                     ),
-                    suffixIcon: _searchController.text.isNotEmpty
+                    suffixIcon: controller.searchController.text.isNotEmpty
                         ? IconButton(
                             icon:
-                                const Icon(Icons.clear, color: Colors.white54),
-                            onPressed: () {
-                              setState(() {
-                                _searchController.clear();
-                              });
-                            },
+                                const Icon(FontAwesomeIcons.xmark, color: Colors.white54),
+                            onPressed: controller.clearSearch,
                           )
                         : null,
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 16.h,
                     ),
                   ),
-                  onChanged: (value) => setState(() {}),
-                ),
+                  onChanged: (_) {},
+                )),
               ),
             ),
           ),
@@ -120,7 +93,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
             child: Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16 : 24,
-                vertical: 8,
+                vertical: 8.h,
               ),
               child: Text(
                 l10n.filter,
@@ -144,18 +117,16 @@ class _CitySearchPageState extends State<CitySearchPage> {
                   _buildFilterSection(
                     l10n.region,
                     isMobile,
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _regions.map((region) {
-                        final isSelected = _selectedRegion == region;
+                    child: Obx(() => Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.w,
+                      children: controller.regions.map((region) {
+                        final isSelected = controller.selectedRegion.value == region;
                         return FilterChip(
                           label: Text(region),
                           selected: isSelected,
                           onSelected: (selected) {
-                            setState(() {
-                              _selectedRegion = region;
-                            });
+                            controller.setRegion(region);
                           },
                           backgroundColor: const Color(0xFF1a1a1a),
                           selectedColor: Colors.orange.withValues(alpha: 0.3),
@@ -172,95 +143,85 @@ class _CitySearchPageState extends State<CitySearchPage> {
                           ),
                         );
                       }).toList(),
-                    ),
+                    )),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // 价格范围
                   _buildFilterSection(
                     l10n.budget,
                     isMobile,
-                    child: Column(
+                    child: Obx(() => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '\$${_priceRange.start.round()} - \$${_priceRange.end.round()}',
-                          style: const TextStyle(
+                          '\$${controller.priceRange.value.start.round()} - \$${controller.priceRange.value.end.round()}',
+                          style: TextStyle(
                             color: Colors.orange,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         RangeSlider(
-                          values: _priceRange,
+                          values: controller.priceRange.value,
                           min: 0,
                           max: 5000,
                           divisions: 50,
                           activeColor: Colors.orange,
                           inactiveColor: Colors.white.withValues(alpha: 0.2),
-                          onChanged: (values) {
-                            setState(() {
-                              _priceRange = values;
-                            });
-                          },
+                          onChanged: controller.setPriceRange,
                         ),
                       ],
-                    ),
+                    )),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // 网速筛选
                   _buildFilterSection(
                     l10n.internet,
                     isMobile,
-                    child: Column(
+                    child: Obx(() => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${_minInternetSpeed.round()} Mbps',
-                          style: const TextStyle(
+                          '${controller.minInternetSpeed.value.round()} Mbps',
+                          style: TextStyle(
                             color: Colors.orange,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         Slider(
-                          value: _minInternetSpeed,
+                          value: controller.minInternetSpeed.value,
                           min: 0,
                           max: 300,
                           divisions: 30,
                           activeColor: Colors.orange,
                           inactiveColor: Colors.white.withValues(alpha: 0.2),
-                          onChanged: (value) {
-                            setState(() {
-                              _minInternetSpeed = value;
-                            });
-                          },
+                          onChanged: controller.setMinInternetSpeed,
                         ),
                       ],
-                    ),
+                    )),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // 气候筛选
                   _buildFilterSection(
                     l10n.climate,
                     isMobile,
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _climates.map((climate) {
-                        final isSelected = _selectedClimate == climate;
+                    child: Obx(() => Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.w,
+                      children: controller.climates.map((climate) {
+                        final isSelected = controller.selectedClimate.value == climate;
                         return FilterChip(
                           label: Text(climate),
                           selected: isSelected,
                           onSelected: (selected) {
-                            setState(() {
-                              _selectedClimate = climate;
-                            });
+                            controller.setClimate(climate);
                           },
                           backgroundColor: const Color(0xFF1a1a1a),
                           selectedColor: Colors.orange.withValues(alpha: 0.3),
@@ -277,10 +238,10 @@ class _CitySearchPageState extends State<CitySearchPage> {
                           ),
                         );
                       }).toList(),
-                    ),
+                    )),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // 应用筛选按钮
                   SizedBox(
@@ -301,7 +262,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                           vertical: isMobile ? 16 : 20,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       child: Text(
@@ -314,21 +275,13 @@ class _CitySearchPageState extends State<CitySearchPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // 重置按钮
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedRegion = 'All';
-                          _priceRange = const RangeValues(0, 5000);
-                          _minInternetSpeed = 0;
-                          _selectedClimate = 'All';
-                          _searchController.clear();
-                        });
-                      },
+                      onPressed: controller.resetFilters,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white70,
                         padding: EdgeInsets.symmetric(
@@ -338,7 +291,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                           color: Colors.white.withValues(alpha: 0.3),
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       child: Text(
@@ -351,7 +304,7 @@ class _CitySearchPageState extends State<CitySearchPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                 ],
               ),
             ),
@@ -377,15 +330,9 @@ class _CitySearchPageState extends State<CitySearchPage> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         child,
       ],
     );
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 }

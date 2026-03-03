@@ -1,63 +1,53 @@
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
-import '../models/user_profile_models.dart';
-import '../services/database/user_profile_dao.dart';
-import '../widgets/app_toast.dart';
+import 'package:go_nomads_app/controllers/edit_social_links_page_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+/// 社交平台常量
+class SocialPlatforms {
+  static const Map<String, Map<String, String>> platforms = {
+    'instagram': {'name': 'Instagram', 'icon': '📷'},
+    'twitter': {'name': 'Twitter', 'icon': '🐦'},
+    'facebook': {'name': 'Facebook', 'icon': '👤'},
+    'linkedin': {'name': 'LinkedIn', 'icon': '💼'},
+    'github': {'name': 'GitHub', 'icon': '💻'},
+    'youtube': {'name': 'YouTube', 'icon': '📺'},
+    'tiktok': {'name': 'TikTok', 'icon': '🎵'},
+    'wechat': {'name': 'WeChat', 'icon': '💬'},
+  };
+}
 
 /// 社交链接编辑页面
-class EditSocialLinksPage extends StatefulWidget {
+class EditSocialLinksPage extends StatelessWidget {
   final int accountId;
 
   const EditSocialLinksPage({super.key, required this.accountId});
 
-  @override
-  State<EditSocialLinksPage> createState() => _EditSocialLinksPageState();
-}
+  static String _generateTag(int accountId) => 'EditSocialLinksPage_$accountId';
 
-class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
-  final _userProfileDao = UserProfileDao();
-
-  bool _loading = true;
-  Map<String, String> _socialLinks = {}; // platform -> url
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSocialLinks();
-  }
-
-  Future<void> _loadSocialLinks() async {
-    try {
-      final links = await _userProfileDao.getSocialLinks(widget.accountId);
-      if (mounted) {
-        setState(() {
-          _socialLinks = {for (var link in links) link.platform: link.url};
-          _loading = false;
-        });
-      }
-    } catch (e) {
-      print('加载社交链接失败: $e');
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
+  EditSocialLinksPageController _useController() {
+    final tag = _generateTag(accountId);
+    if (Get.isRegistered<EditSocialLinksPageController>(tag: tag)) {
+      return Get.find<EditSocialLinksPageController>(tag: tag);
     }
+    return Get.put(EditSocialLinksPageController(accountId: accountId), tag: tag);
   }
 
-  Future<void> _showEditDialog(String platform) async {
+  Future<void> _showEditDialog(BuildContext context, EditSocialLinksPageController controller, String platform) async {
     final platformInfo = SocialPlatforms.platforms[platform]!;
-    final currentUrl = _socialLinks[platform];
-    final controller = TextEditingController(text: currentUrl);
+    final currentUrl = controller.getLink(platform);
+    final textController = TextEditingController(text: currentUrl);
 
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Text(platformInfo['icon'] as String,
-                style: const TextStyle(fontSize: 24)),
-            const SizedBox(width: 8),
+            Text(platformInfo['icon'] as String, style: TextStyle(fontSize: 24.sp)),
+            SizedBox(width: 8.w),
             Text('${platformInfo['name']}'),
           ],
         ),
@@ -65,22 +55,23 @@ class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: controller,
+              controller: textController,
               decoration: InputDecoration(
                 labelText: '链接地址',
                 border: const OutlineInputBorder(),
-                hintText: platformInfo['urlPattern'] as String,
+                hintText: platformInfo['urlPattern'],
               ),
               keyboardType: TextInputType.url,
             ),
-            const SizedBox(height: 8),
-            Text(
-              '示例: ${platformInfo['urlPattern']}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
+            SizedBox(height: 8.h),
+            if (platformInfo['urlPattern'] != null)
+              Text(
+                '示例: ${platformInfo['urlPattern']}',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: Colors.grey.shade600,
+                ),
               ),
-            ),
           ],
         ),
         actions: [
@@ -95,148 +86,129 @@ class _EditSocialLinksPageState extends State<EditSocialLinksPage> {
             child: const Text('取消'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            onPressed: () => Navigator.pop(context, textController.text.trim()),
             child: const Text('保存'),
           ),
         ],
       ),
     );
 
-    if (result != null && mounted) {
+    textController.dispose();
+
+    if (result != null) {
       if (result == 'DELETE') {
-        await _deleteSocialLink(platform);
+        await controller.deleteSocialLink(platform);
       } else if (result.isNotEmpty) {
-        await _saveSocialLink(platform, result);
+        await controller.saveSocialLink(platform, result);
       }
     }
-
-    controller.dispose();
   }
 
-  Future<void> _saveSocialLink(String platform, String url) async {
-    try {
-      final link = UserSocialLink(
-        accountId: widget.accountId,
-        platform: platform,
-        url: url,
-        createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
-        updatedAt: DateTime.now().millisecondsSinceEpoch.toString(),
-      );
-      await _userProfileDao.saveSocialLink(link);
-      setState(() {
-        _socialLinks[platform] = url;
-      });
-      AppToast.success('已保存社交链接');
-    } catch (e) {
-      print('保存社交链接失败: $e');
-      AppToast.error('保存失败，请重试');
-    }
-  }
+  Widget _buildPlatformCard(
+    BuildContext context,
+    EditSocialLinksPageController controller,
+    String platform,
+    Map<String, dynamic> info,
+  ) {
+    return Obx(() {
+      final hasLink = controller.hasLink(platform);
+      final linkUrl = controller.getLink(platform);
 
-  Future<void> _deleteSocialLink(String platform) async {
-    try {
-      await _userProfileDao.removeSocialLink(widget.accountId, platform);
-      setState(() {
-        _socialLinks.remove(platform);
-      });
-      AppToast.success('已删除社交链接');
-    } catch (e) {
-      print('删除社交链接失败: $e');
-      AppToast.error('删除失败，请重试');
-    }
-  }
-
-  Widget _buildPlatformCard(String platform, Map<String, dynamic> info) {
-    final hasLink = _socialLinks.containsKey(platform);
-
-    return Card(
-      elevation: hasLink ? 2 : 0,
-      color: hasLink ? Colors.blue.shade50 : null,
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: hasLink ? Colors.blue.shade100 : Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Text(
-              info['icon'] as String,
-              style: const TextStyle(fontSize: 24),
+      return Card(
+        elevation: hasLink ? 2 : 0,
+        color: hasLink ? Colors.blue.shade50 : null,
+        child: ListTile(
+          leading: Container(
+            width: 40.w,
+            height: 40.h,
+            decoration: BoxDecoration(
+              color: hasLink ? Colors.blue.shade100 : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Center(
+              child: Text(
+                info['icon'] as String,
+                style: TextStyle(fontSize: 24.sp),
+              ),
             ),
           ),
-        ),
-        title: Text(
-          info['name'] as String,
-          style: TextStyle(
-            fontWeight: hasLink ? FontWeight.bold : FontWeight.normal,
+          title: Text(
+            info['name'] as String,
+            style: TextStyle(
+              fontWeight: hasLink ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
+          subtitle: hasLink
+              ? Text(
+                  linkUrl!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12.sp),
+                )
+              : Text(
+                  '点击添加',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+          trailing: Icon(
+            hasLink ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circlePlus,
+            color: hasLink ? Colors.green : Colors.grey,
+          ),
+          onTap: () => _showEditDialog(context, controller, platform),
         ),
-        subtitle: hasLink
-            ? Text(
-                _socialLinks[platform]!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12),
-              )
-            : Text(
-                '点击添加',
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
-        trailing: Icon(
-          hasLink ? Icons.check_circle : Icons.add_circle_outline,
-          color: hasLink ? Colors.green : Colors.grey,
-        ),
-        onTap: () => _showEditDialog(platform),
-      ),
-    );
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _useController();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('社交链接'),
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // 统计信息
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.blue.shade50,
-                  child: Row(
-                    children: [
-                      const Icon(Icons.link, color: Colors.blue),
-                      const SizedBox(width: 8),
-                      Text(
-                        '已添加 ${_socialLinks.length} / ${SocialPlatforms.platforms.length} 个平台',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const EditFormSkeleton();
+        }
 
-                // 平台列表
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: SocialPlatforms.platforms.entries.map((entry) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _buildPlatformCard(entry.key, entry.value),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
+        return Column(
+          children: [
+            // 统计信息
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16.w),
+              color: Colors.blue.shade50,
+              child: Row(
+                children: [
+                  const Icon(FontAwesomeIcons.link, color: Colors.blue),
+                  SizedBox(width: 8.w),
+                  Obx(() => Text(
+                        '已添加 ${controller.linkedCount} / ${SocialPlatforms.platforms.length} 个平台',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16.sp,
+                        ),
+                      )),
+                ],
+              ),
             ),
+
+            // 平台列表
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.all(16.w),
+                children: SocialPlatforms.platforms.entries.map((entry) {
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: _buildPlatformCard(context, controller, entry.key, entry.value),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 }

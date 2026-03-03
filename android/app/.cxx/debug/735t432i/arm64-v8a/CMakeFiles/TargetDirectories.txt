@@ -1,0 +1,2 @@
+E:/Workspaces/WaldenProjects/go-nomads-project/go-nomads-app/android/app/.cxx/debug/735t432i/arm64-v8a/CMakeFiles/edit_cache.dir
+E:/Workspaces/WaldenProjects/go-nomads-project/go-nomads-app/android/app/.cxx/debug/735t432i/arm64-v8a/CMakeFiles/rebuild_cache.dir

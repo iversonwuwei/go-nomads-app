@@ -1,0 +1,20 @@
+// 城市详情模块导出
+export 'city_detail_binding.dart';
+export 'city_detail_controller.dart';
+export 'city_detail_page.dart';
+export 'widgets/ai_travel_plan_fab.dart';
+// 通用组件导出
+export 'widgets/city_detail_app_bar.dart';
+export 'widgets/city_detail_tab_bar.dart';
+export 'widgets/city_info_summary_card.dart';
+export 'widgets/tabs/cost_tab.dart';
+export 'widgets/tabs/coworking_tab.dart';
+export 'widgets/tabs/guide_tab.dart';
+export 'widgets/tabs/hotels_tab.dart';
+export 'widgets/tabs/neighborhoods_tab.dart';
+export 'widgets/tabs/photos_tab.dart';
+export 'widgets/tabs/pros_cons_tab.dart';
+export 'widgets/tabs/reviews_tab.dart';
+// Tab 组件导出
+export 'widgets/tabs/scores_tab.dart';
+export 'widgets/tabs/weather/weather.dart';

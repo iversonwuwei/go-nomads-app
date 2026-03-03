@@ -1,5 +1,7 @@
-import '../../models/user_profile_models.dart';
-import '../database_service.dart';
+import 'dart:developer';
+
+import 'package:go_nomads_app/features/user_profile/infrastructure/models/user_profile_dto.dart';
+import 'package:go_nomads_app/services/database_service.dart';
 
 /// 用户资料模块数据访问对象
 class UserProfileDao {
@@ -140,13 +142,13 @@ class UserProfileDao {
       )
     ''');
 
-    print('✅ 用户资料模块表创建完成');
+    log('✅ 用户资料模块表创建完成');
   }
 
   // ==================== 基本信息模块 ====================
 
   /// 保存/更新用户基本信息
-  Future<int> saveBasicInfo(UserBasicInfo info) async {
+  Future<int> saveBasicInfo(UserBasicInfoDto info) async {
     final db = await _dbService.database;
     final existing = await getBasicInfo(info.accountId);
 
@@ -166,20 +168,20 @@ class UserProfileDao {
   }
 
   /// 获取用户基本信息
-  Future<UserBasicInfo?> getBasicInfo(int accountId) async {
+  Future<UserBasicInfoDto?> getBasicInfo(int accountId) async {
     final db = await _dbService.database;
     final results = await db.query(
       'user_basic_info',
       where: 'account_id = ?',
       whereArgs: [accountId],
     );
-    return results.isNotEmpty ? UserBasicInfo.fromMap(results.first) : null;
+    return results.isNotEmpty ? UserBasicInfoDto.fromMap(results.first) : null;
   }
 
   // ==================== 游牧状态统计模块 ====================
 
   /// 保存/更新游牧状态统计
-  Future<int> saveNomadStats(NomadStats stats) async {
+  Future<int> saveNomadStats(NomadStatsDto stats) async {
     final db = await _dbService.database;
     final existing = await getNomadStats(stats.accountId);
 
@@ -197,21 +199,21 @@ class UserProfileDao {
   }
 
   /// 获取游牧状态统计
-  Future<NomadStats?> getNomadStats(int accountId) async {
+  Future<NomadStatsDto?> getNomadStats(int accountId) async {
     final db = await _dbService.database;
     final results = await db.query(
       'nomad_stats',
       where: 'account_id = ?',
       whereArgs: [accountId],
     );
-    return results.isNotEmpty ? NomadStats.fromMap(results.first) : null;
+    return results.isNotEmpty ? NomadStatsDto.fromMap(results.first) : null;
   }
 
   /// 增加计数器
   Future<void> incrementStat(int accountId, String statName) async {
     final stats = await getNomadStats(accountId);
     if (stats != null) {
-      NomadStats updated;
+      NomadStatsDto updated;
 
       switch (statName) {
         case 'countriesVisited':
@@ -244,12 +246,12 @@ class UserProfileDao {
   // ==================== 技能模块 ====================
 
   /// 添加技能
-  Future<int> addSkill(UserSkill skill) async {
+  Future<int> addSkill(UserSkillDto skill) async {
     final db = await _dbService.database;
     try {
       return await db.insert('user_skills', skill.toMap());
     } catch (e) {
-      print('技能已存在或添加失败: $e');
+      log('技能已存在或添加失败: $e');
       return -1;
     }
   }
@@ -266,7 +268,7 @@ class UserProfileDao {
   }
 
   /// 获取用户所有技能
-  Future<List<UserSkill>> getSkills(int accountId) async {
+  Future<List<UserSkillDto>> getSkills(int accountId) async {
     final db = await _dbService.database;
     final results = await db.query(
       'user_skills',
@@ -274,18 +276,18 @@ class UserProfileDao {
       whereArgs: [accountId],
       orderBy: 'created_at DESC',
     );
-    return results.map((map) => UserSkill.fromMap(map)).toList();
+    return results.map((map) => UserSkillDto.fromMap(map)).toList();
   }
 
   // ==================== 兴趣模块 ====================
 
   /// 添加兴趣
-  Future<int> addInterest(UserInterest interest) async {
+  Future<int> addInterest(UserInterestDto interest) async {
     final db = await _dbService.database;
     try {
       return await db.insert('user_interests', interest.toMap());
     } catch (e) {
-      print('兴趣已存在或添加失败: $e');
+      log('兴趣已存在或添加失败: $e');
       return -1;
     }
   }
@@ -302,7 +304,7 @@ class UserProfileDao {
   }
 
   /// 获取用户所有兴趣
-  Future<List<UserInterest>> getInterests(int accountId) async {
+  Future<List<UserInterestDto>> getInterests(int accountId) async {
     final db = await _dbService.database;
     final results = await db.query(
       'user_interests',
@@ -310,13 +312,13 @@ class UserProfileDao {
       whereArgs: [accountId],
       orderBy: 'created_at DESC',
     );
-    return results.map((map) => UserInterest.fromMap(map)).toList();
+    return results.map((map) => UserInterestDto.fromMap(map)).toList();
   }
 
   // ==================== 社交链接模块 ====================
 
   /// 保存/更新社交链接
-  Future<int> saveSocialLink(UserSocialLink link) async {
+  Future<int> saveSocialLink(SocialLinkDto link) async {
     final db = await _dbService.database;
     final existing = await getSocialLink(link.accountId, link.platform);
 
@@ -334,18 +336,18 @@ class UserProfileDao {
   }
 
   /// 获取单个社交链接
-  Future<UserSocialLink?> getSocialLink(int accountId, String platform) async {
+  Future<SocialLinkDto?> getSocialLink(int accountId, String platform) async {
     final db = await _dbService.database;
     final results = await db.query(
       'user_social_links',
       where: 'account_id = ? AND platform = ?',
       whereArgs: [accountId, platform],
     );
-    return results.isNotEmpty ? UserSocialLink.fromMap(results.first) : null;
+    return results.isNotEmpty ? SocialLinkDto.fromMap(results.first) : null;
   }
 
   /// 获取所有社交链接
-  Future<List<UserSocialLink>> getSocialLinks(int accountId) async {
+  Future<List<SocialLinkDto>> getSocialLinks(int accountId) async {
     final db = await _dbService.database;
     final results = await db.query(
       'user_social_links',
@@ -353,7 +355,7 @@ class UserProfileDao {
       whereArgs: [accountId],
       orderBy: 'created_at ASC',
     );
-    return results.map((map) => UserSocialLink.fromMap(map)).toList();
+    return results.map((map) => SocialLinkDto.fromMap(map)).toList();
   }
 
   /// 删除社交链接
@@ -370,7 +372,7 @@ class UserProfileDao {
   // ==================== 旅行计划模块 ====================
 
   /// 保存旅行计划
-  Future<int> saveTravelPlan(TravelPlan plan) async {
+  Future<int> saveTravelPlan(UserTravelPlanDto plan) async {
     final db = await _dbService.database;
     if (plan.id != null) {
       await db.update(
@@ -386,18 +388,18 @@ class UserProfileDao {
   }
 
   /// 获取单个旅行计划
-  Future<TravelPlan?> getTravelPlan(int id) async {
+  Future<UserTravelPlanDto?> getTravelPlan(int id) async {
     final db = await _dbService.database;
     final results = await db.query(
       'travel_plans',
       where: 'id = ?',
       whereArgs: [id],
     );
-    return results.isNotEmpty ? TravelPlan.fromMap(results.first) : null;
+    return results.isNotEmpty ? UserTravelPlanDto.fromMap(results.first) : null;
   }
 
   /// 获取用户所有旅行计划
-  Future<List<TravelPlan>> getTravelPlans(int accountId,
+  Future<List<UserTravelPlanDto>> getTravelPlans(int accountId,
       {String? status}) async {
     final db = await _dbService.database;
     final results = status != null
@@ -413,7 +415,7 @@ class UserProfileDao {
             whereArgs: [accountId],
             orderBy: 'created_at DESC',
           );
-    return results.map((map) => TravelPlan.fromMap(map)).toList();
+    return results.map((map) => UserTravelPlanDto.fromMap(map)).toList();
   }
 
   /// 删除旅行计划
@@ -430,18 +432,18 @@ class UserProfileDao {
   // ==================== 徽章模块 ====================
 
   /// 授予徽章
-  Future<int> awardBadge(UserBadge badge) async {
+  Future<int> awardBadge(UserBadgeDto badge) async {
     final db = await _dbService.database;
     try {
       return await db.insert('user_badges', badge.toMap());
     } catch (e) {
-      print('徽章已存在或添加失败: $e');
+      log('徽章已存在或添加失败: $e');
       return -1;
     }
   }
 
   /// 获取用户所有徽章
-  Future<List<UserBadge>> getBadges(int accountId) async {
+  Future<List<UserBadgeDto>> getBadges(int accountId) async {
     final db = await _dbService.database;
     final results = await db.query(
       'user_badges',
@@ -449,13 +451,13 @@ class UserProfileDao {
       whereArgs: [accountId],
       orderBy: 'earned_date DESC',
     );
-    return results.map((map) => UserBadge.fromMap(map)).toList();
+    return results.map((map) => UserBadgeDto.fromMap(map)).toList();
   }
 
   // ==================== 旅行历史模块 ====================
 
   /// 保存旅行历史
-  Future<int> saveTravelHistory(TravelHistory history) async {
+  Future<int> saveTravelHistory(TravelHistoryEntryDto history) async {
     final db = await _dbService.database;
     if (history.id != null) {
       await db.update(
@@ -471,7 +473,7 @@ class UserProfileDao {
   }
 
   /// 获取旅行历史
-  Future<List<TravelHistory>> getTravelHistory(int accountId) async {
+  Future<List<TravelHistoryEntryDto>> getTravelHistory(int accountId) async {
     final db = await _dbService.database;
     final results = await db.query(
       'travel_history',
@@ -479,7 +481,7 @@ class UserProfileDao {
       whereArgs: [accountId],
       orderBy: 'start_date DESC',
     );
-    return results.map((map) => TravelHistory.fromMap(map)).toList();
+    return results.map((map) => TravelHistoryEntryDto.fromMap(map)).toList();
   }
 
   /// 删除旅行历史
@@ -500,21 +502,21 @@ class UserProfileDao {
     final now = DateTime.now().millisecondsSinceEpoch.toString();
 
     // 创建基本信息
-    await saveBasicInfo(UserBasicInfo(
+    await saveBasicInfo(UserBasicInfoDto(
       accountId: accountId,
       name: name,
-      avatarUrl: 'https://i.pravatar.cc/300?img=$accountId',
+      avatarUrl: '',
       createdAt: now,
       updatedAt: now,
     ));
 
     // 创建初始统计数据
-    await saveNomadStats(NomadStats(
+    await saveNomadStats(NomadStatsDto(
       accountId: accountId,
       createdAt: now,
       updatedAt: now,
     ));
 
-    print('✅ 用户资料初始化完成: $name (账户ID: $accountId)');
+    log('✅ 用户资料初始化完成: $name (账户ID: $accountId)');
   }
 }

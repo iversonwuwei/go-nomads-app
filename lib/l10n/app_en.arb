@@ -15,6 +15,8 @@
   "logout": "Logout",
   "register": "Register",
   "email": "Email",
+  "invalidEmailFormat": "Invalid email format",
+  "emailAlreadyExists": "This email is already in use",
   "password": "Password",
   "confirmPassword": "Confirm Password",
   "username": "Username",
@@ -47,10 +49,13 @@
   "members": "Members",
   "meetup": "Meetup",
   "createMeetup": "Create Meetup",
+  "editMeetup": "Edit Meetup",
   "invite": "Invite",
   "inviteToMeetup": "Invite to Meetup",
   "selectMeetup": "Select Meetup",
   "sendInvitation": "Send Invitation",
+  "userIsOrganizer": "User is the organizer",
+  "userAlreadyJoined": "User already joined",
   "date": "Date",
   "time": "Time",
   "location": "Location",
@@ -130,6 +135,7 @@
   "privacy": "Privacy",
   "termsOfService": "Terms of Service",
   "about": "About",
+  "createdBy": "Created by",
   "version": "Version",
   "help": "Help",
   "contact": "Contact Us",
@@ -257,6 +263,48 @@
   "callNow": "Call Now",
   "bookNow": "Book Now",
   "visitWebsite": "Visit Website",
+  "coworkingVerifyTitle": "Verify Coworking Space",
+  "@coworkingVerifyTitle": {
+    "description": "Dialog title shown when a user is about to verify a coworking space"
+  },
+  "coworkingVerifyLoginRequired": "Please log in before verifying a space.",
+  "@coworkingVerifyLoginRequired": {
+    "description": "Snackbar body shown when unauthenticated users tap the verification badge"
+  },
+  "coworkingVerifyMessage": "Are you sure you want to verify {spaceName} for the community?",
+  "@coworkingVerifyMessage": {
+    "description": "Confirmation copy shown before submitting a coworking verification vote",
+    "placeholders": {
+      "spaceName": {
+        "type": "String",
+        "example": "Nomad Hub Bali"
+      }
+    }
+  },
+  "coworkingVerifySuccess": "Thanks! Your verification helps keep listings trustworthy.",
+  "@coworkingVerifySuccess": {
+    "description": "Snackbar body shown when verification succeeds"
+  },
+  "coworkingVerifyFailed": "Verification failed. Please try again later.",
+  "@coworkingVerifyFailed": {
+    "description": "Snackbar body shown when verification submission fails"
+  },
+  "coworkingVerifyAlreadyVoted": "You have already verified this space.",
+  "@coworkingVerifyAlreadyVoted": {
+    "description": "Toast message when user has already verified this coworking space"
+  },
+  "coworkingVerifyIsCreator": "You cannot verify your own space.",
+  "@coworkingVerifyIsCreator": {
+    "description": "Toast message when creator tries to verify their own space"
+  },
+  "coworkingVerifySpaceVerified": "This space is already verified.",
+  "@coworkingVerifySpaceVerified": {
+    "description": "Toast message when the space is already verified"
+  },
+  "coworkingVerifyChecking": "Checking eligibility...",
+  "@coworkingVerifyChecking": {
+    "description": "Loading message while checking verification eligibility"
+  },
   "shareLocation": "Share Location",
   "addToFavorites": "Add to Favorites",
   "removeFromFavorites": "Remove from Favorites",
@@ -316,6 +364,7 @@
   "deleteSuccess": "Deleted Successfully",
   "saveSuccess": "Saved Successfully",
   "updateSuccess": "Updated Successfully",
+  "updateFailed": "Update Failed",
   "uploadPhoto": "Upload Photo",
   "takePhoto": "Take Photo",
   "chooseFromGallery": "Choose from Gallery",
@@ -434,7 +483,8 @@
   "cost": "Cost",
   "photos": "Photos",
   "weather": "Weather",
-  "neighborhoods": "Neighborhoods",
+  "neighborhoods": "Nearby",
+  "noNearbyCities": "No nearby cities available",
   "coworking": "Coworking",
   "loadingGuide": "Loading guide...",
   "startRating": "Start Rating",
@@ -1100,6 +1150,8 @@
   "allMeetups": "All Meetups",
   "past": "Past",
   "upcoming": "Upcoming",
+  "statusOngoing": "Ongoing",
+  "statusCancelled": "Cancelled",
   "upcomingEvents": "{count} Upcoming Events",
   "@upcomingEvents": {
     "placeholders": {
@@ -1130,6 +1182,16 @@
   "noJoinedMeetupsYet": "No joined meetups yet",
   "noPastMeetups": "No past meetups",
   "noMeetupsAvailable": "No meetups available",
+  "myMeetups": "My Meetups",
+  "noMeetups": "No Meetups Yet",
+  "createFirstMeetup": "Create your first meetup to connect with other nomads",
+  "confirmCancelMeetupTitle": "Cancel meetup",
+  "confirmCancelMeetupMessage": "Are you sure you want to cancel this meetup? This action cannot be undone.",
+  "confirmLeaveMeetupTitle": "Leave meetup",
+  "confirmLeaveMeetupMessage": "Are you sure you want to leave this meetup?",
+  "cancelMeetupSuccess": "Meetup cancelled",
+  "cancelMeetupFailed": "Failed to cancel meetup",
+  "leaveMeetupFailed": "Failed to leave meetup",
   "join": "Join",
   "youHaveJoined": "You have joined {title}",
   "@youHaveJoined": {
@@ -1215,6 +1277,34 @@
       }
     }
   },
+  "invalidCityId": "Invalid city ID, cannot submit review",
+  "cannotSubmitReview": "Cannot Submit Review",
+  "maxPhotosWarning": "You can only select up to 5 photos",
+  "coworkingReviewSubmitSuccess": "Review submitted successfully!",
+  "submitFailed": "Submit failed: {error}",
+  "@submitFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "visitDate": "Visit Date",
+  "visitDateOptional": "Visit Date (Optional)",
+  "whenDidYouVisit": "When did you visit?",
+  "sumUpExperience": "Sum up your experience in a few words",
+  "coworkingExperienceHint": "Share your experience about WiFi, workspace, atmosphere...",
+  "reviewMinLength": "Review must be at least 20 characters",
+  "photosOptional": "Photos (Optional)",
+  "addFromGallery": "Add from Gallery",
+  "takePhoto": "Take Photo",
+  "chooseFromGallery": "Choose from gallery",
+  "takeAPhoto": "Take a photo",
+  "coworkingReviewGuidelines": "Review Guidelines",
+  "coworkingGuidelineHonest": "• Be honest and specific",
+  "coworkingGuidelineFocus": "• Focus on workspace features",
+  "coworkingGuidelineMention": "• Mention WiFi, noise, facilities",
+  "coworkingGuidelineRespectful": "• Be respectful and constructive",
   "welcomeBack": "Welcome Back",
   "loginToContinue": "Login to your account to continue",
   "orLoginWith": "Or login with other methods",
@@ -1399,6 +1489,7 @@
   "recenter": "Recenter",
   "startNavigation": "Start Navigation",
   "noMapAppAvailable": "No map app available",
+  "selectMapApp": "Select Map App",
   "selectMapSource": "Select Map Source",
   "switchedToMapSource": "Switched to {mapSource}",
   "@switchedToMapSource": {
@@ -1556,7 +1647,7 @@
   "enterMeetupTitle": "Enter meetup title",
   "pleaseEnterTitle": "Please enter a title",
   "meetupType": "Type",
-  "meetupTypeHint": "e.g., Casual Meetup, Business Networking, Cultural Exchange",
+  "meetupTypeHint": "Select meetup type",
   "pleaseEnterType": "Please enter a type",
   "selectCity": "Select city",
   "country": "Country",
@@ -1623,6 +1714,8 @@
       }
     }
   },
+  "calendarPermissionDenied": "Calendar permission denied. Please enable it in Settings.",
+  "noCalendarAvailable": "No writable calendar found on your device.",
   "cityChats": "City Chats",
   "onlineMembers": "Online Members",
   "online": "Online",
@@ -1803,6 +1896,8 @@
   "receiveUpdatesAndAlerts": "Receive updates and alerts",
   "travelHistoryVisible": "Travel History Visible",
   "showTravelHistoryToOthers": "Show your travel history to other users",
+  "autoTravelDetection": "Auto Travel Detection",
+  "autoTravelDetectionDescription": "Automatically detect and record your travels",
   "publicProfile": "Public Profile",
   "makeProfileVisibleToEveryone": "Make your profile visible to everyone",
   "currency": "Currency",
@@ -1816,7 +1911,307 @@
   "privacySettingsComingSoon": "Privacy settings coming soon",
   "deleteAccount": "Delete Account",
   "deleteAccountConfirmation": "Are you sure you want to delete your account? This action cannot be undone.",
-  "accountDeletionCancelled": "Account deletion cancelled"
+  "accountDeletionCancelled": "Account deletion cancelled",
+
+  "membershipPlans": "Membership Plans",
+  "currentPlan": "Current: {planName}",
+  "@currentPlan": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "daysRemaining": "{days} days remaining",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "upgradeToUnlock": "Upgrade to unlock more features",
+  "selectPaymentMethod": "Select Payment Method",
+  "upgradeTo": "Upgrade to {planName} - ¥{price}",
+  "@upgradeTo": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paypalPayment": "PayPal",
+  "paypalDescription": "Fast & Secure international payment",
+  "wechatPayment": "WeChat Pay",
+  "wechatDescription": "Pay with WeChat",
+  "qqLogin": "QQ Login",
+  "qqDescription": "Login with QQ account",
+  "securePayment": "Secure Payment",
+  "allPaymentsSecure": "All payments are processed securely. Cancel anytime.",
+  "allPaymentsEncrypted": "All payments are secure and encrypted",
+  "unableToLoadPlans": "Unable to load membership plans",
+  "checkNetworkConnection": "Please check your network connection",
+  "currentPlanLabel": "Current Plan",
+  "selectPlanLabel": "Select Plan",
+  "popular": "POPULAR",
+  "perYear": "/year",
+  "billingMonthly": "Monthly",
+  "billingYearly": "Yearly",
+  "saveAmount": "Save ¥{amount}",
+  "@saveAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "alreadyHavePlan": "You already have this or higher plan",
+  "creatingPaypalOrder": "Creating PayPal order...",
+  "creatingWechatOrder": "Creating WeChat Pay order...",
+  "qqAuthInProgress": "Authorizing with QQ...",
+  "priceForPlan": "${price} for {planName}",
+  "@priceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "cnyPriceForPlan": "¥{price} for {planName}",
+  "@cnyPriceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentServiceNotAvailable": "Payment service not available",
+  "paymentError": "Payment error: {error}",
+  "@paymentError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "openingPaypal": "Opening PayPal for payment...",
+  "failedToCreateOrder": "Failed to create payment order",
+  "wechatNotInstalled": "Please install WeChat to use WeChat Pay",
+  "qqNotInstalled": "Please install QQ to use QQ Login",
+  "paymentSuccessful": "Payment successful!",
+  "wechatPayFailed": "WeChat Pay failed",
+  "qqLoginFailed": "QQ login failed",
+  "wechatPayError": "WeChat Pay error: {error}",
+  "@wechatPayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "qqError": "QQ error: {error}",
+  "@qqError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "travelHistory": "Travel History",
+  "travelDetected": "New Trip Detected",
+  "saveTravelQuestion": "Would you like to save this trip?",
+  "saveTravel": "Save Trip",
+  "ignore": "Ignore",
+  "travelSaved": "Trip saved",
+  "saveFailed": "Failed to save",
+  "dismiss": "Dismiss",
+  "noPendingTrips": "No pending trips",
+  "travelDetectedBanner": "We noticed you recently visited {city}",
+  "@travelDetectedBanner": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "tapToSave": "Tap to save this trip",
+  "durationDays": "{days} days",
+  "@durationDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceFromHome": "{km} km from home",
+  "@distanceFromHome": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingConfirmation": "Pending Confirmation",
+  "confirmedTrips": "Trip Records",
+  "homeLocation": "Home Location",
+  "setHomeLocation": "Set Home Location",
+  "homeLocationSet": "Home location set",
+  "setHomeFailed": "Failed to set home location",
+  "locationUnavailable": "Location unavailable",
+  "autoDetectionOn": "Auto detection on",
+  "autoDetectionOff": "Auto detection off",
+  "clearAllData": "Clear All Data",
+  "confirmClear": "Confirm Clear",
+  "clearAllDataWarning": "This will clear all travel detection data including location records, stay points and trip history. This action cannot be undone.",
+  "clear": "Clear",
+  "dataCleared": "Data cleared",
+  "noTravelHistory": "No travel history",
+  "travelHistoryEmptyHint": "Enable auto detection and we'll automatically identify your trips and remind you to save them",
+  "autoDetectionActive": "Auto detection active",
+  "enableAutoDetection": "Enable Auto Detection",
+  "days": "days",
+  "locationCoordinates": "{lat}, {lon}",
+  "@locationCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "confidence": "Confidence: {percent}%",
+  "@confidence": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "synced": "Synced",
+  "nights": "nights",
+  "tip": "Tip",
+  "travelHistoryNoCityLink": "This trip record is not linked to a city",
+  "syncCompleted": "Sync completed",
+  "syncFailed": "Sync failed",
+
+  "addHotel": "Add Hotel",
+  "editHotel": "Edit Hotel",
+  "hotelName": "Hotel Name",
+  "hotelNameHint": "Enter hotel name",
+  "hotelDescription": "Description",
+  "hotelDescriptionHint": "Describe this hotel for digital nomads",
+  "pricePerNight": "Price per Night",
+  "pricePerNightHint": "e.g., 50",
+  "longStayDiscount": "Long Stay Discount",
+  "longStayDiscountHint": "Discount % for weekly/monthly stays",
+  "nomadFeatures": "Nomad-Friendly Features",
+  "nomadFeaturesSubtitle": "Features important for remote workers",
+  "wifiSpeed": "WiFi Speed",
+  "wifiSpeedHint": "e.g., 100 Mbps",
+  "workDesk": "Work Desk",
+  "hasCoworkingSpace": "Has Coworking Space",
+  "airConditioning": "Air Conditioning",
+  "kitchen": "Kitchen",
+  "laundry": "Laundry",
+  "pool": "Pool",
+  "gym": "Gym",
+  "twentyFourHourReception": "24h Reception",
+  "submitHotel": "Submit Hotel",
+  "hotelSubmittedSuccess": "Hotel submitted successfully!",
+  "failedToSubmitHotel": "Failed to submit hotel",
+  "maxPhotosReached": "Maximum {max} photos allowed",
+  "@maxPhotosReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "addFirstHotel": "Add First Hotel",
+  "noTeamMembersAdded": "No team members added yet",
+  "addTeamMember": "Add Team Member",
+  "editTeamMember": "Edit Team Member",
+  "editProject": "Edit Project",
+  "enterMemberName": "Enter member name",
+  "enterMemberRole": "Enter member role",
+  "enterMemberDescription": "Enter member description (optional)",
+  "markAsFounder": "Mark as Founder",
+  "pleaseEnterMemberName": "Please enter member name",
+  "pleaseEnterMemberRole": "Please enter member role",
+  "founder": "Founder",
+  "name": "Name",
+  "role": "Role",
+  "searchAddress": "Search address or place",
+  "noResults": "No results found",
+  "eventInvitation": "Event Invitation",
+  "inviteYouToJoin": "invites you to join",
+  "moderatorTransfer": "Moderator Transfer",
+  "accept": "Accept",
+  "decline": "Decline",
+  "from": "From",
+
+  "privacyPolicyIntro": "Welcome to Go-Nomads! To provide you with better services, we need you to understand and agree to the following privacy policy:",
+  "privacyDataCollection": "Data Collection",
+  "privacyDataCollectionDesc": "We collect your behavioral data (such as browsing history, search preferences, feature usage frequency, etc.) to optimize product experience and personalized recommendations.",
+  "privacyLocationData": "Location Information",
+  "privacyLocationDataDesc": "We collect your location data for city recommendations, nearby coworking spaces and events, and travel history tracking features.",
+  "privacyPersonalData": "Personal Information",
+  "privacyPersonalDataDesc": "We collect your basic personal information (such as nickname, avatar, contact details, etc.) for account management and social features.",
+  "privacyDataProtection": "Data Protection",
+  "privacyDataProtectionDesc": "We are committed to using industry-standard security measures to protect your personal data. We will not sell your data to third parties. You can manage your privacy preferences in Settings at any time.",
+  "privacyPolicyNote": "If you do not agree to the above privacy policy, you will not be able to continue using this application. You can view the full privacy policy in Settings at any time.",
+  "agreeAndContinue": "Agree and Continue",
+  "disagreeAndExit": "Disagree and Exit",
+  "viewFullTerms": "View full ",
+  "and": " and ",
+  "thirdPartyServices": "Third-Party Services",
+  "thirdPartyServicesDesc": "To provide related features, this app integrates the following third-party SDKs:\n• Amap SDK — Map display and location services\n• WeChat OpenSDK — WeChat login and sharing\n• QQ Connect SDK — QQ login and sharing\n• Tencent Cloud IM SDK — Instant messaging\n• Google Location — Overseas location services\nThese third-party SDKs may collect necessary information according to their respective privacy policies.",
+  "permissionUsage": "Permission Usage",
+  "permissionUsageDesc": "This app uses the following permissions:\n• Location — City recommendations, nearby events, travel footprint\n• Calendar — Add events to calendar\n• Notifications — Message and event reminders\nAll permissions are requested only when the corresponding feature is used. You can manage them in system settings at any time.",
+  "privacyDeclineTitle": "Notice",
+  "privacyDeclineMessage": "If you do not agree to the privacy policy, you will not be able to use this app's features.\n\nWe take your privacy seriously. The information collected is only used to provide you with better services.\n\nAre you sure you want to disagree?",
+  "reconsider": "Reconsider",
+  "confirmExit": "Confirm Exit",
+  "reportSubmitted": "Report Submitted",
+  "reportSubmittedDesc": "Thank you for your feedback. We will review it as soon as possible.",
+  "reportReasonSpam": "Spam / Advertising",
+  "reportReasonHarassment": "Harassment / Bullying",
+  "reportReasonInappropriate": "Inappropriate Content",
+  "reportReasonFraud": "Fraud / False Information",
+  "reportReasonViolence": "Violence / Dangerous Behavior",
+  "reportReasonOther": "Other Reason",
+  "reportUser": "Report User",
+  "reportContent": "Report Content",
+  "reportFailed": "Report Failed",
+  "reportFailedDesc": "Network error, please try again later.",
+
+  "helpAndSupport": "Help & Support",
+  "helpAndSupportDesc": "If you have any questions or suggestions, feel free to contact us",
+  "customerServiceEmail": "Support Email",
+  "customerServiceEmailDesc": "We will reply to your email within 1-2 business days",
+  "emailCopied": "Email address copied",
+  "sendEmail": "Send Email",
+  "commonQuestions": "FAQ",
+  "faqPayment": "Payment Issues",
+  "faqPaymentAnswer": "If you encounter any payment issues such as failed payments or order anomalies, please contact us via support email with your order details and we will assist you promptly.",
+  "faqAccount": "Account Issues",
+  "faqAccountAnswer": "If you experience issues with login, password recovery, or account deletion, please contact us via support email with your registration details for verification.",
+  "faqFeedback": "Feature Suggestions & Feedback",
+  "faqFeedbackAnswer": "We value your opinions and suggestions. If you have any product improvement ideas, please let us know via support email.",
+  "serviceHours": "Service Hours",
+  "serviceHoursDesc": "Mon-Fri 9:00 AM - 6:00 PM (Beijing Time)"
 }
 
 

@@ -2,59 +2,176 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+/// 后端部署环境类型
+enum DeploymentEnvironment {
+  /// Docker Compose / 本地容器部署
+  docker,
+
+  /// Kubernetes 部署
+  kubernetes,
+}
+
+/// 部署环境端口配置
+class DeploymentConfig {
+  final int gatewayPort;
+  final int messageServicePort;
+  final int coworkingServicePort;
+
+  const DeploymentConfig({
+    required this.gatewayPort,
+    required this.messageServicePort,
+    required this.coworkingServicePort,
+  });
+
+  /// Docker 部署配置
+  static const docker = DeploymentConfig(
+    gatewayPort: 80,
+    messageServicePort: 5005,
+    coworkingServicePort: 8006,
+  );
+
+  /// Kubernetes 部署配置
+  static const kubernetes = DeploymentConfig(
+    gatewayPort: 30080,
+    messageServicePort: 8010, // 通过 Gateway 路由，此端口仅作参考
+    coworkingServicePort: 8003, // 通过 Gateway 路由，此端口仅作参考
+  );
+}
+
 /// API 配置
 class ApiConfig {
+  // ============================================================
   // 环境配置
-  static const bool kIsProduction = false;
+  // ============================================================
+  static const bool kIsProduction = true;
 
-  // 生产环境地址
-  static const String productionUrl = 'https://api.yourapp.com';
+  // ============================================================
+  // 部署环境配置
+  // ============================================================
+  /// 当前后端部署环境
+  /// ⚠️ 切换后端部署方式时修改此配置：
+  /// - docker: 使用 deploy-services-local.ps1 脚本部署
+  /// - kubernetes: 使用 kubectl apply -f k8s/ 部署
+  static const DeploymentEnvironment deploymentEnvironment = DeploymentEnvironment.docker;
 
-  // 开发环境地址 - 根据平台自动选择
-  static String get developmentUrl {
-    if (kIsWeb) {
-      // Web 环境使用 localhost
-      return 'http://localhost:5000';
-    } else if (Platform.isAndroid) {
-      // Android 模拟器使用特殊地址 10.0.2.2
-      // 雷电/Android 模拟器应该通过 10.0.2.2 访问宿主机映射端口
-      return 'http://10.0.2.2:5000';
-    } else if (Platform.isIOS) {
-      // iOS 模拟器可以使用 localhost
-      return 'http://127.0.0.1:5000';
-    } else {
-      // 其他平台（Desktop等）使用 localhost
-      return 'http://localhost:5000';
+  /// 获取当前部署配置
+  static DeploymentConfig get _deploymentConfig {
+    switch (deploymentEnvironment) {
+      case DeploymentEnvironment.docker:
+        return DeploymentConfig.docker;
+      case DeploymentEnvironment.kubernetes:
+        return DeploymentConfig.kubernetes;
     }
   }
 
-  // 真机测试地址 - 使用电脑局域网 IP
-  // 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
-  // ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
-  static const String physicalDeviceUrl = 'http://192.168.110.54:5000';
+  // ============================================================
+  // 端口配置 (动态获取)
+  // ============================================================
+  /// Gateway 端口 (所有服务统一通过 Gateway 访问)
+  static int get gatewayPort => _deploymentConfig.gatewayPort;
 
-  // 是否使用真机测试地址(手动切换)
-  // ⚠️ 雷电模拟器用户请设置为 true
-  // ⚠️ Android 官方模拟器用户请设置为 false,使用 10.0.2.2
-  static const bool usePhysicalDevice = false;
+  /// Message Service 端口 (SignalR Hub)
+  static int get messageServicePort => _deploymentConfig.messageServicePort;
+
+  /// Coworking Service 端口 (SignalR Hub)
+  static int get coworkingServicePort => _deploymentConfig.coworkingServicePort;
 
   // ============================================================
-  // CityService 直连配置 (端口 8002)
+  // 主机地址配置
   // ============================================================
-  // 注意: CityService 和主 API 使用同一个端口 5000,不需要单独配置
 
-  // 基础 URL - 智能选择
+  /// 生产环境主机
+  static const String productionHost = 'api.go-nomads.com';
+
+  /// 真机测试主机 - 使用电脑局域网 IP 39.96.201.126
+  /// 通过 ipconfig (Windows) 或 ifconfig (Mac/Linux) 查看
+  /// ⚠️ 雷电模拟器也需要使用这个地址(雷电使用 VirtualBox 网络,10.0.2.2 无效)
+  static const String physicalDeviceHost = '192.168.110.67';
+
+  /// 开发环境主机 - 根据平台自动选择
+  static String get developmentHost {
+    if (kIsWeb) {
+      return 'localhost';
+    } else if (Platform.isAndroid) {
+      // Android 模拟器使用特殊地址访问宿主机
+      return '10.0.2.2';
+    } else if (Platform.isIOS) {
+      return '127.0.0.1';
+    } else {
+      // 其他平台（Desktop等）
+      return 'localhost';
+    }
+  }
+
+  // ============================================================
+  // 模式切换
+  // ============================================================
+
+  /// 是否使用真机测试地址(手动切换)
+  /// ⚠️ 雷电模拟器用户请设置为 true
+  /// ⚠️ Android 官方模拟器用户请设置为 false
+  static const bool usePhysicalDevice = true;
+
+  /// 是否启用 HTTP 方法重写
+  /// ⚠️ 当服务器/网络环境不支持 PUT/DELETE 方法时启用此选项
+  /// 启用后，PUT/DELETE 请求会转换为 POST 请求 + X-HTTP-Method-Override 头
+  /// 需要 Gateway 端配合支持 HttpMethodOverrideMiddleware
+  static const bool useHttpMethodOverride = true;
+
+  // ============================================================
+  // URL 组装
+  // ============================================================
+
+  /// 获取当前主机地址
+  static String get currentHost {
+    if (kIsProduction) {
+      return productionHost;
+    }
+    if (usePhysicalDevice) {
+      return physicalDeviceHost;
+    }
+    return developmentHost;
+  }
+
+  /// 生产环境基础 URL
+  static String get productionUrl => 'http://$productionHost';
+
+  /// 开发环境基础 URL
+  static String get developmentUrl => 'http://$developmentHost:$gatewayPort';
+
+  /// 真机测试基础 URL
+  static String get physicalDeviceUrl => 'http://$physicalDeviceHost:$gatewayPort';
+
+  /// 基础 URL - 智能选择
   static String get baseUrl {
     if (kIsProduction) {
       return productionUrl;
     }
-
-    // 开发模式
     if (usePhysicalDevice) {
       return physicalDeviceUrl;
     }
-
     return developmentUrl;
+  }
+
+  /// Message Service 地址 (SignalR Hub)
+  /// K8s 环境下通过 Gateway 路由，Gateway 会代理 WebSocket 连接到 MessageService
+  static String get messageServiceBaseUrl {
+    if (kIsProduction) {
+      return productionUrl; // 生产环境通过专用域名
+    }
+    // K8s 环境下，SignalR 也通过 Gateway 路由
+    // Gateway 配置了 /hubs/chat -> message-service 的路由
+    return baseUrl; // 使用 Gateway 地址
+  }
+
+  /// Coworking Service 地址 (SignalR Hub)
+  /// K8s 环境下通过 Gateway 路由
+  static String get coworkingServiceBaseUrl {
+    if (kIsProduction) {
+      return productionUrl; // 生产环境通过专用域名
+    }
+    // K8s 环境下，SignalR 也通过 Gateway 路由
+    return baseUrl; // 使用 Gateway 地址
   }
 
   // API 版本
@@ -64,9 +181,9 @@ class ApiConfig {
   static String get apiBaseUrl => '$baseUrl$apiVersion';
 
   // 超时配置 (毫秒)
-  static const int connectTimeout = 15000;
-  static const int receiveTimeout = 15000;
-  static const int sendTimeout = 15000;
+  static const int connectTimeout = 30000;
+  static const int receiveTimeout = 60000; // 增加到60秒,因为城市列表需要获取天气数据
+  static const int sendTimeout = 30000;
 
   // 认证相关
   static const String authTokenKey = 'auth_token';
@@ -77,9 +194,16 @@ class ApiConfig {
   // ============================================================
   static const String loginEndpoint = '/auth/login';
   static const String registerEndpoint = '/auth/register';
+  static const String registerSendCodeEndpoint = '/auth/register/send-code';
   static const String logoutEndpoint = '/auth/logout';
   static const String refreshTokenEndpoint = '/auth/refresh';
   static const String changePasswordEndpoint = '/auth/change-password';
+  static const String setPasswordEndpoint = '/auth/set-password';
+  static const String hasPasswordEndpoint = '/auth/has-password';
+  static const String checkEmailEndpoint = '/auth/check-email';
+  static const String socialLoginEndpoint = '/auth/social-login';
+  static const String forgotPasswordSendCodeEndpoint = '/auth/forgot-password/send-code';
+  static const String forgotPasswordResetEndpoint = '/auth/forgot-password/reset';
 
   // ============================================================
   // User Endpoints - /api/v1/users
@@ -87,11 +211,17 @@ class ApiConfig {
   static const String usersEndpoint = '/users';
   static const String userDetailEndpoint = '/users/{id}';
   static const String userMeEndpoint = '/users/me';
+  static const String userMeStatsEndpoint = '/users/me/stats';
   static const String userUpdateEndpoint = '/users/{id}';
   static const String userUpdateMeEndpoint = '/users/me';
   static const String userDeleteEndpoint = '/users/{id}';
   static const String userBatchEndpoint = '/users/batch';
   static String get userProfileEndpoint => userMeEndpoint;
+
+  // ============================================================
+  // Legal Endpoints - /api/v1/users/legal
+  // ============================================================
+  static const String legalPrivacyPolicyEndpoint = '/users/legal/privacy-policy';
 
   // 首页相关
   static const String homeDataEndpoint = '/home/data';
@@ -101,12 +231,12 @@ class ApiConfig {
   // City Endpoints - /api/v1/cities
   // ============================================================
   static const String citiesEndpoint = '/cities';
+  static const String cityListEndpoint = '/cities/list'; // 轻量级城市列表（不含天气数据）
   static const String cityDetailEndpoint = '/cities/{id}';
   static const String cityRecommendedEndpoint = '/cities/recommended';
   static const String citySearchEndpoint = '/cities/search';
   static const String cityByCountryEndpoint = '/cities/by-country/{id}';
-  static const String cityGroupedByCountryEndpoint =
-      '/cities/grouped-by-country';
+  static const String cityGroupedByCountryEndpoint = '/cities/grouped-by-country';
   static const String cityCountriesEndpoint = '/cities/countries';
   static const String cityStatisticsEndpoint = '/cities/{id}/statistics';
   static const String cityCreateEndpoint = '/cities';
@@ -118,28 +248,40 @@ class ApiConfig {
   // ============================================================
 
   // 照片相关
-  static const String cityPhotosEndpoint =
-      '/cities/{cityId}/user-content/photos';
-  static const String cityPhotoDetailEndpoint =
-      '/cities/{cityId}/user-content/photos/{photoId}';
+  static const String cityPhotosEndpoint = '/cities/{cityId}/user-content/photos';
+  static const String cityPhotoBatchEndpoint = '/cities/{cityId}/user-content/photos/batch';
+  static const String cityPhotoDetailEndpoint = '/cities/{cityId}/user-content/photos/{photoId}';
   static const String myPhotosEndpoint = '/user/city-content/photos';
 
   // 费用相关
-  static const String cityExpensesEndpoint =
-      '/cities/{cityId}/user-content/expenses';
-  static const String cityExpenseDetailEndpoint =
-      '/cities/{cityId}/user-content/expenses/{expenseId}';
+  static const String cityExpensesEndpoint = '/cities/{cityId}/user-content/expenses';
+  static const String cityExpenseDetailEndpoint = '/cities/{cityId}/user-content/expenses/{expenseId}';
   static const String myExpensesEndpoint = '/user/city-content/expenses';
 
   // 评论相关
-  static const String cityReviewsEndpoint =
-      '/cities/{cityId}/user-content/reviews';
-  static const String myCityReviewEndpoint =
-      '/cities/{cityId}/user-content/reviews/mine';
+  static const String cityReviewsEndpoint = '/cities/{cityId}/user-content/reviews';
+  static const String myCityReviewEndpoint = '/cities/{cityId}/user-content/reviews/mine';
 
   // 统计相关
-  static const String cityUserContentStatsEndpoint =
-      '/cities/{cityId}/user-content/stats';
+  static const String cityUserContentStatsEndpoint = '/cities/{cityId}/user-content/stats';
+
+  // ============================================================
+  // Cache Service Endpoints - /api/v1/cache (通过 Gateway 访问)
+  // 注意: 这些端点通过 Gateway 转发到 CacheService
+  // ============================================================
+
+  // 评分缓存
+  static const String cityScoreEndpoint = '/cache/scores/city/{cityId}';
+  static const String cityScoreBatchEndpoint = '/cache/scores/city/batch';
+  static const String coworkingScoreEndpoint = '/cache/scores/coworking/{coworkingId}';
+  static const String coworkingScoreBatchEndpoint = '/cache/scores/coworking/batch';
+  static const String invalidateCityScoreEndpoint = '/cache/scores/city/{cityId}';
+  static const String invalidateCoworkingScoreEndpoint = '/cache/scores/coworking/{coworkingId}';
+
+  // 费用缓存
+  static const String cityCostEndpoint = '/cache/costs/city/{cityId}';
+  static const String cityCostBatchEndpoint = '/cache/costs/city/batch';
+  static const String invalidateCityCostEndpoint = '/cache/costs/city/{cityId}';
 
   // ============================================================
   // Product Endpoints - /api/v1/products
@@ -181,6 +323,21 @@ class ApiConfig {
   static const String meetupsEndpoint = '/meetups';
   static const String meetupDetailEndpoint = '/meetups/{id}';
   static const String meetupJoinEndpoint = '/meetups/{id}/join';
+  static const String meetupLeaveEndpoint = '/meetups/{id}/leave';
+  static const String meetupParticipantsEndpoint = '/meetups/{id}/participants';
+
+  // ============================================================
+  // SignalR Hub Endpoints
+  // ============================================================
+
+  /// Chat Hub URL (通过 Gateway 路由)
+  static String get chatHubUrl => '$baseUrl/hubs/chat';
+
+  /// Meetup/Event Hub URL (通过 Gateway 路由)
+  static String get meetupHubUrl => '$baseUrl/hubs/meetup';
+
+  /// Notification Hub URL (通过 Gateway 路由)
+  static String get notificationHubUrl => '$baseUrl/hubs/notification';
 
   // ============================================================
   // Chat Endpoints - /api/v1/chats (待后端实现)
@@ -190,6 +347,48 @@ class ApiConfig {
   static const String chatMessagesEndpoint = '/chats/{id}/messages';
   static const String chatSendMessageEndpoint = '/chats/{id}/messages';
   static const String chatParticipantsEndpoint = '/chats/{id}/participants';
+  static const String chatMeetupEndpoint = '/chats/meetup';
+
+  // ============================================================
+  // Notification Endpoints - /api/v1/notifications
+  // ============================================================
+  static const String notificationsEndpoint = '/notifications';
+  static const String notificationDetailEndpoint = '/notifications/{id}';
+  static const String notificationUnreadCountEndpoint = '/notifications/unread/count';
+  static const String notificationMarkReadEndpoint = '/notifications/{id}/read';
+  static const String notificationMarkReadBatchEndpoint = '/notifications/read/batch';
+  static const String notificationMarkAllReadEndpoint = '/notifications/read/all';
+  static const String notificationDeleteEndpoint = '/notifications/{id}';
+  static const String notificationSendEndpoint = '/notifications';
+  static const String notificationSendToAdminsEndpoint = '/notifications/admins';
+
+  // ============================================================
+  // Report Endpoints - /api/v1/reports
+  // ============================================================
+  static const String reportsEndpoint = '/reports';
+  static const String reportDetailEndpoint = '/reports/{id}';
+  static const String reportMyEndpoint = '/reports/my';
+
+  // ============================================================
+  // AI Chat Endpoints - /api/v1/ai
+  // ============================================================
+  static const String aiConversationsEndpoint = '/ai/conversations';
+  static const String aiMessagesEndpoint = '/ai/conversations/{conversationId}/messages';
+  static const String aiMessageStreamEndpoint = '/ai/conversations/{conversationId}/messages/stream';
+  static const String aiMessageSignalRStreamEndpoint = '/ai/conversations/{conversationId}/messages/signalr-stream';
+
+  // ============================================================
+  // Travel History Endpoints - /api/v1/travel-history
+  // ============================================================
+  static const String travelHistoryEndpoint = '/travel-history';
+  static const String travelHistoryDetailEndpoint = '/travel-history/{id}';
+  static const String travelHistoryConfirmedEndpoint = '/travel-history/confirmed';
+  static const String travelHistoryUnconfirmedEndpoint = '/travel-history/unconfirmed';
+  static const String travelHistoryBatchEndpoint = '/travel-history/batch';
+  static const String travelHistoryConfirmEndpoint = '/travel-history/{id}/confirm';
+  static const String travelHistoryConfirmBatchEndpoint = '/travel-history/confirm/batch';
+  static const String travelHistoryStatsEndpoint = '/travel-history/stats';
+  static const String travelHistoryUserEndpoint = '/travel-history/user/{userId}';
 
   // 环境判断
   static bool get isDevelopment => !kIsProduction;
@@ -249,8 +448,7 @@ class ApiConfig {
   /// );
   /// // 结果: http://10.0.2.2:5000/api/v1/cities?page=1&pageSize=10
   /// ```
-  static String buildUrlWithQuery(
-      String endpoint, Map<String, String> queryParams) {
+  static String buildUrlWithQuery(String endpoint, Map<String, String> queryParams) {
     final uri = Uri.parse('$currentApiBaseUrl$endpoint');
     final newUri = uri.replace(queryParameters: queryParams);
     return newUri.toString();
@@ -259,14 +457,19 @@ class ApiConfig {
   /// 获取当前配置信息（用于调试）
   static String getConfigInfo() {
     return '''
-配置信息:
-- 环境: ${kIsProduction ? '生产' : '开发'}
-- 平台: ${kIsWeb ? 'Web' : Platform.operatingSystem}
-- 基础地址: $currentBaseUrl
-- API地址: $currentApiBaseUrl
-- API版本: $apiVersion
-- 真机模式: ${usePhysicalDevice ? '是' : '否'}
-- 自定义地址: ${_customBaseUrl ?? '未设置'}
+📡 API 配置信息:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌍 环境: ${kIsProduction ? '生产环境 🚀' : '开发环境 🔧'}
+� 部署: ${deploymentEnvironment == DeploymentEnvironment.kubernetes ? 'Kubernetes ☸️' : 'Docker 🐳'}
+�💻 平台: ${kIsWeb ? 'Web 🌐' : Platform.operatingSystem}
+🏠 当前主机: $currentHost
+🔌 Gateway 端口: $gatewayPort
+📍 基础地址: $currentBaseUrl
+🔗 API地址: $currentApiBaseUrl
+📌 API版本: $apiVersion
+📱 真机模式: ${usePhysicalDevice ? '✅ 是' : '❌ 否'}
+🎯 自定义地址: ${_customBaseUrl ?? '未设置'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''';
   }
 }

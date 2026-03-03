@@ -45,6 +45,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get email => '邮箱';
 
   @override
+  String get invalidEmailFormat => '邮箱格式不正确';
+
+  @override
+  String get emailAlreadyExists => '该邮箱已被使用';
+
+  @override
   String get password => '密码';
 
   @override
@@ -141,6 +147,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get createMeetup => '创建聚会';
 
   @override
+  String get editMeetup => '编辑聚会';
+
+  @override
   String get invite => '邀请';
 
   @override
@@ -151,6 +160,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sendInvitation => '发送邀请';
+
+  @override
+  String get userIsOrganizer => '用户是活动创建者';
+
+  @override
+  String get userAlreadyJoined => '用户已加入';
 
   @override
   String get date => '日期';
@@ -390,6 +405,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get about => '关于';
 
   @override
+  String get createdBy => '创建者';
+
+  @override
   String get version => '版本';
 
   @override
@@ -621,7 +639,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchResults => '搜索结果';
 
   @override
-  String get noResults => '无结果';
+  String get noResults => '未找到结果';
 
   @override
   String get tryAgain => '重试';
@@ -744,6 +762,35 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get visitWebsite => '访问网站';
+
+  @override
+  String get coworkingVerifyTitle => '空间认证';
+
+  @override
+  String get coworkingVerifyLoginRequired => '请先登录再进行空间认证。';
+
+  @override
+  String coworkingVerifyMessage(String spaceName) {
+    return '确定要为 $spaceName 提交认证吗？';
+  }
+
+  @override
+  String get coworkingVerifySuccess => '认证已提交，感谢你的贡献！';
+
+  @override
+  String get coworkingVerifyFailed => '认证提交失败，请稍后再试。';
+
+  @override
+  String get coworkingVerifyAlreadyVoted => '您已经为该空间提交过认证。';
+
+  @override
+  String get coworkingVerifyIsCreator => '创建者不能为自己的空间认证。';
+
+  @override
+  String get coworkingVerifySpaceVerified => '该空间已通过认证。';
+
+  @override
+  String get coworkingVerifyChecking => '正在检查资格...';
 
   @override
   String get shareLocation => '分享位置';
@@ -923,6 +970,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateSuccess => '更新成功';
 
   @override
+  String get updateFailed => '更新失败';
+
+  @override
   String get uploadPhoto => '上传照片';
 
   @override
@@ -1079,7 +1129,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get orContinueWith => '或继续使用';
 
   @override
-  String get termsAndConditions => '条款和条件';
+  String get termsAndConditions => '服务条款';
 
   @override
   String get privacyPolicy => '隐私政策';
@@ -1091,7 +1141,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bySigningUp => '注册即表示您同意我们的';
 
   @override
-  String get and => '和';
+  String get and => ' 和 ';
 
   @override
   String get required => '*';
@@ -1263,6 +1313,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get neighborhoods => '附近';
+
+  @override
+  String get noNearbyCities => '暂无附近城市';
 
   @override
   String get loadingGuide => '加载指南...';
@@ -2588,6 +2641,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get upcoming => '即将到来';
 
   @override
+  String get statusOngoing => '进行中';
+
+  @override
+  String get statusCancelled => '已取消';
+
+  @override
   String joinedEvents(String count) {
     return '$count 个已加入的活动';
   }
@@ -2600,6 +2659,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noMeetupsAvailable => '暂无可用聚会';
+
+  @override
+  String get myMeetups => '我的聚会';
+
+  @override
+  String get noMeetups => '暂无聚会';
+
+  @override
+  String get createFirstMeetup => '创建您的第一个聚会来与其他游牧者建立联系';
+
+  @override
+  String get confirmCancelMeetupTitle => '取消活动';
+
+  @override
+  String get confirmCancelMeetupMessage => '确定要取消这个活动吗？此操作无法撤销。';
+
+  @override
+  String get confirmLeaveMeetupTitle => '退出活动';
+
+  @override
+  String get confirmLeaveMeetupMessage => '确定要退出这个活动吗？';
+
+  @override
+  String get cancelMeetupSuccess => '活动已取消';
+
+  @override
+  String get cancelMeetupFailed => '取消活动失败';
+
+  @override
+  String get leaveMeetupFailed => '退出活动失败';
 
   @override
   String get join => '加入';
@@ -2706,6 +2795,65 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get invalidCityId => '城市ID无效,无法提交评论';
+
+  @override
+  String get cannotSubmitReview => '无法提交评论';
+
+  @override
+  String get maxPhotosWarning => '最多只能选择5张图片';
+
+  @override
+  String get coworkingReviewSubmitSuccess => '评论提交成功！';
+
+  @override
+  String submitFailed(String error) {
+    return '提交失败: $error';
+  }
+
+  @override
+  String get visitDate => '访问日期';
+
+  @override
+  String get visitDateOptional => '访问日期(可选)';
+
+  @override
+  String get whenDidYouVisit => '您什么时候去的?';
+
+  @override
+  String get sumUpExperience => '用几句话总结您的体验';
+
+  @override
+  String get coworkingExperienceHint => '分享您关于WiFi、工作空间、氛围的体验...';
+
+  @override
+  String get reviewMinLength => '评论至少需要20个字符';
+
+  @override
+  String get photosOptional => '照片(可选)';
+
+  @override
+  String get addFromGallery => '从相册添加';
+
+  @override
+  String get takeAPhoto => '拍一张照片';
+
+  @override
+  String get coworkingReviewGuidelines => '评论指南';
+
+  @override
+  String get coworkingGuidelineHonest => '• 诚实具体';
+
+  @override
+  String get coworkingGuidelineFocus => '• 关注工作空间功能';
+
+  @override
+  String get coworkingGuidelineMention => '• 提及WiFi、噪音、设施';
+
+  @override
+  String get coworkingGuidelineRespectful => '• 尊重他人，建设性反馈';
+
+  @override
   String get loginToContinue => '登录您的账号以继续使用';
 
   @override
@@ -2798,7 +2946,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get personalizedForYou => '为您量身定制';
 
   @override
-  String get from => '出发地';
+  String get from => '来自';
 
   @override
   String get budgetBreakdown => '预算明细';
@@ -2831,7 +2979,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get localTransport => '本地交通';
 
   @override
-  String get pricePerNight => '晚';
+  String get pricePerNight => '每晚价格';
 
   @override
   String get bookingTips => '预订建议';
@@ -2984,7 +3132,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get specifications => '规格';
 
   @override
-  String get wifiSpeed => 'WiFi 速度 (Mbps)';
+  String get wifiSpeed => 'WiFi速度';
 
   @override
   String get capacity => '容量';
@@ -3026,6 +3174,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noMapAppAvailable => '未找到可用的地图应用';
+
+  @override
+  String get selectMapApp => '选择地图应用';
 
   @override
   String get selectMapSource => '选择地图源';
@@ -3084,8 +3235,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pickLocationOnMap => '在地图上选择位置';
 
   @override
-  String locationCoordinates(String lat, String lng) {
-    return '位置：$lat, $lng';
+  String locationCoordinates(String lat, String lon) {
+    return '$lat, $lon';
   }
 
   @override
@@ -3128,7 +3279,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get trialDurationHint => '1天、1周等';
 
   @override
-  String get wifiSpeedHint => '500';
+  String get wifiSpeedHint => '例如：100 Mbps';
 
   @override
   String get capacityHint => '50';
@@ -3234,7 +3385,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterMeetupTitle => '输入聚会标题';
 
   @override
-  String get meetupTypeHint => '例如：休闲聚会、商务社交、文化交流';
+  String get meetupTypeHint => '选择聚会类型';
 
   @override
   String get pleaseEnterType => '请输入类型';
@@ -3310,6 +3461,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String failedToAddEvent(String error) {
     return '添加事件到日历失败：$error';
   }
+
+  @override
+  String get calendarPermissionDenied => '日历权限被拒绝，请在设置中开启。';
+
+  @override
+  String get noCalendarAvailable => '未找到可写入的日历。';
 
   @override
   String get cityChats => '城市聊天';
@@ -3605,6 +3762,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showTravelHistoryToOthers => '向其他用户展示您的旅行历史';
 
   @override
+  String get autoTravelDetection => '自动旅行记录';
+
+  @override
+  String get autoTravelDetectionDescription => '自动检测并记录您的旅行足迹';
+
+  @override
   String get publicProfile => '公开资料';
 
   @override
@@ -3630,4 +3793,534 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get accountDeletionCancelled => '已取消删除账户';
+
+  @override
+  String get membershipPlans => '会员计划';
+
+  @override
+  String currentPlan(String planName) {
+    return '当前：$planName';
+  }
+
+  @override
+  String daysRemaining(int days) {
+    return '剩余 $days 天';
+  }
+
+  @override
+  String get upgradeToUnlock => '升级以解锁更多功能';
+
+  @override
+  String get selectPaymentMethod => '选择支付方式';
+
+  @override
+  String upgradeTo(String planName, String price) {
+    return '升级到 $planName - ¥$price';
+  }
+
+  @override
+  String get paypalPayment => 'PayPal';
+
+  @override
+  String get paypalDescription => '快捷安全的国际支付';
+
+  @override
+  String get wechatPayment => '微信支付';
+
+  @override
+  String get wechatDescription => '使用微信支付';
+
+  @override
+  String get qqLogin => 'QQ登录';
+
+  @override
+  String get qqDescription => '使用 QQ 账号登录';
+
+  @override
+  String get securePayment => '安全支付';
+
+  @override
+  String get allPaymentsSecure => '所有支付均安全处理，可随时取消。';
+
+  @override
+  String get allPaymentsEncrypted => '所有支付均安全加密';
+
+  @override
+  String get unableToLoadPlans => '无法加载会员计划';
+
+  @override
+  String get checkNetworkConnection => '请检查您的网络连接';
+
+  @override
+  String get currentPlanLabel => '当前计划';
+
+  @override
+  String get selectPlanLabel => '选择计划';
+
+  @override
+  String get perYear => '/年';
+
+  @override
+  String get billingMonthly => '月付';
+
+  @override
+  String get billingYearly => '年付';
+
+  @override
+  String saveAmount(String amount) {
+    return '省 ¥$amount';
+  }
+
+  @override
+  String get alreadyHavePlan => '您已拥有此计划或更高级别的计划';
+
+  @override
+  String get creatingPaypalOrder => '正在创建 PayPal 订单...';
+
+  @override
+  String get creatingWechatOrder => '正在创建微信支付订单...';
+
+  @override
+  String get qqAuthInProgress => '正在进行 QQ 授权...';
+
+  @override
+  String priceForPlan(String price, String planName) {
+    return '\$$price - $planName';
+  }
+
+  @override
+  String cnyPriceForPlan(String price, String planName) {
+    return '¥$price - $planName';
+  }
+
+  @override
+  String get paymentServiceNotAvailable => '支付服务不可用';
+
+  @override
+  String paymentError(String error) {
+    return '支付错误：$error';
+  }
+
+  @override
+  String get openingPaypal => '正在打开 PayPal 支付...';
+
+  @override
+  String get failedToCreateOrder => '创建支付订单失败';
+
+  @override
+  String get wechatNotInstalled => '请安装微信以使用微信支付';
+
+  @override
+  String get qqNotInstalled => '请安装 QQ 以使用 QQ 登录';
+
+  @override
+  String get paymentSuccessful => '支付成功！';
+
+  @override
+  String get wechatPayFailed => '微信支付失败';
+
+  @override
+  String get qqLoginFailed => 'QQ 登录失败';
+
+  @override
+  String wechatPayError(String error) {
+    return '微信支付错误：$error';
+  }
+
+  @override
+  String qqError(String error) {
+    return 'QQ 错误：$error';
+  }
+
+  @override
+  String get travelDetected => '发现新旅行';
+
+  @override
+  String get saveTravelQuestion => '要保存这次旅行吗？';
+
+  @override
+  String get saveTravel => '保存旅行';
+
+  @override
+  String get ignore => '忽略';
+
+  @override
+  String get travelSaved => '旅行已保存';
+
+  @override
+  String get saveFailed => '保存失败';
+
+  @override
+  String get dismiss => '关闭';
+
+  @override
+  String get noPendingTrips => '暂无待确认的旅行';
+
+  @override
+  String travelDetectedBanner(String city) {
+    return '我们发现您最近去过 $city';
+  }
+
+  @override
+  String get tapToSave => '点击保存这次旅行';
+
+  @override
+  String durationDays(String days) {
+    return '$days 天';
+  }
+
+  @override
+  String distanceFromHome(String km) {
+    return '距离常住地 $km 公里';
+  }
+
+  @override
+  String get pendingConfirmation => '待确认';
+
+  @override
+  String get confirmedTrips => '旅行记录';
+
+  @override
+  String get homeLocation => '常住地';
+
+  @override
+  String get setHomeLocation => '设置常住地';
+
+  @override
+  String get homeLocationSet => '常住地已设置';
+
+  @override
+  String get setHomeFailed => '设置常住地失败';
+
+  @override
+  String get locationUnavailable => '无法获取位置信息';
+
+  @override
+  String get autoDetectionOn => '自动检测已开启';
+
+  @override
+  String get autoDetectionOff => '自动检测已关闭';
+
+  @override
+  String get clearAllData => '清除所有数据';
+
+  @override
+  String get confirmClear => '确认清除';
+
+  @override
+  String get clearAllDataWarning => '此操作将清除所有旅行检测数据，包括位置记录、停留点和旅行历史。此操作无法撤销。';
+
+  @override
+  String get clear => '清除';
+
+  @override
+  String get dataCleared => '数据已清除';
+
+  @override
+  String get noTravelHistory => '暂无旅行记录';
+
+  @override
+  String get travelHistoryEmptyHint => '开启自动检测后，我们会自动识别您的旅行并提醒您保存';
+
+  @override
+  String get autoDetectionActive => '自动检测已开启';
+
+  @override
+  String get enableAutoDetection => '开启自动检测';
+
+  @override
+  String confidence(String percent) {
+    return '置信度：$percent%';
+  }
+
+  @override
+  String get synced => '已同步';
+
+  @override
+  String get nights => '晚';
+
+  @override
+  String get tip => '提示';
+
+  @override
+  String get travelHistoryNoCityLink => '此旅行记录暂无关联城市';
+
+  @override
+  String get syncCompleted => '同步完成';
+
+  @override
+  String get syncFailed => '同步失败';
+
+  @override
+  String get addHotel => '添加酒店';
+
+  @override
+  String get editHotel => '编辑酒店';
+
+  @override
+  String get hotelName => '酒店名称';
+
+  @override
+  String get hotelNameHint => '请输入酒店名称';
+
+  @override
+  String get hotelDescription => '描述';
+
+  @override
+  String get hotelDescriptionHint => '为数字游民描述这家酒店';
+
+  @override
+  String get pricePerNightHint => '例如：50';
+
+  @override
+  String get longStayDiscount => '长住折扣';
+
+  @override
+  String get longStayDiscountHint => '周/月住折扣百分比';
+
+  @override
+  String get nomadFeatures => '游民友好设施';
+
+  @override
+  String get nomadFeaturesSubtitle => '对远程工作者重要的设施';
+
+  @override
+  String get workDesk => '工作台';
+
+  @override
+  String get hasCoworkingSpace => '有共享办公空间';
+
+  @override
+  String get laundry => '洗衣';
+
+  @override
+  String get pool => '游泳池';
+
+  @override
+  String get twentyFourHourReception => '24小时前台';
+
+  @override
+  String get submitHotel => '提交酒店';
+
+  @override
+  String get hotelSubmittedSuccess => '酒店提交成功！';
+
+  @override
+  String get failedToSubmitHotel => '提交酒店失败';
+
+  @override
+  String maxPhotosReached(int max) {
+    return '最多允许 $max 张照片';
+  }
+
+  @override
+  String get addFirstHotel => '添加第一家酒店';
+
+  @override
+  String get noTeamMembersAdded => '暂无团队成员';
+
+  @override
+  String get addTeamMember => '添加团队成员';
+
+  @override
+  String get editTeamMember => '编辑团队成员';
+
+  @override
+  String get editProject => '编辑项目';
+
+  @override
+  String get enterMemberName => '请输入成员姓名';
+
+  @override
+  String get enterMemberRole => '请输入成员职位';
+
+  @override
+  String get enterMemberDescription => '请输入成员简介（可选）';
+
+  @override
+  String get markAsFounder => '标记为创始人';
+
+  @override
+  String get pleaseEnterMemberName => '请输入成员姓名';
+
+  @override
+  String get pleaseEnterMemberRole => '请输入成员职位';
+
+  @override
+  String get founder => '创始人';
+
+  @override
+  String get role => '职位';
+
+  @override
+  String get searchAddress => '搜索地址或地点';
+
+  @override
+  String get eventInvitation => '活动邀请';
+
+  @override
+  String get inviteYouToJoin => '邀请你参加';
+
+  @override
+  String get moderatorTransfer => '版主转让';
+
+  @override
+  String get accept => '接受';
+
+  @override
+  String get decline => '拒绝';
+
+  @override
+  String get privacyPolicyIntro =>
+      '欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：';
+
+  @override
+  String get privacyDataCollection => '数据收集';
+
+  @override
+  String get privacyDataCollectionDesc =>
+      '我们会收集您的行为数据（如浏览记录、搜索偏好、功能使用频率等），以便优化产品体验和个性化推荐。';
+
+  @override
+  String get privacyLocationData => '位置信息';
+
+  @override
+  String get privacyLocationDataDesc =>
+      '我们会收集您的位置数据，用于提供城市推荐、附近的共享办公空间和活动信息、以及旅行足迹记录等功能。';
+
+  @override
+  String get privacyPersonalData => '个人信息';
+
+  @override
+  String get privacyPersonalDataDesc =>
+      '我们会收集您的基本个人信息（如昵称、头像、联系方式等），用于账号管理和社交功能。';
+
+  @override
+  String get privacyDataProtection => '数据保护';
+
+  @override
+  String get privacyDataProtectionDesc =>
+      '我们承诺采用行业标准的安全措施保护您的个人数据，不会将您的数据出售给第三方。您可以随时在“设置”中管理您的隐私偏好。';
+
+  @override
+  String get privacyPolicyNote => '如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的隐私政策。';
+
+  @override
+  String get agreeAndContinue => '同意并继续';
+
+  @override
+  String get disagreeAndExit => '不同意并退出';
+
+  @override
+  String get viewFullTerms => '查看完整的';
+
+  @override
+  String get thirdPartyServices => '第三方服务';
+
+  @override
+  String get thirdPartyServicesDesc =>
+      '为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• QQ 互联SDK — QQ 登录和分享\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。';
+
+  @override
+  String get permissionUsage => '权限使用说明';
+
+  @override
+  String get permissionUsageDesc =>
+      '本应用使用以下权限：\n• 位置权限 — 城市推荐、附近活动、旅行足迹\n• 日历权限 — 将活动添加到日历\n• 通知权限 — 消息提醒和活动通知\n所有权限均在使用对应功能时才会申请，您可随时在系统设置中管理。';
+
+  @override
+  String get privacyDeclineTitle => '温馨提示';
+
+  @override
+  String get privacyDeclineMessage =>
+      '如果您不同意隐私政策，将无法使用本应用的相关功能。\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。\n\n您确定不同意吗？';
+
+  @override
+  String get reconsider => '再想想';
+
+  @override
+  String get confirmExit => '确认退出';
+
+  @override
+  String get reportSubmitted => '举报已提交';
+
+  @override
+  String get reportSubmittedDesc => '感谢您的反馈，我们将尽快处理。';
+
+  @override
+  String get reportReasonSpam => '垃圾信息/广告';
+
+  @override
+  String get reportReasonHarassment => '骚扰/欺凌';
+
+  @override
+  String get reportReasonInappropriate => '不当内容';
+
+  @override
+  String get reportReasonFraud => '欺诈/虚假信息';
+
+  @override
+  String get reportReasonViolence => '暴力/危险行为';
+
+  @override
+  String get reportReasonOther => '其他原因';
+
+  @override
+  String get reportUser => '举报用户';
+
+  @override
+  String get reportContent => '举报内容';
+
+  @override
+  String get reportFailed => '举报提交失败';
+
+  @override
+  String get reportFailedDesc => '网络异常，请稍后重试。';
+
+  @override
+  String get helpAndSupport => '帮助与客服';
+
+  @override
+  String get helpAndSupportDesc => '如有任何问题或建议，请随时联系我们';
+
+  @override
+  String get customerServiceEmail => '客服邮箱';
+
+  @override
+  String get customerServiceEmailDesc => '我们将在 1-2 个工作日内回复您的邮件';
+
+  @override
+  String get emailCopied => '邮箱地址已复制';
+
+  @override
+  String get sendEmail => '发送邮件';
+
+  @override
+  String get commonQuestions => '常见问题';
+
+  @override
+  String get faqPayment => '付费相关问题';
+
+  @override
+  String get faqPaymentAnswer =>
+      '如您在付费过程中遇到问题，如支付失败、订单异常等，请通过客服邮箱联系我们，并附上您的订单信息，我们会尽快为您处理。';
+
+  @override
+  String get faqAccount => '账号相关问题';
+
+  @override
+  String get faqAccountAnswer =>
+      '如遇到账号登录、密码找回、账号注销等问题，请通过客服邮箱联系我们，并提供您的注册信息以便核实。';
+
+  @override
+  String get faqFeedback => '功能建议与反馈';
+
+  @override
+  String get faqFeedbackAnswer => '我们非常重视用户的意见与建议，如您有任何产品改进建议，欢迎通过客服邮箱告诉我们。';
+
+  @override
+  String get serviceHours => '服务时间';
+
+  @override
+  String get serviceHoursDesc => '工作日 9:00 - 18:00（北京时间）';
 }

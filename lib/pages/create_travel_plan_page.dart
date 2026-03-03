@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
+import 'package:go_nomads_app/services/amap_poi_service.dart';
+import 'package:go_nomads_app/services/location_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 
-import '../config/app_colors.dart';
-import '../controllers/city_detail_controller.dart';
-import '../generated/app_localizations.dart';
-import '../widgets/app_toast.dart';
-import 'amap_native_picker_page.dart';
-import 'travel_plan_page.dart';
+import 'travel_plan/travel_plan_page.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 创建旅行计划页面 - 完整页面版本
 class CreateTravelPlanPage extends StatefulWidget {
@@ -28,29 +32,95 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
   String budget = 'medium';
   String travelStyle = 'culture';
   List<String> interests = [];
-  String departureLocation = '北京'; // 默认出发地为北京
+  String departureLocation = ''; // 默认为空，等待获取实时位置
+  bool _isLoadingLocation = true; // 是否正在加载位置
   DateTime? departureDate;
   final TextEditingController _customBudgetController = TextEditingController();
   String selectedCurrency = 'USD';
   List<String> selectedAttractions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentLocation();
+  }
+
+  /// 获取当前位置并逆向解析地址
+  Future<void> _loadCurrentLocation() async {
+    setState(() => _isLoadingLocation = true);
+
+    try {
+      final locationService = Get.find<LocationService>();
+
+      // 添加超时机制，防止无限等待
+      final position =
+          await locationService.getCurrentLocation().timeout(const Duration(seconds: 10), onTimeout: () => null);
+
+      if (!mounted) return;
+
+      if (position == null) {
+        debugPrint('❌ 无法获取位置或超时，使用默认值');
+        setState(() {
+          departureLocation = '';
+          _isLoadingLocation = false;
+        });
+        return;
+      }
+
+      debugPrint('📍 获取到位置: ${position.latitude}, ${position.longitude}');
+
+      // 使用高德逆地理编码获取地址，同样添加超时
+      final geoResult = await AmapPoiService.instance
+          .reverseGeocode(
+            latitude: position.latitude,
+            longitude: position.longitude,
+          )
+          .timeout(const Duration(seconds: 5), onTimeout: () => null);
+
+      if (!mounted) return;
+
+      if (geoResult != null) {
+        setState(() {
+          // 使用简短地址（市+区）或完整地址
+          departureLocation = geoResult.shortAddress.isNotEmpty ? geoResult.shortAddress : geoResult.formattedAddress;
+          _isLoadingLocation = false;
+        });
+        debugPrint('✅ 逆地理编码成功: $departureLocation');
+      } else {
+        setState(() {
+          departureLocation = '';
+          _isLoadingLocation = false;
+        });
+        debugPrint('❌ 逆地理编码失败或超时');
+      }
+    } catch (e) {
+      debugPrint('❌ 获取位置异常: $e');
+      if (mounted) {
+        setState(() {
+          departureLocation = '';
+          _isLoadingLocation = false;
+        });
+      }
+    }
+  }
 
   // 根据城市名称获取景点列表
   List<Map<String, dynamic>> get cityAttractions {
     // 这里可以根据 widget.cityName 返回不同城市的景点
     // 目前提供一个通用的景点列表示例
     return [
-      {'name': '历史古迹', 'icon': Icons.account_balance, 'id': 'historic'},
-      {'name': '博物馆', 'icon': Icons.museum, 'id': 'museum'},
-      {'name': '公园绿地', 'icon': Icons.park, 'id': 'park'},
-      {'name': '美食街区', 'icon': Icons.restaurant_menu, 'id': 'food_district'},
-      {'name': '购物中心', 'icon': Icons.shopping_cart, 'id': 'shopping_mall'},
-      {'name': '艺术画廊', 'icon': Icons.palette, 'id': 'art_gallery'},
-      {'name': '观景台', 'icon': Icons.landscape, 'id': 'viewpoint'},
-      {'name': '海滩', 'icon': Icons.beach_access, 'id': 'beach'},
-      {'name': '寺庙教堂', 'icon': Icons.temple_buddhist, 'id': 'temple'},
-      {'name': '夜市', 'icon': Icons.nightlight, 'id': 'night_market'},
-      {'name': '主题乐园', 'icon': Icons.attractions, 'id': 'theme_park'},
-      {'name': '水族馆', 'icon': Icons.water, 'id': 'aquarium'},
+      {'name': '历史古迹', 'icon': FontAwesomeIcons.landmark, 'id': 'historic'},
+      {'name': '博物馆', 'icon': FontAwesomeIcons.landmark, 'id': 'museum'},
+      {'name': '公园绿地', 'icon': FontAwesomeIcons.tree, 'id': 'park'},
+      {'name': '美食街区', 'icon': FontAwesomeIcons.utensils, 'id': 'food_district'},
+      {'name': '购物中心', 'icon': FontAwesomeIcons.cartShopping, 'id': 'shopping_mall'},
+      {'name': '艺术画廊', 'icon': FontAwesomeIcons.palette, 'id': 'art_gallery'},
+      {'name': '观景台', 'icon': FontAwesomeIcons.mountain, 'id': 'viewpoint'},
+      {'name': '海滩', 'icon': FontAwesomeIcons.umbrellaBeach, 'id': 'beach'},
+      {'name': '寺庙教堂', 'icon': FontAwesomeIcons.placeOfWorship, 'id': 'temple'},
+      {'name': '夜市', 'icon': FontAwesomeIcons.moon, 'id': 'night_market'},
+      {'name': '主题乐园', 'icon': FontAwesomeIcons.cameraRetro, 'id': 'theme_park'},
+      {'name': '水族馆', 'icon': FontAwesomeIcons.water, 'id': 'aquarium'},
     ];
   }
 
@@ -67,44 +137,40 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_outlined,
-              color: AppColors.backButtonDark),
-          onPressed: () => Get.back(),
-        ),
+        leading: const AppBackButton(color: AppColors.backButtonDark),
         title: Builder(
           builder: (context) {
             final l10n = AppLocalizations.of(context)!;
             return Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: const Icon(
-                    Icons.auto_awesome,
+                  child: Icon(
+                    FontAwesomeIcons.wandMagicSparkles,
                     color: Color(0xFFFF4458),
-                    size: 20,
+                    size: 20.r,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n.aiTravelPlanner,
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: TextStyle(
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
                     Text(
                       l10n.planYourTrip(widget.cityName),
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: 12.sp,
                         color: Colors.grey,
                         fontWeight: FontWeight.normal,
                       ),
@@ -125,19 +191,19 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 final l10n = AppLocalizations.of(context)!;
                 return Container(
                   width: double.infinity,
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
+                  margin: EdgeInsets.all(16.w),
+                  padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                        blurRadius: 12,
+                        blurRadius: 12.r,
                         offset: const Offset(0, 4),
                       ),
                     ],
@@ -147,25 +213,24 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.auto_awesome,
-                              color: Colors.white, size: 24),
-                          const SizedBox(width: 8),
+                          Icon(FontAwesomeIcons.wandMagicSparkles, color: Colors.white, size: 24.r),
+                          SizedBox(width: 8.w),
                           Text(
                             l10n.aiPoweredPlanning,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         l10n.tellPreferences(widget.cityName),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           height: 1.4,
                         ),
                       ),
@@ -181,14 +246,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 final l10n = AppLocalizations.of(context)!;
                 return Container(
                   margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20.w),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
+                        blurRadius: 10.r,
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -197,89 +262,121 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Departure Location
-                      _buildSectionTitle(
-                          l10n.departureLocation, Icons.location_on_outlined),
-                      const SizedBox(height: 12),
+                      _buildSectionTitle(l10n.departureLocation, FontAwesomeIcons.locationDot),
+                      SizedBox(height: 12.h),
                       Row(
                         children: [
                           Expanded(
-                            child: TextField(
-                              controller: TextEditingController(
-                                  text: departureLocation),
-                              readOnly: true,
-                              decoration: InputDecoration(
-                                hintText: l10n.selectDeparture,
-                                hintStyle: TextStyle(color: Colors.grey[400]),
-                                filled: true,
-                                fillColor: Colors.grey[50],
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade200),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFFF4458),
-                                    width: 2,
+                            child: _isLoadingLocation
+                                ? Container(
+                                    height: 56.h,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border: Border.all(color: Colors.grey.shade200),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 20.w,
+                                          height: 20.h,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Color(0xFFFF4458),
+                                          ),
+                                        ),
+                                        SizedBox(width: 12.w),
+                                        Text(
+                                          '正在获取当前位置...',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14.sp,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : TextField(
+                                    controller: TextEditingController(text: departureLocation),
+                                    readOnly: true,
+                                    decoration: InputDecoration(
+                                      hintText: l10n.selectDeparture,
+                                      hintStyle: TextStyle(color: Colors.grey[400]),
+                                      filled: true,
+                                      fillColor: Colors.grey[50],
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12.r),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12.r),
+                                        borderSide: BorderSide(color: Colors.grey.shade200),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12.r),
+                                        borderSide: BorderSide(
+                                          color: Color(0xFFFF4458),
+                                          width: 2,
+                                        ),
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 16.h,
+                                      ),
+                                      prefixIcon: Icon(
+                                        FontAwesomeIcons.locationCrosshairs,
+                                        color: Color(0xFFFF4458),
+                                        size: 18.r,
+                                      ),
+                                      suffixIcon: departureLocation.isNotEmpty
+                                          ? IconButton(
+                                              icon: Icon(FontAwesomeIcons.xmark, size: 20.r),
+                                              onPressed: () {
+                                                setState(() {
+                                                  departureLocation = '';
+                                                });
+                                              },
+                                            )
+                                          : null,
+                                    ),
                                   ),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                                suffixIcon: departureLocation.isNotEmpty
-                                    ? IconButton(
-                                        icon: const Icon(Icons.clear, size: 20),
-                                        onPressed: () {
-                                          setState(() {
-                                            departureLocation = '';
-                                          });
-                                        },
-                                      )
-                                    : null,
-                              ),
-                            ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Container(
-                            height: 56,
-                            width: 56,
+                            height: 56.h,
+                            width: 56.w,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFFF4458)
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 8,
+                                  color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+                                  blurRadius: 8.r,
                                   offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
                             child: IconButton(
                               icon: const Icon(
-                                Icons.map_outlined,
+                                FontAwesomeIcons.map,
                                 color: Colors.white,
                               ),
                               onPressed: () async {
                                 try {
                                   final result = await Get.to(
-                                    () => const AmapNativePickerPage(),
+                                    () => const MapPickerPage(),
+                                    binding: MapPickerBinding(),
                                   );
                                   if (result != null && result is Map) {
-                                    final address =
-                                        result['address'] as String? ?? '';
+                                    final address = result['address'] as String? ?? '';
                                     setState(() {
                                       departureLocation = address;
+                                      _isLoadingLocation = false; // 用户手动选择后停止加载状态
                                     });
                                   }
                                 } catch (e) {
@@ -294,30 +391,28 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         l10n.tapMapIcon,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
                           fontStyle: FontStyle.italic,
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Departure Date
-                      _buildSectionTitle(
-                          'Departure Date', Icons.event_outlined),
-                      const SizedBox(height: 12),
+                      _buildSectionTitle('Departure Date', FontAwesomeIcons.calendarDays),
+                      SizedBox(height: 12.h),
                       InkWell(
                         onTap: () async {
                           final DateTime? picked = await showDatePicker(
                             context: context,
                             initialDate: departureDate ?? DateTime.now(),
                             firstDate: DateTime.now(),
-                            lastDate:
-                                DateTime.now().add(const Duration(days: 365)),
+                            lastDate: DateTime.now().add(const Duration(days: 365)),
                             builder: (context, child) {
                               return Theme(
                                 data: Theme.of(context).copyWith(
@@ -339,41 +434,37 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 16.h,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                             border: Border.all(color: Colors.grey.shade200),
                           ),
                           child: Row(
                             children: [
                               Icon(
-                                Icons.calendar_today,
-                                color: departureDate != null
-                                    ? const Color(0xFFFF4458)
-                                    : Colors.grey[400],
-                                size: 20,
+                                FontAwesomeIcons.calendar,
+                                color: departureDate != null ? const Color(0xFFFF4458) : Colors.grey[400],
+                                size: 20.r,
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12.w),
                               Expanded(
                                 child: Text(
                                   departureDate != null
                                       ? '${departureDate!.year}-${departureDate!.month.toString().padLeft(2, '0')}-${departureDate!.day.toString().padLeft(2, '0')}'
                                       : 'Select departure date',
                                   style: TextStyle(
-                                    fontSize: 15,
-                                    color: departureDate != null
-                                        ? Colors.black87
-                                        : Colors.grey[400],
+                                    fontSize: 15.sp,
+                                    color: departureDate != null ? Colors.black87 : Colors.grey[400],
                                   ),
                                 ),
                               ),
                               if (departureDate != null)
                                 IconButton(
-                                  icon: const Icon(Icons.clear, size: 20),
+                                  icon: Icon(FontAwesomeIcons.xmark, size: 20.r),
                                   onPressed: () {
                                     setState(() {
                                       departureDate = null;
@@ -385,17 +476,16 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Trip Duration
-                      _buildSectionTitle(
-                          l10n.tripDuration, Icons.calendar_today_outlined),
-                      const SizedBox(height: 12),
+                      _buildSectionTitle(l10n.tripDuration, FontAwesomeIcons.calendar),
+                      SizedBox(height: 12.h),
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(color: Colors.grey.shade200),
                         ),
                         child: Column(
@@ -416,32 +506,32 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                     },
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: 12.w),
                                 Container(
-                                  width: 60,
-                                  height: 40,
+                                  width: 60.w,
+                                  height: 40.h,
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFF4458),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(8.r),
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
                                     duration.toString(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
+                                      fontSize: 20.sp,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8.h),
                             Text(
                               duration == 1 ? l10n.day(1) : l10n.days(duration),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Color(0xFFFF4458),
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -449,37 +539,33 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Budget Level
-                      _buildSectionTitle(
-                          l10n.budget, Icons.attach_money_outlined),
-                      const SizedBox(height: 12),
+                      _buildSectionTitle(l10n.budget, FontAwesomeIcons.dollarSign),
+                      SizedBox(height: 12.h),
                       Row(
                         children: [
                           Expanded(
-                            child:
-                                _buildBudgetChip(l10n.low, budget == 'low', () {
+                            child: _buildBudgetChip(l10n.low, budget == 'low', () {
                               setState(() {
                                 budget = 'low';
                                 _customBudgetController.clear();
                               });
                             }),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
-                            child: _buildBudgetChip(
-                                l10n.medium, budget == 'medium', () {
+                            child: _buildBudgetChip(l10n.medium, budget == 'medium', () {
                               setState(() {
                                 budget = 'medium';
                                 _customBudgetController.clear();
                               });
                             }),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
-                            child: _buildBudgetChip(l10n.high, budget == 'high',
-                                () {
+                            child: _buildBudgetChip(l10n.high, budget == 'high', () {
                               setState(() {
                                 budget = 'high';
                                 _customBudgetController.clear();
@@ -488,35 +574,34 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       Text(
                         l10n.enterBudget,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Row(
                         children: [
                           Container(
-                            width: 100,
-                            height: 56,
+                            width: 100.w,
+                            height: 56.h,
                             decoration: BoxDecoration(
                               color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               border: Border.all(color: Colors.grey.shade200),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 value: selectedCurrency,
                                 isExpanded: true,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                borderRadius: BorderRadius.circular(12),
+                                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                                borderRadius: BorderRadius.circular(12.r),
                                 icon: const Icon(
-                                  Icons.arrow_drop_down,
+                                  FontAwesomeIcons.chevronDown,
                                   color: Color(0xFFFF4458),
                                 ),
                                 items: [
@@ -527,14 +612,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '\$ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'USD',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -546,14 +631,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '¥ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'CNY',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -565,14 +650,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '€ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'EUR',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -584,14 +669,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '£ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'GBP',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -603,14 +688,14 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                         Text(
                                           '¥ ',
                                           style: TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 16.sp,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.grey[700],
                                           ),
                                         ),
-                                        const Text(
+                                        Text(
                                           'JPY',
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 14.sp),
                                         ),
                                       ],
                                     ),
@@ -626,7 +711,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: TextFormField(
                               controller: _customBudgetController,
@@ -637,24 +722,23 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                                 filled: true,
                                 fillColor: Colors.grey[50],
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(12.r),
                                   borderSide: BorderSide.none,
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade200),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: BorderSide(color: Colors.grey.shade200),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: BorderSide(
                                     color: Color(0xFFFF4458),
                                     width: 2,
                                   ),
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16.w,
+                                  vertical: 16.h,
                                 ),
                               ),
                               onChanged: (value) {
@@ -669,22 +753,22 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         ],
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Preferred Attractions (新增景点选择模块)
-                      _buildSectionTitle('想去的景点', Icons.location_city_outlined),
-                      const SizedBox(height: 8),
+                      _buildSectionTitle('想去的景点', FontAwesomeIcons.city),
+                      SizedBox(height: 8.h),
                       Text(
                         '选择您在${widget.cityName}想要游览的景点类型',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[600],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 8.w,
+                        runSpacing: 8.w,
                         children: cityAttractions.map((attraction) {
                           return _buildAttractionChip(
                             attraction['name'] as String,
@@ -694,36 +778,30 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                         }).toList(),
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Travel Style
-                      _buildSectionTitle(
-                          l10n.travelStyle, Icons.style_outlined),
-                      const SizedBox(height: 12),
+                      _buildSectionTitle(l10n.travelStyle, FontAwesomeIcons.paintbrush),
+                      SizedBox(height: 12.h),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 8.w,
+                        runSpacing: 8.w,
                         children: [
-                          _buildStyleChip(
-                              l10n.culture, 'culture', Icons.museum_outlined),
-                          _buildStyleChip(l10n.adventure, 'adventure',
-                              Icons.landscape_outlined),
-                          _buildStyleChip(l10n.relaxation, 'relaxation',
-                              Icons.spa_outlined),
-                          _buildStyleChip(l10n.nightlife, 'nightlife',
-                              Icons.nightlife_outlined),
+                          _buildStyleChip(l10n.culture, 'culture', FontAwesomeIcons.landmark),
+                          _buildStyleChip(l10n.adventure, 'adventure', FontAwesomeIcons.mountain),
+                          _buildStyleChip(l10n.relaxation, 'relaxation', FontAwesomeIcons.spa),
+                          _buildStyleChip(l10n.nightlife, 'nightlife', FontAwesomeIcons.champagneGlasses),
                         ],
                       ),
 
-                      const SizedBox(height: 28),
+                      SizedBox(height: 28.h),
 
                       // Interests
-                      _buildSectionTitle(
-                          l10n.interests, Icons.interests_outlined),
-                      const SizedBox(height: 12),
+                      _buildSectionTitle(l10n.interests, FontAwesomeIcons.heart),
+                      SizedBox(height: 12.h),
                       Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 8.w,
+                        runSpacing: 8.w,
                         children: [
                           _buildInterestChip(l10n.photography),
                           _buildInterestChip(l10n.history),
@@ -747,13 +825,13 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         builder: (context) {
           final l10n = AppLocalizations.of(context)!;
           return Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
+                  blurRadius: 10.r,
                   offset: const Offset(0, -2),
                 ),
               ],
@@ -764,23 +842,23 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF4458),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   elevation: 0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.auto_awesome, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
+                    SizedBox(width: 8.w),
                     Text(
                       l10n.generatePlan,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: TextStyle(
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 0.3,
+                        letterSpacing: 0.3.sp,
                       ),
                     ),
                   ],
@@ -796,12 +874,12 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFFFF4458)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20.r, color: const Color(0xFFFF4458)),
+        SizedBox(width: 8.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
@@ -814,7 +892,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: EdgeInsets.symmetric(vertical: 14.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -824,7 +902,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 )
               : null,
           color: isSelected ? null : Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -833,7 +911,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
               ? [
                   BoxShadow(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                    blurRadius: 8,
+                    blurRadius: 8.r,
                     offset: const Offset(0, 2),
                   ),
                 ]
@@ -844,7 +922,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
             label,
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.black87,
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             ),
           ),
@@ -860,7 +938,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         setState(() => travelStyle = value);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -870,7 +948,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 )
               : null,
           color: isSelected ? null : Colors.grey[100],
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -881,15 +959,15 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
           children: [
             Icon(
               icon,
-              size: 16,
+              size: 16.r,
               color: isSelected ? Colors.white : Colors.black54,
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6.w),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black87,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -912,7 +990,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -922,7 +1000,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 )
               : null,
           color: isSelected ? null : Colors.grey[100],
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -932,7 +1010,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
           label,
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.black87,
-            fontSize: 13,
+            fontSize: 13.sp,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -953,7 +1031,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -963,7 +1041,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
                 )
               : null,
           color: isSelected ? null : Colors.grey[50],
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
@@ -972,7 +1050,7 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
               ? [
                   BoxShadow(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.2),
-                    blurRadius: 6,
+                    blurRadius: 6.r,
                     offset: const Offset(0, 2),
                   ),
                 ]
@@ -983,15 +1061,15 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
           children: [
             Icon(
               icon,
-              size: 16,
+              size: 16.r,
               color: isSelected ? Colors.white : const Color(0xFFFF4458),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6.w),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black87,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -1002,8 +1080,6 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
   }
 
   void _generatePlan() {
-    final controller = Get.find<CityDetailController>();
-
     // Use custom budget if provided, otherwise use selected budget level
     String finalBudget = budget;
     if (_customBudgetController.text.isNotEmpty) {
@@ -1031,8 +1107,5 @@ class _CreateTravelPlanPageState extends State<CreateTravelPlanPage> {
         departureDate: departureDate,
       ),
     );
-
-    // Show generating message
-    controller.isGeneratingPlan.value = true;
   }
 }

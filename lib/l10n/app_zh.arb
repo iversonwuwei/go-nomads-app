@@ -15,6 +15,8 @@
   "logout": "退出登录",
   "register": "注册",
   "email": "邮箱",
+  "invalidEmailFormat": "邮箱格式不正确",
+  "emailAlreadyExists": "该邮箱已被使用",
   "password": "密码",
   "confirmPassword": "确认密码",
   "username": "用户名",
@@ -47,10 +49,13 @@
   "members": "成员列表",
   "meetup": "聚会",
   "createMeetup": "创建聚会",
+  "editMeetup": "编辑聚会",
   "invite": "邀请",
   "inviteToMeetup": "邀请参加聚会",
   "selectMeetup": "选择聚会",
   "sendInvitation": "发送邀请",
+  "userIsOrganizer": "用户是活动创建者",
+  "userAlreadyJoined": "用户已加入",
   "date": "日期",
   "time": "时间",
   "location": "位置",
@@ -130,6 +135,7 @@
   "privacy": "隐私",
   "termsOfService": "服务条款",
   "about": "关于",
+  "createdBy": "创建者",
   "version": "版本",
   "help": "帮助",
   "contact": "联系我们",
@@ -257,6 +263,48 @@
   "callNow": "立即呼叫",
   "bookNow": "立即预订",
   "visitWebsite": "访问网站",
+  "coworkingVerifyTitle": "空间认证",
+  "@coworkingVerifyTitle": {
+    "description": "提交共享办公认证时弹窗的标题"
+  },
+  "coworkingVerifyLoginRequired": "请先登录再进行空间认证。",
+  "@coworkingVerifyLoginRequired": {
+    "description": "未登录用户点击认证徽章时的提示"
+  },
+  "coworkingVerifyMessage": "确定要为 {spaceName} 提交认证吗？",
+  "@coworkingVerifyMessage": {
+    "description": "提交共享办公认证前的确认文案",
+    "placeholders": {
+      "spaceName": {
+        "type": "String",
+        "example": "Nomad Hub 上海"
+      }
+    }
+  },
+  "coworkingVerifySuccess": "认证已提交，感谢你的贡献！",
+  "@coworkingVerifySuccess": {
+    "description": "认证成功后的提示"
+  },
+  "coworkingVerifyFailed": "认证提交失败，请稍后再试。",
+  "@coworkingVerifyFailed": {
+    "description": "认证失败后的提示"
+  },
+  "coworkingVerifyAlreadyVoted": "您已经为该空间提交过认证。",
+  "@coworkingVerifyAlreadyVoted": {
+    "description": "用户已经验证过该空间的提示"
+  },
+  "coworkingVerifyIsCreator": "创建者不能为自己的空间认证。",
+  "@coworkingVerifyIsCreator": {
+    "description": "创建者尝试验证自己的空间的提示"
+  },
+  "coworkingVerifySpaceVerified": "该空间已通过认证。",
+  "@coworkingVerifySpaceVerified": {
+    "description": "空间已经是已验证状态的提示"
+  },
+  "coworkingVerifyChecking": "正在检查资格...",
+  "@coworkingVerifyChecking": {
+    "description": "检查验证资格时的加载提示"
+  },
   "shareLocation": "分享位置",
   "addToFavorites": "添加到收藏",
   "removeFromFavorites": "从收藏移除",
@@ -316,6 +364,7 @@
   "deleteSuccess": "删除成功",
   "saveSuccess": "保存成功",
   "updateSuccess": "更新成功",
+  "updateFailed": "更新失败",
   "uploadPhoto": "上传照片",
   "takePhoto": "拍照",
   "chooseFromGallery": "从相册选择",
@@ -435,6 +484,7 @@
   "photos": "照片",
   "weather": "天气",
   "neighborhoods": "附近",
+  "noNearbyCities": "暂无附近城市",
   "coworking": "共享办公",
   "loadingGuide": "加载指南...",
   "startRating": "开始评分",
@@ -639,6 +689,7 @@
   "reenterPassword": "重新输入密码",
   "confirmPasswordRequired": "请确认您的密码",
   "passwordsNotMatch": "密码不匹配",
+  "termsAndConditions": "服务条款",
   "agreeToTerms": "我同意",
   "and": "和",
   "communityGuidelines": "社区准则",
@@ -1100,6 +1151,8 @@
   "allMeetups": "全部聚会",
   "past": "过往",
   "upcoming": "即将到来",
+  "statusOngoing": "进行中",
+  "statusCancelled": "已取消",
   "upcomingEvents": "{count} 个即将到来的活动",
   "@upcomingEvents": {
     "placeholders": {
@@ -1130,6 +1183,16 @@
   "noJoinedMeetupsYet": "还没有加入任何聚会",
   "noPastMeetups": "暂无过往聚会",
   "noMeetupsAvailable": "暂无可用聚会",
+  "myMeetups": "我的聚会",
+  "noMeetups": "暂无聚会",
+  "createFirstMeetup": "创建您的第一个聚会来与其他游牧者建立联系",
+  "confirmCancelMeetupTitle": "取消活动",
+  "confirmCancelMeetupMessage": "确定要取消这个活动吗？此操作无法撤销。",
+  "confirmLeaveMeetupTitle": "退出活动",
+  "confirmLeaveMeetupMessage": "确定要退出这个活动吗？",
+  "cancelMeetupSuccess": "活动已取消",
+  "cancelMeetupFailed": "取消活动失败",
+  "leaveMeetupFailed": "退出活动失败",
   "join": "加入",
   "youHaveJoined": "您已加入 {title}",
   "@youHaveJoined": {
@@ -1215,6 +1278,34 @@
       }
     }
   },
+  "invalidCityId": "城市ID无效,无法提交评论",
+  "cannotSubmitReview": "无法提交评论",
+  "maxPhotosWarning": "最多只能选择5张图片",
+  "coworkingReviewSubmitSuccess": "评论提交成功！",
+  "submitFailed": "提交失败: {error}",
+  "@submitFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "visitDate": "访问日期",
+  "visitDateOptional": "访问日期(可选)",
+  "whenDidYouVisit": "您什么时候去的?",
+  "sumUpExperience": "用几句话总结您的体验",
+  "coworkingExperienceHint": "分享您关于WiFi、工作空间、氛围的体验...",
+  "reviewMinLength": "评论至少需要20个字符",
+  "photosOptional": "照片(可选)",
+  "addFromGallery": "从相册添加",
+  "takePhoto": "拍照",
+  "chooseFromGallery": "从相册选择",
+  "takeAPhoto": "拍一张照片",
+  "coworkingReviewGuidelines": "评论指南",
+  "coworkingGuidelineHonest": "• 诚实具体",
+  "coworkingGuidelineFocus": "• 关注工作空间功能",
+  "coworkingGuidelineMention": "• 提及WiFi、噪音、设施",
+  "coworkingGuidelineRespectful": "• 尊重他人，建设性反馈",
   "welcomeBack": "欢迎回来",
   "loginToContinue": "登录您的账号以继续使用",
   "orLoginWith": "或使用其他方式登录",
@@ -1383,6 +1474,7 @@
   "recenter": "回到中心",
   "startNavigation": "开始导航",
   "noMapAppAvailable": "未找到可用的地图应用",
+  "selectMapApp": "选择地图应用",
   "selectMapSource": "选择地图源",
   "switchedToMapSource": "已切换到 {mapSource}",
   "@switchedToMapSource": {
@@ -1540,7 +1632,7 @@
   "enterMeetupTitle": "输入聚会标题",
   "pleaseEnterTitle": "请输入标题",
   "meetupType": "类型",
-  "meetupTypeHint": "例如：休闲聚会、商务社交、文化交流",
+  "meetupTypeHint": "选择聚会类型",
   "pleaseEnterType": "请输入类型",
   "selectCity": "选择城市",
   "country": "国家",
@@ -1607,6 +1699,8 @@
       }
     }
   },
+  "calendarPermissionDenied": "日历权限被拒绝，请在设置中开启。",
+  "noCalendarAvailable": "未找到可写入的日历。",
   "cityChats": "城市聊天",
   "onlineMembers": "在线成员",
   "online": "在线",
@@ -1787,6 +1881,8 @@
   "receiveUpdatesAndAlerts": "接收更新和提醒",
   "travelHistoryVisible": "旅行历史可见",
   "showTravelHistoryToOthers": "向其他用户展示您的旅行历史",
+  "autoTravelDetection": "自动旅行记录",
+  "autoTravelDetectionDescription": "自动检测并记录您的旅行足迹",
   "publicProfile": "公开资料",
   "makeProfileVisibleToEveryone": "让所有人都能看到您的资料",
   "currency": "货币",
@@ -1800,7 +1896,307 @@
   "privacySettingsComingSoon": "隐私设置功能即将推出",
   "deleteAccount": "删除账户",
   "deleteAccountConfirmation": "确定要删除您的账户吗？此操作无法撤销。",
-  "accountDeletionCancelled": "已取消删除账户"
+  "accountDeletionCancelled": "已取消删除账户",
+
+  "membershipPlans": "会员计划",
+  "currentPlan": "当前：{planName}",
+  "@currentPlan": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "daysRemaining": "剩余 {days} 天",
+  "@daysRemaining": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "upgradeToUnlock": "升级以解锁更多功能",
+  "selectPaymentMethod": "选择支付方式",
+  "upgradeTo": "升级到 {planName} - ¥{price}",
+  "@upgradeTo": {
+    "placeholders": {
+      "planName": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "paypalPayment": "PayPal",
+  "paypalDescription": "快捷安全的国际支付",
+  "wechatPayment": "微信支付",
+  "wechatDescription": "使用微信支付",
+  "qqLogin": "QQ登录",
+  "qqDescription": "使用 QQ 账号登录",
+  "securePayment": "安全支付",
+  "allPaymentsSecure": "所有支付均安全处理，可随时取消。",
+  "allPaymentsEncrypted": "所有支付均安全加密",
+  "unableToLoadPlans": "无法加载会员计划",
+  "checkNetworkConnection": "请检查您的网络连接",
+  "currentPlanLabel": "当前计划",
+  "selectPlanLabel": "选择计划",
+  "popular": "热门",
+  "perYear": "/年",
+  "billingMonthly": "月付",
+  "billingYearly": "年付",
+  "saveAmount": "省 ¥{amount}",
+  "@saveAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "alreadyHavePlan": "您已拥有此计划或更高级别的计划",
+  "creatingPaypalOrder": "正在创建 PayPal 订单...",
+  "creatingWechatOrder": "正在创建微信支付订单...",
+  "qqAuthInProgress": "正在进行 QQ 授权...",
+  "priceForPlan": "${price} - {planName}",
+  "@priceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "cnyPriceForPlan": "¥{price} - {planName}",
+  "@cnyPriceForPlan": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "planName": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentServiceNotAvailable": "支付服务不可用",
+  "paymentError": "支付错误：{error}",
+  "@paymentError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "openingPaypal": "正在打开 PayPal 支付...",
+  "failedToCreateOrder": "创建支付订单失败",
+  "wechatNotInstalled": "请安装微信以使用微信支付",
+  "qqNotInstalled": "请安装 QQ 以使用 QQ 登录",
+  "paymentSuccessful": "支付成功！",
+  "wechatPayFailed": "微信支付失败",
+  "qqLoginFailed": "QQ 登录失败",
+  "wechatPayError": "微信支付错误：{error}",
+  "@wechatPayError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "qqError": "QQ 错误：{error}",
+  "@qqError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "travelHistory": "旅行历史",
+  "travelDetected": "发现新旅行",
+  "saveTravelQuestion": "要保存这次旅行吗？",
+  "saveTravel": "保存旅行",
+  "ignore": "忽略",
+  "travelSaved": "旅行已保存",
+  "saveFailed": "保存失败",
+  "dismiss": "关闭",
+  "noPendingTrips": "暂无待确认的旅行",
+  "travelDetectedBanner": "我们发现您最近去过 {city}",
+  "@travelDetectedBanner": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "tapToSave": "点击保存这次旅行",
+  "durationDays": "{days} 天",
+  "@durationDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceFromHome": "距离常住地 {km} 公里",
+  "@distanceFromHome": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingConfirmation": "待确认",
+  "confirmedTrips": "旅行记录",
+  "homeLocation": "常住地",
+  "setHomeLocation": "设置常住地",
+  "homeLocationSet": "常住地已设置",
+  "setHomeFailed": "设置常住地失败",
+  "locationUnavailable": "无法获取位置信息",
+  "autoDetectionOn": "自动检测已开启",
+  "autoDetectionOff": "自动检测已关闭",
+  "clearAllData": "清除所有数据",
+  "confirmClear": "确认清除",
+  "clearAllDataWarning": "此操作将清除所有旅行检测数据，包括位置记录、停留点和旅行历史。此操作无法撤销。",
+  "clear": "清除",
+  "dataCleared": "数据已清除",
+  "noTravelHistory": "暂无旅行记录",
+  "travelHistoryEmptyHint": "开启自动检测后，我们会自动识别您的旅行并提醒您保存",
+  "autoDetectionActive": "自动检测已开启",
+  "enableAutoDetection": "开启自动检测",
+  "days": "天",
+  "locationCoordinates": "{lat}, {lon}",
+  "@locationCoordinates": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "confidence": "置信度：{percent}%",
+  "@confidence": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "synced": "已同步",
+  "nights": "晚",
+  "tip": "提示",
+  "travelHistoryNoCityLink": "此旅行记录暂无关联城市",
+  "syncCompleted": "同步完成",
+  "syncFailed": "同步失败",
+
+  "addHotel": "添加酒店",
+  "editHotel": "编辑酒店",
+  "hotelName": "酒店名称",
+  "hotelNameHint": "请输入酒店名称",
+  "hotelDescription": "描述",
+  "hotelDescriptionHint": "为数字游民描述这家酒店",
+  "pricePerNight": "每晚价格",
+  "pricePerNightHint": "例如：50",
+  "longStayDiscount": "长住折扣",
+  "longStayDiscountHint": "周/月住折扣百分比",
+  "nomadFeatures": "游民友好设施",
+  "nomadFeaturesSubtitle": "对远程工作者重要的设施",
+  "wifiSpeed": "WiFi速度",
+  "wifiSpeedHint": "例如：100 Mbps",
+  "workDesk": "工作台",
+  "hasCoworkingSpace": "有共享办公空间",
+  "airConditioning": "空调",
+  "kitchen": "厨房",
+  "laundry": "洗衣",
+  "pool": "游泳池",
+  "gym": "健身房",
+  "twentyFourHourReception": "24小时前台",
+  "submitHotel": "提交酒店",
+  "hotelSubmittedSuccess": "酒店提交成功！",
+  "failedToSubmitHotel": "提交酒店失败",
+  "maxPhotosReached": "最多允许 {max} 张照片",
+  "@maxPhotosReached": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "addFirstHotel": "添加第一家酒店",
+  "noTeamMembersAdded": "暂无团队成员",
+  "addTeamMember": "添加团队成员",
+  "editTeamMember": "编辑团队成员",
+  "editProject": "编辑项目",
+  "enterMemberName": "请输入成员姓名",
+  "enterMemberRole": "请输入成员职位",
+  "enterMemberDescription": "请输入成员简介（可选）",
+  "markAsFounder": "标记为创始人",
+  "pleaseEnterMemberName": "请输入成员姓名",
+  "pleaseEnterMemberRole": "请输入成员职位",
+  "founder": "创始人",
+  "name": "姓名",
+  "role": "职位",
+  "searchAddress": "搜索地址或地点",
+  "noResults": "未找到结果",
+  "eventInvitation": "活动邀请",
+  "inviteYouToJoin": "邀请你参加",
+  "moderatorTransfer": "版主转让",
+  "accept": "接受",
+  "decline": "拒绝",
+  "from": "来自",
+
+  "privacyPolicyIntro": "欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：",
+  "privacyDataCollection": "数据收集",
+  "privacyDataCollectionDesc": "我们会收集您的行为数据（如浏览记录、搜索偏好、功能使用频率等），以便优化产品体验和个性化推荐。",
+  "privacyLocationData": "位置信息",
+  "privacyLocationDataDesc": "我们会收集您的位置数据，用于提供城市推荐、附近的共享办公空间和活动信息、以及旅行足迹记录等功能。",
+  "privacyPersonalData": "个人信息",
+  "privacyPersonalDataDesc": "我们会收集您的基本个人信息（如昵称、头像、联系方式等），用于账号管理和社交功能。",
+  "privacyDataProtection": "数据保护",
+  "privacyDataProtectionDesc": "我们承诺采用行业标准的安全措施保护您的个人数据，不会将您的数据出售给第三方。您可以随时在\u201c设置\u201d中管理您的隐私偏好。",
+  "privacyPolicyNote": "如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的隐私政策。",
+  "agreeAndContinue": "同意并继续",
+  "disagreeAndExit": "不同意并退出",
+  "viewFullTerms": "查看完整的",
+  "and": " 和 ",
+  "thirdPartyServices": "第三方服务",
+  "thirdPartyServicesDesc": "为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• QQ 互联SDK — QQ 登录和分享\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。",
+  "permissionUsage": "权限使用说明",
+  "permissionUsageDesc": "本应用使用以下权限：\n• 位置权限 — 城市推荐、附近活动、旅行足迹\n• 日历权限 — 将活动添加到日历\n• 通知权限 — 消息提醒和活动通知\n所有权限均在使用对应功能时才会申请，您可随时在系统设置中管理。",
+  "privacyDeclineTitle": "温馨提示",
+  "privacyDeclineMessage": "如果您不同意隐私政策，将无法使用本应用的相关功能。\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。\n\n您确定不同意吗？",
+  "reconsider": "再想想",
+  "confirmExit": "确认退出",
+  "reportSubmitted": "举报已提交",
+  "reportSubmittedDesc": "感谢您的反馈，我们将尽快处理。",
+  "reportReasonSpam": "垃圾信息/广告",
+  "reportReasonHarassment": "骚扰/欺凌",
+  "reportReasonInappropriate": "不当内容",
+  "reportReasonFraud": "欺诈/虚假信息",
+  "reportReasonViolence": "暴力/危险行为",
+  "reportReasonOther": "其他原因",
+  "reportUser": "举报用户",
+  "reportContent": "举报内容",
+  "reportFailed": "举报提交失败",
+  "reportFailedDesc": "网络异常，请稍后重试。",
+
+  "helpAndSupport": "帮助与客服",
+  "helpAndSupportDesc": "如有任何问题或建议，请随时联系我们",
+  "customerServiceEmail": "客服邮箱",
+  "customerServiceEmailDesc": "我们将在 1-2 个工作日内回复您的邮件",
+  "emailCopied": "邮箱地址已复制",
+  "sendEmail": "发送邮件",
+  "commonQuestions": "常见问题",
+  "faqPayment": "付费相关问题",
+  "faqPaymentAnswer": "如您在付费过程中遇到问题，如支付失败、订单异常等，请通过客服邮箱联系我们，并附上您的订单信息，我们会尽快为您处理。",
+  "faqAccount": "账号相关问题",
+  "faqAccountAnswer": "如遇到账号登录、密码找回、账号注销等问题，请通过客服邮箱联系我们，并提供您的注册信息以便核实。",
+  "faqFeedback": "功能建议与反馈",
+  "faqFeedbackAnswer": "我们非常重视用户的意见与建议，如您有任何产品改进建议，欢迎通过客服邮箱告诉我们。",
+  "serviceHours": "服务时间",
+  "serviceHoursDesc": "工作日 9:00 - 18:00（北京时间）"
 }
 
 
