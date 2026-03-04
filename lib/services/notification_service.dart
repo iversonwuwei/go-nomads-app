@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
@@ -110,12 +108,8 @@ class NotificationService extends GetxService {
     final hasShownPurpose = prefs.getBool(_notificationPurposeShownKey) ?? false;
 
     if (!hasShownPurpose) {
-      // 首次请求，展示用途说明
-      final shouldRequest = await PermissionPurposeDialog.showNotificationPermissionPurpose();
-      if (!shouldRequest) {
-        log('📋 用户在用途说明对话框中拒绝了通知权限');
-        return false;
-      }
+      // 首次请求，展示用途说明（Apple Guideline 5.1.1 合规：不可跳过）
+      await PermissionPurposeDialog.showNotificationPermissionPurpose();
       await prefs.setBool(_notificationPurposeShownKey, true);
     }
 

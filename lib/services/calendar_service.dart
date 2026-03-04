@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/dialogs/permission_purpose_dialog.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 日历服务 - 用于将事件添加到设备日历
 class CalendarService {
@@ -42,14 +42,10 @@ class CalendarService {
         return true;
       }
 
-      // 权限未授予，先展示用途说明对话框
-      final shouldRequest = await PermissionPurposeDialog.showCalendarPermissionPurpose();
-      if (!shouldRequest) {
-        log('📅 [Calendar] 用户在用途说明对话框中拒绝了日历权限');
-        return false;
-      }
+      // 权限未授予，先展示用途说明对话框（Apple Guideline 5.1.1 合规：不可跳过）
+      await PermissionPurposeDialog.showCalendarPermissionPurpose();
 
-      // 用户同意后，发起系统权限请求
+      // 用途说明阅读完毕后，发起系统权限请求
       permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
       return permissionsGranted.isSuccess && (permissionsGranted.data ?? false);
     } catch (e) {

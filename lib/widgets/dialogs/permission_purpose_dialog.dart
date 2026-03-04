@@ -1,9 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 权限用途说明对话框
 ///
@@ -13,40 +13,42 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class PermissionPurposeDialog {
   /// 显示位置权限用途说明对话框
   ///
-  /// 返回 true 表示用户同意继续（可以发起系统权限请求），false 表示用户拒绝
-  static Future<bool> showLocationPermissionPurpose({
+  /// Apple Review Guideline 5.1.1 合规：对话框只有"继续"按钮，
+  /// 用户阅读后直接进入系统权限弹窗，不可跳过。
+  static Future<void> showLocationPermissionPurpose({
     BuildContext? context,
   }) async {
     log('📋 显示位置权限用途说明对话框');
-    final result = await Get.dialog<bool>(
+    await Get.dialog<void>(
       const _LocationPermissionPurposeWidget(),
       barrierDismissible: false,
     );
-    return result ?? false;
   }
 
   /// 显示日历权限用途说明对话框
-  static Future<bool> showCalendarPermissionPurpose({
+  ///
+  /// Apple Review Guideline 5.1.1 合规：对话框只有"继续"按钮，不可跳过。
+  static Future<void> showCalendarPermissionPurpose({
     BuildContext? context,
   }) async {
     log('📋 显示日历权限用途说明对话框');
-    final result = await Get.dialog<bool>(
+    await Get.dialog<void>(
       const _CalendarPermissionPurposeWidget(),
       barrierDismissible: false,
     );
-    return result ?? false;
   }
 
   /// 显示通知权限用途说明对话框
-  static Future<bool> showNotificationPermissionPurpose({
+  ///
+  /// Apple Review Guideline 5.1.1 合规：对话框只有"继续"按钮，不可跳过。
+  static Future<void> showNotificationPermissionPurpose({
     BuildContext? context,
   }) async {
     log('📋 显示通知权限用途说明对话框');
-    final result = await Get.dialog<bool>(
+    await Get.dialog<void>(
       const _NotificationPermissionPurposeWidget(),
       barrierDismissible: false,
     );
-    return result ?? false;
   }
 }
 
@@ -81,8 +83,7 @@ class _LocationPermissionPurposeWidget extends StatelessWidget {
         ),
       ],
       note: '我们仅在您使用相关功能时获取位置信息，不会在后台持续追踪您的位置。您可以随时在系统设置中关闭位置权限。',
-      confirmText: '允许使用位置',
-      cancelText: '暂不允许',
+      confirmText: '继续',
     );
   }
 }
@@ -110,8 +111,7 @@ class _CalendarPermissionPurposeWidget extends StatelessWidget {
         ),
       ],
       note: '我们仅在您主动点击"添加到日历"时访问日历，不会读取您的其他日历信息。',
-      confirmText: '允许访问日历',
-      cancelText: '暂不允许',
+      confirmText: '继续',
     );
   }
 }
@@ -143,8 +143,7 @@ class _NotificationPermissionPurposeWidget extends StatelessWidget {
         ),
       ],
       note: '您可以随时在应用设置或系统设置中关闭通知。',
-      confirmText: '允许发送通知',
-      cancelText: '暂不允许',
+      confirmText: '继续',
     );
   }
 }
@@ -166,7 +165,6 @@ class _PermissionPurposeBase extends StatelessWidget {
   final List<_PurposeItem> purposes;
   final String note;
   final String confirmText;
-  final String cancelText;
 
   const _PermissionPurposeBase({
     required this.icon,
@@ -176,7 +174,6 @@ class _PermissionPurposeBase extends StatelessWidget {
     required this.purposes,
     required this.note,
     required this.confirmText,
-    required this.cancelText,
   });
 
   @override
@@ -291,7 +288,7 @@ class _PermissionPurposeBase extends StatelessWidget {
                 width: double.infinity,
                 height: 44.h,
                 child: ElevatedButton(
-                  onPressed: () => Get.back(result: true),
+                  onPressed: () => Get.back(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: iconColor,
                     foregroundColor: Colors.white,
@@ -309,25 +306,7 @@ class _PermissionPurposeBase extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 10.h),
-              SizedBox(
-                width: double.infinity,
-                height: 44.h,
-                child: OutlinedButton(
-                  onPressed: () => Get.back(result: false),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textSecondary,
-                    side: const BorderSide(color: AppColors.border),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                  ),
-                  child: Text(
-                    cancelText,
-                    style: TextStyle(fontSize: 14.sp),
-                  ),
-                ),
-              ),
+
             ],
           ),
         ),

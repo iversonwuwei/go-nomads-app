@@ -33,11 +33,13 @@ abstract class IAuthRepository {
   /// [code] 授权码（微信、QQ 等使用）
   /// [accessToken] 直接的访问令牌（部分平台使用）
   /// [openId] 用户唯一标识
+  /// [nickname] 用户昵称（Apple 首次登录时返回）
   Future<Result<AuthToken>> socialLogin({
     required SocialAuthProvider provider,
     String? code,
     String? accessToken,
     String? openId,
+    String? nickname,
   });
 
   /// 登出

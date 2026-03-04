@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -65,6 +67,14 @@ class _ChineseSocialButtons extends GetView<LoginController> {
           color: LoginConstants.qqBlue,
           label: 'QQ',
         ),
+        // Apple 登录仅在 iOS 上显示（Apple Review 要求）
+        if (Platform.isIOS)
+          _SocialButton(
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+            icon: FontAwesomeIcons.apple,
+            color: Colors.black,
+            label: 'Apple',
+          ),
       ],
     );
   }
@@ -83,6 +93,14 @@ class _InternationalSocialButtons extends GetView<LoginController> {
           color: LoginConstants.googleRed,
           label: 'Google',
         ),
+        // Apple 登录仅在 iOS 上显示（Apple Review 要求）
+        if (Platform.isIOS)
+          _SocialButton(
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+            icon: FontAwesomeIcons.apple,
+            color: Colors.black,
+            label: 'Apple',
+          ),
         _SocialButton(
           onPressed: () => controller.handleSocialLogin(SocialLoginType.twitter, 'Twitter'),
           icon: FontAwesomeIcons.xTwitter,

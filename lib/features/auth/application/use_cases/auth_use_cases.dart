@@ -185,6 +185,7 @@ class SocialLoginUseCase extends UseCase<AuthToken, SocialLoginParams> {
       code: params.code,
       accessToken: params.accessToken,
       openId: params.openId,
+      nickname: params.nickname,
     );
   }
 }
@@ -194,11 +195,13 @@ class SocialLoginParams {
   final String? code;
   final String? accessToken;
   final String? openId;
+  final String? nickname;
 
   SocialLoginParams({
     required this.provider,
     this.code,
     this.accessToken,
     this.openId,
+    this.nickname,
   });
 }

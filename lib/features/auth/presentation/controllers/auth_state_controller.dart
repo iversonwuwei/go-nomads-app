@@ -390,6 +390,7 @@ class AuthStateController extends GetxController {
           code: sdkResult.code,
           accessToken: sdkResult.accessToken,
           openId: sdkResult.openId,
+          nickname: sdkResult.nickname,
         ),
       );
 
