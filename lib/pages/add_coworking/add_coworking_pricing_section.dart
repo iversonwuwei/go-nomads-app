@@ -1,10 +1,10 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/controllers/add_coworking_page_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/add_coworking_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 class AddCoworkingPricingSection extends StatelessWidget {
   final String controllerTag;
@@ -66,17 +66,17 @@ class AddCoworkingPricingSection extends StatelessWidget {
             filled: true,
             fillColor: Colors.grey[50],
           ),
-          items: const [
-            DropdownMenuItem(value: 'USD', child: Text('USD (\$)')),
-            DropdownMenuItem(value: 'EUR', child: Text('EUR (€)')),
-            DropdownMenuItem(value: 'GBP', child: Text('GBP (£)')),
-            DropdownMenuItem(value: 'CNY', child: Text('CNY (¥)')),
-            DropdownMenuItem(value: 'JPY', child: Text('JPY (¥)')),
-            DropdownMenuItem(value: 'THB', child: Text('THB (฿)')),
-            DropdownMenuItem(value: 'VND', child: Text('VND (₫)')),
-            DropdownMenuItem(value: 'IDR', child: Text('IDR (Rp)')),
-            DropdownMenuItem(value: 'MYR', child: Text('MYR (RM)')),
-            DropdownMenuItem(value: 'SGD', child: Text('SGD (S\$)')),
+          items: [
+            DropdownMenuItem(value: 'USD', child: Text(l10n.currencyOptionUsd)),
+            DropdownMenuItem(value: 'EUR', child: Text(l10n.currencyOptionEur)),
+            DropdownMenuItem(value: 'GBP', child: Text(l10n.currencyOptionGbp)),
+            DropdownMenuItem(value: 'CNY', child: Text(l10n.currencyOptionCny)),
+            DropdownMenuItem(value: 'JPY', child: Text(l10n.currencyOptionJpy)),
+            DropdownMenuItem(value: 'THB', child: Text(l10n.currencyOptionThb)),
+            DropdownMenuItem(value: 'VND', child: Text(l10n.currencyOptionVnd)),
+            DropdownMenuItem(value: 'IDR', child: Text(l10n.currencyOptionIdr)),
+            DropdownMenuItem(value: 'MYR', child: Text(l10n.currencyOptionMyr)),
+            DropdownMenuItem(value: 'SGD', child: Text(l10n.currencyOptionSgd)),
           ],
           onChanged: (value) => _c.currency.value = value ?? 'USD',
         ));

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
@@ -72,6 +73,7 @@ class _ChineseSocialButtons extends GetView<LoginController> {
 class _InternationalSocialButtons extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         _SocialButton(
@@ -87,7 +89,7 @@ class _InternationalSocialButtons extends GetView<LoginController> {
           label: 'Twitter',
         ),
         _SocialButton(
-          onPressed: () => AppToast.info('Facebook Sign In coming soon', title: 'Facebook'),
+          onPressed: () => AppToast.info(l10n.profileEditingComingSoon, title: l10n.continueWithFacebook),
           icon: FontAwesomeIcons.facebook,
           color: LoginConstants.facebookBlue,
           label: 'Facebook',

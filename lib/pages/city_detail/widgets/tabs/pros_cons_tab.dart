@@ -2,6 +2,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/manage_pros_cons_page.dart';
 import 'package:go_nomads_app/pages/pros_and_cons_add_page.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
@@ -24,6 +25,7 @@ class ProsConsTab extends GetView<CityDetailController> {
   @override
   Widget build(BuildContext context) {
     final prosConsController = Get.find<ProsConsStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Obx(() {
       final isLoading = prosConsController.isLoadingPros.value || prosConsController.isLoadingCons.value;
@@ -47,9 +49,9 @@ class ProsConsTab extends GetView<CityDetailController> {
               _EmptyProsConsState(
                 icon: FontAwesomeIcons.circleCheck,
                 iconColor: Colors.green,
-                title: '还没有优点',
-                subtitle: '分享你在这座城市的美好体验',
-                buttonText: '添加优点',
+                title: l10n.prosConsNoProsTitle,
+                subtitle: l10n.prosConsNoProsSubtitle,
+                buttonText: l10n.prosConsAddPros,
                 onTap: () => _showAddProsConsPage(context, initialTab: 0),
               )
             else
@@ -72,9 +74,9 @@ class ProsConsTab extends GetView<CityDetailController> {
               _EmptyProsConsState(
                 icon: FontAwesomeIcons.ban,
                 iconColor: Colors.red,
-                title: '还没有挑战',
-                subtitle: '分享你遇到的困难和需要改进的地方',
-                buttonText: '添加挑战',
+                title: l10n.prosConsNoConsTitle,
+                subtitle: l10n.prosConsNoConsSubtitle,
+                buttonText: l10n.prosConsAddCons,
                 onTap: () => _showAddProsConsPage(context, initialTab: 1),
               )
             else

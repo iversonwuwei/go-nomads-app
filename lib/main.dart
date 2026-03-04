@@ -237,7 +237,7 @@ class MyApp extends StatelessWidget {
               title: '行途 - GO-NOMADS',
 
               // 国际化配置
-              locale: localeController.locale.value,
+              locale: localeController.uiLocale.value,
               localizationsDelegates: const [
                 AppLocalizations.delegate,
                 GlobalMaterialLocalizations.delegate,

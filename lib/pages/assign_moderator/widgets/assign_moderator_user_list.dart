@@ -1,5 +1,6 @@
 import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
 import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_user_tile.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -52,7 +53,7 @@ class AssignModeratorUserList extends GetView<AssignModeratorController> {
             SizedBox(height: 8.h),
             TextButton(
               onPressed: controller.clearSearch,
-              child: const Text('清除搜索'),
+              child: Text(AppLocalizations.of(Get.context!)!.dataServiceClearSearch),
             ),
           ],
         ],

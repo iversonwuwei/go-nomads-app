@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/user_profile_page_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
@@ -94,6 +95,7 @@ class UserProfilePage extends StatelessWidget {
   }
 
   Widget _buildRemoteErrorState(bool isMobile, UserProfilePageController controller, String message) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(isMobile ? 24 : 48),
@@ -132,7 +134,7 @@ class UserProfilePage extends StatelessWidget {
                     ? null
                     : () => controller.fetchUserProfile(controller.requestedUserId!),
                 icon: const Icon(FontAwesomeIcons.arrowsRotate),
-                label: const Text('重新加载'),
+                label: Text(l10n.retry),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
@@ -147,7 +149,7 @@ class UserProfilePage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () => Get.back(),
-                child: const Text('返回上一页'),
+                child: Text(l10n.back),
               ),
             ],
           ),

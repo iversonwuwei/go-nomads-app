@@ -1,5 +1,6 @@
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -52,17 +53,18 @@ class ManageCostPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = _useController();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('$cityName - 费用管理'),
+        title: Text(l10n.manageCostPageTitle(cityName)),
         actions: [
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus),
             onPressed: controller.navigateToAddCost,
-            tooltip: '添加费用',
+            tooltip: l10n.addCost,
           ),
         ],
       ),
@@ -79,7 +81,7 @@ class ManageCostPage extends StatelessWidget {
                 Icon(FontAwesomeIcons.dollarSign, size: 80.r, color: Colors.grey[300]),
                 SizedBox(height: 16.h),
                 Text(
-                  '暂无费用数据',
+                  l10n.manageCostNoData,
                   style: TextStyle(fontSize: 18.sp, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 24.h),
@@ -90,7 +92,7 @@ class ManageCostPage extends StatelessWidget {
                   ),
                   onPressed: controller.navigateToAddCost,
                   icon: const Icon(FontAwesomeIcons.plus),
-                  label: const Text('添加第一条费用'),
+                  label: Text(l10n.manageCostAddFirst),
                 ),
               ],
             ),
@@ -178,7 +180,7 @@ class ManageCostPage extends StatelessWidget {
                           IconButton(
                             icon: const Icon(FontAwesomeIcons.trash, color: Colors.red),
                             onPressed: () => controller.deleteExpense(expense.id),
-                            tooltip: '删除',
+                            tooltip: l10n.delete,
                           ),
                         ],
                       );
@@ -194,7 +196,7 @@ class ManageCostPage extends StatelessWidget {
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
         onPressed: controller.navigateToAddCost,
-        tooltip: '添加费用',
+        tooltip: l10n.addCost,
         child: const Icon(FontAwesomeIcons.plus),
       ),
     );

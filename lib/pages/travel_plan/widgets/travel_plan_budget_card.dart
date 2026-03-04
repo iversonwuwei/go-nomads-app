@@ -169,7 +169,7 @@ class TravelPlanTransportationCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('$estimatedCostLabel:'),
+                Text(estimatedCostLabel),
                 Text(
                   '\$${transportation.arrival?.estimatedCost.toStringAsFixed(0) ?? '0'}',
                   style: const TextStyle(

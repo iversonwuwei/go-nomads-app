@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/edit_basic_info_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 基本信息编辑页面
 class EditBasicInfoPage extends StatelessWidget {
@@ -26,10 +27,11 @@ class EditBasicInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = _useController();
     final formKey = GlobalKey<FormState>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('编辑基本信息'),
+        title: Text(l10n.editBasicInfoTitle),
         actions: [
           Obx(() {
             if (controller.isLoading.value) return const SizedBox.shrink();
@@ -52,7 +54,7 @@ class EditBasicInfoPage extends StatelessWidget {
                       ),
                     )
                   : Text(
-                      '保存',
+                      l10n.save,
                       style: TextStyle(color: Colors.white, fontSize: 16.sp),
                     ),
             );
@@ -101,14 +103,14 @@ class EditBasicInfoPage extends StatelessWidget {
                 // 姓名
                 TextFormField(
                   controller: controller.nameController,
-                  decoration: const InputDecoration(
-                    labelText: '姓名 *',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(FontAwesomeIcons.user),
+                  decoration: InputDecoration(
+                    labelText: '${l10n.name} *',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(FontAwesomeIcons.user),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return '请输入姓名';
+                      return l10n.enterYourName;
                     }
                     return null;
                   },
@@ -119,11 +121,11 @@ class EditBasicInfoPage extends StatelessWidget {
                 // 个人简介
                 TextFormField(
                   controller: controller.bioController,
-                  decoration: const InputDecoration(
-                    labelText: '个人简介',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(FontAwesomeIcons.penToSquare),
-                    hintText: '介绍一下你自己...',
+                  decoration: InputDecoration(
+                    labelText: l10n.bio,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(FontAwesomeIcons.penToSquare),
+                    hintText: l10n.tellUsAboutYourself,
                   ),
                   maxLines: 4,
                 ),
@@ -133,16 +135,19 @@ class EditBasicInfoPage extends StatelessWidget {
                 // 性别
                 Obx(() => DropdownButtonFormField<String>(
                       initialValue: controller.gender.value,
-                      decoration: const InputDecoration(
-                        labelText: '性别',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(FontAwesomeIcons.restroom),
+                      decoration: InputDecoration(
+                        labelText: l10n.editBasicInfoGender,
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(FontAwesomeIcons.restroom),
                       ),
-                      items: const [
-                        DropdownMenuItem(value: 'male', child: Text('男')),
-                        DropdownMenuItem(value: 'female', child: Text('女')),
-                        DropdownMenuItem(value: 'other', child: Text('其他')),
-                        DropdownMenuItem(value: 'prefer_not_to_say', child: Text('不愿透露')),
+                      items: [
+                        DropdownMenuItem(value: 'male', child: Text(l10n.editBasicInfoGenderMale)),
+                        DropdownMenuItem(value: 'female', child: Text(l10n.editBasicInfoGenderFemale)),
+                        DropdownMenuItem(value: 'other', child: Text(l10n.other)),
+                        DropdownMenuItem(
+                          value: 'prefer_not_to_say',
+                          child: Text(l10n.editBasicInfoGenderPreferNotToSay),
+                        ),
                       ],
                       onChanged: controller.updateGender,
                     )),
@@ -152,11 +157,11 @@ class EditBasicInfoPage extends StatelessWidget {
                 // 当前城市
                 TextFormField(
                   controller: controller.cityController,
-                  decoration: const InputDecoration(
-                    labelText: '当前城市',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(FontAwesomeIcons.city),
-                    hintText: '例如: Bangkok',
+                  decoration: InputDecoration(
+                    labelText: l10n.editBasicInfoCurrentCity,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(FontAwesomeIcons.city),
+                    hintText: l10n.editBasicInfoCityHint,
                   ),
                 ),
 
@@ -165,11 +170,11 @@ class EditBasicInfoPage extends StatelessWidget {
                 // 当前国家
                 TextFormField(
                   controller: controller.countryController,
-                  decoration: const InputDecoration(
-                    labelText: '当前国家',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(FontAwesomeIcons.flag),
-                    hintText: '例如: Thailand',
+                  decoration: InputDecoration(
+                    labelText: l10n.editBasicInfoCurrentCountry,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(FontAwesomeIcons.flag),
+                    hintText: l10n.editBasicInfoCountryHint,
                   ),
                 ),
 
@@ -178,11 +183,11 @@ class EditBasicInfoPage extends StatelessWidget {
                 // 职业
                 TextFormField(
                   controller: controller.occupationController,
-                  decoration: const InputDecoration(
-                    labelText: '职业',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(FontAwesomeIcons.briefcase),
-                    hintText: '例如: Software Engineer',
+                  decoration: InputDecoration(
+                    labelText: l10n.editBasicInfoOccupation,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(FontAwesomeIcons.briefcase),
+                    hintText: l10n.editBasicInfoOccupationHint,
                   ),
                 ),
 
@@ -191,11 +196,11 @@ class EditBasicInfoPage extends StatelessWidget {
                 // 公司
                 TextFormField(
                   controller: controller.companyController,
-                  decoration: const InputDecoration(
-                    labelText: '公司',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(FontAwesomeIcons.building),
-                    hintText: '例如: Google',
+                  decoration: InputDecoration(
+                    labelText: l10n.editBasicInfoCompany,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(FontAwesomeIcons.building),
+                    hintText: l10n.editBasicInfoCompanyHint,
                   ),
                 ),
 
@@ -204,11 +209,11 @@ class EditBasicInfoPage extends StatelessWidget {
                 // 个人网站
                 TextFormField(
                   controller: controller.websiteController,
-                  decoration: const InputDecoration(
-                    labelText: '个人网站',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(FontAwesomeIcons.globe),
-                    hintText: 'https://yourwebsite.com',
+                  decoration: InputDecoration(
+                    labelText: l10n.editBasicInfoWebsite,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(FontAwesomeIcons.globe),
+                    hintText: l10n.editBasicInfoWebsiteHint,
                   ),
                   keyboardType: TextInputType.url,
                 ),

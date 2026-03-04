@@ -116,6 +116,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
   /// 优化：后端直接返回有 coworking 空间的城市列表（含数量），一次请求搞定
   Future<void> _loadCitiesWithCoworkingCount() async {
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _isLoading = true;
@@ -149,7 +150,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
           setState(() {
             _isLoading = false;
           });
-          AppToast.error('加载失败: ${exception.message}');
+          AppToast.error('${l10n.loadFailed}: ${exception.message}');
       }
     } catch (e) {
       log('❌ 加载城市数据异常: $e');
@@ -157,7 +158,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
       setState(() {
         _isLoading = false;
       });
-      AppToast.error('加载失败，请重试');
+      AppToast.error(l10n.loadFailed);
     }
   }
 
@@ -165,6 +166,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
   /// 优化：后端直接返回有 coworking 空间的城市列表（含数量）
   Future<void> _loadMoreCities() async {
     if (!mounted || _isLoadingMore || !_hasMoreData) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _isLoadingMore = true;
@@ -199,7 +201,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
           setState(() {
             _isLoadingMore = false;
           });
-          AppToast.error('加载更多失败');
+          AppToast.error(l10n.loadFailed);
       }
     } catch (e) {
       log('❌ 加载更多异常: $e');

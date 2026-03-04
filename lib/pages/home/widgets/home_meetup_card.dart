@@ -1,5 +1,9 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
@@ -7,10 +11,6 @@ import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_st
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Meetup 卡片组件 - Nomads.com 风格
 class HomeMeetupCard extends StatelessWidget {
@@ -415,7 +415,7 @@ class HomeMeetupCard extends StatelessWidget {
             Icon(FontAwesomeIcons.message, size: 14.r),
             SizedBox(width: 3.w),
             Flexible(
-              child: Text('Chat', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
+              child: Text(l10n.homeMeetupChatButton, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -440,7 +440,8 @@ class HomeMeetupCard extends StatelessWidget {
             Icon(FontAwesomeIcons.ban, size: 14.r),
             SizedBox(width: 4.w),
             Flexible(
-              child: Text('取消活动', style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
+              child: Text(AppLocalizations.of(context)!.confirmCancelMeetupTitle,
+                  style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -517,17 +518,22 @@ class HomeMeetupCard extends StatelessWidget {
       if (!_meetupController.rsvpedMeetupIds.contains(meetup.id)) {
         _meetupController.rsvpedMeetupIds.add(meetup.id);
       }
-      AppToast.info('您已经加入了这个活动');
+      AppToast.info(AppLocalizations.of(Get.context!)!.dataServiceAlreadyJoinedMeetup);
       return;
     }
 
     if (errorMessage.contains('未参加') || errorMessage.contains('not joined')) {
       _meetupController.rsvpedMeetupIds.remove(meetup.id);
-      AppToast.info('您尚未加入这个活动');
+      AppToast.info(AppLocalizations.of(Get.context!)!.dataServiceNotJoinedMeetup);
       return;
     }
 
-    AppToast.error(isCurrentlyJoined ? '退出活动失败' : '加入活动失败', title: '操作失败');
+    AppToast.error(
+      isCurrentlyJoined
+          ? AppLocalizations.of(Get.context!)!.dataServiceLeaveMeetupFailed
+          : AppLocalizations.of(Get.context!)!.dataServiceJoinMeetupFailed,
+      title: AppLocalizations.of(Get.context!)!.dataServiceOperationFailed,
+    );
   }
 
   Future<void> _handleCancelMeetup(BuildContext context) async {
@@ -535,14 +541,14 @@ class HomeMeetupCard extends StatelessWidget {
 
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('取消活动'),
-        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+        title: Text(l10n.confirmCancelMeetupTitle),
+        content: Text(l10n.confirmCancelMeetupMessage),
         actions: [
           TextButton(onPressed: () => Get.back(result: false), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () => Get.back(result: true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('确定'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -559,7 +565,7 @@ class HomeMeetupCard extends StatelessWidget {
       // 无需调用 refreshMeetups()，cancelMeetup 已经单点更新了列表
     } catch (e) {
       log('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败');
+      AppToast.error(l10n.cancelMeetupFailed);
     }
   }
 

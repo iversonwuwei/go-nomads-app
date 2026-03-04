@@ -558,8 +558,8 @@ class _MeetupCardFooter extends StatelessWidget {
         // 显示确认对话框
         final confirmed = await Get.dialog<bool>(
           AlertDialog(
-            title: const Text('取消活动'),
-            content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+            title: Text(l10n.confirmCancelMeetupTitle),
+            content: Text(l10n.confirmCancelMeetupMessage),
             actions: [
               TextButton(
                 onPressed: () => Get.back(result: false),
@@ -570,7 +570,7 @@ class _MeetupCardFooter extends StatelessWidget {
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.red,
                 ),
-                child: const Text('确定'),
+                child: Text(l10n.confirm),
               ),
             ],
           ),
@@ -579,9 +579,9 @@ class _MeetupCardFooter extends StatelessWidget {
         if (confirmed == true) {
           final success = await controller.handleCancelMeetup(meetup);
           if (success) {
-            AppToast.success('活动已取消', title: '成功');
+            AppToast.success(l10n.cancelMeetupSuccess, title: l10n.success);
           } else {
-            AppToast.error('取消活动失败');
+            AppToast.error(l10n.cancelMeetupFailed);
           }
         }
       },

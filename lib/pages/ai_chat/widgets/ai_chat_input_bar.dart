@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -35,6 +36,7 @@ class AiChatInputBar extends GetView<AiChatController> {
   }
 
   Widget _buildTextField() {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -53,8 +55,8 @@ class AiChatInputBar extends GetView<AiChatController> {
         return TextField(
           controller: controller.inputController,
           enabled: !controller.isStreaming.value,
-          decoration: const InputDecoration(
-            hintText: '问路、问签证、生成行程，都可以直接开聊…',
+          decoration: InputDecoration(
+            hintText: l10n.aiChatInputHint,
             border: InputBorder.none,
           ),
           minLines: 1,

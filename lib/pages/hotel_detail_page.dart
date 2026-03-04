@@ -1,5 +1,6 @@
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
 import 'package:go_nomads_app/controllers/hotel_detail_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -64,7 +65,7 @@ class HotelDetailPage extends StatelessWidget {
           SizedBox(height: 24.h),
           ElevatedButton(
             onPressed: () => Get.back(),
-            child: const Text('Go Back'),
+            child: Text(AppLocalizations.of(Get.context!)!.goBack),
           ),
         ],
       ),

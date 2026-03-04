@@ -16,6 +16,7 @@ class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageControlle
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // 安全检查
     if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
       return const SizedBox.shrink();
@@ -24,7 +25,7 @@ class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageControlle
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: '想去的景点', icon: FontAwesomeIcons.city),
+        _SectionTitle(title: l10n.attractions, icon: FontAwesomeIcons.city),
         SizedBox(height: 8.h),
         Text(
           '选择您在${controller.cityName}想要游览的景点类型',

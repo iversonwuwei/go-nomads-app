@@ -78,8 +78,8 @@ class RegisterForm extends GetView<RegisterController> {
                 Expanded(
                   child: RegisterFormField(
                     controller: controller.verificationCodeController,
-                    labelText: '验证码',
-                    hintText: '请输入6位验证码',
+                    labelText: l10n.verificationCode,
+                    hintText: l10n.enterVerificationCode,
                     prefixIcon: FontAwesomeIcons.shieldHalved,
                     keyboardType: TextInputType.number,
                     errorText: controller.showValidationErrors.value
@@ -115,7 +115,7 @@ class RegisterForm extends GetView<RegisterController> {
                         : Text(
                             controller.countdown.value > 0
                                 ? '${controller.countdown.value}s'
-                                : (controller.codeSent.value ? '重新发送' : '获取验证码'),
+                                : (controller.codeSent.value ? l10n.resend : l10n.sendCode),
                             style: TextStyle(fontSize: 14.sp),
                           ),
                   ),

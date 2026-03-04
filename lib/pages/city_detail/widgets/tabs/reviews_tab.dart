@@ -295,7 +295,7 @@ class _UserInfoRow extends StatelessWidget {
         Row(
           children: [
             Icon(FontAwesomeIcons.star, color: Colors.amber, size: 16.r),
-            Text(' ${review.rating}'),
+            Text(review.rating.toString()),
           ],
         ),
       ],

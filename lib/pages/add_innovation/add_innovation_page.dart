@@ -189,7 +189,7 @@ class _AddInnovationPageState extends State<AddInnovationPage> {
                 children: [
                   SizedBox(width: 20.w, height: 20.h, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
                   SizedBox(width: 12.w),
-                  Text('提交中...', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                      Text(l10n.submitting, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                 ],
               )
             : Row(

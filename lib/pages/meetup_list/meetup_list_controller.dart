@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/location_controller.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
@@ -88,6 +89,7 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
 
   // 当前用户ID
   String? get currentUserId => _authController.currentUser.value?.id;
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
 
   // 是否有活动筛选条件
   bool get hasActiveFilters =>
@@ -349,7 +351,7 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
     } catch (e, stackTrace) {
       log('❌ Tab $tab 加载失败: $e');
       log('Stack trace: $stackTrace');
-      AppToast.error('加载活动失败');
+      AppToast.error(_l10n.loadFailed);
     } finally {
       tabLoading[tab]!.value = false;
     }
@@ -389,12 +391,12 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
         if (!_meetupStateController.rsvpedMeetupIds.contains(meetup.id)) {
           _meetupStateController.rsvpedMeetupIds.add(meetup.id);
         }
-        AppToast.success('报名成功!');
+        AppToast.success(_l10n.joinedSuccessfully);
       } else {
         await _meetupRepository.cancelRsvp(meetup.id);
         log('✅ 成功退出活动: ${meetup.title}');
         _meetupStateController.rsvpedMeetupIds.remove(meetup.id);
-        AppToast.success('已取消报名');
+        AppToast.success(_l10n.youLeftMeetup);
       }
 
       // 发送 RSVP 变更事件，通知其他 tab 更新
@@ -417,7 +419,7 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
           _meetupStateController.rsvpedMeetupIds.add(meetup.id);
         }
         await refreshCurrentTab();
-        AppToast.info('您已经加入了这个活动');
+        AppToast.info(_l10n.dataServiceAlreadyJoinedMeetup);
         return;
       }
 
@@ -426,7 +428,7 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
           errorMessage.contains('not a participant')) {
         _meetupStateController.rsvpedMeetupIds.remove(meetup.id);
         await refreshCurrentTab();
-        AppToast.info('您尚未加入这个活动');
+        AppToast.info(_l10n.dataServiceNotJoinedMeetup);
         return;
       }
 

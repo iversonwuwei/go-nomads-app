@@ -80,7 +80,7 @@ class MyMeetupsPage extends StatelessWidget {
         }
 
         if (controller.errorMessage.value.isNotEmpty) {
-          return _buildErrorState(isMobile, controller);
+          return _buildErrorState(isMobile, controller, l10n);
         }
 
         if (controller.meetups.isEmpty) {
@@ -111,7 +111,7 @@ class MyMeetupsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorState(bool isMobile, MyMeetupsPageController controller) {
+  Widget _buildErrorState(bool isMobile, MyMeetupsPageController controller, AppLocalizations l10n) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
@@ -148,7 +148,7 @@ class MyMeetupsPage extends StatelessWidget {
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
+              child: Text(l10n.retry),
             ),
           ],
         ),

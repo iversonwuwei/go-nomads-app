@@ -1,4 +1,5 @@
 import 'package:go_nomads_app/controllers/skills_interests_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/interests_selector.dart';
 import 'package:go_nomads_app/widgets/skills_selector.dart';
 import 'package:flutter/material.dart';
@@ -43,14 +44,15 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('选择技能与兴趣'),
+        title: Text(l10n.skillsInterestsTitle),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: '技能', icon: Icon(FontAwesomeIcons.briefcase)),
-            Tab(text: '兴趣', icon: Icon(FontAwesomeIcons.heart)),
+          tabs: [
+            Tab(text: l10n.skills, icon: const Icon(FontAwesomeIcons.briefcase)),
+            Tab(text: l10n.interests, icon: const Icon(FontAwesomeIcons.heart)),
           ],
         ),
         actions: [
@@ -64,8 +66,8 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                       height: 20.h,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text(
-                      '保存',
+                  : Text(
+                      l10n.save,
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -115,7 +117,7 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '已选择',
+                        l10n.skillsInterestsSelected,
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12.sp,
@@ -123,7 +125,8 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        '技能 ${_controller.selectedSkills.length}/10  ·  兴趣 ${_controller.selectedInterests.length}/15',
+                        l10n.skillsInterestsSummary(
+                            _controller.selectedSkills.length, _controller.selectedInterests.length),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16.sp,
@@ -144,7 +147,7 @@ class _SkillsInterestsPageState extends State<SkillsInterestsPage> with SingleTi
                             height: 20.h,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('保存'),
+                        : Text(l10n.save),
                   ),
                 ],
               )),

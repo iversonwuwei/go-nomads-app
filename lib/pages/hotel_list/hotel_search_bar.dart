@@ -1,4 +1,5 @@
 import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -13,6 +14,7 @@ class HotelSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<HotelListPageController>(tag: controllerTag);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -23,7 +25,7 @@ class HotelSearchBar extends StatelessWidget {
             child: TextField(
               controller: controller.searchController,
               decoration: InputDecoration(
-                hintText: 'Search hotels...',
+                hintText: l10n.search,
                 prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                 suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
                     ? IconButton(

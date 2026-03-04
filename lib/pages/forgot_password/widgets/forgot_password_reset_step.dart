@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 步骤3：设置新密码 / Step 3: Set new password
@@ -10,6 +11,7 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -54,7 +56,7 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
                 controller: controller.newPasswordController,
                 obscureText: !controller.newPasswordVisible.value,
                 decoration: InputDecoration(
-                  hintText: '至少6个字符',
+                  hintText: l10n.createPassword,
                   hintStyle: TextStyle(color: AppColors.textTertiary),
                   prefixIcon:
                       Icon(Icons.lock_outline, color: AppColors.textTertiary),
@@ -98,7 +100,7 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
                 controller: controller.confirmPasswordController,
                 obscureText: !controller.confirmPasswordVisible.value,
                 decoration: InputDecoration(
-                  hintText: '再次输入新密码',
+                  hintText: l10n.reenterPassword,
                   hintStyle: TextStyle(color: AppColors.textTertiary),
                   prefixIcon:
                       Icon(Icons.lock_outline, color: AppColors.textTertiary),
@@ -157,7 +159,7 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
                           ),
                         )
                       : Text(
-                          '确认重置',
+                          l10n.reset,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,

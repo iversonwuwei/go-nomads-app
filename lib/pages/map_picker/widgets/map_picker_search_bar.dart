@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -11,6 +12,7 @@ class MapPickerSearchBar extends GetView<MapPickerController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Obx(() {
@@ -20,7 +22,7 @@ class MapPickerSearchBar extends GetView<MapPickerController> {
           focusNode: controller.searchFocusNode,
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
-            hintText: '搜索地点 / Search location',
+            hintText: l10n.search,
             prefixIcon: Icon(FontAwesomeIcons.magnifyingGlass, size: 18.r),
             suffixIcon: isSearching
                 ? Padding(

@@ -87,8 +87,9 @@ class AmapGlobalPage extends StatelessWidget {
   }
 
   Widget _buildMapView(AmapGlobalPageController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     if (!Platform.isIOS && !Platform.isAndroid) {
-      return const Center(child: Text('地图仅支持 iOS 和 Android 平台'));
+      return Center(child: Text(l10n.amapGlobalMapOnlyMobile));
     }
 
     final citiesData = controller.citiesWithCoordinates
@@ -162,7 +163,7 @@ class AmapGlobalPage extends StatelessWidget {
                 ),
                 SizedBox(width: 8.w),
                 Text(
-                  'Global Nomads',
+                  l10n.amapGlobalTitle,
                   style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 const Spacer(),
@@ -175,9 +176,9 @@ class AmapGlobalPage extends StatelessWidget {
             SizedBox(height: 12.h),
             Row(
               children: [
-                _buildSummaryChip('$totalCities', 'Cities'),
+                _buildSummaryChip('$totalCities', l10n.cities),
                 SizedBox(width: 8.w),
-                _buildSummaryChip('$totalCountries', 'Countries'),
+                _buildSummaryChip('$totalCountries', l10n.countries),
               ],
             ),
             SizedBox(height: 12.h),
@@ -266,6 +267,7 @@ class AmapGlobalPage extends StatelessWidget {
   }
 
   Widget _buildStatsCard(AmapGlobalPageController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final cities = controller.citiesWithCoordinates;
     if (cities.isEmpty) return const SizedBox.shrink();
 
@@ -284,7 +286,7 @@ class AmapGlobalPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('By Region',
+          Text(l10n.amapGlobalByRegion,
               style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
           SizedBox(height: 8.h),
           ...regionStats.entries.take(4).map((e) => Padding(
@@ -298,7 +300,8 @@ class AmapGlobalPage extends StatelessWidget {
                       decoration: BoxDecoration(color: controller.getRegionColor(e.key), shape: BoxShape.circle),
                     ),
                     SizedBox(width: 8.w),
-                    Text('${e.key}: ${e.value}', style: TextStyle(fontSize: 12.sp, color: AppColors.textPrimary)),
+                    Text([e.key, e.value.toString()].join(': '),
+                        style: TextStyle(fontSize: 12.sp, color: AppColors.textPrimary)),
                   ],
                 ),
               )),

@@ -229,7 +229,7 @@ class _CustomBudgetField extends GetView<CreateTravelPlanPageController> {
       controller: controller.customBudgetController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
-        hintText: '0.00',
+        hintText: 0.toStringAsFixed(2),
         hintStyle: TextStyle(color: Colors.grey[400]),
         filled: true,
         fillColor: Colors.grey[50],

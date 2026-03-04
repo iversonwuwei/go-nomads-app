@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 错误状态组件
@@ -28,7 +29,7 @@ class AiChatErrorState extends StatelessWidget {
             SizedBox(height: 8.h),
             _buildSubMessage(),
             SizedBox(height: 20.h),
-            _buildRetryButton(),
+            _buildRetryButton(context),
           ],
         ),
       ),
@@ -72,11 +73,12 @@ class AiChatErrorState extends StatelessWidget {
     );
   }
 
-  Widget _buildRetryButton() {
+  Widget _buildRetryButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ElevatedButton.icon(
       onPressed: onRetry,
       icon: FaIcon(FontAwesomeIcons.arrowRotateRight, size: 14.r),
-      label: const Text('重试'),
+      label: Text(l10n.retry),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,

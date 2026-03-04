@@ -384,6 +384,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
+  String get languageOptionChinese => 'Chinese';
+
+  @override
+  String get languageOptionEnglish => 'English';
+
+  @override
   String get theme => 'Theme';
 
   @override
@@ -464,6 +470,1042 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get interests => 'Interests';
+
+  @override
+  String get selectSkills => 'Select Skills';
+
+  @override
+  String get selectInterests => 'Select your interests (up to 5)';
+
+  @override
+  String get searchSkillsHint => 'Search skills...';
+
+  @override
+  String get searchInterestsHint => 'Search interests...';
+
+  @override
+  String get noSkills => 'No skills yet';
+
+  @override
+  String get noMatchingSkills => 'No matching skills found';
+
+  @override
+  String get noInterests => 'No interests yet';
+
+  @override
+  String get noMatchingInterests => 'No matching interests found';
+
+  @override
+  String get failedToLoadSkillsList => 'Failed to load skills list';
+
+  @override
+  String get failedToLoadInterestsList => 'Failed to load interests list';
+
+  @override
+  String get itemUnit => 'items';
+
+  @override
+  String yearsAgo(int count) {
+    return '$count years ago';
+  }
+
+  @override
+  String get profileNotificationPermissionTitle =>
+      'Notification permission required';
+
+  @override
+  String get profileNotificationPermissionMessage =>
+      'Please enable notification permission in system settings to receive important alerts.';
+
+  @override
+  String get profileGoToSettings => 'Go to Settings';
+
+  @override
+  String get profileRolesManagement => '🔐 Admin Role Management';
+
+  @override
+  String profileSelectedUsers(int count) {
+    return 'Selected $count users';
+  }
+
+  @override
+  String get profileRolesNotLoadedWarning =>
+      '⚠️ Role data is not loaded. Batch operations are limited.\nPlease ensure the backend /api/v1/roles endpoint is configured correctly.';
+
+  @override
+  String get profileSetAsAdmin => 'Set as Admin';
+
+  @override
+  String get profileSetAsNormalUser => 'Set as Normal User';
+
+  @override
+  String get profileToggleSelectAll => 'Select All / Deselect All';
+
+  @override
+  String get profileNoUsers => 'No users';
+
+  @override
+  String profileJoinedAt(String time) {
+    return 'Joined $time';
+  }
+
+  @override
+  String get profileRoleAdmin => 'Admin';
+
+  @override
+  String get profileRoleModerator => 'Moderator';
+
+  @override
+  String get profileRoleUser => 'User';
+
+  @override
+  String get profileSelectUsersFirst => 'Please select users first';
+
+  @override
+  String profileBatchSetAdminSuccess(int count) {
+    return 'Successfully set $count users as admin';
+  }
+
+  @override
+  String get profileBatchSetAdminFailed => 'Failed to set admins in batch';
+
+  @override
+  String profileBatchSetUserSuccess(int count) {
+    return 'Successfully set $count users as normal user';
+  }
+
+  @override
+  String get profileBatchSetUserFailed => 'Failed to set users in batch';
+
+  @override
+  String profileAddedCount(int count) {
+    return 'Added $count';
+  }
+
+  @override
+  String profileRemovedCount(int count) {
+    return 'Removed $count';
+  }
+
+  @override
+  String get profileSupabaseNotConfigured =>
+      'Supabase is not configured. Please contact the administrator.';
+
+  @override
+  String profileAvatarUploadFailed(String error) {
+    return 'Avatar upload failed: $error';
+  }
+
+  @override
+  String manageCityRatingsTitle(String cityName) {
+    return '$cityName - Rating Data';
+  }
+
+  @override
+  String get manageCityRatingsAddItem => 'Add Rating Item';
+
+  @override
+  String get manageCityRatingsNameZh => 'Rating Item Name (Chinese)';
+
+  @override
+  String get manageCityRatingsNameZhHint => 'e.g. Food';
+
+  @override
+  String get manageCityRatingsNameEn => 'Rating Item Name (English)';
+
+  @override
+  String get manageCityRatingsNameEnHint => 'e.g. Food';
+
+  @override
+  String get manageCityRatingsDescriptionOptional => 'Description (Optional)';
+
+  @override
+  String get manageCityRatingsDescriptionHint => 'Short description';
+
+  @override
+  String get manageCityRatingsIcon => 'Icon';
+
+  @override
+  String get manageCityRatingsIconStar => 'Star';
+
+  @override
+  String get manageCityRatingsIconRestaurant => 'Restaurant';
+
+  @override
+  String get manageCityRatingsIconNetwork => 'Network';
+
+  @override
+  String get manageCityRatingsIconSafety => 'Safety';
+
+  @override
+  String get manageCityRatingsIconTransport => 'Transport';
+
+  @override
+  String get manageCityRatingsIconHealthcare => 'Healthcare';
+
+  @override
+  String get manageCityRatingsIconWeather => 'Weather';
+
+  @override
+  String get manageCityRatingsIconCost => 'Cost';
+
+  @override
+  String get manageCityRatingsIconPeople => 'People';
+
+  @override
+  String get manageCityRatingsIconLanguage => 'Language';
+
+  @override
+  String get manageCityRatingsDeleteItem => 'Delete Rating Item';
+
+  @override
+  String manageCityRatingsDeleteConfirm(String name) {
+    return 'Are you sure you want to delete “$name”?';
+  }
+
+  @override
+  String manageCityRatingsSubtitle(String nameEn, String average, int count) {
+    return '$nameEn • Rating: $average ($count people)';
+  }
+
+  @override
+  String get defaultStatus => 'Default';
+
+  @override
+  String get manageCityRatingsEmptyTitle => 'No rating items yet';
+
+  @override
+  String get manageCityRatingsEmptyHint =>
+      'Tap the top-right plus button to add your first rating item';
+
+  @override
+  String get editBasicInfoTitle => 'Edit Basic Info';
+
+  @override
+  String get editBasicInfoGender => 'Gender';
+
+  @override
+  String get editBasicInfoGenderMale => 'Male';
+
+  @override
+  String get editBasicInfoGenderFemale => 'Female';
+
+  @override
+  String get editBasicInfoGenderPreferNotToSay => 'Prefer not to say';
+
+  @override
+  String get editBasicInfoCurrentCity => 'Current City';
+
+  @override
+  String get editBasicInfoCityHint => 'e.g. Bangkok';
+
+  @override
+  String get editBasicInfoCurrentCountry => 'Current Country';
+
+  @override
+  String get editBasicInfoCountryHint => 'e.g. Thailand';
+
+  @override
+  String get editBasicInfoOccupation => 'Occupation';
+
+  @override
+  String get editBasicInfoOccupationHint => 'e.g. Software Engineer';
+
+  @override
+  String get editBasicInfoCompany => 'Company';
+
+  @override
+  String get editBasicInfoCompanyHint => 'e.g. Google';
+
+  @override
+  String get editBasicInfoWebsite => 'Personal Website';
+
+  @override
+  String get editBasicInfoWebsiteHint => 'https://yourwebsite.com';
+
+  @override
+  String get modularProfileTitle => 'User Profile';
+
+  @override
+  String get modularProfileNameUnset => 'Name not set';
+
+  @override
+  String get modularProfileOccupationUnset => 'Occupation not set';
+
+  @override
+  String get modularProfileStatsTitle => 'Nomad Stats';
+
+  @override
+  String get modularProfileStatCountries => 'Countries';
+
+  @override
+  String get modularProfileStatCities => 'Cities';
+
+  @override
+  String get modularProfileStatDays => 'Travel Days';
+
+  @override
+  String get modularProfileStatMeetups => 'Meetups';
+
+  @override
+  String get modularProfileStatTrips => 'Trips';
+
+  @override
+  String get modularProfileStatReviews => 'Reviews';
+
+  @override
+  String get modularProfileModuleBasicInfo => 'Basic Info';
+
+  @override
+  String modularProfileBasicInfoSummary(String name, String occupation) {
+    return '$name · $occupation';
+  }
+
+  @override
+  String get modularProfileTapToEditBasicInfo => 'Tap to edit basic info';
+
+  @override
+  String get modularProfileModuleSkills => 'Skills';
+
+  @override
+  String get modularProfileTapToAddSkills => 'Tap to add skills';
+
+  @override
+  String modularProfileSkillsSummary(int count, String names) {
+    return '$count skills: $names';
+  }
+
+  @override
+  String get modularProfileModuleInterests => 'Interests';
+
+  @override
+  String get modularProfileTapToAddInterests => 'Tap to add interests';
+
+  @override
+  String modularProfileInterestsSummary(int count, String names) {
+    return '$count interests: $names';
+  }
+
+  @override
+  String get modularProfileModuleSocialLinks => 'Social Links';
+
+  @override
+  String get modularProfileTapToAddSocialLinks => 'Tap to add social links';
+
+  @override
+  String modularProfileSocialLinksCount(int count) {
+    return '$count platforms added';
+  }
+
+  @override
+  String get modularProfileModuleTravelPlans => 'Travel Plans';
+
+  @override
+  String get modularProfileNoTravelPlans => 'No travel plans';
+
+  @override
+  String modularProfileTravelPlansCount(int count) {
+    return '$count plans';
+  }
+
+  @override
+  String get modularProfileTravelPlansComingSoon =>
+      'Travel plans feature is in development';
+
+  @override
+  String get modularProfileModuleBadges => 'Badges';
+
+  @override
+  String get modularProfileNoBadges => 'No badges';
+
+  @override
+  String modularProfileBadgesCount(int count) {
+    return '$count badges earned';
+  }
+
+  @override
+  String get modularProfileBadgesComingSoon =>
+      'Badges feature is in development';
+
+  @override
+  String get modularProfileModuleHistory => 'Travel History';
+
+  @override
+  String get modularProfileNoHistory => 'No travel records';
+
+  @override
+  String modularProfileHistoryCount(int count) {
+    return '$count records';
+  }
+
+  @override
+  String get modularProfileHistoryComingSoon =>
+      'Travel history feature is in development';
+
+  @override
+  String get uploading => 'Uploading...';
+
+  @override
+  String get confirmDelete => 'Confirm Delete';
+
+  @override
+  String get addHotelRoomTypesTitle => 'Room Types';
+
+  @override
+  String get addHotelAddRoomType => 'Add Room Type';
+
+  @override
+  String get addHotelEditRoomType => 'Edit Room Type';
+
+  @override
+  String get addHotelRoomTypesHint =>
+      'Add different room types and prices (optional)';
+
+  @override
+  String get addHotelNoRoomTypes => 'No room types yet';
+
+  @override
+  String get addHotelTapToAddRoomType =>
+      'Tap the button above to add room types';
+
+  @override
+  String get addHotelUnnamedRoomType => 'Unnamed room type';
+
+  @override
+  String addHotelPricePerNightChip(String currency, Object price) {
+    return '$currency $price/night';
+  }
+
+  @override
+  String addHotelMaxOccupancyChip(Object count) {
+    return 'Max $count people';
+  }
+
+  @override
+  String addHotelAvailableRoomsChip(Object count) {
+    return '$count rooms';
+  }
+
+  @override
+  String get addHotelRoomTypeName => 'Room Type Name';
+
+  @override
+  String get addHotelRoomTypeNameHint => 'e.g. Standard Double Room';
+
+  @override
+  String get addHotelRoomTypeDescription => 'Room Type Description';
+
+  @override
+  String get addHotelRoomTypeDescriptionHint => 'Facilities, highlights, etc.';
+
+  @override
+  String get addHotelRoomSize => 'Size (㎡)';
+
+  @override
+  String get addHotelMaxOccupancy => 'Max Occupancy';
+
+  @override
+  String get addHotelBedType => 'Bed Type';
+
+  @override
+  String get addHotelAvailableRooms => 'Available Rooms';
+
+  @override
+  String get addHotelBedTypeSingle => 'Single';
+
+  @override
+  String get addHotelBedTypeDouble => 'Double';
+
+  @override
+  String get addHotelBedTypeQueen => 'Queen';
+
+  @override
+  String get addHotelBedTypeKing => 'King';
+
+  @override
+  String get addHotelBedTypeTwin => 'Twin';
+
+  @override
+  String get addHotelBedTypeBunk => 'Bunk';
+
+  @override
+  String get addHotelEnterRoomTypeName => 'Please enter room type name';
+
+  @override
+  String get addHotelEnterPricePerNight => 'Please enter price per night';
+
+  @override
+  String get addHotelRoomTypeUpdated => 'Room type updated';
+
+  @override
+  String get addHotelRoomTypeAdded => 'Room type added';
+
+  @override
+  String addHotelDeleteRoomTypeConfirm(String name) {
+    return 'Are you sure you want to delete room type \"$name\"?';
+  }
+
+  @override
+  String get addHotelRoomTypeDeleted => 'Room type deleted';
+
+  @override
+  String get editSocialLinksUrl => 'Link URL';
+
+  @override
+  String editSocialLinksExample(String pattern) {
+    return 'Example: $pattern';
+  }
+
+  @override
+  String get editSocialLinksTapToAdd => 'Tap to add';
+
+  @override
+  String editSocialLinksAddedCount(int count, int total) {
+    return 'Added $count / $total platforms';
+  }
+
+  @override
+  String get directChatJustNow => 'Just now';
+
+  @override
+  String directChatMinutesAgo(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String directChatHoursAgo(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String directChatDaysAgo(int count) {
+    return '${count}d ago';
+  }
+
+  @override
+  String directChatPickLocationFailed(String error) {
+    return 'Failed to pick location: $error';
+  }
+
+  @override
+  String directChatSendFileFailed(String error) {
+    return 'Failed to send file: $error';
+  }
+
+  @override
+  String get directChatVoiceFileMissing => 'Voice file does not exist';
+
+  @override
+  String get directChatVoiceMessageText => 'Voice message';
+
+  @override
+  String directChatSendVoiceFailed(String error) {
+    return 'Failed to send voice: $error';
+  }
+
+  @override
+  String get directChatVoiceMessageUnavailable => 'Voice message unavailable';
+
+  @override
+  String get directChatFileFallback => 'File';
+
+  @override
+  String get directChatChooseMapNavigation => 'Choose map navigation';
+
+  @override
+  String get directChatMapApple => 'Apple Maps';
+
+  @override
+  String get directChatMapGoogle => 'Google Maps';
+
+  @override
+  String get directChatMapAmap => 'Amap';
+
+  @override
+  String get directChatMapBaidu => 'Baidu Maps';
+
+  @override
+  String get directChatMapTencent => 'Tencent Maps';
+
+  @override
+  String directChatMapNotInstalled(String mapName) {
+    return '$mapName is not installed';
+  }
+
+  @override
+  String get directChatImageLoadFailed => 'Failed to load image';
+
+  @override
+  String get directChatSaveComingSoon => 'Save feature coming soon';
+
+  @override
+  String get directChatShareComingSoon => 'Share feature coming soon';
+
+  @override
+  String get tencentImConnectFailedRetry =>
+      'Connection failed, please try again';
+
+  @override
+  String get tencentImImportUserFailed =>
+      'User import failed, messages may not be delivered';
+
+  @override
+  String get tencentImNoMessages => 'No messages';
+
+  @override
+  String get tencentImFileFallback => 'File';
+
+  @override
+  String get tencentImMessageFallback => '[Message]';
+
+  @override
+  String get tencentImImageFallback => '[Image]';
+
+  @override
+  String get tencentImLoadFailed => 'Load failed';
+
+  @override
+  String get tencentImOpenFile => 'Open file';
+
+  @override
+  String get cityChatCreateRoomComingSoon =>
+      'Create chat room feature coming soon';
+
+  @override
+  String get cityChatSaySomething => 'Say something...';
+
+  @override
+  String get cityChatViewMembers => 'View members';
+
+  @override
+  String get cityChatSearchRecords => 'Search chat records';
+
+  @override
+  String get cityChatDoNotDisturb => 'Do not disturb';
+
+  @override
+  String get cityChatDoNotDisturbEnabled => 'Do not disturb enabled';
+
+  @override
+  String get cityChatExitRoom => 'Leave chat room';
+
+  @override
+  String get cityChatLocatedMessage => 'Message located';
+
+  @override
+  String get cityChatMessageOutOfRange =>
+      'Message is not in the current loaded range, please load more history';
+
+  @override
+  String get cityChatSearchMessageContent => 'Search message content...';
+
+  @override
+  String get dataServiceLoginToAccessFeature =>
+      'Please login to access this feature';
+
+  @override
+  String get dataServiceInvalidSession =>
+      'Invalid session. Please login again.';
+
+  @override
+  String get dataServiceAuthenticationError => 'Authentication Error';
+
+  @override
+  String get dataServiceSessionExpiredMessage =>
+      'Your session has expired. Please login again.';
+
+  @override
+  String get dataServiceSessionExpiredTitle => 'Session Expired';
+
+  @override
+  String dataServiceFoundCities(int count) {
+    return 'Found $count cities';
+  }
+
+  @override
+  String get dataServiceSearchFailed => 'Search Failed';
+
+  @override
+  String get dataServiceSearchCitiesHint =>
+      'Search cities... (supports Chinese and English)';
+
+  @override
+  String get dataServiceClearSearch => 'Clear Search';
+
+  @override
+  String get dataServiceAlreadyJoinedMeetup =>
+      'You have already joined this meetup';
+
+  @override
+  String get dataServiceNotJoinedMeetup => 'You haven\'t joined this meetup';
+
+  @override
+  String get dataServiceLeaveMeetupFailed => 'Failed to leave meetup';
+
+  @override
+  String get dataServiceJoinMeetupFailed => 'Failed to join meetup';
+
+  @override
+  String get dataServiceOperationFailed => 'Operation Failed';
+
+  @override
+  String get dataServiceLoginToGenerateImages =>
+      'Please login to generate images';
+
+  @override
+  String get dataServiceOnlyAdminOrModeratorCanGenerate =>
+      'Only administrators or city moderators can generate images';
+
+  @override
+  String dataServiceImageTaskCreated(String cityName) {
+    return 'AI image generation task created for $cityName.\nYou will be notified when complete.';
+  }
+
+  @override
+  String get dataServicePermissionDenied => 'Permission Denied';
+
+  @override
+  String get dataServiceTaskCreated => 'Task Created';
+
+  @override
+  String get dataServiceTaskCreationFailed => 'Task Creation Failed';
+
+  @override
+  String get loginTipsTitle => 'Tips';
+
+  @override
+  String get loginPhoneRequired => 'Please enter your phone number';
+
+  @override
+  String get loginPhoneInvalid => 'Please enter a valid phone number';
+
+  @override
+  String get loginSmsCodeSent => 'Verification code sent';
+
+  @override
+  String get loginSendFailed => 'Send failed';
+
+  @override
+  String get loginSendSmsFailed => 'Failed to send verification code';
+
+  @override
+  String get loginSuccessfulTitle => 'Login Successful';
+
+  @override
+  String get loginFailedTitle => 'Login Failed';
+
+  @override
+  String get loginInvalidEmailOrPassword => 'Invalid email or password';
+
+  @override
+  String get loginUnknownErrorRetry => 'An error occurred. Please try again.';
+
+  @override
+  String get loginWelcomeBack => 'Welcome back!';
+
+  @override
+  String get loginFailedRetry => 'Login failed, please try again';
+
+  @override
+  String get loginSmsCodeInvalidOrExpired =>
+      'Verification code is invalid or expired';
+
+  @override
+  String loginSocialFailed(String platformName) {
+    return '$platformName login failed, please try again later';
+  }
+
+  @override
+  String loginSocialLoading(String platformName) {
+    return 'Logging in with $platformName...';
+  }
+
+  @override
+  String get loginPleaseWait => 'Please wait';
+
+  @override
+  String get addInnovationImageSourceLocal => 'Local image';
+
+  @override
+  String get addInnovationImageSourceAiGenerated => 'AI generated';
+
+  @override
+  String get addInnovationAiGenerating => 'AI is creating...';
+
+  @override
+  String get addInnovationSupportAlbumOrAi =>
+      'Supports album selection or AI generation';
+
+  @override
+  String get addInnovationSelectCoverImage => 'Choose cover image';
+
+  @override
+  String get addInnovationAddAttractiveCover =>
+      'Add an eye-catching cover for your project';
+
+  @override
+  String get addInnovationAlbum => 'Album';
+
+  @override
+  String get addInnovationPickFromLocal => 'Pick from local';
+
+  @override
+  String get addInnovationAiGenerate => 'AI Generate';
+
+  @override
+  String get addInnovationAiCreative => 'Smart creation';
+
+  @override
+  String get addInnovationMembershipUnavailable =>
+      'Membership service is unavailable, please try again later';
+
+  @override
+  String get addInnovationAiImageGeneration => 'AI Image Generation';
+
+  @override
+  String get addInnovationMemberExclusive => 'Members-only feature';
+
+  @override
+  String get addInnovationUpgradeMembershipUnlock =>
+      'Upgrade membership to unlock';
+
+  @override
+  String get addInnovationMaybeLater => 'Maybe later';
+
+  @override
+  String get addInnovationAiGenerateCover => 'AI Generate Cover';
+
+  @override
+  String get addInnovationDescribeCoverHint =>
+      'Please describe the cover image you want...';
+
+  @override
+  String get addInnovationQuickTemplates => 'Quick templates:';
+
+  @override
+  String get addInnovationGenerating => 'Generating...';
+
+  @override
+  String get generate => 'Generate';
+
+  @override
+  String get addInnovationAiBadge => 'AI';
+
+  @override
+  String get cityPhotoPickFromGalleryMulti => 'Choose from gallery (multiple)';
+
+  @override
+  String get cityPhotoCaptureAndUpload => 'Capture photo';
+
+  @override
+  String cityPhotoUploadTitle(String cityName) {
+    return 'Upload Photos · $cityName';
+  }
+
+  @override
+  String cityPhotoShareExperience(String cityName) {
+    return 'Share your real experience in $cityName with the digital nomad community';
+  }
+
+  @override
+  String get cityPhotoTitleOrPlace => 'Title / Place';
+
+  @override
+  String get cityPhotoTitleExample => 'e.g. Sunrise by the Beidaihe coast';
+
+  @override
+  String get cityPhotoTitleRequired =>
+      'Please enter a title or place description';
+
+  @override
+  String get cityPhotoLocationOptional => 'Location (optional)';
+
+  @override
+  String get cityPhotoLocationHint =>
+      'Street, landmark, or more location clues';
+
+  @override
+  String get cityPhotoLocateOnMap => 'Locate on map';
+
+  @override
+  String get cityPhotoDescriptionOptional => 'Description (optional)';
+
+  @override
+  String get cityPhotoDescriptionHint =>
+      'Briefly describe the photo, shooting time, etc.';
+
+  @override
+  String cityPhotoSelectedCount(int count, int maxCount) {
+    return 'Selected $count / $maxCount';
+  }
+
+  @override
+  String get cityPhotoAddPhoto => 'Add Photos';
+
+  @override
+  String get cityPhotoUploading => 'Uploading...';
+
+  @override
+  String get cityPhotoEmptyHint =>
+      'No photos yet. Tap \"Add Photos\" above to upload.';
+
+  @override
+  String get cityPhotoSubmitting => 'Submitting...';
+
+  @override
+  String get cityPhotoSubmitDescription =>
+      'After submission, the backend will auto-fill coordinates via Amap. On success, you will return to the city detail page and photos will appear after refresh.';
+
+  @override
+  String get currencyOptionUsd => 'USD (\$)';
+
+  @override
+  String get currencyOptionEur => 'EUR (€)';
+
+  @override
+  String get currencyOptionGbp => 'GBP (£)';
+
+  @override
+  String get currencyOptionCny => 'CNY (¥)';
+
+  @override
+  String get currencyOptionJpy => 'JPY (¥)';
+
+  @override
+  String get currencyOptionThb => 'THB (฿)';
+
+  @override
+  String get currencyOptionVnd => 'VND (₫)';
+
+  @override
+  String get currencyOptionIdr => 'IDR (Rp)';
+
+  @override
+  String get currencyOptionMyr => 'MYR (RM)';
+
+  @override
+  String get currencyOptionSgd => 'SGD (S\$)';
+
+  @override
+  String get homeMeetupChatButton => 'Chat';
+
+  @override
+  String get moderatorCardTitle => 'City Moderator';
+
+  @override
+  String get moderatorCardCertified => 'Certified';
+
+  @override
+  String get moderatorCardTransferModerator => 'Transfer Moderator';
+
+  @override
+  String get moderatorCardApplyModerator => 'Apply to be Moderator';
+
+  @override
+  String get moderatorCardUnclaimed => 'Unclaimed';
+
+  @override
+  String get moderatorCardLookingForModerator =>
+      'This city is looking for a moderator! If you are familiar with this place, you can apply to become a moderator and help other digital nomads understand the city.';
+
+  @override
+  String get moderatorCardAssignModerator => 'Assign Moderator';
+
+  @override
+  String get moderatorCardNeedUpgradeMembership =>
+      'Membership Upgrade Required';
+
+  @override
+  String get moderatorCardUpgradeContent =>
+      'Applying to be a city moderator requires Pro membership or above.\n\nAfter upgrading to Pro, you will get:\n• Eligibility to apply as a city moderator\n• More AI usage quota\n• Exclusive member badge\n• More advanced features';
+
+  @override
+  String get moderatorCardUpgradeNow => 'Upgrade Now';
+
+  @override
+  String assignModeratorLoadCandidatesFailed(String error) {
+    return 'Failed to load moderator candidates: $error';
+  }
+
+  @override
+  String get assignModeratorSelectAtLeastOneUser =>
+      'Please select at least one user';
+
+  @override
+  String get assignModeratorUnknownError => 'Unknown error';
+
+  @override
+  String assignModeratorUserError(String userId, String error) {
+    return 'User $userId: $error';
+  }
+
+  @override
+  String assignModeratorSuccessCount(int count) {
+    return 'Successfully assigned $count moderators!';
+  }
+
+  @override
+  String assignModeratorFailCount(int count) {
+    return 'Failed to assign $count users, please check logs';
+  }
+
+  @override
+  String assignModeratorAllFailed(String reason) {
+    return 'All user assignments failed: $reason';
+  }
+
+  @override
+  String get assignModeratorConfirmTitle => 'Confirm Moderator Assignment';
+
+  @override
+  String assignModeratorConfirmMessage(int count) {
+    return 'Are you sure you want to assign $count users as moderators?\n\nThese users will automatically receive moderator role and related permissions.';
+  }
+
+  @override
+  String get skillCategoryProgramming => 'Programming';
+
+  @override
+  String get skillCategoryDesign => 'Design';
+
+  @override
+  String get skillCategoryMarketing => 'Marketing';
+
+  @override
+  String get skillCategoryLanguages => 'Languages';
+
+  @override
+  String get skillCategoryData => 'Data';
+
+  @override
+  String get skillCategoryManagement => 'Management';
+
+  @override
+  String get skillCategoryOther => 'Other';
+
+  @override
+  String get interestCategorySports => 'Sports & Fitness';
+
+  @override
+  String get interestCategoryArts => 'Arts & Culture';
+
+  @override
+  String get interestCategoryFood => 'Food & Cooking';
+
+  @override
+  String get interestCategoryTravel => 'Travel & Adventure';
+
+  @override
+  String get interestCategoryTechnology => 'Technology';
+
+  @override
+  String get interestCategoryReading => 'Reading & Learning';
+
+  @override
+  String get interestCategoryMusic => 'Music & Entertainment';
+
+  @override
+  String get interestCategorySocial => 'Social & Public Welfare';
 
   @override
   String get travelHistory => 'Travel History';
@@ -2154,9 +3196,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get foodie => 'Foodie';
-
-  @override
-  String get selectInterests => 'Select your interests (up to 5)';
 
   @override
   String get hiking => 'Hiking';
@@ -4388,4 +5427,342 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get serviceHoursDesc => 'Mon-Fri 9:00 AM - 6:00 PM (Beijing Time)';
+
+  @override
+  String get aiChatServiceUnavailable =>
+      'AI service is temporarily unavailable. Please try again later.';
+
+  @override
+  String get aiChatResponseError => 'AI returned an error';
+
+  @override
+  String get aiChatFailed => 'AI Chat failed';
+
+  @override
+  String get aiChatDefaultConversationTitle => 'Nomads AI Copilot';
+
+  @override
+  String get aiChatSystemPrompt =>
+      'You are the Go Nomads AI copilot. Provide concise, actionable travel help for digital nomads.';
+
+  @override
+  String get aiChatCreateConversationFailed =>
+      'Unable to create AI conversation right now';
+
+  @override
+  String get aiChatLoadHistoryFailed => 'Failed to load conversation history';
+
+  @override
+  String get aiChatSwitchBlockedWhileStreaming =>
+      'Reply is being generated. Please wait before switching conversations.';
+
+  @override
+  String get aiChatSwitchConversationFailed =>
+      'Failed to switch conversation. Please try again later.';
+
+  @override
+  String get aiChatThinking => 'AI is thinking...';
+
+  @override
+  String get aiChatRequestTimeout =>
+      'Request timed out. Please try again later.';
+
+  @override
+  String get aiChatReplyUnavailable =>
+      'Unable to get AI reply right now. Please try again later.';
+
+  @override
+  String get aiChatSendFailed => 'Failed to send AI Chat message';
+
+  @override
+  String get aiChatNoReplyYet =>
+      'No AI reply received yet. Please try again later.';
+
+  @override
+  String get aiChatUntitledConversation => 'Untitled conversation';
+
+  @override
+  String get manageReviewsDeleteConfirmTitle => 'Confirm deletion';
+
+  @override
+  String get manageReviewsDeleteConfirmMessage =>
+      'Are you sure you want to delete this review? This action can be recovered.';
+
+  @override
+  String manageReviewsPageTitle(Object cityName) {
+    return '$cityName - Review Management';
+  }
+
+  @override
+  String get manageReviewsNoData => 'No review data yet';
+
+  @override
+  String get manageReviewsAddFirstReview => 'Add first review';
+
+  @override
+  String manageReviewsLoadedAll(int count) {
+    return 'All $count reviews loaded';
+  }
+
+  @override
+  String get travelPlanUnableToLoad => 'Unable to load travel plan';
+
+  @override
+  String travelPlanLoadFailedWithError(Object error) {
+    return 'Load failed: $error';
+  }
+
+  @override
+  String travelPlanGenerateErrorWithError(Object error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get travelPlanGeneratedSuccess =>
+      'Travel plan generated successfully!';
+
+  @override
+  String travelPlanGenerateFailedWithError(Object error) {
+    return 'Failed to generate: $error';
+  }
+
+  @override
+  String get travelPlanNotReadyWarning => 'The plan is not generated yet';
+
+  @override
+  String get aiChatCodeCopied => 'Code copied';
+
+  @override
+  String get aiChatCodeCopiedToClipboard => 'Code copied to clipboard';
+
+  @override
+  String get aiChatInputHint =>
+      'Ask routes, visas, or itinerary planning — just start chatting…';
+
+  @override
+  String get aiChatEmptyHint => 'No conversation yet. Try asking AI';
+
+  @override
+  String get aiChatStartConversation => 'Start conversation';
+
+  @override
+  String prosConsAddPageTitle(Object cityName) {
+    return '$cityName - Add Highlights';
+  }
+
+  @override
+  String get prosConsAddProsHint => 'Share what this city does well...';
+
+  @override
+  String get prosConsAddConsHint => 'Share challenges in this city...';
+
+  @override
+  String manageProsConsPageTitle(Object cityName) {
+    return '$cityName - Pros & Cons Management';
+  }
+
+  @override
+  String get cityDetailGeneratingNearbyCitiesTitle =>
+      'AI is generating nearby cities';
+
+  @override
+  String get cityDetailNearbyCitiesGeneratedSuccess =>
+      'Nearby cities generated successfully!';
+
+  @override
+  String get guideTabAiGenerate => 'Generate with AI';
+
+  @override
+  String get guideTabAiGenerateGuide => 'AI Guide Generation';
+
+  @override
+  String get registerCodeSentToEmail => 'Verification code sent to your email';
+
+  @override
+  String get registerSendCodeFailedRetry =>
+      'Failed to send verification code, please try again later';
+
+  @override
+  String get registerFailedTitle => 'Registration Failed';
+
+  @override
+  String get registerFailedCheckInput =>
+      'Registration failed, please check your input';
+
+  @override
+  String get registerFailedProcessError =>
+      'An error occurred during registration. Please try again later';
+
+  @override
+  String get conversationDeleteTitle => 'Delete conversation';
+
+  @override
+  String get conversationDeleteMessage =>
+      'Are you sure you want to delete this conversation? Chat history will be removed.';
+
+  @override
+  String get coworkingDetailUserComments => 'User Comments';
+
+  @override
+  String get coworkingDetailPostComment => 'Post Comment';
+
+  @override
+  String get coworkingDetailViewMoreComments => 'View More Comments';
+
+  @override
+  String get coworkingDetailNoComments => 'No comments yet';
+
+  @override
+  String get coworkingDetailBeFirstCommenter =>
+      'Be the first to post a comment';
+
+  @override
+  String get editSkillsTitle => 'Edit Skills';
+
+  @override
+  String get editSkillsAddCustomSkill => 'Add Custom Skill';
+
+  @override
+  String get editInterestsTitle => 'Edit Interests';
+
+  @override
+  String get editInterestsAddCustomInterest => 'Add Custom Interest';
+
+  @override
+  String get prosConsNoProsTitle => 'No pros yet';
+
+  @override
+  String get prosConsNoProsSubtitle =>
+      'Share your great experiences in this city';
+
+  @override
+  String get prosConsAddPros => 'Add Pro';
+
+  @override
+  String get prosConsNoConsTitle => 'No cons yet';
+
+  @override
+  String get prosConsNoConsSubtitle =>
+      'Share challenges and areas that need improvement';
+
+  @override
+  String get prosConsAddCons => 'Add Con';
+
+  @override
+  String get profilePleaseLoginToView => 'Please login to view your profile';
+
+  @override
+  String get profilePleaseLoginAgain => 'Please login again';
+
+  @override
+  String get profileLogoutSuccessMessage =>
+      'You have been logged out successfully';
+
+  @override
+  String get profileLogoutSuccessTitle => 'Logout Success';
+
+  @override
+  String get profileLogoutErrorMessage => 'An error occurred during logout';
+
+  @override
+  String get coworkingDetailDeleteConfirmTitle => 'Delete Confirmation';
+
+  @override
+  String coworkingDetailDeleteConfirmMessage(Object name) {
+    return 'Are you sure you want to delete \"$name\"? This action cannot be undone.';
+  }
+
+  @override
+  String get loginPhoneAction => 'Login / Register';
+
+  @override
+  String get amapGlobalMapOnlyMobile =>
+      'Map is only supported on iOS and Android';
+
+  @override
+  String get amapGlobalTitle => 'Global Nomads';
+
+  @override
+  String get amapGlobalByRegion => 'By Region';
+
+  @override
+  String get neighborhoodsDiscoverNearbyHint =>
+      'Discover 4 nearby cities within 100 km';
+
+  @override
+  String get neighborhoodsGenerateNearbyCities => 'AI Generate Nearby Cities';
+
+  @override
+  String get neighborhoodsLoadedFromBackend => '☁️ Loaded from backend';
+
+  @override
+  String get aiChatHistoryTooltip => 'Conversation History';
+
+  @override
+  String get aiChatLoadingHistoryTitle => 'Loading conversation history...';
+
+  @override
+  String get aiChatNoHistoryStartNew =>
+      'No conversation history yet. Start a new chat now';
+
+  @override
+  String get aiChatHistoryTitle => 'Conversation History';
+
+  @override
+  String manageCostPageTitle(Object cityName) {
+    return '$cityName - Cost Management';
+  }
+
+  @override
+  String get manageCostNoData => 'No cost data';
+
+  @override
+  String get manageCostAddFirst => 'Add your first cost';
+
+  @override
+  String get skillsInterestsTitle => 'Select Skills and Interests';
+
+  @override
+  String get skillsInterestsSelected => 'Selected';
+
+  @override
+  String skillsInterestsSummary(int skillsCount, int interestsCount) {
+    return 'Skills $skillsCount/10  ·  Interests $interestsCount/15';
+  }
+
+  @override
+  String roomTypePreviewToast(Object name) {
+    return 'Room type: $name';
+  }
+
+  @override
+  String roomTypeBookingToast(Object name) {
+    return 'Book $name';
+  }
+
+  @override
+  String get applyModeratorSubmitSuccess =>
+      'Application submitted. Please wait for admin review';
+
+  @override
+  String get applyModeratorReasonHint =>
+      'Please explain why you are applying to be a moderator and what you can contribute to the community...';
+
+  @override
+  String addCoworkingImageCount(int count, int max) {
+    return '$count/$max';
+  }
+
+  @override
+  String addCoworkingMaxImages(int max) {
+    return 'You can upload up to $max images';
+  }
+
+  @override
+  String get loginFacebookComingSoon => 'Facebook sign-in is coming soon';
+
+  @override
+  String assignModeratorPageTitle(Object cityName) {
+    return '$cityName - Assign Moderators';
+  }
 }

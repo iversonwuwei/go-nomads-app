@@ -848,6 +848,18 @@ abstract class AppLocalizations {
   /// **'语言'**
   String get language;
 
+  /// 语言选择项：中文
+  ///
+  /// In zh, this message translates to:
+  /// **'中文'**
+  String get languageOptionChinese;
+
+  /// 语言选择项：英文
+  ///
+  /// In zh, this message translates to:
+  /// **'英文'**
+  String get languageOptionEnglish;
+
   /// No description provided for @theme.
   ///
   /// In zh, this message translates to:
@@ -1009,6 +1021,1830 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'兴趣爱好'**
   String get interests;
+
+  /// No description provided for @selectSkills.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择技能'**
+  String get selectSkills;
+
+  /// No description provided for @selectInterests.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择您的兴趣(最多5个)'**
+  String get selectInterests;
+
+  /// No description provided for @searchSkillsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索技能...'**
+  String get searchSkillsHint;
+
+  /// No description provided for @searchInterestsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索兴趣...'**
+  String get searchInterestsHint;
+
+  /// No description provided for @noSkills.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无技能'**
+  String get noSkills;
+
+  /// No description provided for @noMatchingSkills.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配的技能'**
+  String get noMatchingSkills;
+
+  /// No description provided for @noInterests.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无兴趣'**
+  String get noInterests;
+
+  /// No description provided for @noMatchingInterests.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配的兴趣'**
+  String get noMatchingInterests;
+
+  /// No description provided for @failedToLoadSkillsList.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法加载技能列表'**
+  String get failedToLoadSkillsList;
+
+  /// No description provided for @failedToLoadInterestsList.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法加载兴趣列表'**
+  String get failedToLoadInterestsList;
+
+  /// No description provided for @itemUnit.
+  ///
+  /// In zh, this message translates to:
+  /// **'项'**
+  String get itemUnit;
+
+  /// No description provided for @yearsAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}年前'**
+  String yearsAgo(int count);
+
+  /// No description provided for @profileNotificationPermissionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要通知权限'**
+  String get profileNotificationPermissionTitle;
+
+  /// No description provided for @profileNotificationPermissionMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'请在系统设置中开启通知权限，以便接收重要消息提醒。'**
+  String get profileNotificationPermissionMessage;
+
+  /// No description provided for @profileGoToSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'去设置'**
+  String get profileGoToSettings;
+
+  /// No description provided for @profileRolesManagement.
+  ///
+  /// In zh, this message translates to:
+  /// **'🔐 管理员权限管理'**
+  String get profileRolesManagement;
+
+  /// No description provided for @profileSelectedUsers.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {count} 人'**
+  String profileSelectedUsers(int count);
+
+  /// No description provided for @profileRolesNotLoadedWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'⚠️ 角色数据未加载，批量操作功能受限\n请确认后端 /api/v1/roles 接口已正确配置'**
+  String get profileRolesNotLoadedWarning;
+
+  /// No description provided for @profileSetAsAdmin.
+  ///
+  /// In zh, this message translates to:
+  /// **'设为管理员'**
+  String get profileSetAsAdmin;
+
+  /// No description provided for @profileSetAsNormalUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'设为普通用户'**
+  String get profileSetAsNormalUser;
+
+  /// No description provided for @profileToggleSelectAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全选/取消全选'**
+  String get profileToggleSelectAll;
+
+  /// No description provided for @profileNoUsers.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无用户'**
+  String get profileNoUsers;
+
+  /// No description provided for @profileJoinedAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入于 {time}'**
+  String profileJoinedAt(String time);
+
+  /// No description provided for @profileRoleAdmin.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理员'**
+  String get profileRoleAdmin;
+
+  /// No description provided for @profileRoleModerator.
+  ///
+  /// In zh, this message translates to:
+  /// **'版主'**
+  String get profileRoleModerator;
+
+  /// No description provided for @profileRoleUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户'**
+  String get profileRoleUser;
+
+  /// No description provided for @profileSelectUsersFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先选择要设置的用户'**
+  String get profileSelectUsersFirst;
+
+  /// No description provided for @profileBatchSetAdminSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功将 {count} 个用户设为管理员'**
+  String profileBatchSetAdminSuccess(int count);
+
+  /// No description provided for @profileBatchSetAdminFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'批量设置管理员失败'**
+  String get profileBatchSetAdminFailed;
+
+  /// No description provided for @profileBatchSetUserSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功将 {count} 个用户设为普通用户'**
+  String profileBatchSetUserSuccess(int count);
+
+  /// No description provided for @profileBatchSetUserFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'批量设置用户失败'**
+  String get profileBatchSetUserFailed;
+
+  /// No description provided for @profileAddedCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加 {count} 个'**
+  String profileAddedCount(int count);
+
+  /// No description provided for @profileRemovedCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除 {count} 个'**
+  String profileRemovedCount(int count);
+
+  /// No description provided for @profileSupabaseNotConfigured.
+  ///
+  /// In zh, this message translates to:
+  /// **'Supabase 未配置，请联系管理员'**
+  String get profileSupabaseNotConfigured;
+
+  /// No description provided for @profileAvatarUploadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'头像上传失败: {error}'**
+  String profileAvatarUploadFailed(String error);
+
+  /// No description provided for @manageCityRatingsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{cityName} - 评分数据'**
+  String manageCityRatingsTitle(String cityName);
+
+  /// No description provided for @manageCityRatingsAddItem.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加评分项'**
+  String get manageCityRatingsAddItem;
+
+  /// No description provided for @manageCityRatingsNameZh.
+  ///
+  /// In zh, this message translates to:
+  /// **'评分项名称（中文）'**
+  String get manageCityRatingsNameZh;
+
+  /// No description provided for @manageCityRatingsNameZhHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：美食'**
+  String get manageCityRatingsNameZhHint;
+
+  /// No description provided for @manageCityRatingsNameEn.
+  ///
+  /// In zh, this message translates to:
+  /// **'评分项名称（英文）'**
+  String get manageCityRatingsNameEn;
+
+  /// No description provided for @manageCityRatingsNameEnHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：Food'**
+  String get manageCityRatingsNameEnHint;
+
+  /// No description provided for @manageCityRatingsDescriptionOptional.
+  ///
+  /// In zh, this message translates to:
+  /// **'描述（可选）'**
+  String get manageCityRatingsDescriptionOptional;
+
+  /// No description provided for @manageCityRatingsDescriptionHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'简短描述'**
+  String get manageCityRatingsDescriptionHint;
+
+  /// No description provided for @manageCityRatingsIcon.
+  ///
+  /// In zh, this message translates to:
+  /// **'图标'**
+  String get manageCityRatingsIcon;
+
+  /// No description provided for @manageCityRatingsIconStar.
+  ///
+  /// In zh, this message translates to:
+  /// **'星星'**
+  String get manageCityRatingsIconStar;
+
+  /// No description provided for @manageCityRatingsIconRestaurant.
+  ///
+  /// In zh, this message translates to:
+  /// **'餐厅'**
+  String get manageCityRatingsIconRestaurant;
+
+  /// No description provided for @manageCityRatingsIconNetwork.
+  ///
+  /// In zh, this message translates to:
+  /// **'网络'**
+  String get manageCityRatingsIconNetwork;
+
+  /// No description provided for @manageCityRatingsIconSafety.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全'**
+  String get manageCityRatingsIconSafety;
+
+  /// No description provided for @manageCityRatingsIconTransport.
+  ///
+  /// In zh, this message translates to:
+  /// **'交通'**
+  String get manageCityRatingsIconTransport;
+
+  /// No description provided for @manageCityRatingsIconHealthcare.
+  ///
+  /// In zh, this message translates to:
+  /// **'医疗'**
+  String get manageCityRatingsIconHealthcare;
+
+  /// No description provided for @manageCityRatingsIconWeather.
+  ///
+  /// In zh, this message translates to:
+  /// **'天气'**
+  String get manageCityRatingsIconWeather;
+
+  /// No description provided for @manageCityRatingsIconCost.
+  ///
+  /// In zh, this message translates to:
+  /// **'成本'**
+  String get manageCityRatingsIconCost;
+
+  /// No description provided for @manageCityRatingsIconPeople.
+  ///
+  /// In zh, this message translates to:
+  /// **'人群'**
+  String get manageCityRatingsIconPeople;
+
+  /// No description provided for @manageCityRatingsIconLanguage.
+  ///
+  /// In zh, this message translates to:
+  /// **'语言'**
+  String get manageCityRatingsIconLanguage;
+
+  /// No description provided for @manageCityRatingsDeleteItem.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除评分项'**
+  String get manageCityRatingsDeleteItem;
+
+  /// No description provided for @manageCityRatingsDeleteConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除“{name}”吗？'**
+  String manageCityRatingsDeleteConfirm(String name);
+
+  /// No description provided for @manageCityRatingsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{nameEn} • 评分: {average} ({count}人)'**
+  String manageCityRatingsSubtitle(String nameEn, String average, int count);
+
+  /// No description provided for @defaultStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认'**
+  String get defaultStatus;
+
+  /// No description provided for @manageCityRatingsEmptyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无评分项'**
+  String get manageCityRatingsEmptyTitle;
+
+  /// No description provided for @manageCityRatingsEmptyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击右上角加号，添加第一个评分项'**
+  String get manageCityRatingsEmptyHint;
+
+  /// No description provided for @editBasicInfoTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑基本信息'**
+  String get editBasicInfoTitle;
+
+  /// No description provided for @editBasicInfoGender.
+  ///
+  /// In zh, this message translates to:
+  /// **'性别'**
+  String get editBasicInfoGender;
+
+  /// No description provided for @editBasicInfoGenderMale.
+  ///
+  /// In zh, this message translates to:
+  /// **'男'**
+  String get editBasicInfoGenderMale;
+
+  /// No description provided for @editBasicInfoGenderFemale.
+  ///
+  /// In zh, this message translates to:
+  /// **'女'**
+  String get editBasicInfoGenderFemale;
+
+  /// No description provided for @editBasicInfoGenderPreferNotToSay.
+  ///
+  /// In zh, this message translates to:
+  /// **'不愿透露'**
+  String get editBasicInfoGenderPreferNotToSay;
+
+  /// No description provided for @editBasicInfoCurrentCity.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前城市'**
+  String get editBasicInfoCurrentCity;
+
+  /// No description provided for @editBasicInfoCityHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如: Bangkok'**
+  String get editBasicInfoCityHint;
+
+  /// No description provided for @editBasicInfoCurrentCountry.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前国家'**
+  String get editBasicInfoCurrentCountry;
+
+  /// No description provided for @editBasicInfoCountryHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如: Thailand'**
+  String get editBasicInfoCountryHint;
+
+  /// No description provided for @editBasicInfoOccupation.
+  ///
+  /// In zh, this message translates to:
+  /// **'职业'**
+  String get editBasicInfoOccupation;
+
+  /// No description provided for @editBasicInfoOccupationHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如: Software Engineer'**
+  String get editBasicInfoOccupationHint;
+
+  /// No description provided for @editBasicInfoCompany.
+  ///
+  /// In zh, this message translates to:
+  /// **'公司'**
+  String get editBasicInfoCompany;
+
+  /// No description provided for @editBasicInfoCompanyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如: Google'**
+  String get editBasicInfoCompanyHint;
+
+  /// No description provided for @editBasicInfoWebsite.
+  ///
+  /// In zh, this message translates to:
+  /// **'个人网站'**
+  String get editBasicInfoWebsite;
+
+  /// No description provided for @editBasicInfoWebsiteHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'https://yourwebsite.com'**
+  String get editBasicInfoWebsiteHint;
+
+  /// No description provided for @modularProfileTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户资料'**
+  String get modularProfileTitle;
+
+  /// No description provided for @modularProfileNameUnset.
+  ///
+  /// In zh, this message translates to:
+  /// **'未设置姓名'**
+  String get modularProfileNameUnset;
+
+  /// No description provided for @modularProfileOccupationUnset.
+  ///
+  /// In zh, this message translates to:
+  /// **'未设置职业'**
+  String get modularProfileOccupationUnset;
+
+  /// No description provided for @modularProfileStatsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Nomad 统计'**
+  String get modularProfileStatsTitle;
+
+  /// No description provided for @modularProfileStatCountries.
+  ///
+  /// In zh, this message translates to:
+  /// **'国家'**
+  String get modularProfileStatCountries;
+
+  /// No description provided for @modularProfileStatCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市'**
+  String get modularProfileStatCities;
+
+  /// No description provided for @modularProfileStatDays.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行天数'**
+  String get modularProfileStatDays;
+
+  /// No description provided for @modularProfileStatMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'Meetup'**
+  String get modularProfileStatMeetups;
+
+  /// No description provided for @modularProfileStatTrips.
+  ///
+  /// In zh, this message translates to:
+  /// **'行程'**
+  String get modularProfileStatTrips;
+
+  /// No description provided for @modularProfileStatReviews.
+  ///
+  /// In zh, this message translates to:
+  /// **'评论'**
+  String get modularProfileStatReviews;
+
+  /// No description provided for @modularProfileModuleBasicInfo.
+  ///
+  /// In zh, this message translates to:
+  /// **'基本信息'**
+  String get modularProfileModuleBasicInfo;
+
+  /// No description provided for @modularProfileBasicInfoSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'{name} · {occupation}'**
+  String modularProfileBasicInfoSummary(String name, String occupation);
+
+  /// No description provided for @modularProfileTapToEditBasicInfo.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击编辑基本信息'**
+  String get modularProfileTapToEditBasicInfo;
+
+  /// No description provided for @modularProfileModuleSkills.
+  ///
+  /// In zh, this message translates to:
+  /// **'技能标签'**
+  String get modularProfileModuleSkills;
+
+  /// No description provided for @modularProfileTapToAddSkills.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击添加技能标签'**
+  String get modularProfileTapToAddSkills;
+
+  /// No description provided for @modularProfileSkillsSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 项技能: {names}'**
+  String modularProfileSkillsSummary(int count, String names);
+
+  /// No description provided for @modularProfileModuleInterests.
+  ///
+  /// In zh, this message translates to:
+  /// **'兴趣爱好'**
+  String get modularProfileModuleInterests;
+
+  /// No description provided for @modularProfileTapToAddInterests.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击添加兴趣爱好'**
+  String get modularProfileTapToAddInterests;
+
+  /// No description provided for @modularProfileInterestsSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 项兴趣: {names}'**
+  String modularProfileInterestsSummary(int count, String names);
+
+  /// No description provided for @modularProfileModuleSocialLinks.
+  ///
+  /// In zh, this message translates to:
+  /// **'社交链接'**
+  String get modularProfileModuleSocialLinks;
+
+  /// No description provided for @modularProfileTapToAddSocialLinks.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击添加社交平台链接'**
+  String get modularProfileTapToAddSocialLinks;
+
+  /// No description provided for @modularProfileSocialLinksCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已添加 {count} 个平台'**
+  String modularProfileSocialLinksCount(int count);
+
+  /// No description provided for @modularProfileModuleTravelPlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行计划'**
+  String get modularProfileModuleTravelPlans;
+
+  /// No description provided for @modularProfileNoTravelPlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无旅行计划'**
+  String get modularProfileNoTravelPlans;
+
+  /// No description provided for @modularProfileTravelPlansCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个计划'**
+  String modularProfileTravelPlansCount(int count);
+
+  /// No description provided for @modularProfileTravelPlansComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行计划功能开发中'**
+  String get modularProfileTravelPlansComingSoon;
+
+  /// No description provided for @modularProfileModuleBadges.
+  ///
+  /// In zh, this message translates to:
+  /// **'成就徽章'**
+  String get modularProfileModuleBadges;
+
+  /// No description provided for @modularProfileNoBadges.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无徽章'**
+  String get modularProfileNoBadges;
+
+  /// No description provided for @modularProfileBadgesCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已获得 {count} 个徽章'**
+  String modularProfileBadgesCount(int count);
+
+  /// No description provided for @modularProfileBadgesComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'徽章功能开发中'**
+  String get modularProfileBadgesComingSoon;
+
+  /// No description provided for @modularProfileModuleHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行历史'**
+  String get modularProfileModuleHistory;
+
+  /// No description provided for @modularProfileNoHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无旅行记录'**
+  String get modularProfileNoHistory;
+
+  /// No description provided for @modularProfileHistoryCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 条记录'**
+  String modularProfileHistoryCount(int count);
+
+  /// No description provided for @modularProfileHistoryComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行历史功能开发中'**
+  String get modularProfileHistoryComingSoon;
+
+  /// No description provided for @uploading.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传中...'**
+  String get uploading;
+
+  /// No description provided for @confirmDelete.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认删除'**
+  String get confirmDelete;
+
+  /// No description provided for @addHotelRoomTypesTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'房型管理'**
+  String get addHotelRoomTypesTitle;
+
+  /// No description provided for @addHotelAddRoomType.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加房型'**
+  String get addHotelAddRoomType;
+
+  /// No description provided for @addHotelEditRoomType.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑房型'**
+  String get addHotelEditRoomType;
+
+  /// No description provided for @addHotelRoomTypesHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加不同的房型及价格（可选）'**
+  String get addHotelRoomTypesHint;
+
+  /// No description provided for @addHotelNoRoomTypes.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无房型'**
+  String get addHotelNoRoomTypes;
+
+  /// No description provided for @addHotelTapToAddRoomType.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击上方按钮添加房型'**
+  String get addHotelTapToAddRoomType;
+
+  /// No description provided for @addHotelUnnamedRoomType.
+  ///
+  /// In zh, this message translates to:
+  /// **'未命名房型'**
+  String get addHotelUnnamedRoomType;
+
+  /// No description provided for @addHotelPricePerNightChip.
+  ///
+  /// In zh, this message translates to:
+  /// **'{currency} {price}/晚'**
+  String addHotelPricePerNightChip(String currency, Object price);
+
+  /// No description provided for @addHotelMaxOccupancyChip.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多{count}人'**
+  String addHotelMaxOccupancyChip(Object count);
+
+  /// No description provided for @addHotelAvailableRoomsChip.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}间'**
+  String addHotelAvailableRoomsChip(Object count);
+
+  /// No description provided for @addHotelRoomTypeName.
+  ///
+  /// In zh, this message translates to:
+  /// **'房型名称'**
+  String get addHotelRoomTypeName;
+
+  /// No description provided for @addHotelRoomTypeNameHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：标准双人间'**
+  String get addHotelRoomTypeNameHint;
+
+  /// No description provided for @addHotelRoomTypeDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'房型描述'**
+  String get addHotelRoomTypeDescription;
+
+  /// No description provided for @addHotelRoomTypeDescriptionHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'房间设施、特色等'**
+  String get addHotelRoomTypeDescriptionHint;
+
+  /// No description provided for @addHotelRoomSize.
+  ///
+  /// In zh, this message translates to:
+  /// **'面积(㎡)'**
+  String get addHotelRoomSize;
+
+  /// No description provided for @addHotelMaxOccupancy.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大入住'**
+  String get addHotelMaxOccupancy;
+
+  /// No description provided for @addHotelBedType.
+  ///
+  /// In zh, this message translates to:
+  /// **'床型'**
+  String get addHotelBedType;
+
+  /// No description provided for @addHotelAvailableRooms.
+  ///
+  /// In zh, this message translates to:
+  /// **'可用房间数'**
+  String get addHotelAvailableRooms;
+
+  /// No description provided for @addHotelBedTypeSingle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Single'**
+  String get addHotelBedTypeSingle;
+
+  /// No description provided for @addHotelBedTypeDouble.
+  ///
+  /// In zh, this message translates to:
+  /// **'Double'**
+  String get addHotelBedTypeDouble;
+
+  /// No description provided for @addHotelBedTypeQueen.
+  ///
+  /// In zh, this message translates to:
+  /// **'Queen'**
+  String get addHotelBedTypeQueen;
+
+  /// No description provided for @addHotelBedTypeKing.
+  ///
+  /// In zh, this message translates to:
+  /// **'King'**
+  String get addHotelBedTypeKing;
+
+  /// No description provided for @addHotelBedTypeTwin.
+  ///
+  /// In zh, this message translates to:
+  /// **'Twin'**
+  String get addHotelBedTypeTwin;
+
+  /// No description provided for @addHotelBedTypeBunk.
+  ///
+  /// In zh, this message translates to:
+  /// **'Bunk'**
+  String get addHotelBedTypeBunk;
+
+  /// No description provided for @addHotelEnterRoomTypeName.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入房型名称'**
+  String get addHotelEnterRoomTypeName;
+
+  /// No description provided for @addHotelEnterPricePerNight.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入每晚价格'**
+  String get addHotelEnterPricePerNight;
+
+  /// No description provided for @addHotelRoomTypeUpdated.
+  ///
+  /// In zh, this message translates to:
+  /// **'房型已更新'**
+  String get addHotelRoomTypeUpdated;
+
+  /// No description provided for @addHotelRoomTypeAdded.
+  ///
+  /// In zh, this message translates to:
+  /// **'房型已添加'**
+  String get addHotelRoomTypeAdded;
+
+  /// No description provided for @addHotelDeleteRoomTypeConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除房型 \"{name}\" 吗？'**
+  String addHotelDeleteRoomTypeConfirm(String name);
+
+  /// No description provided for @addHotelRoomTypeDeleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'房型已删除'**
+  String get addHotelRoomTypeDeleted;
+
+  /// No description provided for @editSocialLinksUrl.
+  ///
+  /// In zh, this message translates to:
+  /// **'链接地址'**
+  String get editSocialLinksUrl;
+
+  /// No description provided for @editSocialLinksExample.
+  ///
+  /// In zh, this message translates to:
+  /// **'示例: {pattern}'**
+  String editSocialLinksExample(String pattern);
+
+  /// No description provided for @editSocialLinksTapToAdd.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击添加'**
+  String get editSocialLinksTapToAdd;
+
+  /// No description provided for @editSocialLinksAddedCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已添加 {count} / {total} 个平台'**
+  String editSocialLinksAddedCount(int count, int total);
+
+  /// No description provided for @directChatJustNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'刚刚'**
+  String get directChatJustNow;
+
+  /// No description provided for @directChatMinutesAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}分钟前'**
+  String directChatMinutesAgo(int count);
+
+  /// No description provided for @directChatHoursAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}小时前'**
+  String directChatHoursAgo(int count);
+
+  /// No description provided for @directChatDaysAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}天前'**
+  String directChatDaysAgo(int count);
+
+  /// No description provided for @directChatPickLocationFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择位置失败: {error}'**
+  String directChatPickLocationFailed(String error);
+
+  /// No description provided for @directChatSendFileFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送文件失败: {error}'**
+  String directChatSendFileFailed(String error);
+
+  /// No description provided for @directChatVoiceFileMissing.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音文件不存在'**
+  String get directChatVoiceFileMissing;
+
+  /// No description provided for @directChatVoiceMessageText.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音消息'**
+  String get directChatVoiceMessageText;
+
+  /// No description provided for @directChatSendVoiceFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送语音失败: {error}'**
+  String directChatSendVoiceFailed(String error);
+
+  /// No description provided for @directChatVoiceMessageUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音消息不可用'**
+  String get directChatVoiceMessageUnavailable;
+
+  /// No description provided for @directChatFileFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get directChatFileFallback;
+
+  /// No description provided for @directChatChooseMapNavigation.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择地图导航'**
+  String get directChatChooseMapNavigation;
+
+  /// No description provided for @directChatMapApple.
+  ///
+  /// In zh, this message translates to:
+  /// **'Apple 地图'**
+  String get directChatMapApple;
+
+  /// No description provided for @directChatMapGoogle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Google 地图'**
+  String get directChatMapGoogle;
+
+  /// No description provided for @directChatMapAmap.
+  ///
+  /// In zh, this message translates to:
+  /// **'高德地图'**
+  String get directChatMapAmap;
+
+  /// No description provided for @directChatMapBaidu.
+  ///
+  /// In zh, this message translates to:
+  /// **'百度地图'**
+  String get directChatMapBaidu;
+
+  /// No description provided for @directChatMapTencent.
+  ///
+  /// In zh, this message translates to:
+  /// **'腾讯地图'**
+  String get directChatMapTencent;
+
+  /// No description provided for @directChatMapNotInstalled.
+  ///
+  /// In zh, this message translates to:
+  /// **'未安装{mapName}'**
+  String directChatMapNotInstalled(String mapName);
+
+  /// No description provided for @directChatImageLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片加载失败'**
+  String get directChatImageLoadFailed;
+
+  /// No description provided for @directChatSaveComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存功能即将推出'**
+  String get directChatSaveComingSoon;
+
+  /// No description provided for @directChatShareComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享功能即将推出'**
+  String get directChatShareComingSoon;
+
+  /// No description provided for @tencentImConnectFailedRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接失败，请重试'**
+  String get tencentImConnectFailedRetry;
+
+  /// No description provided for @tencentImImportUserFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户导入失败，消息可能无法送达'**
+  String get tencentImImportUserFailed;
+
+  /// No description provided for @tencentImNoMessages.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无消息'**
+  String get tencentImNoMessages;
+
+  /// No description provided for @tencentImFileFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件'**
+  String get tencentImFileFallback;
+
+  /// No description provided for @tencentImMessageFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'[消息]'**
+  String get tencentImMessageFallback;
+
+  /// No description provided for @tencentImImageFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'[图片]'**
+  String get tencentImImageFallback;
+
+  /// No description provided for @tencentImLoadFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载失败'**
+  String get tencentImLoadFailed;
+
+  /// No description provided for @tencentImOpenFile.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开文件'**
+  String get tencentImOpenFile;
+
+  /// No description provided for @cityChatCreateRoomComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建聊天室功能即将推出'**
+  String get cityChatCreateRoomComingSoon;
+
+  /// No description provided for @cityChatSaySomething.
+  ///
+  /// In zh, this message translates to:
+  /// **'说点什么...'**
+  String get cityChatSaySomething;
+
+  /// No description provided for @cityChatViewMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看成员'**
+  String get cityChatViewMembers;
+
+  /// No description provided for @cityChatSearchRecords.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索聊天记录'**
+  String get cityChatSearchRecords;
+
+  /// No description provided for @cityChatDoNotDisturb.
+  ///
+  /// In zh, this message translates to:
+  /// **'消息免打扰'**
+  String get cityChatDoNotDisturb;
+
+  /// No description provided for @cityChatDoNotDisturbEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已开启消息免打扰'**
+  String get cityChatDoNotDisturbEnabled;
+
+  /// No description provided for @cityChatExitRoom.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出聊天室'**
+  String get cityChatExitRoom;
+
+  /// No description provided for @cityChatLocatedMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'已定位到消息'**
+  String get cityChatLocatedMessage;
+
+  /// No description provided for @cityChatMessageOutOfRange.
+  ///
+  /// In zh, this message translates to:
+  /// **'消息不在当前加载范围内，请加载更多历史消息'**
+  String get cityChatMessageOutOfRange;
+
+  /// No description provided for @cityChatSearchMessageContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索消息内容...'**
+  String get cityChatSearchMessageContent;
+
+  /// No description provided for @dataServiceLoginToAccessFeature.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先登录再使用此功能'**
+  String get dataServiceLoginToAccessFeature;
+
+  /// No description provided for @dataServiceInvalidSession.
+  ///
+  /// In zh, this message translates to:
+  /// **'会话无效，请重新登录。'**
+  String get dataServiceInvalidSession;
+
+  /// No description provided for @dataServiceAuthenticationError.
+  ///
+  /// In zh, this message translates to:
+  /// **'认证错误'**
+  String get dataServiceAuthenticationError;
+
+  /// No description provided for @dataServiceSessionExpiredMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'您的会话已过期，请重新登录。'**
+  String get dataServiceSessionExpiredMessage;
+
+  /// No description provided for @dataServiceSessionExpiredTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'会话已过期'**
+  String get dataServiceSessionExpiredTitle;
+
+  /// No description provided for @dataServiceFoundCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'找到 {count} 个城市'**
+  String dataServiceFoundCities(int count);
+
+  /// No description provided for @dataServiceSearchFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索失败'**
+  String get dataServiceSearchFailed;
+
+  /// No description provided for @dataServiceSearchCitiesHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索城市...（支持中英文搜索）'**
+  String get dataServiceSearchCitiesHint;
+
+  /// No description provided for @dataServiceClearSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'清除搜索'**
+  String get dataServiceClearSearch;
+
+  /// No description provided for @dataServiceAlreadyJoinedMeetup.
+  ///
+  /// In zh, this message translates to:
+  /// **'您已经加入了这个活动'**
+  String get dataServiceAlreadyJoinedMeetup;
+
+  /// No description provided for @dataServiceNotJoinedMeetup.
+  ///
+  /// In zh, this message translates to:
+  /// **'您尚未加入这个活动'**
+  String get dataServiceNotJoinedMeetup;
+
+  /// No description provided for @dataServiceLeaveMeetupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出活动失败'**
+  String get dataServiceLeaveMeetupFailed;
+
+  /// No description provided for @dataServiceJoinMeetupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入活动失败'**
+  String get dataServiceJoinMeetupFailed;
+
+  /// No description provided for @dataServiceOperationFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败'**
+  String get dataServiceOperationFailed;
+
+  /// No description provided for @dataServiceLoginToGenerateImages.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先登录后再生成图片'**
+  String get dataServiceLoginToGenerateImages;
+
+  /// No description provided for @dataServiceOnlyAdminOrModeratorCanGenerate.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅管理员或城市版主可生成图片'**
+  String get dataServiceOnlyAdminOrModeratorCanGenerate;
+
+  /// No description provided for @dataServiceImageTaskCreated.
+  ///
+  /// In zh, this message translates to:
+  /// **'{cityName} 的 AI 图片生成任务已创建。\n完成后将通知您。'**
+  String dataServiceImageTaskCreated(String cityName);
+
+  /// No description provided for @dataServicePermissionDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'权限不足'**
+  String get dataServicePermissionDenied;
+
+  /// No description provided for @dataServiceTaskCreated.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务已创建'**
+  String get dataServiceTaskCreated;
+
+  /// No description provided for @dataServiceTaskCreationFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务创建失败'**
+  String get dataServiceTaskCreationFailed;
+
+  /// No description provided for @loginTipsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'提示'**
+  String get loginTipsTitle;
+
+  /// No description provided for @loginPhoneRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入手机号'**
+  String get loginPhoneRequired;
+
+  /// No description provided for @loginPhoneInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入正确的手机号'**
+  String get loginPhoneInvalid;
+
+  /// No description provided for @loginSmsCodeSent.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证码已发送'**
+  String get loginSmsCodeSent;
+
+  /// No description provided for @loginSendFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送失败'**
+  String get loginSendFailed;
+
+  /// No description provided for @loginSendSmsFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送验证码失败'**
+  String get loginSendSmsFailed;
+
+  /// No description provided for @loginSuccessfulTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录成功'**
+  String get loginSuccessfulTitle;
+
+  /// No description provided for @loginFailedTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录失败'**
+  String get loginFailedTitle;
+
+  /// No description provided for @loginInvalidEmailOrPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱或密码错误'**
+  String get loginInvalidEmailOrPassword;
+
+  /// No description provided for @loginUnknownErrorRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'发生错误，请重试。'**
+  String get loginUnknownErrorRetry;
+
+  /// No description provided for @loginWelcomeBack.
+  ///
+  /// In zh, this message translates to:
+  /// **'欢迎回来！'**
+  String get loginWelcomeBack;
+
+  /// No description provided for @loginFailedRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录失败，请重试'**
+  String get loginFailedRetry;
+
+  /// No description provided for @loginSmsCodeInvalidOrExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证码无效或已过期'**
+  String get loginSmsCodeInvalidOrExpired;
+
+  /// No description provided for @loginSocialFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'{platformName} 登录失败，请稍后重试'**
+  String loginSocialFailed(String platformName);
+
+  /// No description provided for @loginSocialLoading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在{platformName}登录...'**
+  String loginSocialLoading(String platformName);
+
+  /// No description provided for @loginPleaseWait.
+  ///
+  /// In zh, this message translates to:
+  /// **'请稍候'**
+  String get loginPleaseWait;
+
+  /// No description provided for @addInnovationImageSourceLocal.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地图片'**
+  String get addInnovationImageSourceLocal;
+
+  /// No description provided for @addInnovationImageSourceAiGenerated.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 生成'**
+  String get addInnovationImageSourceAiGenerated;
+
+  /// No description provided for @addInnovationAiGenerating.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 正在创作中...'**
+  String get addInnovationAiGenerating;
+
+  /// No description provided for @addInnovationSupportAlbumOrAi.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持相册选择或 AI 生成'**
+  String get addInnovationSupportAlbumOrAi;
+
+  /// No description provided for @addInnovationSelectCoverImage.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择封面图片'**
+  String get addInnovationSelectCoverImage;
+
+  /// No description provided for @addInnovationAddAttractiveCover.
+  ///
+  /// In zh, this message translates to:
+  /// **'为你的项目添加一张吸引眼球的封面'**
+  String get addInnovationAddAttractiveCover;
+
+  /// No description provided for @addInnovationAlbum.
+  ///
+  /// In zh, this message translates to:
+  /// **'相册'**
+  String get addInnovationAlbum;
+
+  /// No description provided for @addInnovationPickFromLocal.
+  ///
+  /// In zh, this message translates to:
+  /// **'从本地选择'**
+  String get addInnovationPickFromLocal;
+
+  /// No description provided for @addInnovationAiGenerate.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 生成'**
+  String get addInnovationAiGenerate;
+
+  /// No description provided for @addInnovationAiCreative.
+  ///
+  /// In zh, this message translates to:
+  /// **'智能创作'**
+  String get addInnovationAiCreative;
+
+  /// No description provided for @addInnovationMembershipUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'会员服务不可用，请稍后再试'**
+  String get addInnovationMembershipUnavailable;
+
+  /// No description provided for @addInnovationAiImageGeneration.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 图片生成'**
+  String get addInnovationAiImageGeneration;
+
+  /// No description provided for @addInnovationMemberExclusive.
+  ///
+  /// In zh, this message translates to:
+  /// **'会员专属功能'**
+  String get addInnovationMemberExclusive;
+
+  /// No description provided for @addInnovationUpgradeMembershipUnlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'升级会员解锁'**
+  String get addInnovationUpgradeMembershipUnlock;
+
+  /// No description provided for @addInnovationMaybeLater.
+  ///
+  /// In zh, this message translates to:
+  /// **'稍后再说'**
+  String get addInnovationMaybeLater;
+
+  /// No description provided for @addInnovationAiGenerateCover.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 生成封面'**
+  String get addInnovationAiGenerateCover;
+
+  /// No description provided for @addInnovationDescribeCoverHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述您想要的封面图片...'**
+  String get addInnovationDescribeCoverHint;
+
+  /// No description provided for @addInnovationQuickTemplates.
+  ///
+  /// In zh, this message translates to:
+  /// **'快速模板：'**
+  String get addInnovationQuickTemplates;
+
+  /// No description provided for @addInnovationGenerating.
+  ///
+  /// In zh, this message translates to:
+  /// **'生成中...'**
+  String get addInnovationGenerating;
+
+  /// No description provided for @generate.
+  ///
+  /// In zh, this message translates to:
+  /// **'生成'**
+  String get generate;
+
+  /// No description provided for @addInnovationAiBadge.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI'**
+  String get addInnovationAiBadge;
+
+  /// No description provided for @cityPhotoPickFromGalleryMulti.
+  ///
+  /// In zh, this message translates to:
+  /// **'从相册选择 (可多选)'**
+  String get cityPhotoPickFromGalleryMulti;
+
+  /// No description provided for @cityPhotoCaptureAndUpload.
+  ///
+  /// In zh, this message translates to:
+  /// **'拍照上传'**
+  String get cityPhotoCaptureAndUpload;
+
+  /// No description provided for @cityPhotoUploadTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传照片 · {cityName}'**
+  String cityPhotoUploadTitle(String cityName);
+
+  /// No description provided for @cityPhotoShareExperience.
+  ///
+  /// In zh, this message translates to:
+  /// **'为数字游民社区分享你在 {cityName} 的真实体验'**
+  String cityPhotoShareExperience(String cityName);
+
+  /// No description provided for @cityPhotoTitleOrPlace.
+  ///
+  /// In zh, this message translates to:
+  /// **'标题 / 地点'**
+  String get cityPhotoTitleOrPlace;
+
+  /// No description provided for @cityPhotoTitleExample.
+  ///
+  /// In zh, this message translates to:
+  /// **'例：北戴河海边日出'**
+  String get cityPhotoTitleExample;
+
+  /// No description provided for @cityPhotoTitleRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'请填写一个标题或地点描述'**
+  String get cityPhotoTitleRequired;
+
+  /// No description provided for @cityPhotoLocationOptional.
+  ///
+  /// In zh, this message translates to:
+  /// **'位置信息 (可选)'**
+  String get cityPhotoLocationOptional;
+
+  /// No description provided for @cityPhotoLocationHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'街道、地标或更多定位线索'**
+  String get cityPhotoLocationHint;
+
+  /// No description provided for @cityPhotoLocateOnMap.
+  ///
+  /// In zh, this message translates to:
+  /// **'在地图上定位'**
+  String get cityPhotoLocateOnMap;
+
+  /// No description provided for @cityPhotoDescriptionOptional.
+  ///
+  /// In zh, this message translates to:
+  /// **'描述 (可选)'**
+  String get cityPhotoDescriptionOptional;
+
+  /// No description provided for @cityPhotoDescriptionHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'简单介绍照片内容、拍摄时间等'**
+  String get cityPhotoDescriptionHint;
+
+  /// No description provided for @cityPhotoSelectedCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择 {count} / {maxCount}'**
+  String cityPhotoSelectedCount(int count, int maxCount);
+
+  /// No description provided for @cityPhotoAddPhoto.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加照片'**
+  String get cityPhotoAddPhoto;
+
+  /// No description provided for @cityPhotoUploading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在上传...'**
+  String get cityPhotoUploading;
+
+  /// No description provided for @cityPhotoEmptyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有照片，点击上方\"添加照片\"按钮上传'**
+  String get cityPhotoEmptyHint;
+
+  /// No description provided for @cityPhotoSubmitting.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交中...'**
+  String get cityPhotoSubmitting;
+
+  /// No description provided for @cityPhotoSubmitDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交后后端会通过高德地图自动补齐坐标，成功后你将回到城市详情页，照片会在刷新后展示。'**
+  String get cityPhotoSubmitDescription;
+
+  /// No description provided for @currencyOptionUsd.
+  ///
+  /// In zh, this message translates to:
+  /// **'USD (\$)'**
+  String get currencyOptionUsd;
+
+  /// No description provided for @currencyOptionEur.
+  ///
+  /// In zh, this message translates to:
+  /// **'EUR (€)'**
+  String get currencyOptionEur;
+
+  /// No description provided for @currencyOptionGbp.
+  ///
+  /// In zh, this message translates to:
+  /// **'GBP (£)'**
+  String get currencyOptionGbp;
+
+  /// No description provided for @currencyOptionCny.
+  ///
+  /// In zh, this message translates to:
+  /// **'CNY (¥)'**
+  String get currencyOptionCny;
+
+  /// No description provided for @currencyOptionJpy.
+  ///
+  /// In zh, this message translates to:
+  /// **'JPY (¥)'**
+  String get currencyOptionJpy;
+
+  /// No description provided for @currencyOptionThb.
+  ///
+  /// In zh, this message translates to:
+  /// **'THB (฿)'**
+  String get currencyOptionThb;
+
+  /// No description provided for @currencyOptionVnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'VND (₫)'**
+  String get currencyOptionVnd;
+
+  /// No description provided for @currencyOptionIdr.
+  ///
+  /// In zh, this message translates to:
+  /// **'IDR (Rp)'**
+  String get currencyOptionIdr;
+
+  /// No description provided for @currencyOptionMyr.
+  ///
+  /// In zh, this message translates to:
+  /// **'MYR (RM)'**
+  String get currencyOptionMyr;
+
+  /// No description provided for @currencyOptionSgd.
+  ///
+  /// In zh, this message translates to:
+  /// **'SGD (S\$)'**
+  String get currencyOptionSgd;
+
+  /// No description provided for @homeMeetupChatButton.
+  ///
+  /// In zh, this message translates to:
+  /// **'聊天'**
+  String get homeMeetupChatButton;
+
+  /// No description provided for @moderatorCardTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市版主'**
+  String get moderatorCardTitle;
+
+  /// No description provided for @moderatorCardCertified.
+  ///
+  /// In zh, this message translates to:
+  /// **'已认证'**
+  String get moderatorCardCertified;
+
+  /// No description provided for @moderatorCardTransferModerator.
+  ///
+  /// In zh, this message translates to:
+  /// **'转让版主'**
+  String get moderatorCardTransferModerator;
+
+  /// No description provided for @moderatorCardApplyModerator.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请成为版主'**
+  String get moderatorCardApplyModerator;
+
+  /// No description provided for @moderatorCardUnclaimed.
+  ///
+  /// In zh, this message translates to:
+  /// **'待认领'**
+  String get moderatorCardUnclaimed;
+
+  /// No description provided for @moderatorCardLookingForModerator.
+  ///
+  /// In zh, this message translates to:
+  /// **'这座城市正在寻找版主！如果你熟悉这里，可以申请成为版主，帮助其他数字游民了解这座城市。'**
+  String get moderatorCardLookingForModerator;
+
+  /// No description provided for @moderatorCardAssignModerator.
+  ///
+  /// In zh, this message translates to:
+  /// **'分配版主'**
+  String get moderatorCardAssignModerator;
+
+  /// No description provided for @moderatorCardNeedUpgradeMembership.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要升级会员'**
+  String get moderatorCardNeedUpgradeMembership;
+
+  /// No description provided for @moderatorCardUpgradeContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请成为城市版主需要 Pro 会员或更高等级。\n\n升级到 Pro 会员后，您将获得：\n• 申请成为城市版主的资格\n• 更多 AI 使用次数\n• 专属会员徽章\n• 更多高级功能'**
+  String get moderatorCardUpgradeContent;
+
+  /// No description provided for @moderatorCardUpgradeNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'立即升级'**
+  String get moderatorCardUpgradeNow;
+
+  /// No description provided for @assignModeratorLoadCandidatesFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载版主候选人失败: {error}'**
+  String assignModeratorLoadCandidatesFailed(String error);
+
+  /// No description provided for @assignModeratorSelectAtLeastOneUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'请至少选择一个用户'**
+  String get assignModeratorSelectAtLeastOneUser;
+
+  /// No description provided for @assignModeratorUnknownError.
+  ///
+  /// In zh, this message translates to:
+  /// **'未知错误'**
+  String get assignModeratorUnknownError;
+
+  /// No description provided for @assignModeratorUserError.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户 {userId}: {error}'**
+  String assignModeratorUserError(String userId, String error);
+
+  /// No description provided for @assignModeratorSuccessCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'成功指定 {count} 个版主！'**
+  String assignModeratorSuccessCount(int count);
+
+  /// No description provided for @assignModeratorFailCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个用户指定失败，请查看日志'**
+  String assignModeratorFailCount(int count);
+
+  /// No description provided for @assignModeratorAllFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'所有用户指定失败: {reason}'**
+  String assignModeratorAllFailed(String reason);
+
+  /// No description provided for @assignModeratorConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认指定版主'**
+  String get assignModeratorConfirmTitle;
+
+  /// No description provided for @assignModeratorConfirmMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要将 {count} 个用户指定为版主吗？\n\n这些用户将自动获得版主角色和相应权限。'**
+  String assignModeratorConfirmMessage(int count);
+
+  /// No description provided for @skillCategoryProgramming.
+  ///
+  /// In zh, this message translates to:
+  /// **'编程开发'**
+  String get skillCategoryProgramming;
+
+  /// No description provided for @skillCategoryDesign.
+  ///
+  /// In zh, this message translates to:
+  /// **'设计创意'**
+  String get skillCategoryDesign;
+
+  /// No description provided for @skillCategoryMarketing.
+  ///
+  /// In zh, this message translates to:
+  /// **'营销商务'**
+  String get skillCategoryMarketing;
+
+  /// No description provided for @skillCategoryLanguages.
+  ///
+  /// In zh, this message translates to:
+  /// **'语言能力'**
+  String get skillCategoryLanguages;
+
+  /// No description provided for @skillCategoryData.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据分析'**
+  String get skillCategoryData;
+
+  /// No description provided for @skillCategoryManagement.
+  ///
+  /// In zh, this message translates to:
+  /// **'项目管理'**
+  String get skillCategoryManagement;
+
+  /// No description provided for @skillCategoryOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'其他技能'**
+  String get skillCategoryOther;
+
+  /// No description provided for @interestCategorySports.
+  ///
+  /// In zh, this message translates to:
+  /// **'运动健身'**
+  String get interestCategorySports;
+
+  /// No description provided for @interestCategoryArts.
+  ///
+  /// In zh, this message translates to:
+  /// **'艺术文化'**
+  String get interestCategoryArts;
+
+  /// No description provided for @interestCategoryFood.
+  ///
+  /// In zh, this message translates to:
+  /// **'美食烹饪'**
+  String get interestCategoryFood;
+
+  /// No description provided for @interestCategoryTravel.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行探险'**
+  String get interestCategoryTravel;
+
+  /// No description provided for @interestCategoryTechnology.
+  ///
+  /// In zh, this message translates to:
+  /// **'科技数码'**
+  String get interestCategoryTechnology;
+
+  /// No description provided for @interestCategoryReading.
+  ///
+  /// In zh, this message translates to:
+  /// **'阅读学习'**
+  String get interestCategoryReading;
+
+  /// No description provided for @interestCategoryMusic.
+  ///
+  /// In zh, this message translates to:
+  /// **'音乐娱乐'**
+  String get interestCategoryMusic;
+
+  /// No description provided for @interestCategorySocial.
+  ///
+  /// In zh, this message translates to:
+  /// **'社交公益'**
+  String get interestCategorySocial;
 
   /// No description provided for @travelHistory.
   ///
@@ -4327,12 +6163,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'美食'**
   String get foodie;
-
-  /// No description provided for @selectInterests.
-  ///
-  /// In zh, this message translates to:
-  /// **'选择您的兴趣(最多5个)'**
-  String get selectInterests;
 
   /// No description provided for @hiking.
   ///
@@ -8491,6 +10321,570 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'工作日 9:00 - 18:00（北京时间）'**
   String get serviceHoursDesc;
+
+  /// No description provided for @aiChatServiceUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 服务暂时不可用，请稍后重试'**
+  String get aiChatServiceUnavailable;
+
+  /// No description provided for @aiChatResponseError.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 返回错误'**
+  String get aiChatResponseError;
+
+  /// No description provided for @aiChatFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI Chat 失败'**
+  String get aiChatFailed;
+
+  /// No description provided for @aiChatDefaultConversationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Nomads AI 助手'**
+  String get aiChatDefaultConversationTitle;
+
+  /// No description provided for @aiChatSystemPrompt.
+  ///
+  /// In zh, this message translates to:
+  /// **'你是 Go Nomads 的 AI 助手，请为数字游民提供简洁且可执行的旅行建议。'**
+  String get aiChatSystemPrompt;
+
+  /// No description provided for @aiChatCreateConversationFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时无法创建 AI 对话'**
+  String get aiChatCreateConversationFailed;
+
+  /// No description provided for @aiChatLoadHistoryFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载历史对话失败'**
+  String get aiChatLoadHistoryFailed;
+
+  /// No description provided for @aiChatSwitchBlockedWhileStreaming.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在生成回复，请稍后再切换对话'**
+  String get aiChatSwitchBlockedWhileStreaming;
+
+  /// No description provided for @aiChatSwitchConversationFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'切换对话失败，请稍后重试'**
+  String get aiChatSwitchConversationFailed;
+
+  /// No description provided for @aiChatThinking.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 正在思考...'**
+  String get aiChatThinking;
+
+  /// No description provided for @aiChatRequestTimeout.
+  ///
+  /// In zh, this message translates to:
+  /// **'请求超时，请稍后重试'**
+  String get aiChatRequestTimeout;
+
+  /// No description provided for @aiChatReplyUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时无法获取 AI 回复，请稍后重试'**
+  String get aiChatReplyUnavailable;
+
+  /// No description provided for @aiChatSendFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI Chat 发送失败'**
+  String get aiChatSendFailed;
+
+  /// No description provided for @aiChatNoReplyYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时未收到 AI 回复，请稍后重试'**
+  String get aiChatNoReplyYet;
+
+  /// No description provided for @aiChatUntitledConversation.
+  ///
+  /// In zh, this message translates to:
+  /// **'未命名对话'**
+  String get aiChatUntitledConversation;
+
+  /// No description provided for @manageReviewsDeleteConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认删除'**
+  String get manageReviewsDeleteConfirmTitle;
+
+  /// No description provided for @manageReviewsDeleteConfirmMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除这条评论吗？此操作可以恢复。'**
+  String get manageReviewsDeleteConfirmMessage;
+
+  /// No description provided for @manageReviewsPageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{cityName} - 评论管理'**
+  String manageReviewsPageTitle(Object cityName);
+
+  /// No description provided for @manageReviewsNoData.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无评论数据'**
+  String get manageReviewsNoData;
+
+  /// No description provided for @manageReviewsAddFirstReview.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加第一条评论'**
+  String get manageReviewsAddFirstReview;
+
+  /// No description provided for @manageReviewsLoadedAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'已加载全部 {count} 条评论'**
+  String manageReviewsLoadedAll(int count);
+
+  /// No description provided for @travelPlanUnableToLoad.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法加载旅行计划'**
+  String get travelPlanUnableToLoad;
+
+  /// No description provided for @travelPlanLoadFailedWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载失败: {error}'**
+  String travelPlanLoadFailedWithError(Object error);
+
+  /// No description provided for @travelPlanGenerateErrorWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'错误: {error}'**
+  String travelPlanGenerateErrorWithError(Object error);
+
+  /// No description provided for @travelPlanGeneratedSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行计划生成成功！'**
+  String get travelPlanGeneratedSuccess;
+
+  /// No description provided for @travelPlanGenerateFailedWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'生成失败: {error}'**
+  String travelPlanGenerateFailedWithError(Object error);
+
+  /// No description provided for @travelPlanNotReadyWarning.
+  ///
+  /// In zh, this message translates to:
+  /// **'计划还未生成完成'**
+  String get travelPlanNotReadyWarning;
+
+  /// No description provided for @aiChatCodeCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'代码已复制'**
+  String get aiChatCodeCopied;
+
+  /// No description provided for @aiChatCodeCopiedToClipboard.
+  ///
+  /// In zh, this message translates to:
+  /// **'代码已复制到剪贴板'**
+  String get aiChatCodeCopiedToClipboard;
+
+  /// No description provided for @aiChatInputHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'问路、问签证、生成行程，都可以直接开聊…'**
+  String get aiChatInputHint;
+
+  /// No description provided for @aiChatEmptyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有对话，向 AI 提问试试'**
+  String get aiChatEmptyHint;
+
+  /// No description provided for @aiChatStartConversation.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始对话'**
+  String get aiChatStartConversation;
+
+  /// No description provided for @prosConsAddPageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{cityName} - 添加乐趣'**
+  String prosConsAddPageTitle(Object cityName);
+
+  /// No description provided for @prosConsAddProsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享这个城市的优点...'**
+  String get prosConsAddProsHint;
+
+  /// No description provided for @prosConsAddConsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享这个城市的挑战...'**
+  String get prosConsAddConsHint;
+
+  /// No description provided for @manageProsConsPageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{cityName} - 优缺点管理'**
+  String manageProsConsPageTitle(Object cityName);
+
+  /// No description provided for @cityDetailGeneratingNearbyCitiesTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 正在生成附近城市'**
+  String get cityDetailGeneratingNearbyCitiesTitle;
+
+  /// No description provided for @cityDetailNearbyCitiesGeneratedSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'附近城市生成成功!'**
+  String get cityDetailNearbyCitiesGeneratedSuccess;
+
+  /// No description provided for @guideTabAiGenerate.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 生成'**
+  String get guideTabAiGenerate;
+
+  /// No description provided for @guideTabAiGenerateGuide.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 生成指南'**
+  String get guideTabAiGenerateGuide;
+
+  /// No description provided for @registerCodeSentToEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证码已发送到邮箱，请查收'**
+  String get registerCodeSentToEmail;
+
+  /// No description provided for @registerSendCodeFailedRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送验证码失败，请稍后重试'**
+  String get registerSendCodeFailedRetry;
+
+  /// No description provided for @registerFailedTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册失败'**
+  String get registerFailedTitle;
+
+  /// No description provided for @registerFailedCheckInput.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册失败,请检查输入信息'**
+  String get registerFailedCheckInput;
+
+  /// No description provided for @registerFailedProcessError.
+  ///
+  /// In zh, this message translates to:
+  /// **'注册过程中发生错误，请稍后重试'**
+  String get registerFailedProcessError;
+
+  /// No description provided for @conversationDeleteTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除会话'**
+  String get conversationDeleteTitle;
+
+  /// No description provided for @conversationDeleteMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除这个会话吗？聊天记录将被清除。'**
+  String get conversationDeleteMessage;
+
+  /// No description provided for @coworkingDetailUserComments.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户评论'**
+  String get coworkingDetailUserComments;
+
+  /// No description provided for @coworkingDetailPostComment.
+  ///
+  /// In zh, this message translates to:
+  /// **'发表评论'**
+  String get coworkingDetailPostComment;
+
+  /// No description provided for @coworkingDetailViewMoreComments.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看更多评论'**
+  String get coworkingDetailViewMoreComments;
+
+  /// No description provided for @coworkingDetailNoComments.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无评论'**
+  String get coworkingDetailNoComments;
+
+  /// No description provided for @coworkingDetailBeFirstCommenter.
+  ///
+  /// In zh, this message translates to:
+  /// **'成为第一个发表评论的人'**
+  String get coworkingDetailBeFirstCommenter;
+
+  /// No description provided for @editSkillsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑技能'**
+  String get editSkillsTitle;
+
+  /// No description provided for @editSkillsAddCustomSkill.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加自定义技能'**
+  String get editSkillsAddCustomSkill;
+
+  /// No description provided for @editInterestsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑兴趣'**
+  String get editInterestsTitle;
+
+  /// No description provided for @editInterestsAddCustomInterest.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加自定义兴趣'**
+  String get editInterestsAddCustomInterest;
+
+  /// No description provided for @prosConsNoProsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有优点'**
+  String get prosConsNoProsTitle;
+
+  /// No description provided for @prosConsNoProsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享你在这座城市的美好体验'**
+  String get prosConsNoProsSubtitle;
+
+  /// No description provided for @prosConsAddPros.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加优点'**
+  String get prosConsAddPros;
+
+  /// No description provided for @prosConsNoConsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有挑战'**
+  String get prosConsNoConsTitle;
+
+  /// No description provided for @prosConsNoConsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享你遇到的困难和需要改进的地方'**
+  String get prosConsNoConsSubtitle;
+
+  /// No description provided for @prosConsAddCons.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加挑战'**
+  String get prosConsAddCons;
+
+  /// No description provided for @profilePleaseLoginToView.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先登录以查看你的资料'**
+  String get profilePleaseLoginToView;
+
+  /// No description provided for @profilePleaseLoginAgain.
+  ///
+  /// In zh, this message translates to:
+  /// **'请重新登录'**
+  String get profilePleaseLoginAgain;
+
+  /// No description provided for @profileLogoutSuccessMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'你已成功退出登录'**
+  String get profileLogoutSuccessMessage;
+
+  /// No description provided for @profileLogoutSuccessTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出成功'**
+  String get profileLogoutSuccessTitle;
+
+  /// No description provided for @profileLogoutErrorMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出登录时发生错误'**
+  String get profileLogoutErrorMessage;
+
+  /// No description provided for @coworkingDetailDeleteConfirmTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除确认'**
+  String get coworkingDetailDeleteConfirmTitle;
+
+  /// No description provided for @coworkingDetailDeleteConfirmMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除 \"{name}\" 吗？此操作不可撤销。'**
+  String coworkingDetailDeleteConfirmMessage(Object name);
+
+  /// No description provided for @loginPhoneAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击登录/注册'**
+  String get loginPhoneAction;
+
+  /// No description provided for @amapGlobalMapOnlyMobile.
+  ///
+  /// In zh, this message translates to:
+  /// **'地图仅支持 iOS 和 Android 平台'**
+  String get amapGlobalMapOnlyMobile;
+
+  /// No description provided for @amapGlobalTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'全球游民'**
+  String get amapGlobalTitle;
+
+  /// No description provided for @amapGlobalByRegion.
+  ///
+  /// In zh, this message translates to:
+  /// **'按地区'**
+  String get amapGlobalByRegion;
+
+  /// No description provided for @neighborhoodsDiscoverNearbyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现 100 公里内的 4 个相邻城市'**
+  String get neighborhoodsDiscoverNearbyHint;
+
+  /// No description provided for @neighborhoodsGenerateNearbyCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 生成附近城市'**
+  String get neighborhoodsGenerateNearbyCities;
+
+  /// No description provided for @neighborhoodsLoadedFromBackend.
+  ///
+  /// In zh, this message translates to:
+  /// **'☁️ 从后端加载'**
+  String get neighborhoodsLoadedFromBackend;
+
+  /// No description provided for @aiChatHistoryTooltip.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史对话'**
+  String get aiChatHistoryTooltip;
+
+  /// No description provided for @aiChatLoadingHistoryTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载历史对话...'**
+  String get aiChatLoadingHistoryTitle;
+
+  /// No description provided for @aiChatNoHistoryStartNew.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无历史对话，直接开始新对话吧'**
+  String get aiChatNoHistoryStartNew;
+
+  /// No description provided for @aiChatHistoryTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史对话'**
+  String get aiChatHistoryTitle;
+
+  /// No description provided for @manageCostPageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{cityName} - 费用管理'**
+  String manageCostPageTitle(Object cityName);
+
+  /// No description provided for @manageCostNoData.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无费用数据'**
+  String get manageCostNoData;
+
+  /// No description provided for @manageCostAddFirst.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加第一条费用'**
+  String get manageCostAddFirst;
+
+  /// No description provided for @skillsInterestsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择技能与兴趣'**
+  String get skillsInterestsTitle;
+
+  /// No description provided for @skillsInterestsSelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择'**
+  String get skillsInterestsSelected;
+
+  /// No description provided for @skillsInterestsSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'技能 {skillsCount}/10  ·  兴趣 {interestsCount}/15'**
+  String skillsInterestsSummary(int skillsCount, int interestsCount);
+
+  /// No description provided for @roomTypePreviewToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'房型: {name}'**
+  String roomTypePreviewToast(Object name);
+
+  /// No description provided for @roomTypeBookingToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'预订 {name}'**
+  String roomTypeBookingToast(Object name);
+
+  /// No description provided for @applyModeratorSubmitSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请已提交，请等待管理员审核'**
+  String get applyModeratorSubmitSuccess;
+
+  /// No description provided for @applyModeratorReasonHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请说明您申请成为版主的原因，以及您能为社区带来什么...'**
+  String get applyModeratorReasonHint;
+
+  /// No description provided for @addCoworkingImageCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}/{max}'**
+  String addCoworkingImageCount(int count, int max);
+
+  /// No description provided for @addCoworkingMaxImages.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多上传 {max} 张图片'**
+  String addCoworkingMaxImages(int max);
+
+  /// No description provided for @loginFacebookComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'Facebook 登录即将推出'**
+  String get loginFacebookComingSoon;
+
+  /// No description provided for @assignModeratorPageTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{cityName} - 指定版主'**
+  String assignModeratorPageTitle(Object cityName);
 }
 
 class _AppLocalizationsDelegate

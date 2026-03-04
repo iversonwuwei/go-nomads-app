@@ -1,4 +1,5 @@
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -16,25 +17,26 @@ class AssignModeratorSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(16.w),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSearchField(),
+          _buildSearchField(l10n),
           SizedBox(height: 12.h),
-          _buildSelectedCount(),
+          _buildSelectedCount(l10n),
         ],
       ),
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(AppLocalizations l10n) {
     return TextField(
       controller: controller.searchController,
       decoration: InputDecoration(
-        hintText: '搜索用户名称或邮箱',
+        hintText: l10n.search,
         prefixIcon: Icon(FontAwesomeIcons.magnifyingGlass, size: 18.r),
         suffixIcon: Obx(() {
           if (!controller.hasSearchQuery) {
@@ -57,9 +59,9 @@ class AssignModeratorSearchBar extends StatelessWidget {
     );
   }
 
-  Widget _buildSelectedCount() {
+  Widget _buildSelectedCount(AppLocalizations l10n) {
     return Obx(() => Text(
-          '已选择 ${controller.selectedCount} 个用户',
+          l10n.profileSelectedUsers(controller.selectedCount),
           style: TextStyle(
             color: AppColors.accent,
             fontWeight: FontWeight.w600,

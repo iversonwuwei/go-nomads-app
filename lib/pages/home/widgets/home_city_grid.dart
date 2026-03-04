@@ -270,7 +270,7 @@ class HomeCityEmptyState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onClearSearch,
               icon: const Icon(FontAwesomeIcons.xmark),
-              label: const Text('Clear Search'),
+              label: Text(l10n.dataServiceClearSearch),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,

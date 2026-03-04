@@ -84,6 +84,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   /// 从后端加载活动详情
   Future<void> _loadEventDetails() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       _isLoading.value = true;
 
@@ -112,7 +113,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       log('✅ 成功加载活动详情: ${meetup.title}, 参与者: ${meetup.capacity.currentAttendees}');
     } catch (e) {
       log('❌ 加载活动详情失败: $e');
-      AppToast.error('加载活动详情失败');
+      AppToast.error(l10n.loadFailed);
     } finally {
       _isLoading.value = false;
     }
@@ -895,6 +896,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Future<void> _toggleJoin() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       // 判断是加入还是退出
       final isJoining = !_isJoined;
@@ -974,7 +976,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     } catch (e) {
       log('❌ 加入/退出活动失败: $e');
       AppToast.error(
-        _isJoined ? '退出活动失败' : '加入活动失败',
+        _isJoined ? l10n.leaveMeetupFailed : l10n.dataServiceJoinMeetupFailed,
       );
     }
   }
@@ -986,8 +988,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     // 显示确认对话框
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('取消活动'),
-        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+        title: Text(l10n.confirmCancelMeetupTitle),
+        content: Text(l10n.confirmCancelMeetupMessage),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
@@ -998,7 +1000,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('确定'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -1012,8 +1014,8 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
       // 显示成功消息
       AppToast.success(
-        '活动已取消',
-        title: '成功',
+        l10n.cancelMeetupSuccess,
+        title: l10n.success,
       );
 
       // 本地单点更新状态，而不是重新加载整个详情
@@ -1043,7 +1045,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       _hasDataChanged = true;
     } catch (e) {
       log('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败');
+      AppToast.error(l10n.cancelMeetupFailed);
     }
   }
 

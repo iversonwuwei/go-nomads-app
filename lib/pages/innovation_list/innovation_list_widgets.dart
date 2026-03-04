@@ -144,6 +144,7 @@ class InnovationListErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -157,7 +158,7 @@ class InnovationListErrorState extends StatelessWidget {
           SizedBox(height: 16.h),
           ElevatedButton(
             onPressed: onRetry,
-            child: const Text('重试'),
+            child: Text(l10n.retry),
           ),
         ],
       ),

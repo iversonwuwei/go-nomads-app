@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
@@ -36,6 +37,8 @@ class AiChatController extends GetxController {
   StreamSubscription? _aiChatChunkSub;
   int? _streamingIndex;
   String? _currentRequestId;
+
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
 
   @override
   void onInit() {
@@ -172,12 +175,12 @@ class AiChatController extends GetxController {
   Future<AiConversation?> _createNewConversation() async {
     try {
       return await _aiChatService.createConversation(
-        title: 'Nomads AI Copilot',
-        systemPrompt: 'You are the Go Nomads AI copilot. Provide concise, actionable travel help for digital nomads.',
+        title: _l10n.aiChatDefaultConversationTitle,
+        systemPrompt: _l10n.aiChatSystemPrompt,
       );
     } catch (e, stack) {
       log('❌ 创建 AI 对话失败: $e\n$stack');
-      AppToast.error('暂时无法创建 AI 对话');
+      AppToast.error(_l10n.aiChatCreateConversationFailed);
       return null;
     }
   }
@@ -198,7 +201,7 @@ class AiChatController extends GetxController {
       _scrollToBottom(delay: const Duration(milliseconds: 100), animate: false);
     } catch (e, stack) {
       log('⚠️ 加载历史消息失败: $e\n$stack');
-      AppToast.error('加载历史对话失败');
+      AppToast.error(_l10n.aiChatLoadHistoryFailed);
     }
   }
 
@@ -211,7 +214,7 @@ class AiChatController extends GetxController {
     }
     final convId = conversation.value?.id;
     if (convId == null) {
-      AppToast.error('暂时无法创建 AI 对话');
+      AppToast.error(_l10n.aiChatCreateConversationFailed);
       return;
     }
 
@@ -279,7 +282,7 @@ class AiChatController extends GetxController {
           createdAt: DateTime.now(),
         ),
       );
-      AppToast.error('AI Chat 发送失败');
+      AppToast.error(_l10n.aiChatSendFailed);
       _finalizeStreaming();
     }
   }

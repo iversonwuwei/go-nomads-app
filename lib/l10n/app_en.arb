@@ -128,6 +128,14 @@
   "selectAll": "Select All",
   "deselectAll": "Deselect All",
   "language": "Language",
+  "languageOptionChinese": "Chinese",
+  "@languageOptionChinese": {
+    "description": "Language option: Chinese"
+  },
+  "languageOptionEnglish": "English",
+  "@languageOptionEnglish": {
+    "description": "Language option: English"
+  },
   "theme": "Theme",
   "darkMode": "Dark Mode",
   "lightMode": "Light Mode",
@@ -155,6 +163,645 @@
   "badges": "Badges",
   "skills": "Skills",
   "interests": "Interests",
+  "selectSkills": "Select Skills",
+  "selectInterests": "Select Interests",
+  "searchSkillsHint": "Search skills...",
+  "searchInterestsHint": "Search interests...",
+  "noSkills": "No skills yet",
+  "noMatchingSkills": "No matching skills found",
+  "noInterests": "No interests yet",
+  "noMatchingInterests": "No matching interests found",
+  "failedToLoadSkillsList": "Failed to load skills list",
+  "failedToLoadInterestsList": "Failed to load interests list",
+  "itemUnit": "items",
+  "yearsAgo": "{count} years ago",
+  "@yearsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileNotificationPermissionTitle": "Notification permission required",
+  "profileNotificationPermissionMessage": "Please enable notification permission in system settings to receive important alerts.",
+  "profileGoToSettings": "Go to Settings",
+  "profileRolesManagement": "🔐 Admin Role Management",
+  "profileSelectedUsers": "Selected {count} users",
+  "@profileSelectedUsers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileRolesNotLoadedWarning": "⚠️ Role data is not loaded. Batch operations are limited.\nPlease ensure the backend /api/v1/roles endpoint is configured correctly.",
+  "profileSetAsAdmin": "Set as Admin",
+  "profileSetAsNormalUser": "Set as Normal User",
+  "profileToggleSelectAll": "Select All / Deselect All",
+  "profileNoUsers": "No users",
+  "profileJoinedAt": "Joined {time}",
+  "@profileJoinedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "profileRoleAdmin": "Admin",
+  "profileRoleModerator": "Moderator",
+  "profileRoleUser": "User",
+  "profileSelectUsersFirst": "Please select users first",
+  "profileBatchSetAdminSuccess": "Successfully set {count} users as admin",
+  "@profileBatchSetAdminSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileBatchSetAdminFailed": "Failed to set admins in batch",
+  "profileBatchSetUserSuccess": "Successfully set {count} users as normal user",
+  "@profileBatchSetUserSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileBatchSetUserFailed": "Failed to set users in batch",
+  "profileAddedCount": "Added {count}",
+  "@profileAddedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileRemovedCount": "Removed {count}",
+  "@profileRemovedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileSupabaseNotConfigured": "Supabase is not configured. Please contact the administrator.",
+  "profileAvatarUploadFailed": "Avatar upload failed: {error}",
+  "@profileAvatarUploadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "manageCityRatingsTitle": "{cityName} - Rating Data",
+  "@manageCityRatingsTitle": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
+  "manageCityRatingsAddItem": "Add Rating Item",
+  "manageCityRatingsNameZh": "Rating Item Name (Chinese)",
+  "manageCityRatingsNameZhHint": "e.g. Food",
+  "manageCityRatingsNameEn": "Rating Item Name (English)",
+  "manageCityRatingsNameEnHint": "e.g. Food",
+  "manageCityRatingsDescriptionOptional": "Description (Optional)",
+  "manageCityRatingsDescriptionHint": "Short description",
+  "manageCityRatingsIcon": "Icon",
+  "manageCityRatingsIconStar": "Star",
+  "manageCityRatingsIconRestaurant": "Restaurant",
+  "manageCityRatingsIconNetwork": "Network",
+  "manageCityRatingsIconSafety": "Safety",
+  "manageCityRatingsIconTransport": "Transport",
+  "manageCityRatingsIconHealthcare": "Healthcare",
+  "manageCityRatingsIconWeather": "Weather",
+  "manageCityRatingsIconCost": "Cost",
+  "manageCityRatingsIconPeople": "People",
+  "manageCityRatingsIconLanguage": "Language",
+  "manageCityRatingsDeleteItem": "Delete Rating Item",
+  "manageCityRatingsDeleteConfirm": "Are you sure you want to delete “{name}”?",
+  "@manageCityRatingsDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "manageCityRatingsSubtitle": "{nameEn} • Rating: {average} ({count} people)",
+  "@manageCityRatingsSubtitle": {
+    "placeholders": {
+      "nameEn": {
+        "type": "String"
+      },
+      "average": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "defaultStatus": "Default",
+  "manageCityRatingsEmptyTitle": "No rating items yet",
+  "manageCityRatingsEmptyHint": "Tap the top-right plus button to add your first rating item",
+  "editBasicInfoTitle": "Edit Basic Info",
+  "editBasicInfoGender": "Gender",
+  "editBasicInfoGenderMale": "Male",
+  "editBasicInfoGenderFemale": "Female",
+  "editBasicInfoGenderPreferNotToSay": "Prefer not to say",
+  "editBasicInfoCurrentCity": "Current City",
+  "editBasicInfoCityHint": "e.g. Bangkok",
+  "editBasicInfoCurrentCountry": "Current Country",
+  "editBasicInfoCountryHint": "e.g. Thailand",
+  "editBasicInfoOccupation": "Occupation",
+  "editBasicInfoOccupationHint": "e.g. Software Engineer",
+  "editBasicInfoCompany": "Company",
+  "editBasicInfoCompanyHint": "e.g. Google",
+  "editBasicInfoWebsite": "Personal Website",
+  "editBasicInfoWebsiteHint": "https://yourwebsite.com",
+  "modularProfileTitle": "User Profile",
+  "modularProfileNameUnset": "Name not set",
+  "modularProfileOccupationUnset": "Occupation not set",
+  "modularProfileStatsTitle": "Nomad Stats",
+  "modularProfileStatCountries": "Countries",
+  "modularProfileStatCities": "Cities",
+  "modularProfileStatDays": "Travel Days",
+  "modularProfileStatMeetups": "Meetups",
+  "modularProfileStatTrips": "Trips",
+  "modularProfileStatReviews": "Reviews",
+  "modularProfileModuleBasicInfo": "Basic Info",
+  "modularProfileBasicInfoSummary": "{name} · {occupation}",
+  "@modularProfileBasicInfoSummary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "occupation": {
+        "type": "String"
+      }
+    }
+  },
+  "modularProfileTapToEditBasicInfo": "Tap to edit basic info",
+  "modularProfileModuleSkills": "Skills",
+  "modularProfileTapToAddSkills": "Tap to add skills",
+  "modularProfileSkillsSummary": "{count} skills: {names}",
+  "@modularProfileSkillsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "modularProfileModuleInterests": "Interests",
+  "modularProfileTapToAddInterests": "Tap to add interests",
+  "modularProfileInterestsSummary": "{count} interests: {names}",
+  "@modularProfileInterestsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "modularProfileModuleSocialLinks": "Social Links",
+  "modularProfileTapToAddSocialLinks": "Tap to add social links",
+  "modularProfileSocialLinksCount": "{count} platforms added",
+  "@modularProfileSocialLinksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "modularProfileModuleTravelPlans": "Travel Plans",
+  "modularProfileNoTravelPlans": "No travel plans",
+  "modularProfileTravelPlansCount": "{count} plans",
+  "@modularProfileTravelPlansCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "modularProfileTravelPlansComingSoon": "Travel plans feature is in development",
+  "modularProfileModuleBadges": "Badges",
+  "modularProfileNoBadges": "No badges",
+  "modularProfileBadgesCount": "{count} badges earned",
+  "@modularProfileBadgesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "modularProfileBadgesComingSoon": "Badges feature is in development",
+  "modularProfileModuleHistory": "Travel History",
+  "modularProfileNoHistory": "No travel records",
+  "modularProfileHistoryCount": "{count} records",
+  "@modularProfileHistoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "modularProfileHistoryComingSoon": "Travel history feature is in development",
+  "uploading": "Uploading...",
+  "confirmDelete": "Confirm Delete",
+  "addHotelRoomTypesTitle": "Room Types",
+  "addHotelAddRoomType": "Add Room Type",
+  "addHotelEditRoomType": "Edit Room Type",
+  "addHotelRoomTypesHint": "Add different room types and prices (optional)",
+  "addHotelNoRoomTypes": "No room types yet",
+  "addHotelTapToAddRoomType": "Tap the button above to add room types",
+  "addHotelUnnamedRoomType": "Unnamed room type",
+  "addHotelPricePerNightChip": "{currency} {price}/night",
+  "@addHotelPricePerNightChip": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "price": {
+        "type": "Object"
+      }
+    }
+  },
+  "addHotelMaxOccupancyChip": "Max {count} people",
+  "@addHotelMaxOccupancyChip": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "addHotelAvailableRoomsChip": "{count} rooms",
+  "@addHotelAvailableRoomsChip": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "addHotelRoomTypeName": "Room Type Name",
+  "addHotelRoomTypeNameHint": "e.g. Standard Double Room",
+  "addHotelRoomTypeDescription": "Room Type Description",
+  "addHotelRoomTypeDescriptionHint": "Facilities, highlights, etc.",
+  "addHotelRoomSize": "Size (㎡)",
+  "addHotelMaxOccupancy": "Max Occupancy",
+  "addHotelBedType": "Bed Type",
+  "addHotelAvailableRooms": "Available Rooms",
+  "addHotelBedTypeSingle": "Single",
+  "addHotelBedTypeDouble": "Double",
+  "addHotelBedTypeQueen": "Queen",
+  "addHotelBedTypeKing": "King",
+  "addHotelBedTypeTwin": "Twin",
+  "addHotelBedTypeBunk": "Bunk",
+  "addHotelEnterRoomTypeName": "Please enter room type name",
+  "addHotelEnterPricePerNight": "Please enter price per night",
+  "addHotelRoomTypeUpdated": "Room type updated",
+  "addHotelRoomTypeAdded": "Room type added",
+  "addHotelDeleteRoomTypeConfirm": "Are you sure you want to delete room type \"{name}\"?",
+  "@addHotelDeleteRoomTypeConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addHotelRoomTypeDeleted": "Room type deleted",
+  "editSocialLinksUrl": "Link URL",
+  "editSocialLinksExample": "Example: {pattern}",
+  "@editSocialLinksExample": {
+    "placeholders": {
+      "pattern": {
+        "type": "String"
+      }
+    }
+  },
+  "editSocialLinksTapToAdd": "Tap to add",
+  "editSocialLinksAddedCount": "Added {count} / {total} platforms",
+  "@editSocialLinksAddedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "directChatJustNow": "Just now",
+  "directChatMinutesAgo": "{count}m ago",
+  "@directChatMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "directChatHoursAgo": "{count}h ago",
+  "@directChatHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "directChatDaysAgo": "{count}d ago",
+  "@directChatDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "directChatPickLocationFailed": "Failed to pick location: {error}",
+  "@directChatPickLocationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "directChatSendFileFailed": "Failed to send file: {error}",
+  "@directChatSendFileFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "directChatVoiceFileMissing": "Voice file does not exist",
+  "directChatVoiceMessageText": "Voice message",
+  "directChatSendVoiceFailed": "Failed to send voice: {error}",
+  "@directChatSendVoiceFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "directChatVoiceMessageUnavailable": "Voice message unavailable",
+  "directChatFileFallback": "File",
+  "directChatChooseMapNavigation": "Choose map navigation",
+  "directChatMapApple": "Apple Maps",
+  "directChatMapGoogle": "Google Maps",
+  "directChatMapAmap": "Amap",
+  "directChatMapBaidu": "Baidu Maps",
+  "directChatMapTencent": "Tencent Maps",
+  "directChatMapNotInstalled": "{mapName} is not installed",
+  "@directChatMapNotInstalled": {
+    "placeholders": {
+      "mapName": {
+        "type": "String"
+      }
+    }
+  },
+  "directChatImageLoadFailed": "Failed to load image",
+  "directChatSaveComingSoon": "Save feature coming soon",
+  "directChatShareComingSoon": "Share feature coming soon",
+  "tencentImConnectFailedRetry": "Connection failed, please try again",
+  "tencentImImportUserFailed": "User import failed, messages may not be delivered",
+  "tencentImNoMessages": "No messages",
+  "tencentImFileFallback": "File",
+  "tencentImMessageFallback": "[Message]",
+  "tencentImImageFallback": "[Image]",
+  "tencentImLoadFailed": "Load failed",
+  "tencentImOpenFile": "Open file",
+  "cityChatCreateRoomComingSoon": "Create chat room feature coming soon",
+  "cityChatSaySomething": "Say something...",
+  "cityChatViewMembers": "View members",
+  "cityChatSearchRecords": "Search chat records",
+  "cityChatDoNotDisturb": "Do not disturb",
+  "cityChatDoNotDisturbEnabled": "Do not disturb enabled",
+  "cityChatExitRoom": "Leave chat room",
+  "cityChatLocatedMessage": "Message located",
+  "cityChatMessageOutOfRange": "Message is not in the current loaded range, please load more history",
+  "cityChatSearchMessageContent": "Search message content...",
+  "dataServiceLoginToAccessFeature": "Please login to access this feature",
+  "dataServiceInvalidSession": "Invalid session. Please login again.",
+  "dataServiceAuthenticationError": "Authentication Error",
+  "dataServiceSessionExpiredMessage": "Your session has expired. Please login again.",
+  "dataServiceSessionExpiredTitle": "Session Expired",
+  "dataServiceFoundCities": "Found {count} cities",
+  "@dataServiceFoundCities": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataServiceSearchFailed": "Search Failed",
+  "dataServiceSearchCitiesHint": "Search cities... (supports Chinese and English)",
+  "dataServiceClearSearch": "Clear Search",
+  "dataServiceAlreadyJoinedMeetup": "You have already joined this meetup",
+  "dataServiceNotJoinedMeetup": "You haven't joined this meetup",
+  "dataServiceLeaveMeetupFailed": "Failed to leave meetup",
+  "dataServiceJoinMeetupFailed": "Failed to join meetup",
+  "dataServiceOperationFailed": "Operation Failed",
+  "dataServiceLoginToGenerateImages": "Please login to generate images",
+  "dataServiceOnlyAdminOrModeratorCanGenerate": "Only administrators or city moderators can generate images",
+  "dataServiceImageTaskCreated": "AI image generation task created for {cityName}.\nYou will be notified when complete.",
+  "@dataServiceImageTaskCreated": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
+  "dataServicePermissionDenied": "Permission Denied",
+  "dataServiceTaskCreated": "Task Created",
+  "dataServiceTaskCreationFailed": "Task Creation Failed",
+  "loginTipsTitle": "Tips",
+  "loginPhoneRequired": "Please enter your phone number",
+  "loginPhoneInvalid": "Please enter a valid phone number",
+  "loginSmsCodeSent": "Verification code sent",
+  "loginSendFailed": "Send failed",
+  "loginSendSmsFailed": "Failed to send verification code",
+  "loginSuccessfulTitle": "Login Successful",
+  "loginFailedTitle": "Login Failed",
+  "loginInvalidEmailOrPassword": "Invalid email or password",
+  "loginUnknownErrorRetry": "An error occurred. Please try again.",
+  "loginWelcomeBack": "Welcome back!",
+  "loginFailedRetry": "Login failed, please try again",
+  "loginSmsCodeInvalidOrExpired": "Verification code is invalid or expired",
+  "loginSocialFailed": "{platformName} login failed, please try again later",
+  "@loginSocialFailed": {
+    "placeholders": {
+      "platformName": {
+        "type": "String"
+      }
+    }
+  },
+  "loginSocialLoading": "Logging in with {platformName}...",
+  "@loginSocialLoading": {
+    "placeholders": {
+      "platformName": {
+        "type": "String"
+      }
+    }
+  },
+  "loginPleaseWait": "Please wait",
+  "addInnovationImageSourceLocal": "Local image",
+  "addInnovationImageSourceAiGenerated": "AI generated",
+  "addInnovationAiGenerating": "AI is creating...",
+  "addInnovationSupportAlbumOrAi": "Supports album selection or AI generation",
+  "addInnovationSelectCoverImage": "Choose cover image",
+  "addInnovationAddAttractiveCover": "Add an eye-catching cover for your project",
+  "addInnovationAlbum": "Album",
+  "addInnovationPickFromLocal": "Pick from local",
+  "addInnovationAiGenerate": "AI Generate",
+  "addInnovationAiCreative": "Smart creation",
+  "addInnovationMembershipUnavailable": "Membership service is unavailable, please try again later",
+  "addInnovationAiImageGeneration": "AI Image Generation",
+  "addInnovationMemberExclusive": "Members-only feature",
+  "addInnovationUpgradeMembershipUnlock": "Upgrade membership to unlock",
+  "addInnovationMaybeLater": "Maybe later",
+  "addInnovationAiGenerateCover": "AI Generate Cover",
+  "addInnovationDescribeCoverHint": "Please describe the cover image you want...",
+  "addInnovationQuickTemplates": "Quick templates:",
+  "addInnovationGenerating": "Generating...",
+  "generate": "Generate",
+  "addInnovationAiBadge": "AI",
+  "cityPhotoPickFromGalleryMulti": "Choose from gallery (multiple)",
+  "cityPhotoCaptureAndUpload": "Capture photo",
+  "cityPhotoUploadTitle": "Upload Photos · {cityName}",
+  "@cityPhotoUploadTitle": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
+  "cityPhotoShareExperience": "Share your real experience in {cityName} with the digital nomad community",
+  "@cityPhotoShareExperience": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
+  "cityPhotoTitleOrPlace": "Title / Place",
+  "cityPhotoTitleExample": "e.g. Sunrise by the Beidaihe coast",
+  "cityPhotoTitleRequired": "Please enter a title or place description",
+  "cityPhotoLocationOptional": "Location (optional)",
+  "cityPhotoLocationHint": "Street, landmark, or more location clues",
+  "cityPhotoLocateOnMap": "Locate on map",
+  "cityPhotoDescriptionOptional": "Description (optional)",
+  "cityPhotoDescriptionHint": "Briefly describe the photo, shooting time, etc.",
+  "cityPhotoSelectedCount": "Selected {count} / {maxCount}",
+  "@cityPhotoSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "maxCount": {
+        "type": "int"
+      }
+    }
+  },
+  "cityPhotoAddPhoto": "Add Photos",
+  "cityPhotoUploading": "Uploading...",
+  "cityPhotoEmptyHint": "No photos yet. Tap \"Add Photos\" above to upload.",
+  "cityPhotoSubmitting": "Submitting...",
+  "cityPhotoSubmitDescription": "After submission, the backend will auto-fill coordinates via Amap. On success, you will return to the city detail page and photos will appear after refresh.",
+  "currencyOptionUsd": "USD ($)",
+  "currencyOptionEur": "EUR (€)",
+  "currencyOptionGbp": "GBP (£)",
+  "currencyOptionCny": "CNY (¥)",
+  "currencyOptionJpy": "JPY (¥)",
+  "currencyOptionThb": "THB (฿)",
+  "currencyOptionVnd": "VND (₫)",
+  "currencyOptionIdr": "IDR (Rp)",
+  "currencyOptionMyr": "MYR (RM)",
+  "currencyOptionSgd": "SGD (S$)",
+  "homeMeetupChatButton": "Chat",
+  "moderatorCardTitle": "City Moderator",
+  "moderatorCardCertified": "Certified",
+  "moderatorCardTransferModerator": "Transfer Moderator",
+  "moderatorCardApplyModerator": "Apply to be Moderator",
+  "moderatorCardUnclaimed": "Unclaimed",
+  "moderatorCardLookingForModerator": "This city is looking for a moderator! If you are familiar with this place, you can apply to become a moderator and help other digital nomads understand the city.",
+  "moderatorCardAssignModerator": "Assign Moderator",
+  "moderatorCardNeedUpgradeMembership": "Membership Upgrade Required",
+  "moderatorCardUpgradeContent": "Applying to be a city moderator requires Pro membership or above.\n\nAfter upgrading to Pro, you will get:\n• Eligibility to apply as a city moderator\n• More AI usage quota\n• Exclusive member badge\n• More advanced features",
+  "moderatorCardUpgradeNow": "Upgrade Now",
+  "assignModeratorLoadCandidatesFailed": "Failed to load moderator candidates: {error}",
+  "@assignModeratorLoadCandidatesFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "assignModeratorSelectAtLeastOneUser": "Please select at least one user",
+  "assignModeratorUnknownError": "Unknown error",
+  "assignModeratorUserError": "User {userId}: {error}",
+  "@assignModeratorUserError": {
+    "placeholders": {
+      "userId": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "assignModeratorSuccessCount": "Successfully assigned {count} moderators!",
+  "@assignModeratorSuccessCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "assignModeratorFailCount": "Failed to assign {count} users, please check logs",
+  "@assignModeratorFailCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "assignModeratorAllFailed": "All user assignments failed: {reason}",
+  "@assignModeratorAllFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "assignModeratorConfirmTitle": "Confirm Moderator Assignment",
+  "assignModeratorConfirmMessage": "Are you sure you want to assign {count} users as moderators?\n\nThese users will automatically receive moderator role and related permissions.",
+  "@assignModeratorConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "skillCategoryProgramming": "Programming",
+  "skillCategoryDesign": "Design",
+  "skillCategoryMarketing": "Marketing",
+  "skillCategoryLanguages": "Languages",
+  "skillCategoryData": "Data",
+  "skillCategoryManagement": "Management",
+  "skillCategoryOther": "Other",
+  "interestCategorySports": "Sports & Fitness",
+  "interestCategoryArts": "Arts & Culture",
+  "interestCategoryFood": "Food & Cooking",
+  "interestCategoryTravel": "Travel & Adventure",
+  "interestCategoryTechnology": "Technology",
+  "interestCategoryReading": "Reading & Learning",
+  "interestCategoryMusic": "Music & Entertainment",
+  "interestCategorySocial": "Social & Public Welfare",
   "travelHistory": "Travel History",
   "current": "Current",
   "connect": "Connect",
@@ -2211,7 +2858,190 @@
   "faqFeedback": "Feature Suggestions & Feedback",
   "faqFeedbackAnswer": "We value your opinions and suggestions. If you have any product improvement ideas, please let us know via support email.",
   "serviceHours": "Service Hours",
-  "serviceHoursDesc": "Mon-Fri 9:00 AM - 6:00 PM (Beijing Time)"
+  "serviceHoursDesc": "Mon-Fri 9:00 AM - 6:00 PM (Beijing Time)",
+  "aiChatServiceUnavailable": "AI service is temporarily unavailable. Please try again later.",
+  "aiChatResponseError": "AI returned an error",
+  "aiChatFailed": "AI Chat failed",
+  "aiChatDefaultConversationTitle": "Nomads AI Copilot",
+  "aiChatSystemPrompt": "You are the Go Nomads AI copilot. Provide concise, actionable travel help for digital nomads.",
+  "aiChatCreateConversationFailed": "Unable to create AI conversation right now",
+  "aiChatLoadHistoryFailed": "Failed to load conversation history",
+  "aiChatSwitchBlockedWhileStreaming": "Reply is being generated. Please wait before switching conversations.",
+  "aiChatSwitchConversationFailed": "Failed to switch conversation. Please try again later.",
+  "aiChatThinking": "AI is thinking...",
+  "aiChatRequestTimeout": "Request timed out. Please try again later.",
+  "aiChatReplyUnavailable": "Unable to get AI reply right now. Please try again later.",
+  "aiChatSendFailed": "Failed to send AI Chat message",
+  "aiChatNoReplyYet": "No AI reply received yet. Please try again later.",
+  "aiChatUntitledConversation": "Untitled conversation",
+  "manageReviewsDeleteConfirmTitle": "Confirm deletion",
+  "manageReviewsDeleteConfirmMessage": "Are you sure you want to delete this review? This action can be recovered.",
+  "manageReviewsPageTitle": "{cityName} - Review Management",
+  "@manageReviewsPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "manageReviewsNoData": "No review data yet",
+  "manageReviewsAddFirstReview": "Add first review",
+  "manageReviewsLoadedAll": "All {count} reviews loaded",
+  "@manageReviewsLoadedAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "travelPlanUnableToLoad": "Unable to load travel plan",
+  "travelPlanLoadFailedWithError": "Load failed: {error}",
+  "@travelPlanLoadFailedWithError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "travelPlanGenerateErrorWithError": "Error: {error}",
+  "@travelPlanGenerateErrorWithError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "travelPlanGeneratedSuccess": "Travel plan generated successfully!",
+  "travelPlanGenerateFailedWithError": "Failed to generate: {error}",
+  "@travelPlanGenerateFailedWithError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "travelPlanNotReadyWarning": "The plan is not generated yet",
+  "aiChatCodeCopied": "Code copied",
+  "aiChatCodeCopiedToClipboard": "Code copied to clipboard",
+  "aiChatInputHint": "Ask routes, visas, or itinerary planning — just start chatting…",
+  "aiChatEmptyHint": "No conversation yet. Try asking AI",
+  "aiChatStartConversation": "Start conversation",
+  "prosConsAddPageTitle": "{cityName} - Add Highlights",
+  "@prosConsAddPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "prosConsAddProsHint": "Share what this city does well...",
+  "prosConsAddConsHint": "Share challenges in this city...",
+  "manageProsConsPageTitle": "{cityName} - Pros & Cons Management",
+  "@manageProsConsPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "cityDetailGeneratingNearbyCitiesTitle": "AI is generating nearby cities",
+  "cityDetailNearbyCitiesGeneratedSuccess": "Nearby cities generated successfully!",
+  "guideTabAiGenerate": "Generate with AI",
+  "guideTabAiGenerateGuide": "AI Guide Generation",
+  "registerCodeSentToEmail": "Verification code sent to your email",
+  "registerSendCodeFailedRetry": "Failed to send verification code, please try again later",
+  "registerFailedTitle": "Registration Failed",
+  "registerFailedCheckInput": "Registration failed, please check your input",
+  "registerFailedProcessError": "An error occurred during registration. Please try again later",
+  "conversationDeleteTitle": "Delete conversation",
+  "conversationDeleteMessage": "Are you sure you want to delete this conversation? Chat history will be removed.",
+  "coworkingDetailUserComments": "User Comments",
+  "coworkingDetailPostComment": "Post Comment",
+  "coworkingDetailViewMoreComments": "View More Comments",
+  "coworkingDetailNoComments": "No comments yet",
+  "coworkingDetailBeFirstCommenter": "Be the first to post a comment",
+  "editSkillsTitle": "Edit Skills",
+  "editSkillsAddCustomSkill": "Add Custom Skill",
+  "editInterestsTitle": "Edit Interests",
+  "editInterestsAddCustomInterest": "Add Custom Interest",
+  "prosConsNoProsTitle": "No pros yet",
+  "prosConsNoProsSubtitle": "Share your great experiences in this city",
+  "prosConsAddPros": "Add Pro",
+  "prosConsNoConsTitle": "No cons yet",
+  "prosConsNoConsSubtitle": "Share challenges and areas that need improvement",
+  "prosConsAddCons": "Add Con",
+  "profilePleaseLoginToView": "Please login to view your profile",
+  "profilePleaseLoginAgain": "Please login again",
+  "profileLogoutSuccessMessage": "You have been logged out successfully",
+  "profileLogoutSuccessTitle": "Logout Success",
+  "profileLogoutErrorMessage": "An error occurred during logout",
+  "coworkingDetailDeleteConfirmTitle": "Delete Confirmation",
+  "coworkingDetailDeleteConfirmMessage": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+  "@coworkingDetailDeleteConfirmMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "loginPhoneAction": "Login / Register",
+  "amapGlobalMapOnlyMobile": "Map is only supported on iOS and Android",
+  "amapGlobalTitle": "Global Nomads",
+  "amapGlobalByRegion": "By Region",
+  "neighborhoodsDiscoverNearbyHint": "Discover 4 nearby cities within 100 km",
+  "neighborhoodsGenerateNearbyCities": "AI Generate Nearby Cities",
+  "neighborhoodsLoadedFromBackend": "☁️ Loaded from backend",
+  "aiChatHistoryTooltip": "Conversation History",
+  "aiChatLoadingHistoryTitle": "Loading conversation history...",
+  "aiChatNoHistoryStartNew": "No conversation history yet. Start a new chat now",
+  "aiChatHistoryTitle": "Conversation History",
+  "manageCostPageTitle": "{cityName} - Cost Management",
+  "@manageCostPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "manageCostNoData": "No cost data",
+  "manageCostAddFirst": "Add your first cost",
+  "skillsInterestsTitle": "Select Skills and Interests",
+  "skillsInterestsSelected": "Selected",
+  "skillsInterestsSummary": "Skills {skillsCount}/10  ·  Interests {interestsCount}/15",
+  "@skillsInterestsSummary": {
+    "placeholders": {
+      "skillsCount": {
+        "type": "int"
+      },
+      "interestsCount": {
+        "type": "int"
+      }
+    }
+  },
+  "roomTypePreviewToast": "Room type: {name}",
+  "@roomTypePreviewToast": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "roomTypeBookingToast": "Book {name}",
+  "@roomTypeBookingToast": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "applyModeratorSubmitSuccess": "Application submitted. Please wait for admin review",
+  "applyModeratorReasonHint": "Please explain why you are applying to be a moderator and what you can contribute to the community...",
+  "addCoworkingImageCount": "{count}/{max}",
+  "@addCoworkingImageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "addCoworkingMaxImages": "You can upload up to {max} images",
+  "@addCoworkingMaxImages": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "loginFacebookComingSoon": "Facebook sign-in is coming soon",
+  "assignModeratorPageTitle": "{cityName} - Assign Moderators",
+  "@assignModeratorPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  }
 }
 
 

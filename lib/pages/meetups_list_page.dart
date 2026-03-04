@@ -257,7 +257,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     } catch (e, stackTrace) {
       log('❌ Tab $tabIndex 加载失败: $e');
       log('Stack trace: $stackTrace');
-      AppToast.error('加载活动失败');
+      AppToast.error(AppLocalizations.of(context)!.loadFailed);
     } finally {
       _tabLoading[tabIndex]!.value = false;
     }
@@ -728,7 +728,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         if (widget.onRefresh != null) {
           await widget.onRefresh!();
         }
-        AppToast.info('您已经加入了这个活动');
+        AppToast.info(AppLocalizations.of(context)!.dataServiceAlreadyJoinedMeetup);
         return;
       }
 
@@ -746,13 +746,15 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         if (widget.onRefresh != null) {
           await widget.onRefresh!();
         }
-        AppToast.info('您尚未加入这个活动');
+        AppToast.info(AppLocalizations.of(context)!.dataServiceNotJoinedMeetup);
         return;
       }
 
       // 其他错误正常提示
       AppToast.error(
-        _isJoined ? '退出活动失败' : '加入活动失败',
+        _isJoined
+            ? AppLocalizations.of(context)!.dataServiceLeaveMeetupFailed
+            : AppLocalizations.of(context)!.dataServiceJoinMeetupFailed,
       );
     }
   }
@@ -764,8 +766,8 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     // 显示确认对话框
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('取消活动'),
-        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+        title: Text(l10n.confirmCancelMeetupTitle),
+        content: Text(l10n.confirmCancelMeetupMessage),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
@@ -776,7 +778,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('确定'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -790,8 +792,8 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
       // 显示成功消息
       AppToast.success(
-        '活动已取消',
-        title: '成功',
+        l10n.cancelMeetupSuccess,
+        title: l10n.success,
       );
 
       // 刷新列表数据
@@ -800,7 +802,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       }
     } catch (e) {
       log('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败');
+      AppToast.error(l10n.cancelMeetupFailed);
     }
   }
 

@@ -262,6 +262,7 @@ class _SearchingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(top: 4.h),
       padding: EdgeInsets.all(16.w),
@@ -282,7 +283,7 @@ class _SearchingIndicator extends StatelessWidget {
             ),
           ),
           SizedBox(width: 12.w),
-          Text('搜索中...', style: TextStyle(color: Colors.grey)),
+          Text(l10n.loading, style: TextStyle(color: Colors.grey)),
         ],
       ),
     );
@@ -453,6 +454,7 @@ class TravelPlanDateSection extends GetView<CreateTravelPlanPageController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // 安全检查
     if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
       return const SizedBox.shrink();
@@ -461,7 +463,7 @@ class TravelPlanDateSection extends GetView<CreateTravelPlanPageController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: 'Departure Date', icon: FontAwesomeIcons.calendarDays),
+        _SectionTitle(title: l10n.date, icon: FontAwesomeIcons.calendarDays),
         SizedBox(height: 12.h),
         _DatePickerField(controllerTag: controllerTag),
       ],

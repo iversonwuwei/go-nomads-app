@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/notifications_page_controller.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -136,7 +137,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
               SizedBox(height: 16.h),
               ElevatedButton(
                 onPressed: () => notificationController.loadNotifications(isRead: isRead),
-                child: const Text('重试'),
+                child: Text(AppLocalizations.of(Get.context!)!.retry),
               ),
             ],
           ),

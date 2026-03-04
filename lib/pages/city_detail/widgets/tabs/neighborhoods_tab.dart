@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 import '../../../../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../../../../features/city/infrastructure/models/city_detail_dto.dart';
@@ -142,6 +143,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: SingleChildScrollView(
         child: Column(
@@ -155,12 +157,12 @@ class _EmptyState extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              '暂无附近城市',
+              l10n.noNearbyCities,
               style: TextStyle(fontSize: 16.sp, color: Colors.grey),
             ),
             SizedBox(height: 8.h),
             Text(
-              '发现 100 公里内的 4 个相邻城市',
+              l10n.neighborhoodsDiscoverNearbyHint,
               style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
             ),
             SizedBox(height: 16.h),
@@ -172,7 +174,7 @@ class _EmptyState extends StatelessWidget {
                       onGeneratePressed();
                     },
               icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
-              label: const Text('AI 生成附近城市'),
+              label: Text(l10n.neighborhoodsGenerateNearbyCities),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,
@@ -224,6 +226,7 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
   }
 
   Widget _buildActionBar(AiStateController aiController) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -240,7 +243,7 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
-              '☁️ 从后端加载',
+              l10n.neighborhoodsLoadedFromBackend,
               style: TextStyle(
                 fontSize: 13.sp,
                 color: Colors.green[800],
@@ -254,7 +257,7 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
                         ? null
                         : () => aiController.loadNearbyCities(cityId: controller.cityId),
                     icon: Icon(FontAwesomeIcons.arrowsRotate, size: 18.r),
-                    label: const Text('刷新'),
+                    label: Text(l10n.refresh),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFFFF4458),
                       disabledForegroundColor: Colors.grey[400],
@@ -270,7 +273,7 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
                             onGeneratePressed();
                           },
                     icon: Icon(FontAwesomeIcons.wandMagicSparkles, size: 18.r),
-                    label: const Text('AI 生成'),
+                    label: Text(l10n.guideTabAiGenerate),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFFFF4458),
                       disabledForegroundColor: Colors.grey[400],

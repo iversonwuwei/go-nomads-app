@@ -145,10 +145,10 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
     if (mounted) {
       setState(() => _isConnecting = false);
       if (!success) {
-        AppToast.error('连接失败，请重试');
+        AppToast.error(AppLocalizations.of(context)!.tencentImConnectFailedRetry);
       } else if (!_controller.receiverImported) {
         // 如果后端API导入失败，显示警告
-        AppToast.warning('用户导入失败，消息可能无法送达');
+        AppToast.warning(AppLocalizations.of(context)!.tencentImImportUserFailed);
       }
     }
   }
@@ -273,8 +273,8 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       final totalCount = messages.length + _uploadingImages.length;
 
       if (totalCount == 0) {
-        return const Center(
-          child: Text('暂无消息', style: TextStyle(color: Colors.grey)),
+        return Center(
+          child: Text(AppLocalizations.of(context)!.tencentImNoMessages, style: const TextStyle(color: Colors.grey)),
         );
       }
 
@@ -370,7 +370,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
         );
 
       case MessageElemType.V2TIM_ELEM_TYPE_FILE:
-        final fileName = message.fileElem?.fileName ?? '文件';
+        final fileName = message.fileElem?.fileName ?? AppLocalizations.of(context)!.tencentImFileFallback;
         return GestureDetector(
           onTap: () => _openFile(message),
           child: Row(
@@ -394,7 +394,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
         return Text(data, style: TextStyle(fontSize: 32.sp));
 
       default:
-        return Text('[消息]', style: TextStyle(color: textColor));
+        return Text(AppLocalizations.of(context)!.tencentImMessageFallback, style: TextStyle(color: textColor));
     }
   }
 
@@ -402,7 +402,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
   Widget _buildImageMessage(V2TimMessage message) {
     final imageUrl = message.imageElem?.imageList?.first?.url;
     if (imageUrl == null || imageUrl.isEmpty) {
-      return const Text('[图片]', style: TextStyle(color: Colors.black87));
+      return Text(AppLocalizations.of(context)!.tencentImImageFallback, style: const TextStyle(color: Colors.black87));
     }
 
     return GestureDetector(
@@ -457,7 +457,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
             children: [
               Icon(FontAwesomeIcons.image, color: Colors.grey, size: 40.r),
               SizedBox(height: 8.h),
-              Text('加载失败', style: TextStyle(color: Colors.grey)),
+              Text(AppLocalizations.of(context)!.tencentImLoadFailed, style: TextStyle(color: Colors.grey)),
             ],
           ),
         );
@@ -579,7 +579,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
       focusNode: _focusNode,
       scrollController: _inputScrollController,
       decoration: InputDecoration(
-        hintText: '输入消息...',
+        hintText: AppLocalizations.of(context)!.typeMessage,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.r),
           borderSide: BorderSide.none,
@@ -1004,7 +1004,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
-                  '取消',
+                  AppLocalizations.of(context)!.cancel,
                   style: TextStyle(color: Colors.white, fontSize: 12.sp),
                 ),
               ),
@@ -1025,7 +1025,7 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
 
   void _openFile(V2TimMessage message) {
     // TODO: 实现文件打开
-    AppToast.info('打开文件');
+    AppToast.info(AppLocalizations.of(context)!.tencentImOpenFile);
   }
 }
 
@@ -1118,7 +1118,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
           children: [
             Icon(FontAwesomeIcons.image, color: Colors.grey, size: 60.r),
             SizedBox(height: 16.h),
-            Text('图片加载失败', style: TextStyle(color: Colors.grey)),
+            Text(AppLocalizations.of(context)!.directChatImageLoadFailed, style: TextStyle(color: Colors.grey)),
           ],
         );
       },

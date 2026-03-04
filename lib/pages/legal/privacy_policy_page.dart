@@ -64,6 +64,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -77,7 +78,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
             SizedBox(height: 12.h),
             Text(_error ?? '加载失败', style: TextStyle(color: AppColors.textSecondary)),
             SizedBox(height: 16.h),
-            ElevatedButton(onPressed: _loadPrivacyPolicy, child: const Text('重试')),
+            ElevatedButton(onPressed: _loadPrivacyPolicy, child: Text(l10n.retry)),
           ],
         ),
       );
@@ -115,7 +116,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
                 );
               },
               icon: Icon(Icons.extension_outlined, size: 18.r),
-              label: const Text('查看第三方SDK信息收集清单'),
+              label: Text(l10n.thirdPartyServices),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.cityPrimary,
                 side: const BorderSide(color: AppColors.cityPrimary),

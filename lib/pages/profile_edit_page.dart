@@ -174,11 +174,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
           _temperatureUnit = preferences.temperatureUnit;
         });
 
-        // 同步语言设置到 LocaleController
-        if (Get.isRegistered<LocaleController>()) {
-          Get.find<LocaleController>().syncFromPreferences(preferences.language);
-        }
-
         // 同步通知状态到 NotificationService
         if (Get.isRegistered<NotificationService>()) {
           final notificationService = Get.find<NotificationService>();
@@ -216,10 +211,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     setState(() => _isSavingPreferences = true);
 
     try {
-      // 获取当前语言设置
-      final currentLanguage =
-          Get.isRegistered<LocaleController>() ? Get.find<LocaleController>().locale.value.languageCode : null;
-
       await _preferencesRepository!.updatePreferences(
         notificationsEnabled: _notifications,
         travelHistoryVisible: _travelHistoryVisible,
@@ -227,7 +218,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         profilePublic: _profilePublic,
         currency: _currency,
         temperatureUnit: _temperatureUnit,
-        language: currentLanguage,
       );
 
       debugPrint('✅ 用户偏好设置保存成功');
@@ -316,19 +306,20 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
       final hasPermission = await notificationService.checkPermissionStatus();
 
       if (!hasPermission) {
+        final l10n = AppLocalizations.of(context)!;
         // 没有系统权限，提示用户并引导到系统设置
         final shouldOpenSettings = await Get.dialog<bool>(
           AlertDialog(
-            title: const Text('需要通知权限'),
-            content: const Text('请在系统设置中开启通知权限，以便接收重要消息提醒。'),
+            title: Text(l10n.profileNotificationPermissionTitle),
+            content: Text(l10n.profileNotificationPermissionMessage),
             actions: [
               TextButton(
                 onPressed: () => Get.back(result: false),
-                child: const Text('取消'),
+                child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () => Get.back(result: true),
-                child: const Text('去设置'),
+                child: Text(l10n.profileGoToSettings),
               ),
             ],
           ),
@@ -473,7 +464,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
     if (!SupabaseConfig.isConfigured) {
       AppToast.error(
-        'Supabase 未配置，请联系管理员',
+        l10n.profileSupabaseNotConfigured,
         title: l10n.error,
       );
       return;
@@ -509,7 +500,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
       debugPrint('❌ 头像上传失败: $e');
       if (mounted) {
         AppToast.error(
-          '头像上传失败: $e',
+          l10n.profileAvatarUploadFailed(e.toString()),
           title: l10n.error,
         );
       }
@@ -717,7 +708,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
               decoration: InputDecoration(
                 labelText: l10n.email,
                 labelStyle: TextStyle(color: AppColors.textSecondary),
-                hintText: 'nomad@example.com',
+                hintText: l10n.email,
                 hintStyle: TextStyle(color: AppColors.textTertiary),
                 filled: true,
                 fillColor: AppColors.containerLight,
@@ -829,7 +820,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                 TextButton.icon(
                   icon: Icon(FontAwesomeIcons.pen, color: AppColors.accent, size: 20.r),
                   label: Text(
-                    '编辑',
+                    l10n.edit,
                     style: TextStyle(color: AppColors.accent),
                   ),
                   onPressed: isLoading ? null : () => _showSkillsBottomSheet(profileController),
@@ -944,8 +935,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                 ),
                 TextButton.icon(
                   icon: Icon(FontAwesomeIcons.pen, color: Color(0xFFBA68C8), size: 20.r),
-                  label: const Text(
-                    '编辑',
+                  label: Text(
+                    l10n.edit,
                     style: TextStyle(color: Color(0xFFBA68C8)),
                   ),
                   onPressed: isLoading ? null : () => _showInterestsBottomSheet(profileController),
@@ -1096,25 +1087,28 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
   Widget _buildLanguageTile(bool isMobile) {
     final localeController = Get.find<LocaleController>();
+    final l10n = AppLocalizations.of(Get.context!)!;
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(
-        'Language',
+        l10n.language,
         style: TextStyle(
           color: AppColors.textPrimary,
           fontSize: 16.sp,
         ),
       ),
       subtitle: Obx(() => Text(
-            localeController.locale.value.languageCode == 'en' ? 'English' : '中文',
+            localeController.uiLocale.value.languageCode == 'en'
+                ? l10n.languageOptionEnglish
+                : l10n.languageOptionChinese,
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14.sp,
             ),
           )),
       trailing: Obx(() => DropdownButton<String>(
-            value: localeController.locale.value.languageCode,
+            value: localeController.uiLocale.value.languageCode,
             dropdownColor: Colors.white,
             underline: const SizedBox(),
             icon: Icon(
@@ -1124,16 +1118,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             items: [
               DropdownMenuItem(
                 value: 'en',
-                child: Text('English', style: TextStyle(color: AppColors.textPrimary)),
+                child: Text(l10n.languageOptionEnglish, style: TextStyle(color: AppColors.textPrimary)),
               ),
               DropdownMenuItem(
                 value: 'zh',
-                child: Text('中文', style: TextStyle(color: AppColors.textPrimary)),
+                child: Text(l10n.languageOptionChinese, style: TextStyle(color: AppColors.textPrimary)),
               ),
             ],
             onChanged: (languageCode) {
               if (languageCode != null) {
-                localeController.changeLocale(languageCode);
+                localeController.changeLocaleUiOnly(languageCode);
               }
             },
           )),
@@ -1192,7 +1186,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
           SizedBox(height: isMobile ? 12 : 16),
           _buildActionTile(
             icon: FontAwesomeIcons.lock,
-            title: '修改/设置密码',
+            title: l10n.changePassword,
             onTap: () => Get.toNamed(AppRoutes.changePassword),
           ),
           Divider(color: AppColors.divider),
@@ -1218,7 +1212,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                   textAlign: TextAlign.center,
                 ),
                 textCancel: l10n.cancel,
-                textConfirm: 'Delete',
+                textConfirm: l10n.delete,
                 cancelTextColor: AppColors.textSecondary,
                 confirmTextColor: Colors.white,
                 buttonColor: Colors.red,
@@ -1263,11 +1257,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
   // 显示技能选择底部抽屉
   void _showSkillsBottomSheet(UserStateController profileController) {
+    final l10n = AppLocalizations.of(context)!;
     final SkillStateController skillController = Get.find<SkillStateController>();
     final currentUser = profileController.currentUser.value;
 
     if (currentUser == null) {
-      AppToast.error('请先登录');
+      AppToast.error(l10n.pleaseLogin);
       return;
     }
 
@@ -1352,20 +1347,20 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
               );
 
               final messages = <String>[];
-              if (addedCount > 0) messages.add('添加 $addedCount 个');
-              if (removedCount > 0) messages.add('移除 $removedCount 个');
+              if (addedCount > 0) messages.add(l10n.profileAddedCount(addedCount));
+              if (removedCount > 0) messages.add(l10n.profileRemovedCount(removedCount));
               AppToast.success(
                 messages.join(', '),
-                title: '保存成功',
+                title: l10n.saveSuccess,
               );
             } else if (toRemove.isEmpty && toAdd.isEmpty) {
               // 没有变化，不需要提示
             } else {
-              AppToast.error('保存失败，请稍后重试');
+              AppToast.error(l10n.saveFailed);
             }
           } catch (e) {
             log('❌ 保存技能失败: $e');
-            AppToast.error('保存失败，请稍后重试');
+            AppToast.error(l10n.saveFailed);
           }
         },
       ),
@@ -1374,11 +1369,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
   // 显示兴趣选择底部抽屉
   void _showInterestsBottomSheet(UserStateController profileController) {
+    final l10n = AppLocalizations.of(context)!;
     final InterestStateController interestController = Get.find<InterestStateController>();
     final currentUser = profileController.currentUser.value;
 
     if (currentUser == null) {
-      AppToast.error('请先登录');
+      AppToast.error(l10n.pleaseLogin);
       return;
     }
 
@@ -1461,20 +1457,20 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
               );
 
               final messages = <String>[];
-              if (addedCount > 0) messages.add('添加 $addedCount 个');
-              if (removedCount > 0) messages.add('移除 $removedCount 个');
+              if (addedCount > 0) messages.add(l10n.profileAddedCount(addedCount));
+              if (removedCount > 0) messages.add(l10n.profileRemovedCount(removedCount));
               AppToast.success(
                 messages.join(', '),
-                title: '保存成功',
+                title: l10n.saveSuccess,
               );
             } else if (toRemove.isEmpty && toAdd.isEmpty) {
               // 没有变化，不需要提示
             } else {
-              AppToast.error('保存失败，请稍后重试');
+              AppToast.error(l10n.saveFailed);
             }
           } catch (e) {
             log('❌ 保存兴趣失败: $e');
-            AppToast.error('保存失败，请稍后重试');
+            AppToast.error(l10n.saveFailed);
           }
         },
       ),
@@ -1484,6 +1480,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   /// 构建管理员权限管理区域
   Widget _buildAdminManagementSection(bool isMobile) {
     if (_userManagementController == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(Get.context!)!;
 
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
@@ -1499,7 +1496,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '🔐 管理员权限管理',
+                l10n.profileRolesManagement,
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: isMobile ? 18 : 22,
@@ -1507,7 +1504,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                 ),
               ),
               Obx(() => Text(
-                    '已选择 ${_userManagementController!.selectedUserIds.length} 人',
+                    l10n.profileSelectedUsers(_userManagementController!.selectedUserIds.length),
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14.sp,
@@ -1534,7 +1531,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
-                        '⚠️ 角色数据未加载，批量操作功能受限\n请确认后端 /api/v1/roles 接口已正确配置',
+                        l10n.profileRolesNotLoadedWarning,
                         style: TextStyle(
                           color: Colors.orange.shade800,
                           fontSize: 12.sp,
@@ -1555,7 +1552,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                 child: ElevatedButton.icon(
                   onPressed: () => _batchSetAdmin(),
                   icon: Icon(FontAwesomeIcons.userShield, size: 18.r),
-                  label: const Text('设为管理员'),
+                  label: Text(l10n.profileSetAsAdmin),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
                     foregroundColor: Colors.white,
@@ -1568,7 +1565,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                 child: OutlinedButton.icon(
                   onPressed: () => _batchSetUser(),
                   icon: Icon(FontAwesomeIcons.user, size: 18.r),
-                  label: const Text('设为普通用户'),
+                  label: Text(l10n.profileSetAsNormalUser),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textPrimary,
                     side: BorderSide(color: AppColors.border),
@@ -1586,7 +1583,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                 child: OutlinedButton.icon(
                   onPressed: () => _userManagementController!.toggleSelectAll(),
                   icon: Icon(FontAwesomeIcons.squareCheck, size: 18.r),
-                  label: const Text('全选/取消全选'),
+                  label: Text(l10n.profileToggleSelectAll),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
                     side: BorderSide(color: AppColors.border),
@@ -1599,7 +1596,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                 child: OutlinedButton.icon(
                   onPressed: () => _userManagementController!.loadUsers(refresh: true),
                   icon: Icon(FontAwesomeIcons.arrowsRotate, size: 18.r),
-                  label: const Text('刷新'),
+                  label: Text(l10n.refresh),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.textSecondary,
                     side: BorderSide(color: AppColors.border),
@@ -1633,7 +1630,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
               }
 
               if (_userManagementController!.users.isEmpty) {
-                return const Center(child: Text('暂无用户'));
+                return Center(child: Text(l10n.profileNoUsers));
               }
 
               return NotificationListener<ScrollNotification>(
@@ -1701,7 +1698,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                           _buildRoleBadge(user.role),
                           SizedBox(width: 8.w),
                           Text(
-                            '加入于 ${_formatDate(user.createdAt)}',
+                            l10n.profileJoinedAt(_formatDate(user.createdAt)),
                             style: TextStyle(
                               fontSize: 11.sp,
                               color: AppColors.textTertiary,
@@ -1723,21 +1720,22 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   }
 
   Widget _buildRoleBadge(String role) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     Color badgeColor;
     String roleText;
 
     switch (role.toLowerCase()) {
       case 'admin':
         badgeColor = Colors.red;
-        roleText = '管理员';
+        roleText = l10n.profileRoleAdmin;
         break;
       case 'moderator':
         badgeColor = Colors.orange;
-        roleText = '版主';
+        roleText = l10n.profileRoleModerator;
         break;
       default:
         badgeColor = Colors.grey;
-        roleText = '用户';
+        roleText = l10n.profileRoleUser;
     }
 
     return Container(
@@ -1759,17 +1757,18 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   }
 
   String _formatDate(DateTime date) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays < 1) {
-      return '今天';
+      return l10n.today;
     } else if (difference.inDays < 30) {
-      return '${difference.inDays}天前';
+      return l10n.daysAgo(difference.inDays);
     } else if (difference.inDays < 365) {
-      return '${(difference.inDays / 30).floor()}个月前';
+      return l10n.monthsAgo((difference.inDays / 30).floor());
     } else {
-      return '${(difference.inDays / 365).floor()}年前';
+      return l10n.yearsAgo((difference.inDays / 365).floor());
     }
   }
 
@@ -1777,23 +1776,26 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     if (_userManagementController == null) return;
 
     if (_userManagementController!.selectedUserIds.isEmpty) {
-      AppToast.warning('请先选择要设置的用户');
+      final l10n = AppLocalizations.of(Get.context!)!;
+      AppToast.warning(l10n.profileSelectUsersFirst);
       return;
     }
 
     final success = await _userManagementController!.batchSetAdmin();
 
     if (success) {
+      final l10n = AppLocalizations.of(Get.context!)!;
       AppToast.success(
-        '已成功将 ${_userManagementController!.selectedUserIds.length} 个用户设为管理员',
-        title: '成功',
+        l10n.profileBatchSetAdminSuccess(_userManagementController!.selectedUserIds.length),
+        title: l10n.success,
       );
     } else {
+      final l10n = AppLocalizations.of(Get.context!)!;
       AppToast.error(
         _userManagementController!.errorMessage.value.isNotEmpty
             ? _userManagementController!.errorMessage.value
-            : '批量设置管理员失败',
-        title: '失败',
+            : l10n.profileBatchSetAdminFailed,
+        title: l10n.error,
       );
     }
   }
@@ -1802,23 +1804,26 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     if (_userManagementController == null) return;
 
     if (_userManagementController!.selectedUserIds.isEmpty) {
-      AppToast.warning('请先选择要设置的用户');
+      final l10n = AppLocalizations.of(Get.context!)!;
+      AppToast.warning(l10n.profileSelectUsersFirst);
       return;
     }
 
     final success = await _userManagementController!.batchSetUser();
 
     if (success) {
+      final l10n = AppLocalizations.of(Get.context!)!;
       AppToast.success(
-        '已成功将 ${_userManagementController!.selectedUserIds.length} 个用户设为普通用户',
-        title: '成功',
+        l10n.profileBatchSetUserSuccess(_userManagementController!.selectedUserIds.length),
+        title: l10n.success,
       );
     } else {
+      final l10n = AppLocalizations.of(Get.context!)!;
       AppToast.error(
         _userManagementController!.errorMessage.value.isNotEmpty
             ? _userManagementController!.errorMessage.value
-            : '批量设置用户失败',
-        title: '失败',
+            : l10n.profileBatchSetUserFailed,
+        title: l10n.error,
       );
     }
   }
@@ -1887,7 +1892,8 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
       log('❌ 加载技能失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      AppToast.error('无法加载技能列表: $e');
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error('${l10n.failedToLoadSkillsList}: $e');
     }
   }
 
@@ -1995,6 +2001,8 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
       minChildSize: 0.5,
@@ -2025,7 +2033,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '选择技能',
+                      l10n.selectSkills,
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -2036,7 +2044,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                       children: [
                         if (_selectedSkills.isNotEmpty)
                           Text(
-                            '${_selectedSkills.length} 项',
+                            '${_selectedSkills.length} ${l10n.itemUnit}',
                             style: TextStyle(
                               color: AppColors.accent,
                               fontWeight: FontWeight.bold,
@@ -2058,7 +2066,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                 padding: EdgeInsets.all(16.w),
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: '搜索技能...',
+                    hintText: l10n.searchSkillsHint,
                     prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -2080,7 +2088,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     children: [
-                      _buildCategoryChip('全部', null),
+                      _buildCategoryChip(l10n.all, null),
                       SizedBox(width: 8.w),
                       ..._skillsByCategory.map((category) {
                         return Padding(
@@ -2129,7 +2137,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                       ),
                       child: Text(
-                        '确定 (${_selectedSkills.length})',
+                        '${l10n.confirm} (${_selectedSkills.length})',
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
@@ -2172,12 +2180,13 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
   }
 
   Widget _buildSkillsList(ScrollController scrollController) {
+    final l10n = AppLocalizations.of(context)!;
     final filteredSkills = _getFilteredSkills();
 
     if (filteredSkills.isEmpty) {
       return Center(
         child: Text(
-          _searchQuery.isEmpty ? '暂无技能' : '未找到匹配的技能',
+          _searchQuery.isEmpty ? l10n.noSkills : l10n.noMatchingSkills,
           style: TextStyle(color: AppColors.textSecondary),
         ),
       );
@@ -2214,16 +2223,25 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
   }
 
   String _getCategoryText(String category) {
-    const categoryMap = {
-      'Programming': '编程开发',
-      'Design': '设计创意',
-      'Marketing': '营销商务',
-      'Languages': '语言能力',
-      'Data': '数据分析',
-      'Management': '项目管理',
-      'Other': '其他技能',
-    };
-    return categoryMap[category] ?? category;
+    final l10n = AppLocalizations.of(context)!;
+    switch (category) {
+      case 'Programming':
+        return l10n.skillCategoryProgramming;
+      case 'Design':
+        return l10n.skillCategoryDesign;
+      case 'Marketing':
+        return l10n.skillCategoryMarketing;
+      case 'Languages':
+        return l10n.skillCategoryLanguages;
+      case 'Data':
+        return l10n.skillCategoryData;
+      case 'Management':
+        return l10n.skillCategoryManagement;
+      case 'Other':
+        return l10n.skillCategoryOther;
+      default:
+        return category;
+    }
   }
 }
 
@@ -2290,7 +2308,8 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
       log('❌ 加载兴趣失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      AppToast.error('无法加载兴趣列表: $e');
+      final l10n = AppLocalizations.of(context)!;
+      AppToast.error('${l10n.failedToLoadInterestsList}: $e');
     }
   }
 
@@ -2396,6 +2415,8 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
       minChildSize: 0.5,
@@ -2426,7 +2447,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '选择兴趣',
+                      l10n.selectInterests,
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -2437,7 +2458,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                       children: [
                         if (_selectedInterests.isNotEmpty)
                           Text(
-                            '${_selectedInterests.length} 项',
+                            '${_selectedInterests.length} ${l10n.itemUnit}',
                             style: TextStyle(
                               color: AppColors.accent,
                               fontWeight: FontWeight.bold,
@@ -2459,7 +2480,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                 padding: EdgeInsets.all(16.w),
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: '搜索兴趣...',
+                    hintText: l10n.searchInterestsHint,
                     prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -2481,7 +2502,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     children: [
-                      _buildCategoryChip('全部', null),
+                      _buildCategoryChip(l10n.all, null),
                       SizedBox(width: 8.w),
                       ..._interestsByCategory.map((category) {
                         return Padding(
@@ -2531,7 +2552,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                       ),
                       child: Text(
-                        '确定 (${_selectedInterests.length})',
+                        '${l10n.confirm} (${_selectedInterests.length})',
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
@@ -2574,12 +2595,13 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
   }
 
   Widget _buildInterestsList(ScrollController scrollController) {
+    final l10n = AppLocalizations.of(context)!;
     final filteredInterests = _getFilteredInterests();
 
     if (filteredInterests.isEmpty) {
       return Center(
         child: Text(
-          _searchQuery.isEmpty ? '暂无兴趣' : '未找到匹配的兴趣',
+          _searchQuery.isEmpty ? l10n.noInterests : l10n.noMatchingInterests,
           style: TextStyle(color: AppColors.textSecondary),
         ),
       );
@@ -2616,17 +2638,27 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
   }
 
   String _getCategoryText(String category) {
-    const categoryMap = {
-      'Sports': '运动健身',
-      'Arts': '艺术文化',
-      'Food': '美食烹饪',
-      'Travel': '旅行探险',
-      'Technology': '科技数码',
-      'Reading': '阅读学习',
-      'Music': '音乐娱乐',
-      'Social': '社交公益',
-    };
-    return categoryMap[category] ?? category;
+    final l10n = AppLocalizations.of(context)!;
+    switch (category) {
+      case 'Sports':
+        return l10n.interestCategorySports;
+      case 'Arts':
+        return l10n.interestCategoryArts;
+      case 'Food':
+        return l10n.interestCategoryFood;
+      case 'Travel':
+        return l10n.interestCategoryTravel;
+      case 'Technology':
+        return l10n.interestCategoryTechnology;
+      case 'Reading':
+        return l10n.interestCategoryReading;
+      case 'Music':
+        return l10n.interestCategoryMusic;
+      case 'Social':
+        return l10n.interestCategorySocial;
+      default:
+        return category;
+    }
   }
 }
 

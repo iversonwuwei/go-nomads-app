@@ -60,6 +60,7 @@ class HomeMeetupsSection extends StatelessWidget {
 
   /// 错误状态 - 加载失败时显示，带重试按钮
   Widget _buildErrorState(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
       child: Column(
@@ -92,7 +93,7 @@ class HomeMeetupsSection extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => _meetupController.forceRefresh(),
             icon: Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
-            label: const Text('Retry'),
+            label: Text(l10n.retry),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFFFF4458),
               side: const BorderSide(color: Color(0xFFFF4458)),

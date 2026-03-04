@@ -529,15 +529,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         ),
         actions: [
           // TODO: 暂时隐藏视频通话按钮，功能待完善后启用
-          // IconButton(
-          //   icon: Icon(FontAwesomeIcons.video, color: Colors.black, size: 28.r),
-          //   onPressed: () => AppToast.info('视频通话功能即将推出'),
-          // ),
           // TODO: 暂时隐藏语音通话按钮，功能待完善后启用
-          // IconButton(
-          //   icon: Icon(FontAwesomeIcons.phone, color: Colors.black, size: 24.r),
-          //   onPressed: () => AppToast.info('语音通话功能即将推出'),
-          // ),
           PopupMenuButton<String>(
             icon: const Icon(FontAwesomeIcons.ellipsisVertical, color: Colors.black),
             onSelected: (value) {
@@ -946,6 +938,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 构建上传错误遮罩
   Widget _buildUploadErrorOverlay(_UploadingImage uploadingImage) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -972,7 +965,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   children: [
                     Icon(FontAwesomeIcons.arrowRotateRight, size: 12.r, color: Color(0xFFFF3838)),
                     SizedBox(width: 4.w),
-                    Text('重试', style: TextStyle(fontSize: 12.sp, color: Color(0xFFFF3838))),
+                    Text(l10n.retry, style: TextStyle(fontSize: 12.sp, color: Color(0xFFFF3838))),
                   ],
                 ),
               ),
@@ -992,7 +985,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   children: [
                     Icon(FontAwesomeIcons.xmark, size: 12.r, color: Colors.white),
                     SizedBox(width: 4.w),
-                    Text('取消', style: TextStyle(fontSize: 12.sp, color: Colors.white)),
+                    Text(l10n.cancel, style: TextStyle(fontSize: 12.sp, color: Colors.white)),
                   ],
                 ),
               ),
@@ -1227,17 +1220,18 @@ class _DirectChatViewState extends State<_DirectChatView> {
   }
 
   String _formatTime(DateTime time) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(time);
 
     if (difference.inMinutes < 1) {
-      return 'Just now';
+      return l10n.directChatJustNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m ago';
+      return l10n.directChatMinutesAgo(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return '${difference.inHours}h ago';
+      return l10n.directChatHoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
+      return l10n.directChatDaysAgo(difference.inDays);
     } else {
       return '${time.day}/${time.month}/${time.year}';
     }
@@ -1273,6 +1267,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 选择位置
   Future<void> _pickLocation() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final result = await Get.to<Map<String, dynamic>>(
         () => const MapPickerPage(),
@@ -1284,23 +1279,24 @@ class _DirectChatViewState extends State<_DirectChatView> {
         final address = result['address'] as String?;
         if (lat != null && lng != null) {
           widget.controller.sendMessage(
-            address ?? '位置',
+            address ?? l10n.location,
             messageType: 'location',
             attachment: {
               'latitude': lat,
               'longitude': lng,
-              'locationName': address ?? '位置',
+              'locationName': address ?? l10n.location,
             },
           );
         }
       }
     } catch (e) {
-      AppToast.error('选择位置失败: $e');
+      AppToast.error(l10n.directChatPickLocationFailed(e.toString()));
     }
   }
 
   /// 发送文件消息
   Future<void> _sendFile(PlatformFile platformFile) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final file = File(platformFile.path!);
       final imageUploadService = ImageUploadService();
@@ -1323,7 +1319,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         },
       );
     } catch (e) {
-      AppToast.error('发送文件失败: $e');
+      AppToast.error(l10n.directChatSendFileFailed(e.toString()));
     }
   }
 
@@ -1346,10 +1342,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 发送语音消息
   Future<void> _sendVoiceMessage(String localPath, int duration) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final file = File(localPath);
       if (!file.existsSync()) {
-        AppToast.error('语音文件不存在');
+        AppToast.error(l10n.directChatVoiceFileMissing);
         return;
       }
 
@@ -1361,7 +1358,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
       );
 
       widget.controller.sendMessage(
-        '语音消息',
+        l10n.directChatVoiceMessageText,
         messageType: 'voice',
         attachment: {
           'url': voiceUrl,
@@ -1376,7 +1373,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         debugPrint('⚠️ 删除临时语音文件失败: $e');
       }
     } catch (e) {
-      AppToast.error('发送语音失败: $e');
+      AppToast.error(l10n.directChatSendVoiceFailed(e.toString()));
     }
   }
 
@@ -1558,7 +1555,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
       onTap: () => _showMapPicker(
         attachment.latitude!,
         attachment.longitude!,
-        attachment.locationName ?? '位置',
+        attachment.locationName ?? AppLocalizations.of(context)!.location,
       ),
       child: Container(
         width: 200.w,
@@ -1621,7 +1618,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
-                      attachment.locationName ?? '位置',
+                      attachment.locationName ?? AppLocalizations.of(context)!.location,
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: isMe ? Colors.white : Colors.black87,
@@ -1646,7 +1643,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     final voiceUrl = attachment?.url ?? '';
 
     if (voiceUrl.isEmpty) {
-      return const Text('语音消息不可用');
+      return Text(AppLocalizations.of(context)!.directChatVoiceMessageUnavailable);
     }
 
     return ChatVoiceMessageSimple(
@@ -1661,7 +1658,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
   /// 构建文件消息内容
   Widget _buildFileMessageContent(ChatMessage message, bool isMe) {
     final attachment = message.attachment;
-    final fileName = attachment?.fileName ?? '文件';
+    final fileName = attachment?.fileName ?? AppLocalizations.of(context)!.directChatFileFallback;
     final fileSize = attachment?.fileSize ?? 0;
 
     return GestureDetector(
@@ -1718,6 +1715,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 显示地图APP选择器
   void _showMapPicker(double latitude, double longitude, String name) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -1740,7 +1738,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
             Padding(
               padding: EdgeInsets.all(16.w),
               child: Text(
-                '选择地图导航',
+                l10n.directChatChooseMapNavigation,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
@@ -1751,31 +1749,31 @@ class _DirectChatViewState extends State<_DirectChatView> {
             Divider(height: 1),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.apple,
-              title: 'Apple 地图',
+              title: l10n.directChatMapApple,
               iconColor: Colors.black87,
               onTap: () => _openAppleMaps(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.google,
-              title: 'Google 地图',
+              title: l10n.directChatMapGoogle,
               iconColor: const Color(0xFF4285F4),
               onTap: () => _openGoogleMaps(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.locationArrow,
-              title: '高德地图',
+              title: l10n.directChatMapAmap,
               iconColor: const Color(0xFF0091FF),
               onTap: () => _openAmap(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.mapPin,
-              title: '百度地图',
+              title: l10n.directChatMapBaidu,
               iconColor: const Color(0xFF3385FF),
               onTap: () => _openBaiduMap(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.mapLocation,
-              title: '腾讯地图',
+              title: l10n.directChatMapTencent,
               iconColor: const Color(0xFF12B7F5),
               onTap: () => _openTencentMap(latitude, longitude, name),
             ),
@@ -1793,7 +1791,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   ),
                 ),
                 child: Text(
-                  '取消',
+                  l10n.cancel,
                   style: TextStyle(
                     fontSize: 16.sp,
                     color: Colors.black54,
@@ -1814,7 +1812,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('Apple 地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapApple);
     }
   }
 
@@ -1824,7 +1822,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('Google 地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapGoogle);
     }
   }
 
@@ -1835,7 +1833,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('高德地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapAmap);
     }
   }
 
@@ -1846,7 +1844,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('百度地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapBaidu);
     }
   }
 
@@ -1856,12 +1854,13 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('腾讯地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapTencent);
     }
   }
 
   void _showMapError(String mapName) {
-    AppToast.warning('未安装$mapName');
+    final l10n = AppLocalizations.of(context)!;
+    AppToast.warning(l10n.directChatMapNotInstalled(mapName));
   }
 
   /// 检查是否是图片 URL
@@ -1942,6 +1941,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 构建图片占位符
   Widget _buildImagePlaceholder() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 150.w,
       height: 150.h,
@@ -1951,7 +1951,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         children: [
           Icon(FontAwesomeIcons.image, size: 40.r, color: Colors.grey),
           SizedBox(height: 8.h),
-          Text('图片加载失败', style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
+          Text(l10n.directChatImageLoadFailed, style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
         ],
       ),
     );
@@ -2108,7 +2108,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
-                  child: const Text('发送'),
+                  child: Text(AppLocalizations.of(context)!.send),
                 ),
               ],
             ),
@@ -2259,6 +2259,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> with Sin
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -2274,13 +2275,13 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> with Sin
                 IconButton(
                   icon: Icon(FontAwesomeIcons.download, color: Colors.white, size: 20.r),
                   onPressed: () {
-                    AppToast.info('保存功能即将推出');
+                    AppToast.info(l10n.directChatSaveComingSoon);
                   },
                 ),
                 IconButton(
                   icon: Icon(FontAwesomeIcons.share, color: Colors.white, size: 20.r),
                   onPressed: () {
-                    AppToast.info('分享功能即将推出');
+                    AppToast.info(l10n.directChatShareComingSoon);
                   },
                 ),
               ],

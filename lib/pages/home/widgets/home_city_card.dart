@@ -227,7 +227,11 @@ class HomeCityCard extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('📡', style: TextStyle(fontSize: isMobile ? 7 : 10)),
+              Icon(
+                FontAwesomeIcons.wifi,
+                color: Colors.white,
+                size: isMobile ? 7 : 10,
+              ),
               SizedBox(width: isMobile ? 1 : 3),
               Text(
                 city.displayInternetScore.toStringAsFixed(1),
@@ -403,6 +407,8 @@ class _GenerateImageButton extends StatelessWidget {
     required this.isMobile,
   });
 
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
+
   Future<void> _generateImages() async {
     final cityController = Get.find<CityStateController>();
 
@@ -410,7 +416,7 @@ class _GenerateImageButton extends StatelessWidget {
 
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
-      AppToast.warning('Please login to generate images', title: 'Login Required');
+      AppToast.warning(_l10n.pleaseLogin, title: _l10n.loginRequired);
       Get.toNamed(AppRoutes.login);
       return;
     }
@@ -430,13 +436,13 @@ class _GenerateImageButton extends StatelessWidget {
     } catch (_) {}
 
     if (!isAdmin && !isCityModerator) {
-      AppToast.warning('Only administrators or city moderators can generate images', title: 'Permission Denied');
+      AppToast.warning(_l10n.dataServicePermissionDenied, title: _l10n.dataServicePermissionDenied);
       return;
     }
 
     AppToast.info(
-      'AI image generation task created for $cityName.\nYou will be notified when complete.',
-      title: 'Task Created',
+      _l10n.dataServiceImageTaskCreated(cityName),
+      title: _l10n.dataServiceTaskCreated,
     );
 
     final result = await cityController.generateCityImages(cityId);
@@ -448,7 +454,7 @@ class _GenerateImageButton extends StatelessWidget {
         log('🖼️ Image generation task created: taskId=$taskId');
       },
       onFailure: (exception) {
-        AppToast.error(exception.message, title: 'Task Creation Failed');
+        AppToast.error(exception.message, title: _l10n.dataServiceTaskCreationFailed);
       },
     );
   }

@@ -1,4 +1,5 @@
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/apply_moderator/apply_moderator_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -11,10 +12,11 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('申请成为版主'),
+        title: Text(l10n.moderatorCardApplyModerator),
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -35,7 +37,7 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
               SizedBox(height: 32.h),
 
               // 申请原因输入
-              _buildReasonInput(),
+              _buildReasonInput(l10n),
               SizedBox(height: 32.h),
 
               // 提交按钮
@@ -191,7 +193,7 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
     );
   }
 
-  Widget _buildReasonInput() {
+  Widget _buildReasonInput(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,7 +211,7 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
           maxLines: 6,
           maxLength: 500,
           decoration: InputDecoration(
-            hintText: '请说明您申请成为版主的原因，以及您能为社区带来什么...',
+            hintText: l10n.applyModeratorReasonHint,
             hintStyle: TextStyle(
               color: AppColors.textTertiary,
               fontSize: 14.sp,

@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
 import 'package:go_nomads_app/controllers/room_type_list_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,7 @@ class RoomTypeListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -54,7 +56,7 @@ class RoomTypeListPage extends StatelessWidget {
                 Icon(FontAwesomeIcons.hotel, size: 48.w, color: Colors.grey),
                 SizedBox(height: 12.h),
                 Text(
-                  '暂无房型',
+                  l10n.addHotelNoRoomTypes,
                   style: TextStyle(fontSize: 16.sp, color: Colors.grey),
                 ),
               ],
@@ -67,14 +69,14 @@ class RoomTypeListPage extends StatelessWidget {
           itemCount: controller.roomTypes.length,
           itemBuilder: (context, index) {
             final roomType = controller.roomTypes[index];
-            return _buildRoomTypeCard(roomType);
+            return _buildRoomTypeCard(roomType, l10n);
           },
         );
       }),
     );
   }
 
-  Widget _buildRoomTypeCard(RoomType roomType) {
+  Widget _buildRoomTypeCard(RoomType roomType, AppLocalizations l10n) {
     return Card(
       margin: EdgeInsets.only(bottom: 16.h),
       elevation: 2,
@@ -85,7 +87,7 @@ class RoomTypeListPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         onTap: () {
           // TODO: 跳转到房型详情页或预订页
-          AppToast.info('房型: ${roomType.name}');
+          AppToast.info(l10n.roomTypePreviewToast(roomType.name));
         },
         child: Padding(
           padding: EdgeInsets.all(16.w),
@@ -236,7 +238,7 @@ class RoomTypeListPage extends StatelessWidget {
                     onPressed: roomType.isAvailable
                         ? () {
                             // TODO: 跳转到预订页面
-                            AppToast.info('预订 ${roomType.name}');
+                            AppToast.info(l10n.roomTypeBookingToast(roomType.name));
                           }
                         : null,
                     style: ElevatedButton.styleFrom(

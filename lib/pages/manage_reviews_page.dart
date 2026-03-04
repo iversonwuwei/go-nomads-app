@@ -51,19 +51,20 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
   }
 
   Future<void> _deleteReview(String reviewId) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条评论吗？此操作可以恢复。'),
+        title: Text(l10n.manageReviewsDeleteConfirmTitle),
+        content: Text(l10n.manageReviewsDeleteConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
             style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
-            child: const Text('删除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -81,7 +82,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('${widget.cityName} - 评论管理'),
+        title: Text(l10n.manageReviewsPageTitle(widget.cityName)),
         actions: [
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus),
@@ -98,7 +99,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                 },
               );
             },
-            tooltip: '添加评论',
+            tooltip: l10n.addReview,
           ),
         ],
       ),
@@ -115,7 +116,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                 Icon(FontAwesomeIcons.commentDots, size: 80.r, color: Colors.grey[300]),
                 SizedBox(height: 16.h),
                 Text(
-                  '暂无评论数据',
+                  l10n.manageReviewsNoData,
                   style: TextStyle(fontSize: 18.sp, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 24.h),
@@ -134,7 +135,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                     );
                   },
                   icon: const Icon(FontAwesomeIcons.plus),
-                  label: const Text('添加第一条评论'),
+                  label: Text(l10n.manageReviewsAddFirstReview),
                 ),
               ],
             ),
@@ -160,7 +161,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                     padding: EdgeInsets.all(16.w),
                     child: Center(
                       child: Text(
-                        '已加载全部 ${_controller.reviews.length} 条评论',
+                        l10n.manageReviewsLoadedAll(_controller.reviews.length),
                         style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
                       ),
                     ),

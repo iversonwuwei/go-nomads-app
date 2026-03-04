@@ -29,7 +29,9 @@ class AddCoworkingImageSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(l10n.addCoverPhoto, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
-              Text('${_c.coworkingImageUrls.length}/${AddCoworkingPageController.maxCoworkingImages}',
+              Text(
+                  l10n.addCoworkingImageCount(
+                      _c.coworkingImageUrls.length, AddCoworkingPageController.maxCoworkingImages),
                   style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary)),
             ],
           ),
@@ -108,7 +110,7 @@ class AddCoworkingImageSection extends StatelessWidget {
 
   void _showImageOptions(AppLocalizations l10n) {
     if (_c.remainingImageSlots <= 0) {
-      AppToast.info('最多上传 ${AddCoworkingPageController.maxCoworkingImages} 张图片');
+      AppToast.info(l10n.addCoworkingMaxImages(AddCoworkingPageController.maxCoworkingImages));
       return;
     }
     showModalBottomSheet(

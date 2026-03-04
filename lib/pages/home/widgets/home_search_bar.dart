@@ -1,4 +1,5 @@
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -13,6 +14,7 @@ class HomeSearchBar extends GetView<HomePageController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
       decoration: BoxDecoration(
@@ -35,7 +37,7 @@ class HomeSearchBar extends GetView<HomePageController> {
             child: TextField(
               controller: controller.searchController,
               decoration: InputDecoration(
-                hintText: 'Search cities... (支持中英文搜索)',
+                hintText: l10n.searchCityOrCountry,
                 hintStyle: TextStyle(
                   color: AppColors.textTertiary,
                   fontSize: 14.sp,

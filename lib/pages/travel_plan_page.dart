@@ -96,6 +96,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
   /// 从数据库加载已保存的旅行计划
   Future<void> _loadPlanFromDatabase() async {
     final aiController = Get.find<AiStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       setState(() {
@@ -113,14 +114,14 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
         });
       } else if (mounted) {
         setState(() => _isLoading = false);
-        AppToast.error('无法加载旅行计划');
+        AppToast.error(l10n.travelPlanUnableToLoad);
         Navigator.of(context).pop();
       }
     } catch (e) {
       debugPrint('❌ 加载旅行计划失败: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        AppToast.error('加载失败: $e');
+        AppToast.error(l10n.travelPlanLoadFailedWithError(e.toString()));
         Navigator.of(context).pop();
       }
     }
@@ -130,6 +131,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
   /// 流程: Flutter -> AIService(创建任务) -> RabbitMQ -> MessageService -> SignalR -> Flutter
   Future<void> _generatePlanAsync() async {
     final aiController = Get.find<AiStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     // 检查 AI 配额
     final canUse = await AiQuotaService().checkAndUseAI(featureName: '旅行计划生成');
@@ -166,7 +168,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
       debugPrint('❌ 生成旅行计划失败: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        AppToast.error('Error: $e');
+        AppToast.error(l10n.travelPlanGenerateErrorWithError(e.toString()));
         Navigator.of(context).pop();
       }
     }
@@ -174,6 +176,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   /// 设置 GetX 监听器
   void _setupListeners(AiStateController aiController) {
+    final l10n = AppLocalizations.of(context)!;
     // 清理之前的监听器
     for (final worker in _workers) {
       worker.dispose();
@@ -201,7 +204,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
           _plan = plan;
           _isLoading = false;
         });
-        AppToast.success('Travel plan generated successfully!');
+        AppToast.success(l10n.travelPlanGeneratedSuccess);
       }
     }));
 
@@ -209,7 +212,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
     _workers.add(ever(aiController.travelPlanErrorRx, (error) {
       if (error != null && mounted) {
         setState(() => _isLoading = false);
-        AppToast.error('Failed to generate: $error');
+        AppToast.error(l10n.travelPlanGenerateFailedWithError(error.toString()));
         Navigator.of(context).pop();
       }
     }));
@@ -217,8 +220,9 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   /// 分享旅行计划
   void _shareTravelPlan(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_plan == null) {
-      AppToast.warning('计划还未生成完成');
+      AppToast.warning(l10n.travelPlanNotReadyWarning);
       return;
     }
 

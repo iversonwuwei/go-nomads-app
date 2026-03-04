@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
@@ -30,6 +31,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   MeetupStateController get meetupController => Get.find<MeetupStateController>();
   UserStateController get userController => Get.find<UserStateController>();
   AuthStateController get authController => Get.find<AuthStateController>();
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
 
   // ==================== UI 控制器 ====================
   final ScrollController scrollController = ScrollController();
@@ -360,8 +362,8 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
         localCities.assignAll(cities);
         log('✅ [首页] Elasticsearch 搜索成功: ${cities.length} 个城市 (共 ${data.totalCount} 个)');
         AppToast.success(
-          'Found ${cities.length} cities',
-          title: 'Search',
+          _l10n.dataServiceFoundCities(cities.length),
+          title: _l10n.search,
         );
       },
       onFailure: (exception) {
@@ -412,12 +414,12 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
       onSuccess: (data) {
         localCities.assignAll(data);
         AppToast.success(
-          'Found ${data.length} cities',
-          title: 'Search',
+          _l10n.dataServiceFoundCities(data.length),
+          title: _l10n.search,
         );
       },
       onFailure: (exception) {
-        AppToast.error(exception.message, title: 'Search Failed');
+        AppToast.error(exception.message, title: _l10n.dataServiceSearchFailed);
       },
     );
   }
@@ -452,8 +454,8 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     if (!authController.isAuthenticated.value) {
       log('❌ 用户未登录');
       AppToast.warning(
-        'Please login to access this feature',
-        title: 'Login Required',
+        _l10n.pleaseLogin,
+        title: _l10n.loginRequired,
       );
       Get.toNamed(AppRoutes.login);
       return false;
@@ -467,8 +469,8 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
       authController.currentUser.value = null;
 
       AppToast.error(
-        'Invalid session. Please login again.',
-        title: 'Authentication Error',
+        _l10n.dataServiceInvalidSession,
+        title: _l10n.dataServiceAuthenticationError,
       );
       Get.toNamed(AppRoutes.login);
       return false;
@@ -489,8 +491,8 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
       authController.logout();
 
       AppToast.error(
-        'Your session has expired. Please login again.',
-        title: 'Session Expired',
+        _l10n.dataServiceSessionExpiredMessage,
+        title: _l10n.dataServiceSessionExpiredTitle,
       );
       Get.toNamed(AppRoutes.login);
       return false;

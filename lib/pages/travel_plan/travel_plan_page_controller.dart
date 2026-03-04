@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/async_task_progress_dialog.dart';
 import 'package:flutter/material.dart';
@@ -61,6 +62,8 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
   // ==================== GetX 监听器 ====================
 
   final List<Worker> _workers = [];
+
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
 
   // ==================== 生命周期 ====================
 
@@ -127,13 +130,13 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
         isLoading.value = false;
       } else {
         isLoading.value = false;
-        AppToast.error('无法加载旅行计划');
+        AppToast.error(_l10n.travelPlanUnableToLoad);
         Get.back();
       }
     } catch (e) {
       log('❌ 加载旅行计划失败: $e');
       isLoading.value = false;
-      AppToast.error('加载失败: $e');
+      AppToast.error(_l10n.travelPlanLoadFailedWithError(e.toString()));
       Get.back();
     }
   }
@@ -172,7 +175,7 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
     } catch (e) {
       log('❌ 生成旅行计划失败: $e');
       isLoading.value = false;
-      AppToast.error('Error: $e');
+      AppToast.error(_l10n.travelPlanGenerateErrorWithError(e.toString()));
       Get.back();
     }
   }
@@ -200,7 +203,7 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
       if (result != null) {
         plan.value = result;
         isLoading.value = false;
-        AppToast.success('Travel plan generated successfully!');
+        AppToast.success(_l10n.travelPlanGeneratedSuccess);
       }
     }));
 
@@ -208,7 +211,7 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
     _workers.add(ever(aiController.travelPlanErrorRx, (error) {
       if (error != null) {
         isLoading.value = false;
-        AppToast.error('Failed to generate: $error');
+        AppToast.error(_l10n.travelPlanGenerateFailedWithError(error.toString()));
         Get.back();
       }
     }));

@@ -196,6 +196,7 @@ class _DataServicePageState extends State<DataServicePage>
   /// 在发起任何请求前就验证 token，而不是等到 HTTP 拦截器
   bool _checkLoginAndNavigate(VoidCallback onLoggedIn) {
     final authController = Get.find<AuthStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     log('🔒 [严格验证] 检查登录状态...');
 
@@ -203,8 +204,8 @@ class _DataServicePageState extends State<DataServicePage>
     if (!authController.isAuthenticated.value) {
       log('❌ 用户未登录');
       AppToast.warning(
-        'Please login to access this feature',
-        title: 'Login Required',
+        l10n.dataServiceLoginToAccessFeature,
+        title: l10n.loginRequired,
       );
       Get.toNamed(AppRoutes.login);
       return false;
@@ -218,8 +219,8 @@ class _DataServicePageState extends State<DataServicePage>
       authController.currentUser.value = null;
 
       AppToast.error(
-        'Invalid session. Please login again.',
-        title: 'Authentication Error',
+        l10n.dataServiceInvalidSession,
+        title: l10n.dataServiceAuthenticationError,
       );
       Get.toNamed(AppRoutes.login);
       return false;
@@ -240,8 +241,8 @@ class _DataServicePageState extends State<DataServicePage>
       authController.logout();
 
       AppToast.error(
-        'Your session has expired. Please login again.',
-        title: 'Session Expired',
+        l10n.dataServiceSessionExpiredMessage,
+        title: l10n.dataServiceSessionExpiredTitle,
       );
       Get.toNamed(AppRoutes.login);
       return false;
@@ -258,6 +259,7 @@ class _DataServicePageState extends State<DataServicePage>
 
   /// 执行城市搜索（本页面独立搜索，不影响 CityListPage）
   Future<void> _performSearch(String query) async {
+    final l10n = AppLocalizations.of(context)!;
     log('🔍 [首页] 开始搜索城市: $query');
 
     setState(() {
@@ -278,14 +280,14 @@ class _DataServicePageState extends State<DataServicePage>
             _localCities = data;
           });
           AppToast.success(
-            'Found ${data.length} cities',
-            title: 'Search',
+            l10n.dataServiceFoundCities(data.length),
+            title: l10n.search,
           );
         }
       },
       onFailure: (exception) {
         if (mounted) {
-          AppToast.error(exception.message, title: 'Search Failed');
+          AppToast.error(exception.message, title: l10n.dataServiceSearchFailed);
         }
       },
     );
@@ -959,7 +961,7 @@ class _DataServicePageState extends State<DataServicePage>
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search cities... (支持中英文搜索)',
+                hintText: AppLocalizations.of(context)!.dataServiceSearchCitiesHint,
                 hintStyle: TextStyle(
                   color: AppColors.textTertiary,
                   fontSize: 14.sp,
@@ -1513,7 +1515,7 @@ class _DataServicePageState extends State<DataServicePage>
                 _clearSearch();
               },
               icon: const Icon(FontAwesomeIcons.xmark),
-              label: const Text('Clear Search'),
+              label: Text(AppLocalizations.of(context)!.dataServiceClearSearch),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,
@@ -2320,7 +2322,7 @@ class _MeetupCard extends StatelessWidget {
         if (!_meetupController.rsvpedMeetupIds.contains(meetup.id)) {
           _meetupController.rsvpedMeetupIds.add(meetup.id);
         }
-        AppToast.info('您已经加入了这个活动');
+        AppToast.info(AppLocalizations.of(context)!.dataServiceAlreadyJoinedMeetup);
         return;
       }
 
@@ -2331,14 +2333,16 @@ class _MeetupCard extends StatelessWidget {
         log('⚠️ 检测到状态不同步:用户实际未加入,但前端状态为已加入,正在纠正...');
         // 更新 Controller
         _meetupController.rsvpedMeetupIds.remove(meetup.id);
-        AppToast.info('您尚未加入这个活动');
+        AppToast.info(AppLocalizations.of(context)!.dataServiceNotJoinedMeetup);
         return;
       }
 
       // 其他错误正常提示
       AppToast.error(
-        isCurrentlyJoined ? '退出活动失败' : '加入活动失败',
-        title: '操作失败',
+        isCurrentlyJoined
+            ? AppLocalizations.of(context)!.dataServiceLeaveMeetupFailed
+            : AppLocalizations.of(context)!.dataServiceJoinMeetupFailed,
+        title: AppLocalizations.of(context)!.dataServiceOperationFailed,
       );
     }
   }
@@ -2350,8 +2354,8 @@ class _MeetupCard extends StatelessWidget {
     // 显示确认对话框
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('取消活动'),
-        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+        title: Text(l10n.confirmCancelMeetupTitle),
+        content: Text(l10n.confirmCancelMeetupMessage),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
@@ -2362,7 +2366,7 @@ class _MeetupCard extends StatelessWidget {
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('确定'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -2376,15 +2380,15 @@ class _MeetupCard extends StatelessWidget {
 
       // 显示成功消息
       AppToast.success(
-        '活动已取消',
-        title: '成功',
+        l10n.cancelMeetupSuccess,
+        title: l10n.success,
       );
 
       // 刷新聚会列表
       _meetupController.refreshMeetups();
     } catch (e) {
       log('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败');
+      AppToast.error(l10n.cancelMeetupFailed);
     }
   }
 
@@ -3066,7 +3070,8 @@ class _GenerateImageButton extends StatelessWidget {
     required this.isMobile,
   });
 
-  Future<void> _generateImages() async {
+  Future<void> _generateImages(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final cityController = Get.find<CityStateController>();
 
     // 检查是否正在生成
@@ -3076,8 +3081,8 @@ class _GenerateImageButton extends StatelessWidget {
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
       AppToast.warning(
-        'Please login to generate images',
-        title: 'Login Required',
+        l10n.dataServiceLoginToGenerateImages,
+        title: l10n.loginRequired,
       );
       Get.toNamed(AppRoutes.login);
       return;
@@ -3101,15 +3106,15 @@ class _GenerateImageButton extends StatelessWidget {
 
     if (!isAdmin && !isCityModerator) {
       AppToast.warning(
-        'Only administrators or city moderators can generate images',
-        title: 'Permission Denied',
+        l10n.dataServiceOnlyAdminOrModeratorCanGenerate,
+        title: l10n.dataServicePermissionDenied,
       );
       return;
     }
 
     AppToast.info(
-      'AI image generation task created for $cityName.\nYou will be notified when complete.',
-      title: 'Task Created',
+      l10n.dataServiceImageTaskCreated(cityName),
+      title: l10n.dataServiceTaskCreated,
     );
 
     final result = await cityController.generateCityImages(cityId);
@@ -3126,7 +3131,7 @@ class _GenerateImageButton extends StatelessWidget {
       onFailure: (exception) {
         AppToast.error(
           exception.message,
-          title: 'Task Creation Failed',
+          title: l10n.dataServiceTaskCreationFailed,
         );
         // 失败时 controller 已经移除了 cityId
       },
@@ -3141,7 +3146,7 @@ class _GenerateImageButton extends StatelessWidget {
       final isGenerating = cityController.isGeneratingImages(cityId);
 
       return GestureDetector(
-        onTap: isGenerating ? null : _generateImages,
+        onTap: isGenerating ? null : () => _generateImages(context),
         child: Container(
           padding: EdgeInsets.all(isMobile ? 4 : 6),
           decoration: BoxDecoration(

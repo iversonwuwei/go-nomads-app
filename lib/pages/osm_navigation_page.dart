@@ -779,7 +779,8 @@ class OSMNavigationPage extends StatelessWidget {
                           onTap: () {
                             controller.changeTileSource(entry.key);
                             Navigator.pop(context);
-                            AppToast.success('已切换到 ${entry.value['name']}');
+                            AppToast.success(
+                                AppLocalizations.of(Get.context!)!.switchedToMapSource(entry.value['name']!));
                           },
                         );
                       }).toList(),

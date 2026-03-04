@@ -159,6 +159,7 @@ class _GuideActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -182,7 +183,7 @@ class _GuideActionBar extends StatelessWidget {
                         ? null
                         : () => aiController.loadCityGuide(cityId: cityId, cityName: cityName),
                     icon: Icon(FontAwesomeIcons.arrowsRotate, size: 18.r),
-                    label: const Text('刷新'),
+                    label: Text(l10n.refresh),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cityPrimary,
                       disabledForegroundColor: Colors.grey[400],
@@ -194,7 +195,7 @@ class _GuideActionBar extends StatelessWidget {
                         ? null
                         : () => _handleAIGenerate(context),
                     icon: Icon(FontAwesomeIcons.wandMagicSparkles, size: 18.r),
-                    label: const Text('AI 生成'),
+                    label: Text(l10n.guideTabAiGenerate),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cityPrimary,
                       disabledForegroundColor: Colors.grey[400],
@@ -220,11 +221,12 @@ class _GuideActionBar extends StatelessWidget {
   }
 
   void _showAIGenerateProgressDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('AI 生成指南'),
+        title: Text(l10n.guideTabAiGenerateGuide),
         content: Obx(() {
           final progress = aiController.guideGenerationProgress;
           final message = aiController.guideGenerationMessage;
@@ -355,7 +357,7 @@ class _GuideEmptyState extends StatelessWidget {
             Obx(() => ElevatedButton.icon(
                   onPressed: aiController.isGeneratingGuide ? null : () => _handleAIGenerate(context),
                   icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
-                  label: const Text('AI 生成指南'),
+                  label: Text(l10n.guideTabAiGenerateGuide),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.cityPrimary,
                     foregroundColor: Colors.white,
@@ -437,7 +439,7 @@ class _TipItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('💡', style: TextStyle(fontSize: 18.sp, color: AppColors.cityPrimary)),
+          Icon(FontAwesomeIcons.lightbulb, size: 18.r, color: AppColors.cityPrimary),
           SizedBox(width: 8.w),
           Expanded(child: Text(tip, style: TextStyle(fontSize: 15.sp))),
         ],

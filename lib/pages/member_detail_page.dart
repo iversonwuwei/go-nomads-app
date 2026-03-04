@@ -84,7 +84,7 @@ class MemberDetailPage extends StatelessWidget {
                 SizedBox(height: 24.h),
                 ElevatedButton(
                   onPressed: controller.retry,
-                  child: const Text('重试'),
+                  child: Text(AppLocalizations.of(context)!.retry),
                 ),
               ],
             ),
