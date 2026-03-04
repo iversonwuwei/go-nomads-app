@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 
 /// 数据刷新策略
 enum RefreshStrategy {
@@ -97,6 +97,9 @@ abstract class RefreshableController extends GetxController {
 
   /// 自动刷新定时器
   Timer? _autoRefreshTimer;
+
+  /// 防止并发 _doLoad 的 Completer
+  Completer<void>? _loadCompleter;
 
   // ==================== 生命周期 ====================
 
@@ -227,7 +230,16 @@ abstract class RefreshableController extends GetxController {
   }
 
   /// 执行加载
+  /// 使用 Completer 互斥锁防止并发执行：如果已有加载任务在运行，等待其完成而非启动新任务
   Future<void> _doLoad({required bool isRefresh}) async {
+    // 如果已有加载任务在运行，等待其完成
+    if (_loadCompleter != null && !_loadCompleter!.isCompleted) {
+      log('⏳ [$runtimeType] 已有加载任务在运行，等待其完成...');
+      await _loadCompleter!.future;
+      return;
+    }
+
+    _loadCompleter = Completer<void>();
     final loadType = isRefresh ? '刷新' : '加载';
     log('🔄 [$runtimeType] 开始$loadType数据...');
 
@@ -262,8 +274,12 @@ abstract class RefreshableController extends GetxController {
       // 不再 rethrow - 状态已更新，UI 层通过观察 loadState 和 errorMessage 处理错误
       // 这样调用者不需要额外的 try-catch，错误会通过响应式状态传递给 UI
     } finally {
-      isLoading.value = false;
-      isRefreshing.value = false;
+      if (isRefresh) {
+        isRefreshing.value = false;
+      } else {
+        isLoading.value = false;
+      }
+      _loadCompleter?.complete();
     }
   }
 

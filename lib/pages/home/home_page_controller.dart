@@ -237,14 +237,18 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   Future<void> _loadInitialData() async {
     log('🏠 首页初始化，独立加载城市和活动数据');
 
-    // ⭐ 并行加载：首页城市数据（独立）+ Meetup 数据
-    // 使用 initialLoad() 代替 ensureDataLoaded():
-    // - ensureDataLoaded() 仅在 meetups 为空时加载，不考虑缓存过期
-    // - initialLoad() 会正确检查缓存有效期，过期则刷新
-    await Future.wait([
-      _loadHomeCitiesIndependent(),
-      meetupController.initialLoad(),
-    ]);
+    try {
+      // ⭐ 并行加载：首页城市数据（独立）+ Meetup 数据
+      // 使用 initialLoad() 代替 ensureDataLoaded():
+      // - ensureDataLoaded() 仅在 meetups 为空时加载，不考虑缓存过期
+      // - initialLoad() 会正确检查缓存有效期，过期则刷新
+      await Future.wait([
+        _loadHomeCitiesIndependent(),
+        meetupController.initialLoad(),
+      ]);
+    } catch (e) {
+      log('⚠️ HomePageController: _loadInitialData 失败: $e');
+    }
   }
 
   /// 独立加载首页城市数据（不影响全局 CityStateController）

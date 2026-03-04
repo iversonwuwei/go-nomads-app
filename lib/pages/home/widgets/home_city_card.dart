@@ -51,7 +51,7 @@ class HomeCityCard extends StatelessWidget {
             // 背景图片
             _buildBackgroundImage(),
             // 内容层
-            _buildContent(isMobile),
+            _buildContent(isMobile, l10n: l10n),
           ],
         ),
       ),
@@ -124,13 +124,13 @@ class HomeCityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(bool isMobile) {
+  Widget _buildContent(bool isMobile, {required AppLocalizations l10n}) {
     return Stack(
       children: [
         // 顶部信息
         _buildTopRow(isMobile),
         // 底部城市信息
-        _buildBottomInfo(isMobile),
+        _buildBottomInfo(isMobile, l10n: l10n),
       ],
     );
   }
@@ -176,12 +176,16 @@ class HomeCityCard extends StatelessWidget {
               size: isMobile ? 8 : 10,
             ),
             SizedBox(width: isMobile ? 2 : 4),
-            Text(
-              city.moderatorId != null ? l10n.moderatorAssigned : l10n.moderatorPending,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 8 : 10,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                city.moderatorId != null ? l10n.moderatorAssigned : l10n.moderatorPending,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isMobile ? 8 : 10,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],
@@ -249,7 +253,7 @@ class HomeCityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomInfo(bool isMobile) {
+  Widget _buildBottomInfo(bool isMobile, {required AppLocalizations l10n}) {
     return Positioned(
       bottom: 0,
       left: 0,

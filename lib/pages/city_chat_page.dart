@@ -2521,7 +2521,7 @@ class _MessageBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  attachment.fileName ?? AppLocalizations.of(context)!.unknownFile,
+                  attachment.fileName ?? AppLocalizations.of(Get.context!)!.unknownFile,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
@@ -3051,7 +3051,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                 child: Row(
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.searchFoundMessages(count, keyword),
+                      AppLocalizations.of(context)!.searchFoundMessages(count.toString(), keyword),
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: Color(0xFF666666),

@@ -6785,8 +6785,8 @@ abstract class AppLocalizations {
   /// No description provided for @viewAll.
   ///
   /// In zh, this message translates to:
-  /// **'查看全部 ({count})'**
-  String viewAll(String count);
+  /// **'查看全部'**
+  String get viewAll;
 
   /// No description provided for @welcomeBack.
   ///
@@ -12505,6 +12505,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'非常好'**
   String get ratingExcellentReview;
+
+  /// No description provided for @viewAllCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看全部 ({count})'**
+  String viewAllCount(String count);
 
   /// No description provided for @reviewCount.
   ///

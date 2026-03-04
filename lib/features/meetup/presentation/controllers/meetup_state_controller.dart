@@ -309,10 +309,13 @@ class MeetupStateController extends PaginatedRefreshableController {
   }
 
   /// 确保数据已加载（供页面调用）
-  /// 如果数据未加载，则触发加载
+  /// 如果数据未加载或之前加载失败，则触发加载
   Future<void> ensureDataLoaded() async {
-    if (meetups.isEmpty && !isLoading.value) {
-      log('📦 MeetupStateController: 触发首次数据加载');
+    // 仅在初始状态或错误状态时触发加载
+    // loading/refreshing/loaded 状态都不需要重新加载
+    final state = loadState.value;
+    if ((state == LoadState.initial || state == LoadState.error) && !isLoading.value && !isRefreshing.value) {
+      log('📦 MeetupStateController: 触发数据加载 (当前状态: ${state.name})');
       await initialLoad();
     }
   }
@@ -383,9 +386,14 @@ class MeetupStateController extends PaginatedRefreshableController {
           log('🔄 用户已登录，刷新活动列表...');
           refresh();
         } else {
-          log('👋 用户已退出，清空活动数据');
-          meetups.clear();
+          log('👋 用户已退出，清除 RSVP 状态（保留公开活动数据）');
+          // 只清除用户相关的 RSVP 状态，不清空公开的活动列表
+          // 活动数据是公开的，未登录用户也可以查看
           rsvpedMeetupIds.clear();
+          // 刷新列表以更新 isJoined 状态
+          if (meetups.isNotEmpty) {
+            refresh();
+          }
         }
       });
     } catch (e) {

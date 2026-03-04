@@ -3468,9 +3468,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shopNow => '立即购买';
 
   @override
-  String viewAll(String count) {
-    return '查看全部 ($count)';
-  }
+  String get viewAll => '查看全部';
 
   @override
   String get welcomeBack => '欢迎回来';
@@ -6565,6 +6563,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ratingExcellentReview => '非常好';
+
+  @override
+  String viewAllCount(String count) {
+    return '查看全部 ($count)';
+  }
 
   @override
   String reviewCount(String count) {

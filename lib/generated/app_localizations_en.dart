@@ -3513,9 +3513,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shopNow => 'Shop Now';
 
   @override
-  String viewAll(String count) {
-    return 'View All ($count)';
-  }
+  String get viewAll => 'View All';
 
   @override
   String get welcomeBack => 'Welcome Back';
@@ -6703,6 +6701,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratingExcellentReview => 'Excellent';
+
+  @override
+  String viewAllCount(String count) {
+    return 'View All ($count)';
+  }
 
   @override
   String reviewCount(String count) {

@@ -260,12 +260,12 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return const UserProfileSkeleton();
     }
 
     if (_error != null) {
-      final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

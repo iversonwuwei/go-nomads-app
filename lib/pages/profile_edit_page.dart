@@ -1764,9 +1764,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
     if (difference.inDays < 1) {
       return l10n.today;
     } else if (difference.inDays < 30) {
-      return l10n.daysAgo(difference.inDays);
+      return l10n.daysAgo(difference.inDays.toString());
     } else if (difference.inDays < 365) {
-      return l10n.monthsAgo((difference.inDays / 30).floor());
+      return l10n.monthsAgo((difference.inDays / 30).floor().toString());
     } else {
       return l10n.yearsAgo((difference.inDays / 365).floor());
     }
@@ -1919,7 +1919,7 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
     log('🔍 预选技能开始: currentSkills = ${widget.currentSkills.length} 个');
     for (var userSkill in widget.currentSkills) {
       log('  - 查找技能: id=${userSkill.id}, name=${userSkill.name}');
-      
+
       bool found = false;
       for (var category in _skillsByCategory) {
         final skill = category.skills.firstWhere(
@@ -2335,7 +2335,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
     log('🔍 预选兴趣开始: currentInterests = ${widget.currentInterests.length} 个');
     for (var userInterest in widget.currentInterests) {
       log('  - 查找兴趣: id=${userInterest.id}, name=${userInterest.name}');
-      
+
       bool found = false;
       for (var category in _interestsByCategory) {
         final interest = category.interests.firstWhere(

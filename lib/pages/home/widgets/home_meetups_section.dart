@@ -25,6 +25,12 @@ class HomeMeetupsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ⚡ 安全保障：确保 meetup 数据已被加载
+    // 防止 HomePageController._loadInitialData() 静默失败时数据永远不加载
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _meetupController.ensureDataLoaded();
+    });
+
     return Obx(() {
       final upcomingMeetups = _meetupController.upcomingMeetups;
       final loadState = _meetupController.loadState.value;

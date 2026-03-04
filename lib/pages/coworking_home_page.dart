@@ -1,6 +1,10 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
@@ -12,10 +16,6 @@ import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Coworking Home Page
 /// 共享办公空间首页 - 城市选择（无限滚动）
@@ -35,12 +35,23 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
   bool _hasMoreData = true;
   int _currentPage = 1;
   static const int _pageSize = 20;
+  bool _isInitialLoadDone = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadCitiesWithCoworkingCount();
+    // 注意：不在 initState 中调用依赖 context 的方法（如 AppLocalizations.of(context)）
+    // 数据加载移到 didChangeDependencies 中
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialLoadDone) {
+      _isInitialLoadDone = true;
+      _loadCitiesWithCoworkingCount();
+    }
   }
 
   @override

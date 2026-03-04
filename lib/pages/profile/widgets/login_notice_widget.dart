@@ -1,9 +1,9 @@
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// 登录提示组件
 class LoginNoticeWidget extends StatelessWidget {
@@ -50,7 +50,7 @@ class LoginNoticeWidget extends StatelessWidget {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  l10n.sampleDataPreviewDescription,,
+                  l10n.sampleDataPreviewDescription,
                   style: TextStyle(
                     fontSize: isMobile ? 12 : 14,
                     color: const Color(0xFF6B7280),

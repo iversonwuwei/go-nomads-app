@@ -1389,6 +1389,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 房型区域
   Widget _buildRoomTypesSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(16.w),
@@ -1428,7 +1429,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
               TextButton(
                 onPressed: _showRoomTypesModal,
-                child: Text(l10n.viewAll(hotel.roomTypes.length.toString())),
+                child: Text(l10n.viewAllCount(hotel.roomTypes.length.toString())),
               ),
             ],
           ),
@@ -1442,6 +1443,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 房型简介卡片
   Widget _buildRoomTypeSummary(RoomType roomType) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       padding: EdgeInsets.all(12.w),
@@ -1531,6 +1533,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 评论区域
   Widget _buildReviewsSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(16.w),
@@ -1701,6 +1704,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 构建单个评论项
   Widget _buildReviewItem(HotelReview review) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.w),
