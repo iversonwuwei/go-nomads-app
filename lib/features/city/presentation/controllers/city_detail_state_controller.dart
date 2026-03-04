@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -152,9 +153,7 @@ class CityDetailStateController extends GetxController {
     // 提取竖屏图片 URL
     String? portraitUrl = data['portraitImageUrl'] as String?;
     if (portraitUrl != null && portraitUrl.isNotEmpty) {
-      portraitUrl = portraitUrl.contains('?')
-          ? '$portraitUrl&v=$cacheBuster'
-          : '$portraitUrl?v=$cacheBuster';
+      portraitUrl = portraitUrl.contains('?') ? '$portraitUrl&v=$cacheBuster' : '$portraitUrl?v=$cacheBuster';
     }
 
     // 提取横屏图片 URL 列表
@@ -435,7 +434,7 @@ class CityDetailStateController extends GetxController {
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
-        AppToast.error(exception.message, title: '加载失败');
+        AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.loadFailedTitle);
       },
     );
   }
@@ -525,8 +524,10 @@ class CityDetailStateController extends GetxController {
         log('✅ [城市详情] 收藏状态已同步: $cityId -> $newState');
 
         AppToast.success(
-          newState ? '已添加到收藏' : '已取消收藏',
-          title: '成功',
+          newState
+              ? AppLocalizations.of(Get.context!)!.addedToFavorites
+              : AppLocalizations.of(Get.context!)!.removedFromFavorites,
+          title: AppLocalizations.of(Get.context!)!.successTitle,
         );
         isTogglingFavorite.value = false;
       },
@@ -534,7 +535,7 @@ class CityDetailStateController extends GetxController {
         // 操作失败,恢复之前的状态
         isFavorited.value = previousState;
 
-        AppToast.error(exception.message, title: '操作失败');
+        AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.operationFailed);
         isTogglingFavorite.value = false;
       },
     );
@@ -572,7 +573,7 @@ class CityDetailStateController extends GetxController {
       },
       onFailure: (error) {
         log('❌ [CityDetailStateController] 删除城市失败: ${error.message}');
-        AppToast.error('删除失败: ${error.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.deleteFailed(error.message));
         return false;
       },
     );

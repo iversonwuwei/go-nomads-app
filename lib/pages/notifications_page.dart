@@ -1,14 +1,14 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/notifications_page_controller.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 通知列表页面
 /// 注意: 由于 TabController 需要 TickerProvider，保持 StatefulWidget 结构
@@ -71,10 +71,10 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                           labelColor: AppColors.accent,
                           unselectedLabelColor: AppColors.textSecondary,
                           indicatorColor: AppColors.accent,
-                          tabs: const [
-                            Tab(text: '全部'),
-                            Tab(text: '未读'),
-                            Tab(text: '已读'),
+                          tabs: [
+                            Tab(text: AppLocalizations.of(context)!.allNotifications),
+                            Tab(text: AppLocalizations.of(context)!.unread),
+                            Tab(text: AppLocalizations.of(context)!.read),
                           ],
                           onTap: (index) => _controller.loadNotificationsByTab(index),
                         ),
@@ -85,7 +85,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                         return hasUnread
                             ? IconButton(
                                 icon: const Icon(FontAwesomeIcons.checkDouble),
-                                tooltip: '全部标记为已读',
+                                tooltip: AppLocalizations.of(context)!.markAllAsRead,
                                 onPressed: () => _controller.markAllAsRead(),
                               )
                             : SizedBox(width: 48.w);
@@ -164,10 +164,10 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                         SizedBox(height: 16.h),
                         Text(
                           isRead == null
-                              ? '暂无通知'
+                              ? AppLocalizations.of(context)!.noNotifications
                               : isRead
-                                  ? '暂无已读通知'
-                                  : '暂无未读通知',
+                                  ? AppLocalizations.of(context)!.noReadNotifications
+                                  : AppLocalizations.of(context)!.noUnreadNotifications,
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
                       ],

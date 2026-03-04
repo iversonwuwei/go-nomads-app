@@ -362,7 +362,7 @@ class _DirectChatLoadingViewState extends State<_DirectChatLoadingView> with Tic
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '正在连接',
+              AppLocalizations.of(context)!.connecting,
               style: TextStyle(
                 color: Colors.black54,
                 fontSize: 16.sp,
@@ -515,7 +515,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                       ),
                     ),
                     Text(
-                      widget.user.currentCity ?? '在线',
+                      widget.user.currentCity ?? AppLocalizations.of(context)!.online,
                       style: TextStyle(
                         color: Color(0xFF666666),
                         fontSize: 13.sp,
@@ -881,7 +881,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
                 // 状态文字
                 Text(
-                  hasError ? uploadingImage.errorMessage! : '上传中...',
+                  hasError ? uploadingImage.errorMessage! : AppLocalizations.of(context)!.uploading,
                   style: TextStyle(
                     fontSize: 11.sp,
                     color: hasError ? const Color(0xFFFF3838) : const Color(0xFF999999),
@@ -1430,15 +1430,16 @@ class _DirectChatViewState extends State<_DirectChatView> {
     } catch (e) {
       debugPrint('❌ 图片上传失败: $e');
       // 标记上传失败
-      String errorMsg = '上传失败';
+      final l10n = AppLocalizations.of(context)!;
+      String errorMsg = l10n.uploadFailed;
       if (e.toString().contains('Bucket not found')) {
-        errorMsg = '存储服务错误';
+        errorMsg = l10n.storageServiceError;
       } else if (e.toString().contains('not authenticated')) {
-        errorMsg = '请重新登录';
+        errorMsg = l10n.pleaseReLogin;
       } else if (e.toString().contains('未初始化')) {
-        errorMsg = '请重启应用';
+        errorMsg = l10n.pleaseRestartApp;
       } else if (e.toString().contains('network') || e.toString().contains('Connection')) {
-        errorMsg = '网络错误';
+        errorMsg = l10n.networkError;
       }
 
       setState(() {
@@ -2385,7 +2386,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> with Sin
         Icon(FontAwesomeIcons.circleExclamation, size: 48.r, color: Colors.white54),
         SizedBox(height: 16.h),
         Text(
-          '无法加载图片',
+          AppLocalizations.of(context)!.cannotLoadImage,
           style: TextStyle(color: Colors.white54, fontSize: 16.sp),
         ),
       ],

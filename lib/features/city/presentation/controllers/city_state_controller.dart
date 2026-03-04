@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_
 import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -227,7 +228,7 @@ class CityStateController extends PaginatedRefreshableController {
 
         // 非授权错误才显示 Toast
         if (exception is! UnauthorizedException) {
-          AppToast.error(exception.message, title: '加载失败');
+          AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.loadFailedTitle);
         }
 
         throw exception;
@@ -427,9 +428,10 @@ class CityStateController extends PaginatedRefreshableController {
       generatingImageCityIds.remove(cityId);
 
       if (!success) {
-        final errorMsg = data['errorMessage'] as String? ?? '图片生成失败';
+        final l10n = AppLocalizations.of(Get.context!)!;
+        final errorMsg = data['errorMessage'] as String? ?? l10n.imageGenFailedDefault;
         log('❌ [CityController] 城市图片生成失败: $errorMsg');
-        AppToast.error(errorMsg, title: '图片生成失败');
+        AppToast.error(errorMsg, title: l10n.imageGenFailed);
         return;
       }
 
@@ -439,7 +441,8 @@ class CityStateController extends PaginatedRefreshableController {
 
       // 显示成功提示
       final cityName = data['cityName'] as String? ?? '';
-      AppToast.success('$cityName 的图片已更新', title: '图片生成完成');
+      AppToast.success(AppLocalizations.of(Get.context!)!.cityImageUpdated(cityName),
+          title: AppLocalizations.of(Get.context!)!.imageGenComplete);
     });
 
     // 监听城市版主变更事件 (来自其他设备的审核操作)
@@ -697,7 +700,7 @@ class CityStateController extends PaginatedRefreshableController {
       },
       onFailure: (exception) {
         log('❌ 切换收藏失败: ${exception.message}');
-        AppToast.error(exception.message, title: '操作失败');
+        AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.operationFailed);
         return false;
       },
     );
@@ -848,7 +851,7 @@ class CityStateController extends PaginatedRefreshableController {
     } catch (e) {
       log('💥 [CityStateController] 生成图片异常: $e');
       generatingImageCityIds.remove(cityId);
-      return Failure(UnknownException('生成图片失败: $e'));
+      return Failure(UnknownException(AppLocalizations.of(Get.context!)!.generateImageFailed(e.toString())));
     }
   }
 
@@ -917,7 +920,8 @@ class CityStateController extends PaginatedRefreshableController {
         timer.cancel();
         _imageTaskPollingTimers.remove(cityId);
         generatingImageCityIds.remove(cityId);
-        AppToast.error('图片生成超时，请稍后刷新页面查看', title: '生成超时');
+        AppToast.error(AppLocalizations.of(Get.context!)!.imageGenTimeout,
+            title: AppLocalizations.of(Get.context!)!.genTimeout);
         return;
       }
 
@@ -945,8 +949,9 @@ class CityStateController extends PaginatedRefreshableController {
               _imageTaskPollingTimers.remove(cityId);
 
               generatingImageCityIds.remove(cityId);
-              final errorMsg = taskData?['error'] as String? ?? '图片生成失败';
-              AppToast.error(errorMsg, title: '图片生成失败');
+              final l10n = AppLocalizations.of(Get.context!)!;
+              final errorMsg = taskData?['error'] as String? ?? l10n.imageGenFailedDefault;
+              AppToast.error(errorMsg, title: l10n.imageGenFailed);
             }
             // status == 'processing' 或其他状态，继续轮询
           },
@@ -997,7 +1002,8 @@ class CityStateController extends PaginatedRefreshableController {
         onSuccess: (updatedCity) {
           // 更新所有列表中的该城市
           _updateCityInAllLists(cityId, updatedCity);
-          AppToast.success('${updatedCity.name} 的图片已更新', title: '图片生成完成');
+          AppToast.success(AppLocalizations.of(Get.context!)!.cityImageUpdated(updatedCity.name),
+              title: AppLocalizations.of(Get.context!)!.imageGenComplete);
           log('✅ [CityStateController] 城市数据已刷新: ${updatedCity.name}');
         },
         onFailure: (e) {

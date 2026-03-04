@@ -73,7 +73,7 @@ class HomeMeetupsSection extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'Failed to load meetups',
+            l10n.meetupLoadFailed,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
@@ -82,7 +82,7 @@ class HomeMeetupsSection extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            _meetupController.errorMessage.value ?? 'Please check your connection and try again',
+            _meetupController.errorMessage.value ?? l10n.meetupLoadFailedDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14.sp,
@@ -402,6 +402,8 @@ class HomeMeetupEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -425,7 +427,7 @@ class HomeMeetupEmptyState extends StatelessWidget {
           ),
           SizedBox(height: isMobile ? 24 : 32),
           Text(
-            'No Meetups Available',
+            l10n.noMeetupsAvailable,
             style: TextStyle(
               fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.bold,
@@ -434,7 +436,7 @@ class HomeMeetupEmptyState extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            'Be the first to create a meetup and connect\nwith fellow nomads in your city',
+            l10n.noMeetupsDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isMobile ? 14 : 16,
@@ -450,7 +452,7 @@ class HomeMeetupEmptyState extends StatelessWidget {
             ),
             icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
             label: Text(
-              'Create Meetup',
+              l10n.createMeetup,
               style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(

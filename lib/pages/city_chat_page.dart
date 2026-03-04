@@ -98,7 +98,7 @@ class _CityChatPageState extends State<CityChatPage> {
         // 显示加载状态
         if (!_initialized || room == null) {
           return _ChatLoadingView(
-            roomName: _meetupTitle ?? '聊天室',
+            roomName: _meetupTitle ?? AppLocalizations.of(Get.context!)!.chatRoom,
             onBack: () async {
               await controller.leaveRoom();
               Get.back();
@@ -375,7 +375,7 @@ class _ChatLoadingViewState extends State<_ChatLoadingView> with TickerProviderS
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '正在连接',
+              AppLocalizations.of(context)!.connecting,
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 16.sp,
@@ -476,7 +476,7 @@ class _ChatRoomsListView extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            '暂无聊天室',
+            AppLocalizations.of(context)!.noChatRooms,
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: 16.sp,
@@ -584,7 +584,7 @@ class _ChatRoomItem extends StatelessWidget {
         ),
         SizedBox(height: 4.h),
         Text(
-          room.lastMessage?.message ?? '${room.stats.onlineUsers} 人在线',
+          room.lastMessage?.message ?? AppLocalizations.of(Get.context!)!.onlineCount('${room.stats.onlineUsers}'),
           style: TextStyle(fontSize: 14.sp, color: Color(0xFF999999)),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -597,10 +597,10 @@ class _ChatRoomItem extends StatelessWidget {
     final now = DateTime.now();
     final diff = now.difference(time);
 
-    if (diff.inMinutes < 1) return '刚刚';
-    if (diff.inHours < 1) return '${diff.inMinutes}分钟前';
-    if (diff.inDays < 1) return '${diff.inHours}小时前';
-    if (diff.inDays < 7) return '${diff.inDays}天前';
+    if (diff.inMinutes < 1) return AppLocalizations.of(Get.context!)!.justNow;
+    if (diff.inHours < 1) return AppLocalizations.of(Get.context!)!.minutesAgo('${diff.inMinutes}');
+    if (diff.inDays < 1) return AppLocalizations.of(Get.context!)!.hoursAgo('${diff.inHours}');
+    if (diff.inDays < 7) return AppLocalizations.of(Get.context!)!.daysAgo('${diff.inDays}');
     return '${time.month}/${time.day}';
   }
 }
@@ -788,8 +788,9 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
   PreferredSizeWidget _buildAppBar() {
     final room = widget.controller.currentRoom;
     // 对于 Meetup 聊天室，优先使用传入的 meetupTitle，确保显示正确的活动名称
-    final roomName =
-        widget.isMeetupChat && widget.meetupTitle != null ? widget.meetupTitle! : (room?.displayName ?? '聊天室');
+    final roomName = widget.isMeetupChat && widget.meetupTitle != null
+        ? widget.meetupTitle!
+        : (room?.displayName ?? AppLocalizations.of(context)!.chatRoom);
 
     return AppBar(
       backgroundColor: const Color(0xFFEDEDED),
@@ -814,7 +815,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
             final onlineCount =
                 widget.controller.onlineCount > 0 ? widget.controller.onlineCount : (room?.stats.onlineUsers ?? 0);
             return Text(
-              '$onlineCount人在线',
+              AppLocalizations.of(context)!.onlineCount('$onlineCount'),
               style: TextStyle(color: Color(0xFF999999), fontSize: 12.sp),
             );
           }),
@@ -837,7 +838,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
           Icon(FontAwesomeIcons.comments, size: 64.r, color: Color(0xFFCCCCCC)),
           SizedBox(height: 16.h),
           Text(
-            '开始聊天吧',
+            AppLocalizations.of(context)!.startChatting,
             style: TextStyle(color: Color(0xFF999999), fontSize: 16.sp),
           ),
         ],
@@ -898,7 +899,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '回复 ${replyTo.author.userName}',
+                  AppLocalizations.of(context)!.replyTo(replyTo.author.userName),
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
@@ -1459,7 +1460,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    '群成员 (${sortedMembers.length})',
+                    AppLocalizations.of(context)!.groupMembers('${sortedMembers.length}'),
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
@@ -1550,7 +1551,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
           ),
           SizedBox(height: 16.h),
           Text(
-            '暂无成员',
+            AppLocalizations.of(context)!.noMembers,
             style: TextStyle(
               fontSize: 16.sp,
               color: Colors.grey[500],
@@ -1620,13 +1621,13 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
           SizedBox(width: 8.w),
           // 角色标签
           if (member.isOwner)
-            _buildRoleTag('群主', const Color(0xFFFF9800))
+            _buildRoleTag(AppLocalizations.of(context)!.owner, const Color(0xFFFF9800))
           else if (member.isAdmin)
-            _buildRoleTag('管理员', const Color(0xFF2196F3)),
+            _buildRoleTag(AppLocalizations.of(context)!.admin, const Color(0xFF2196F3)),
         ],
       ),
       subtitle: Text(
-        member.isOnline ? '在线' : member.statusText,
+        member.isOnline ? AppLocalizations.of(context)!.online : member.statusText,
         style: TextStyle(
           fontSize: 13.sp,
           color: member.isOnline ? const Color(0xFF07C160) : Colors.grey[500],
@@ -1715,15 +1716,15 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
     } catch (e) {
       debugPrint('❌ 图片上传失败: $e');
       // 标记上传失败
-      String errorMsg = '上传失败';
+      String errorMsg = AppLocalizations.of(Get.context!)!.uploadFailed;
       if (e.toString().contains('Bucket not found')) {
-        errorMsg = '存储服务错误';
+        errorMsg = AppLocalizations.of(Get.context!)!.storageServiceError;
       } else if (e.toString().contains('not authenticated')) {
-        errorMsg = '请重新登录';
+        errorMsg = AppLocalizations.of(Get.context!)!.pleaseReLogin;
       } else if (e.toString().contains('未初始化')) {
-        errorMsg = '请重启应用';
+        errorMsg = AppLocalizations.of(Get.context!)!.pleaseRestartApp;
       } else if (e.toString().contains('network') || e.toString().contains('Connection')) {
-        errorMsg = '网络错误';
+        errorMsg = AppLocalizations.of(Get.context!)!.networkError;
       }
 
       setState(() {
@@ -1853,7 +1854,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
 
                 // 状态文字
                 Text(
-                  hasError ? uploadingImage.errorMessage! : '上传中...',
+                  hasError ? uploadingImage.errorMessage! : AppLocalizations.of(context)!.uploading,
                   style: TextStyle(
                     fontSize: 11.sp,
                     color: hasError ? const Color(0xFFFF3838) : const Color(0xFF999999),
@@ -2021,7 +2022,7 @@ class _ChatRoomViewState extends State<_ChatRoomView> {
         final index = _uploadingFiles.indexWhere((f) => f.id == uploadId);
         if (index != -1) {
           _uploadingFiles[index] = _uploadingFiles[index].copyWith(
-            errorMessage: '上传失败，请重试',
+            errorMessage: AppLocalizations.of(context)!.uploadFailedRetry,
           );
         }
       });
@@ -2305,6 +2306,7 @@ class _MessageBubble extends StatelessWidget {
 
   /// 格式化时间
   String _formatTime(DateTime time) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);
@@ -2314,9 +2316,17 @@ class _MessageBubble extends StatelessWidget {
     if (messageDate == today) {
       return timeStr;
     } else if (messageDate == today.subtract(const Duration(days: 1))) {
-      return '昨天 $timeStr';
+      return '${l10n.yesterday} $timeStr';
     } else if (now.difference(time).inDays < 7) {
-      final weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      final weekdays = [
+        l10n.weekDaySun,
+        l10n.weekDayMon,
+        l10n.weekDayTue,
+        l10n.weekDayWed,
+        l10n.weekDayThu,
+        l10n.weekDayFri,
+        l10n.weekDaySat
+      ];
       return '${weekdays[time.weekday % 7]} $timeStr';
     } else {
       return '${time.month}/${time.day} $timeStr';
@@ -2511,7 +2521,7 @@ class _MessageBubble extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  attachment.fileName ?? '未知文件',
+                  attachment.fileName ?? AppLocalizations.of(context)!.unknownFile,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
@@ -2548,7 +2558,7 @@ class _MessageBubble extends StatelessWidget {
         context,
         attachment.latitude!,
         attachment.longitude!,
-        attachment.locationName ?? '位置',
+        attachment.locationName ?? AppLocalizations.of(context)!.location,
       ),
       child: Container(
         constraints: BoxConstraints(maxWidth: 220.w),
@@ -2628,7 +2638,7 @@ class _MessageBubble extends StatelessWidget {
                   SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
-                      attachment.locationName ?? '位置',
+                      attachment.locationName ?? AppLocalizations.of(context)!.location,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: Colors.black87,
@@ -3025,7 +3035,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                   ),
                 ),
                 child: Text(
-                  '搜索',
+                  AppLocalizations.of(context)!.searchButton,
                   style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500),
                 ),
               ),
@@ -3041,7 +3051,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                 child: Row(
                   children: [
                     Text(
-                      '找到 $count 条包含"$keyword"的消息',
+                      AppLocalizations.of(context)!.searchFoundMessages(count, keyword),
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: Color(0xFF666666),
@@ -3065,7 +3075,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
                       CircularProgressIndicator(color: Color(0xFF07C160)),
                       SizedBox(height: 16.h),
                       Text(
-                        '搜索中...',
+                        AppLocalizations.of(context)!.searching,
                         style: TextStyle(color: Color(0xFF999999)),
                       ),
                     ],
@@ -3113,7 +3123,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
           ),
           SizedBox(height: 16.h),
           Text(
-            '输入关键词搜索聊天记录',
+            AppLocalizations.of(context)!.searchChatHistory,
             style: TextStyle(
               fontSize: 15.sp,
               color: Colors.grey[500],
@@ -3136,7 +3146,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
           ),
           SizedBox(height: 16.h),
           Text(
-            '未找到包含"$keyword"的消息',
+            AppLocalizations.of(context)!.searchNotFound(keyword),
             style: TextStyle(
               fontSize: 15.sp,
               color: Colors.grey[500],
@@ -3144,7 +3154,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
           ),
           SizedBox(height: 8.h),
           Text(
-            '试试其他关键词？',
+            AppLocalizations.of(context)!.tryOtherKeywords,
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.grey[400],
@@ -3162,7 +3172,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
         padding: EdgeInsets.symmetric(vertical: 16.h),
         child: Center(
           child: Text(
-            '加载更多结果',
+            AppLocalizations.of(context)!.loadMoreResults,
             style: TextStyle(
               color: Color(0xFF07C160),
               fontSize: 14.sp,
@@ -3312,6 +3322,7 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
 
   /// 格式化消息时间
   String _formatMessageTime(DateTime time) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final diff = now.difference(time);
 
@@ -3319,9 +3330,17 @@ class _ChatSearchSheetState extends State<_ChatSearchSheet> {
       // 今天，显示时:分
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     } else if (diff.inDays == 1) {
-      return '昨天';
+      return l10n.yesterday;
     } else if (diff.inDays < 7) {
-      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      final weekdays = [
+        l10n.weekDaySun,
+        l10n.weekDayMon,
+        l10n.weekDayTue,
+        l10n.weekDayWed,
+        l10n.weekDayThu,
+        l10n.weekDayFri,
+        l10n.weekDaySat
+      ];
       return weekdays[time.weekday % 7];
     } else {
       return '${time.month}/${time.day}';
@@ -3370,7 +3389,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
             IconButton(
               icon: const Icon(Icons.zoom_out_map, color: Colors.white),
               onPressed: _resetZoom,
-              tooltip: '重置缩放',
+              tooltip: AppLocalizations.of(context)!.resetZoom,
             ),
         ],
       ),

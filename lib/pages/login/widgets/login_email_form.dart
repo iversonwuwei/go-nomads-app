@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -6,7 +7,6 @@ import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_form_field.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 邮箱登录表单 - 响应式验证
 class LoginEmailForm extends GetView<LoginController> {
@@ -140,7 +140,7 @@ class _LoginButton extends GetView<LoginController> {
           elevation: 0,
         ),
         child: Text(
-          '点击登录/注册',
+          l10n.clickToLoginOrRegister,
           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
         ),
       ),

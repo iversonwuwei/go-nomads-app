@@ -203,7 +203,7 @@ class RegisterController extends GetxController {
           _startCountdown(60);
           AppToast.success(_l10n.registerCodeSentToEmail);
         } else {
-          AppToast.error((data['message'] as String?) ?? '发送失败');
+          AppToast.error((data['message'] as String?) ?? _l10n.sendFailed);
         }
       }
     } on HttpException catch (e) {

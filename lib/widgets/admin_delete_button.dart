@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 
 import 'app_toast.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 管理员删除按钮组件
 ///
@@ -55,7 +56,7 @@ class AdminDeleteButton extends StatelessWidget {
           color: opacity > 0.5 ? Colors.red : Colors.white,
           size: iconSize,
         ),
-        tooltip: '删除$entityName',
+        tooltip: AppLocalizations.of(context)!.deleteEntity(entityName),
         onPressed: () => _handleDelete(),
       ),
     );
@@ -65,17 +66,17 @@ class AdminDeleteButton extends StatelessWidget {
     // 显示确认对话框
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除这个$entityName吗？此操作不可撤销。'),
+        title: Text(AppLocalizations.of(Get.context!)!.confirmDelete),
+        content: Text(AppLocalizations.of(Get.context!)!.confirmDeleteMessage(entityName)),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(Get.context!)!.cancel),
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('删除'),
+            child: Text(AppLocalizations.of(Get.context!)!.delete),
           ),
         ],
       ),
@@ -93,7 +94,7 @@ class AdminDeleteButton extends StatelessWidget {
       AppLoadingDialog.hide();
 
       if (success) {
-        AppToast.success('$entityName已删除');
+        AppToast.success(AppLocalizations.of(Get.context!)!.entityDeleted(entityName));
         // 如果提供了自定义回调则使用，否则使用默认的返回逻辑
         if (onDeleteSuccess != null) {
           onDeleteSuccess!();
@@ -104,7 +105,7 @@ class AdminDeleteButton extends StatelessWidget {
     } catch (e) {
       // 关闭加载指示器
       AppLoadingDialog.hide();
-      AppToast.error('删除失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.deleteFailedWithError(e.toString()));
     }
   }
 }

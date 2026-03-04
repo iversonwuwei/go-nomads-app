@@ -370,7 +370,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
             Tab(text: l10n.allMeetups),
             Tab(text: l10n.joined),
             Tab(text: l10n.past),
-            const Tab(text: '已取消'),
+            Tab(text: l10n.cancelledTab),
           ],
         ),
       ),
@@ -495,22 +495,22 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     switch (_tabController.index) {
       case 1: // Joined
         emptyMessage = l10n.noJoinedMeetupsYet;
-        emptyHint = '参加一些活动来认识新朋友吧！';
+        emptyHint = l10n.joinMeetupsHint;
         emptyIcon = FontAwesomeIcons.calendarPlus;
         break;
       case 2: // Past
         emptyMessage = l10n.noPastMeetups;
-        emptyHint = '还没有参加过任何活动';
+        emptyHint = l10n.noPastMeetupsHint;
         emptyIcon = FontAwesomeIcons.clockRotateLeft;
         break;
       case 3: // Cancelled
-        emptyMessage = '暂无已取消的活动';
-        emptyHint = '这里会显示你取消参与的活动记录';
+        emptyMessage = l10n.noCancelledMeetups;
+        emptyHint = l10n.cancelledMeetupHistory;
         emptyIcon = FontAwesomeIcons.calendarXmark;
         break;
       default: // All/Upcoming
         emptyMessage = l10n.noMeetupsAvailable;
-        emptyHint = '目前没有即将举行的活动';
+        emptyHint = l10n.noUpcomingMeetupsHint;
         emptyIcon = FontAwesomeIcons.calendarDay;
         break;
     }
@@ -915,7 +915,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
-                            '已取消',
+                            l10n.cancelled,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18.sp,
@@ -986,7 +986,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                   // 参与人数和剩余名额 - 使用本地状态
                   _buildInfoRow(
                     FontAwesomeIcons.users,
-                    '$_currentAttendees/$_maxAttendees attendees · $_remainingSlots spots left',
+                    l10n.attendeesSpotsInfo('$_currentAttendees', '$_maxAttendees', '$_remainingSlots'),
                     _isFull ? Colors.orange : (_remainingSlots <= 3 ? Colors.red : null),
                   ),
 

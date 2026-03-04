@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -13,7 +14,6 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市卡片组件（网格视图）
 class HomeCityCard extends StatelessWidget {
@@ -154,6 +154,7 @@ class HomeCityCard extends StatelessWidget {
   }
 
   Widget _buildModeratorBadge(bool isMobile) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Flexible(
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -176,7 +177,7 @@ class HomeCityCard extends StatelessWidget {
             ),
             SizedBox(width: isMobile ? 2 : 4),
             Text(
-              city.moderatorId != null ? '已指定版主' : '待指定版主',
+              city.moderatorId != null ? l10n.moderatorAssigned : l10n.moderatorPending,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: isMobile ? 8 : 10,
@@ -315,7 +316,7 @@ class HomeCityCard extends StatelessWidget {
                 ),
                 SizedBox(width: isMobile ? 3 : 4),
                 Text(
-                  '综合得分',
+                  l10n.overallScore,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: isMobile ? 11 : 12,

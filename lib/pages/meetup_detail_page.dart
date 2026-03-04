@@ -24,8 +24,8 @@ import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
 import 'package:intl/intl.dart';
 
-import 'tencent_im_direct_chat_page.dart';
 import 'member_detail_page.dart';
+import 'tencent_im_direct_chat_page.dart';
 
 /// Meetup 详情页面
 class MeetupDetailPage extends StatefulWidget {
@@ -691,7 +691,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                           : _cancelMeetup,
                       icon: Icon(FontAwesomeIcons.ban, size: 20.sp),
                       label: Text(
-                        _meetup.value.status == MeetupStatus.cancelled ? '已取消' : '取消活动',
+                        _meetup.value.status == MeetupStatus.cancelled ? l10n.cancelled : l10n.cancelMeetup,
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
@@ -759,7 +759,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       ),
                       child: Text(
                         _meetup.value.status == MeetupStatus.cancelled
-                            ? '已取消'
+                            ? l10n.cancelled
                             : _meetup.value.isEnded
                                 ? l10n.ended
                                 : (_meetup.value.capacity.isFull && !_isJoined)
@@ -1076,14 +1076,15 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     final meetup = _meetup.value;
 
     // 格式化时间
-    final dateFormat = DateFormat('yyyy年MM月dd日 HH:mm');
+    final dateFormat = DateFormat('yyyy/MM/dd HH:mm');
     final timeStr = dateFormat.format(meetup.schedule.startTime);
 
     // 构建分享内容
-    final String title = '${meetup.title} - 数字游民聚会';
-    final String description = '📅 时间: $timeStr\n'
-        '📍 地点: ${meetup.venue.name}\n'
-        '👥 组织者: ${meetup.organizer.name}\n\n'
+    final l10n = AppLocalizations.of(context)!;
+    final String title = l10n.nomadMeetupShare(meetup.title);
+    final String description = '${l10n.shareTime(timeStr)}\n'
+        '${l10n.shareVenue(meetup.venue.name)}\n'
+        '${l10n.shareOrganizer(meetup.organizer.name)}\n\n'
         '${meetup.description}';
 
     // 构建分享链接

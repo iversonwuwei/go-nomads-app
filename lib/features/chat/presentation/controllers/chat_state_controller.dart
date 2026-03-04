@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/application/use_case.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/chat/application/use_cases/chat_use_cases.dart';
@@ -8,8 +9,8 @@ import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 import 'package:go_nomads_app/features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:go_nomads_app/features/chat/infrastructure/services/chat_file_storage_service.dart';
 import 'package:go_nomads_app/features/chat/infrastructure/services/signalr_chat_service.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// Chat State Controller
 ///
@@ -397,7 +398,7 @@ class ChatStateController extends GetxController {
       },
       onFailure: (exception) {
         _errorMessage.value = exception.message;
-        AppToast.error('加入聊天室失败: ${exception.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.joinChatRoomFailed(exception.message));
       },
     );
 
@@ -467,18 +468,18 @@ class ChatStateController extends GetxController {
             },
             onFailure: (exception) {
               _errorMessage.value = exception.message;
-              AppToast.error('加入私聊失败: ${exception.message}');
+              AppToast.error(AppLocalizations.of(Get.context!)!.joinDirectChatFailed(exception.message));
             },
           );
         },
         onFailure: (exception) {
           _errorMessage.value = exception.message;
-          AppToast.error('创建私聊失败: ${exception.message}');
+          AppToast.error(AppLocalizations.of(Get.context!)!.createDirectChatFailed(exception.message));
         },
       );
     } catch (e) {
       _errorMessage.value = e.toString();
-      AppToast.error('私聊初始化失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.directChatInitFailed(e.toString()));
     }
 
     _isLoading.value = false;
@@ -527,7 +528,7 @@ class ChatStateController extends GetxController {
       },
       onFailure: (exception) {
         _errorMessage.value = exception.message;
-        AppToast.error('加入聊天室失败: ${exception.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.joinChatRoomFailed(exception.message));
       },
     );
 
@@ -559,7 +560,7 @@ class ChatStateController extends GetxController {
         _hasMoreMessages.value = true;
       },
       onFailure: (exception) {
-        AppToast.error('离开聊天室失败: ${exception.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.leaveChatRoomFailed(exception.message));
       },
     );
   }
@@ -599,7 +600,7 @@ class ChatStateController extends GetxController {
       },
       onFailure: (exception) {
         _errorMessage.value = exception.message;
-        AppToast.error('加载消息失败: ${exception.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.loadMessagesFailed(exception.message));
       },
     );
 
@@ -661,7 +662,7 @@ class ChatStateController extends GetxController {
       },
       onFailure: (exception) {
         _errorMessage.value = exception.message;
-        AppToast.error('发送消息失败: ${exception.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.sendMessageFailed(exception.message));
       },
     );
 
@@ -697,10 +698,10 @@ class ChatStateController extends GetxController {
       onSuccess: (_) {
         // 从列表中移除消息
         _messages.removeWhere((msg) => msg.id == messageId);
-        AppToast.success('消息已删除');
+        AppToast.success(AppLocalizations.of(Get.context!)!.messageDeleted);
       },
       onFailure: (exception) {
-        AppToast.error('删除消息失败: ${exception.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.deleteMessageFailed(exception.message));
       },
     );
   }
@@ -843,7 +844,7 @@ class ChatStateController extends GetxController {
         onFailure: (_) {},
       );
     } catch (e) {
-      _errorMessage.value = '搜索出错: $e';
+      _errorMessage.value = AppLocalizations.of(Get.context!)!.searchError(e.toString());
       log('搜索异常: $e');
     } finally {
       _isSearching.value = false;
@@ -882,7 +883,7 @@ class ChatStateController extends GetxController {
         },
       );
     } catch (e) {
-      _errorMessage.value = '加载更多搜索结果出错: $e';
+      _errorMessage.value = AppLocalizations.of(Get.context!)!.loadMoreSearchError(e.toString());
     } finally {
       _isSearching.value = false;
     }

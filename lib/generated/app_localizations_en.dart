@@ -484,16 +484,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchInterestsHint => 'Search interests...';
 
   @override
-  String get noSkills => 'No skills yet';
+  String get noSkills => 'No skills';
 
   @override
-  String get noMatchingSkills => 'No matching skills found';
+  String get noMatchingSkills => 'No matching skills';
 
   @override
-  String get noInterests => 'No interests yet';
+  String get noInterests => 'No interests';
 
   @override
-  String get noMatchingInterests => 'No matching interests found';
+  String get noMatchingInterests => 'No matching interests';
 
   @override
   String get failedToLoadSkillsList => 'Failed to load skills list';
@@ -1544,7 +1544,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutConfirmMessage => 'Are you sure you want to logout?';
 
   @override
-  String get loggedOut => 'Logged Out';
+  String get loggedOut => 'Logged out';
 
   @override
   String get loggedOutSuccess => 'You have been successfully logged out';
@@ -1670,7 +1670,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterBy => 'Filter By';
 
   @override
-  String get allCategories => 'All Categories';
+  String get allCategories => 'All';
 
   @override
   String get searchHint => 'Search...';
@@ -2227,7 +2227,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tryAgainLater => 'Try Again Later';
 
   @override
-  String get networkError => 'Network Error';
+  String get networkError => 'Network error';
 
   @override
   String get loadFailed => 'Load Failed';
@@ -3088,17 +3088,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aqiHazardous => 'Hazardous';
 
   @override
-  String daysAgo(int count) {
+  String daysAgo(String count) {
     return '$count days ago';
   }
 
   @override
-  String weeksAgo(int count) {
+  String weeksAgo(String count) {
     return '$count weeks ago';
   }
 
   @override
-  String monthsAgo(int count) {
+  String monthsAgo(String count) {
     return '$count months ago';
   }
 
@@ -3513,7 +3513,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shopNow => 'Shop Now';
 
   @override
-  String get viewAll => 'View All';
+  String viewAll(String count) {
+    return 'View All ($count)';
+  }
 
   @override
   String get welcomeBack => 'Welcome Back';
@@ -3534,7 +3536,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewTitle => 'Review Title';
 
   @override
-  String get reviewTitleHint => 'e.g., Amazing place for digital nomads!';
+  String get reviewTitleHint => 'Give your review a title';
 
   @override
   String get yourReview => 'Your Review';
@@ -4219,7 +4221,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noiseLevel => 'Noise Level';
 
   @override
-  String get contactInfo => 'Contact';
+  String get contactInfo => 'Contact Info';
 
   @override
   String get nextMeetups => 'Next meetups';
@@ -4562,13 +4564,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get document => 'Document';
 
   @override
-  String minutesAgo(int minutes) {
-    return '${minutes}m ago';
+  String minutesAgo(String count) {
+    return '$count min ago';
   }
 
   @override
-  String hoursAgo(int hours) {
-    return '${hours}h ago';
+  String hoursAgo(String count) {
+    return '$count hr ago';
   }
 
   @override
@@ -5004,10 +5006,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToCreateOrder => 'Failed to create payment order';
 
   @override
-  String get wechatNotInstalled => 'Please install WeChat to use WeChat Pay';
+  String get wechatNotInstalled => 'Please install WeChat first';
 
   @override
-  String get qqNotInstalled => 'Please install QQ to use QQ Login';
+  String get qqNotInstalled => 'Please install QQ first';
 
   @override
   String get paymentSuccessful => 'Payment successful!';
@@ -5172,13 +5174,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pricePerNightHint => 'e.g., 50';
 
   @override
-  String get longStayDiscount => 'Long Stay Discount';
+  String get longStayDiscount => 'Long stay discount';
 
   @override
   String get longStayDiscountHint => 'Discount % for weekly/monthly stays';
 
   @override
-  String get nomadFeatures => 'Nomad-Friendly Features';
+  String get nomadFeatures => 'Nomad Features';
 
   @override
   String get nomadFeaturesSubtitle => 'Features important for remote workers';
@@ -5765,4 +5767,1042 @@ class AppLocalizationsEn extends AppLocalizations {
   String assignModeratorPageTitle(Object cityName) {
     return '$cityName - Assign Moderators';
   }
+
+  @override
+  String get homeAiCopilotTitle => 'AI Copilot';
+
+  @override
+  String get homeAiCopilotBeta => 'Beta';
+
+  @override
+  String get homeAiCopilotDescription =>
+      'Smart directions · Trip planning · Travel guides';
+
+  @override
+  String get moderatorAssigned => 'Moderator assigned';
+
+  @override
+  String get moderatorPending => 'Moderator pending';
+
+  @override
+  String get searchResultsFor => 'Search results for ';
+
+  @override
+  String citiesFoundCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'cities',
+      one: 'city',
+    );
+    return '$count $_temp0 found';
+  }
+
+  @override
+  String get tryDifferentKeyword => 'Try searching with a different keyword';
+
+  @override
+  String get startExploringCities =>
+      'Start exploring by adding your first city';
+
+  @override
+  String get meetupLoadFailed => 'Failed to load meetups';
+
+  @override
+  String get meetupLoadFailedDescription =>
+      'Please check your connection and try again';
+
+  @override
+  String get noMeetupsDescription =>
+      'Be the first to create a meetup and connect\nwith fellow nomads in your city';
+
+  @override
+  String get imageLoadFailed => 'Image load failed';
+
+  @override
+  String get meetupStatusCancelled => 'Cancelled';
+
+  @override
+  String get meetupEventCancelled => 'Meetup cancelled';
+
+  @override
+  String get meetupStatusEnded => 'Ended';
+
+  @override
+  String get meetupEventEnded => 'Meetup ended';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
+  String pleaseLoginBeforeAction(String action) {
+    return 'Please log in before $action';
+  }
+
+  @override
+  String get loginCheckFailed => 'Unable to check login status';
+
+  @override
+  String get meetupUpdatedSuccess => 'Meetup updated successfully!';
+
+  @override
+  String meetupCreateFailed(String error) {
+    return 'Failed to create meetup: $error';
+  }
+
+  @override
+  String meetupUpdateFailed(String error) {
+    return 'Failed to update meetup: $error';
+  }
+
+  @override
+  String get rsvpSuccess => 'RSVP successful!';
+
+  @override
+  String rsvpFailed(String error) {
+    return 'RSVP failed: $error';
+  }
+
+  @override
+  String get rsvpCancelledSuccess => 'RSVP cancelled';
+
+  @override
+  String rsvpCancelFailed(String error) {
+    return 'Failed to cancel RSVP: $error';
+  }
+
+  @override
+  String get meetupCancelledSuccess => 'Meetup has been cancelled';
+
+  @override
+  String meetupCancelFailed(String error) {
+    return 'Failed to cancel meetup: $error';
+  }
+
+  @override
+  String get inviteSentSuccess => 'Invitation sent';
+
+  @override
+  String spotsLeftCount(int count) {
+    return '$count left';
+  }
+
+  @override
+  String get emailLogin => 'Email Login';
+
+  @override
+  String get phoneLogin => 'Phone Login';
+
+  @override
+  String get clickToLoginOrRegister => 'Login / Register';
+
+  @override
+  String get wechat => 'WeChat';
+
+  @override
+  String get letsGo => 'Let\'s Go';
+
+  @override
+  String get joinNomadsCount => 'Join 38,000+ nomads';
+
+  @override
+  String get livingAndWorkingWorldwide => 'Living and working around the world';
+
+  @override
+  String get meetupsPerYear => '363 meetups/year';
+
+  @override
+  String get messagesCount => '15k+ messages';
+
+  @override
+  String get citiesCount => '100+ cities';
+
+  @override
+  String get verificationCodeRequired => 'Please enter verification code';
+
+  @override
+  String get verificationCodeLength => 'Verification code must be 6 digits';
+
+  @override
+  String get sendFailed => 'Send failed';
+
+  @override
+  String get sampleDataPreview => 'Sample Data Preview';
+
+  @override
+  String get sampleDataPreviewDescription =>
+      'You are viewing a sample user profile. Log in to see your real profile.';
+
+  @override
+  String get goToLogin => 'Login';
+
+  @override
+  String get userCancelledAuth => 'User cancelled authorization';
+
+  @override
+  String get wechatNotDetected => 'WeChat not detected';
+
+  @override
+  String get qqNotDetected => 'QQ not detected';
+
+  @override
+  String socialLoginFailed(String error) {
+    return 'Social login failed: $error';
+  }
+
+  @override
+  String get userProfileUpdated => 'User profile updated';
+
+  @override
+  String get allNotifications => 'All';
+
+  @override
+  String get unread => 'Unread';
+
+  @override
+  String get read => 'Read';
+
+  @override
+  String get markAllAsRead => 'Mark all as read';
+
+  @override
+  String get noNotifications => 'No notifications';
+
+  @override
+  String get noReadNotifications => 'No read notifications';
+
+  @override
+  String get noUnreadNotifications => 'No unread notifications';
+
+  @override
+  String get cancelled => 'Cancelled';
+
+  @override
+  String get cancelMeetup => 'Cancel Meetup';
+
+  @override
+  String get eventCancelled => 'Event cancelled';
+
+  @override
+  String get eventEnded => 'Event ended';
+
+  @override
+  String get cancelledTab => 'Cancelled';
+
+  @override
+  String get joinMeetupsHint => 'Join some meetups to meet new friends!';
+
+  @override
+  String get noPastMeetupsHint => 'Haven\'t attended any meetups yet';
+
+  @override
+  String get noCancelledMeetups => 'No cancelled meetups';
+
+  @override
+  String get cancelledMeetupHistory =>
+      'Your cancelled meetup history will appear here';
+
+  @override
+  String get noUpcomingMeetupsHint => 'No upcoming meetups at the moment';
+
+  @override
+  String attendeesSpotsInfo(String current, String max, String remaining) {
+    return '$current/$max attendees · $remaining spots left';
+  }
+
+  @override
+  String nomadMeetupShare(String title) {
+    return '$title - Nomad Meetup';
+  }
+
+  @override
+  String shareTime(String time) {
+    return '📅 Time: $time';
+  }
+
+  @override
+  String shareVenue(String venue) {
+    return '📍 Venue: $venue';
+  }
+
+  @override
+  String shareOrganizer(String name) {
+    return '👥 Organizer: $name';
+  }
+
+  @override
+  String get chatRoom => 'Chat Room';
+
+  @override
+  String get connecting => 'Connecting';
+
+  @override
+  String get noChatRooms => 'No chat rooms';
+
+  @override
+  String onlineCount(String count) {
+    return '$count online';
+  }
+
+  @override
+  String get startChatting => 'Start chatting';
+
+  @override
+  String replyTo(String name) {
+    return 'Reply to $name';
+  }
+
+  @override
+  String groupMembers(String count) {
+    return 'Members ($count)';
+  }
+
+  @override
+  String get noMembers => 'No members';
+
+  @override
+  String get owner => 'Owner';
+
+  @override
+  String get admin => 'Admin';
+
+  @override
+  String get uploadFailed => 'Upload failed';
+
+  @override
+  String get storageServiceError => 'Storage service error';
+
+  @override
+  String get pleaseReLogin => 'Please re-login';
+
+  @override
+  String get pleaseRestartApp => 'Please restart app';
+
+  @override
+  String get uploadFailedRetry => 'Upload failed, please retry';
+
+  @override
+  String get weekDaySun => 'Sun';
+
+  @override
+  String get weekDayMon => 'Mon';
+
+  @override
+  String get weekDayTue => 'Tue';
+
+  @override
+  String get weekDayWed => 'Wed';
+
+  @override
+  String get weekDayThu => 'Thu';
+
+  @override
+  String get weekDayFri => 'Fri';
+
+  @override
+  String get weekDaySat => 'Sat';
+
+  @override
+  String get unknownFile => 'Unknown file';
+
+  @override
+  String get searchButton => 'Search';
+
+  @override
+  String searchFoundMessages(String count, String keyword) {
+    return 'Found $count messages containing \"$keyword\"';
+  }
+
+  @override
+  String get searching => 'Searching...';
+
+  @override
+  String get searchChatHistory => 'Search chat history';
+
+  @override
+  String searchNotFound(String keyword) {
+    return 'No messages containing \"$keyword\"';
+  }
+
+  @override
+  String get tryOtherKeywords => 'Try other keywords?';
+
+  @override
+  String get loadMoreResults => 'Load more results';
+
+  @override
+  String get resetZoom => 'Reset zoom';
+
+  @override
+  String get cannotLoadImage => 'Cannot load image';
+
+  @override
+  String joinChatRoomFailed(String error) {
+    return 'Failed to join chat room: $error';
+  }
+
+  @override
+  String joinDirectChatFailed(String error) {
+    return 'Failed to join direct chat: $error';
+  }
+
+  @override
+  String createDirectChatFailed(String error) {
+    return 'Failed to create direct chat: $error';
+  }
+
+  @override
+  String directChatInitFailed(String error) {
+    return 'Direct chat init failed: $error';
+  }
+
+  @override
+  String leaveChatRoomFailed(String error) {
+    return 'Failed to leave chat room: $error';
+  }
+
+  @override
+  String loadMessagesFailed(String error) {
+    return 'Failed to load messages: $error';
+  }
+
+  @override
+  String sendMessageFailed(String error) {
+    return 'Failed to send message: $error';
+  }
+
+  @override
+  String get messageDeleted => 'Message deleted';
+
+  @override
+  String deleteMessageFailed(String error) {
+    return 'Failed to delete message: $error';
+  }
+
+  @override
+  String get loadFailedTitle => 'Load failed';
+
+  @override
+  String get addedToFavorites => 'Added to favorites';
+
+  @override
+  String get removedFromFavorites => 'Removed from favorites';
+
+  @override
+  String get successTitle => 'Success';
+
+  @override
+  String get operationFailed => 'Operation failed';
+
+  @override
+  String deleteFailed(String error) {
+    return 'Delete failed: $error';
+  }
+
+  @override
+  String loadRatingFailed(String error) {
+    return 'Failed to load rating: $error';
+  }
+
+  @override
+  String get submitRatingFailed => 'Submit rating failed';
+
+  @override
+  String get ratingItemCreated => 'Rating item created';
+
+  @override
+  String createRatingItemFailed(String error) {
+    return 'Create rating item failed: $error';
+  }
+
+  @override
+  String get ratingItemDeleted => 'Rating item deleted';
+
+  @override
+  String deleteRatingItemFailed(String error) {
+    return 'Delete rating item failed: $error';
+  }
+
+  @override
+  String get imageGenFailed => 'Image generation failed';
+
+  @override
+  String get imageGenComplete => 'Image generation complete';
+
+  @override
+  String cityImageUpdated(String city) {
+    return '$city image updated';
+  }
+
+  @override
+  String get imageGenTimeout =>
+      'Image generation timed out, please refresh later';
+
+  @override
+  String get genTimeout => 'Generation timeout';
+
+  @override
+  String get removeSkillFailed => 'Remove skill failed';
+
+  @override
+  String get removeInterestFailed => 'Remove interest failed';
+
+  @override
+  String get partialDataLoadFailed => 'Partial data load failed';
+
+  @override
+  String loadAnswersFailed(String error) {
+    return 'Load answers failed: $error';
+  }
+
+  @override
+  String operationFailedWithError(String error) {
+    return 'Operation failed: $error';
+  }
+
+  @override
+  String deleteEntity(String entity) {
+    return 'Delete $entity';
+  }
+
+  @override
+  String confirmDeleteMessage(String entity) {
+    return 'Are you sure you want to delete this $entity? This action cannot be undone.';
+  }
+
+  @override
+  String entityDeleted(String entity) {
+    return '$entity deleted';
+  }
+
+  @override
+  String deleteFailedWithError(String error) {
+    return 'Delete failed: $error';
+  }
+
+  @override
+  String selectImageFailed(String error) {
+    return 'Select image failed: $error';
+  }
+
+  @override
+  String selectFileFailed(String error) {
+    return 'Select file failed: $error';
+  }
+
+  @override
+  String get allowMicPermission => 'Please allow microphone permission';
+
+  @override
+  String recordingFailed(String error) {
+    return 'Recording failed: $error';
+  }
+
+  @override
+  String get talkTooShort => 'Talk too short';
+
+  @override
+  String get recordingCancelled => 'Cancelled';
+
+  @override
+  String get holdToTalk => 'Hold to talk';
+
+  @override
+  String get releaseToCancel => 'Release to cancel';
+
+  @override
+  String get cancelRecording => 'Cancel';
+
+  @override
+  String get holdButtonToRecord => 'Hold button below to record';
+
+  @override
+  String get releaseToCancelSend => 'Release to cancel send';
+
+  @override
+  String get swipeUpToCancel => 'Swipe up to cancel';
+
+  @override
+  String get recording => 'Recording...';
+
+  @override
+  String get interestLevelTitle => 'Interest Level';
+
+  @override
+  String get interestLevelCasual => 'Casual';
+
+  @override
+  String get interestLevelLike => 'Like';
+
+  @override
+  String get interestLevelPassionate => 'Passionate';
+
+  @override
+  String get searchInterests => 'Search interests...';
+
+  @override
+  String get selected => 'Selected';
+
+  @override
+  String get categoryFitness => 'Fitness & Sports';
+
+  @override
+  String get categoryArtCulture => 'Art & Culture';
+
+  @override
+  String get categoryCooking => 'Food & Cooking';
+
+  @override
+  String get categoryTravel => 'Travel & Adventure';
+
+  @override
+  String get categoryTech => 'Tech & Digital';
+
+  @override
+  String get categoryReading => 'Reading & Learning';
+
+  @override
+  String get categoryMusic => 'Music & Entertainment';
+
+  @override
+  String get categorySocial => 'Social & Community';
+
+  @override
+  String maxInterestsReached(String count) {
+    return 'Maximum $count interests allowed';
+  }
+
+  @override
+  String get cannotLoadInterests => 'Cannot load interests, please try later';
+
+  @override
+  String get proficiencyTitle => 'Proficiency';
+
+  @override
+  String get experienceYears => 'Experience Years';
+
+  @override
+  String get lessThanOneYear => 'Less than 1 year';
+
+  @override
+  String yearsCount(String count) {
+    return '$count years';
+  }
+
+  @override
+  String get beginner => 'Beginner';
+
+  @override
+  String get intermediate => 'Intermediate';
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get expert => 'Expert';
+
+  @override
+  String get searchSkills => 'Search skills...';
+
+  @override
+  String get categoryProgramming => 'Programming & Development';
+
+  @override
+  String get categoryDesign => 'Design & Creative';
+
+  @override
+  String get categoryMarketing => 'Marketing & Business';
+
+  @override
+  String get categoryLanguage => 'Languages';
+
+  @override
+  String get categoryDataAnalysis => 'Data Analysis';
+
+  @override
+  String get categoryProjectMgmt => 'Project Management';
+
+  @override
+  String get categoryOther => 'Other Skills';
+
+  @override
+  String maxSkillsReached(String count) {
+    return 'Maximum $count skills allowed';
+  }
+
+  @override
+  String get shareToWechat => 'Share to WeChat';
+
+  @override
+  String get shareToQQ => 'Share to QQ';
+
+  @override
+  String get shareTo => 'Share to';
+
+  @override
+  String get qqFriends => 'QQ Friends';
+
+  @override
+  String get qqZone => 'QQ Zone';
+
+  @override
+  String get wechatFriends => 'WeChat Friends';
+
+  @override
+  String get moments => 'Moments';
+
+  @override
+  String get copyLink => 'Copy Link';
+
+  @override
+  String get systemShare => 'System Share';
+
+  @override
+  String get weibo => 'Weibo';
+
+  @override
+  String get wechatNotInstalledSystemShare =>
+      'WeChat not installed, using system share';
+
+  @override
+  String get linkCopied => 'Link copied';
+
+  @override
+  String get cannotOpenShareLink => 'Cannot open share link';
+
+  @override
+  String shareFailedWithError(String error) {
+    return 'Share failed: $error';
+  }
+
+  @override
+  String get confirmApprove => 'Confirm Approve';
+
+  @override
+  String confirmApproveMessage(String name) {
+    return 'Approve $name\'s moderator application?';
+  }
+
+  @override
+  String get rejectApplication => 'Reject Application';
+
+  @override
+  String confirmRejectMessage(String name) {
+    return 'Reject $name\'s moderator application?';
+  }
+
+  @override
+  String get rejectReasonOptional => 'Reject reason (optional)';
+
+  @override
+  String get enterRejectReason => 'Enter reject reason...';
+
+  @override
+  String get confirmReject => 'Confirm Reject';
+
+  @override
+  String get confirmRevoke => 'Confirm Revoke';
+
+  @override
+  String confirmRevokeMessage(String name) {
+    return 'Revoke $name\'s moderator status?';
+  }
+
+  @override
+  String get moderatorRevoked => 'Moderator status revoked';
+
+  @override
+  String revokeFailed(String error) {
+    return 'Revoke failed: $error';
+  }
+
+  @override
+  String get applicationApproved => 'Application approved';
+
+  @override
+  String get applicationRejected => 'Application rejected';
+
+  @override
+  String get moderatorApplicationDetail => 'Moderator Application Detail';
+
+  @override
+  String get applicationNotExists => 'Application not found';
+
+  @override
+  String applicationTime(String time) {
+    return 'Application time: $time';
+  }
+
+  @override
+  String processTime(String time) {
+    return 'Process time: $time';
+  }
+
+  @override
+  String get applicantInfo => 'Applicant Info';
+
+  @override
+  String get unknownUser => 'Unknown User';
+
+  @override
+  String get applicationCity => 'Applied City';
+
+  @override
+  String get unknownCity => 'Unknown City';
+
+  @override
+  String get applicationReason => 'Application Reason';
+
+  @override
+  String get noReasonProvided => 'No reason provided';
+
+  @override
+  String get rejectReason => 'Reject Reason';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get revokeModeratorStatus => 'Revoke Moderator';
+
+  @override
+  String get visitedPlaces => 'Visited Places';
+
+  @override
+  String placesCount(String count) {
+    return '$count places';
+  }
+
+  @override
+  String highlightsCount(String count) {
+    return '$count highlights';
+  }
+
+  @override
+  String get noDateInfo => 'No date info';
+
+  @override
+  String get present => 'Present';
+
+  @override
+  String get noVisitedPlacesYet => 'No visited places yet';
+
+  @override
+  String get visitedPlacesHint =>
+      'Places where you stayed for more than 40 minutes will appear here';
+
+  @override
+  String get unknownPlace => 'Unknown Place';
+
+  @override
+  String get arrival => 'Arrival';
+
+  @override
+  String get departure => 'Departure';
+
+  @override
+  String get mapViewComingSoon => 'Map view will be available soon';
+
+  @override
+  String get nomadFriendly => 'Nomad Friendly';
+
+  @override
+  String get ratingExcellent => 'Excellent';
+
+  @override
+  String get ratingVeryGood => 'Very Good';
+
+  @override
+  String get ratingGood => 'Good';
+
+  @override
+  String get ratingAverage => 'Average';
+
+  @override
+  String get ratingPoor => 'Poor';
+
+  @override
+  String get priceLabel => 'Price';
+
+  @override
+  String get perNight => '/night';
+
+  @override
+  String get available => 'Available';
+
+  @override
+  String get coworkingSpaceIncluded => 'Included';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String roomTypes(String count) {
+    return 'Room Types ($count)';
+  }
+
+  @override
+  String get roomTypeList => 'Room Types';
+
+  @override
+  String get soldOut => 'Sold Out';
+
+  @override
+  String maxOccupancy(String count) {
+    return 'Max $count guests';
+  }
+
+  @override
+  String get pleaseLoginToReview => 'Please login to write a review';
+
+  @override
+  String get reviewTitleOptional => 'Title (optional)';
+
+  @override
+  String get reviewContent => 'Review content';
+
+  @override
+  String get reviewContentHint => 'Share your stay experience...';
+
+  @override
+  String get selectRating => 'Please select a rating';
+
+  @override
+  String get enterReviewContent => 'Please enter review content';
+
+  @override
+  String get reviewSubmitSuccess => 'Review submitted successfully!';
+
+  @override
+  String get reviewSubmitFailed => 'Review submission failed';
+
+  @override
+  String get alreadyReviewed => 'You have already reviewed this hotel';
+
+  @override
+  String get reviewSubmitFailedRetry =>
+      'Review submission failed, please try later';
+
+  @override
+  String get tapToRate => 'Tap to rate';
+
+  @override
+  String get ratingVeryPoor => 'Very Poor';
+
+  @override
+  String get ratingFair => 'Fair';
+
+  @override
+  String get ratingNice => 'Nice';
+
+  @override
+  String get ratingGreat => 'Great';
+
+  @override
+  String get ratingExcellentReview => 'Excellent';
+
+  @override
+  String reviewCount(String count) {
+    return '$count reviews';
+  }
+
+  @override
+  String get noReviews => 'No reviews yet';
+
+  @override
+  String get beFirstReviewer => 'Be the first to review';
+
+  @override
+  String get loadMoreReviews => 'Load more reviews';
+
+  @override
+  String helpfulCount(String count) {
+    return '$count found helpful';
+  }
+
+  @override
+  String get userNotLoggedIn => 'User not logged in';
+
+  @override
+  String get userInfoUpdated => 'User info updated';
+
+  @override
+  String get errorTitle => 'Error';
+
+  @override
+  String get unauthorizedTitle => 'Unauthorized';
+
+  @override
+  String get networkErrorTitle => 'Network error';
+
+  @override
+  String get serverErrorTitle => 'Server error';
+
+  @override
+  String get validationFailedTitle => 'Validation failed';
+
+  @override
+  String get unknownErrorTitle => 'Unknown error';
+
+  @override
+  String removeSkillFailedWithError(String error) {
+    return 'Remove skill failed: $error';
+  }
+
+  @override
+  String removeInterestFailedWithError(String error) {
+    return 'Remove interest failed: $error';
+  }
+
+  @override
+  String searchError(String error) {
+    return 'Search error: $error';
+  }
+
+  @override
+  String loadMoreSearchError(String error) {
+    return 'Load more results error: $error';
+  }
+
+  @override
+  String generateImageFailed(String error) {
+    return 'Image generation failed: $error';
+  }
+
+  @override
+  String get imageGenFailedDefault => 'Image generation failed';
+
+  @override
+  String get moderatorStatusPending => 'Pending Review';
+
+  @override
+  String get moderatorStatusApproved => 'Approved';
+
+  @override
+  String get moderatorStatusRejected => 'Rejected';
+
+  @override
+  String get revokePermissionWarning =>
+      'This will remove all moderator permissions for this user in this city.';
+
+  @override
+  String get perNightLabel => 'Per Night';
+
+  @override
+  String get ratingDescExcellent => 'Excellent';
+
+  @override
+  String get ratingDescVeryGood => 'Very Good';
+
+  @override
+  String get ratingDescGood => 'Good';
+
+  @override
+  String get ratingDescAverage => 'Average';
+
+  @override
+  String get ratingDescPoor => 'Poor';
 }

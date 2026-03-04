@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/login/login_constants.dart';
 
 /// 社区亮点展示
 class LoginCommunityHighlight extends StatelessWidget {
@@ -9,6 +10,7 @@ class LoginCommunityHighlight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -38,7 +40,7 @@ class LoginCommunityHighlight extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Join 38,000+ nomads',
+                      l10n.joinNomadsCount,
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
@@ -46,7 +48,7 @@ class LoginCommunityHighlight extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Living and working around the world',
+                      l10n.livingAndWorkingWorldwide,
                       style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade600),
                     ),
                   ],
@@ -57,11 +59,11 @@ class LoginCommunityHighlight extends StatelessWidget {
           SizedBox(height: 16.h),
           Row(
             children: [
-              _FeatureBadge(emoji: '🍹', text: '363 meetups/year'),
+              _FeatureBadge(emoji: '🍹', text: l10n.meetupsPerYear),
               SizedBox(width: 8.w),
-              _FeatureBadge(emoji: '💬', text: '15k+ messages'),
+              _FeatureBadge(emoji: '💬', text: l10n.messagesCount),
               SizedBox(width: 8.w),
-              _FeatureBadge(emoji: '🌍', text: '100+ cities'),
+              _FeatureBadge(emoji: '🌍', text: l10n.citiesCount),
             ],
           ),
         ],

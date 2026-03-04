@@ -8,9 +8,9 @@ import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/services/search_service.dart';
@@ -238,9 +238,12 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     log('🏠 首页初始化，独立加载城市和活动数据');
 
     // ⭐ 并行加载：首页城市数据（独立）+ Meetup 数据
+    // 使用 initialLoad() 代替 ensureDataLoaded():
+    // - ensureDataLoaded() 仅在 meetups 为空时加载，不考虑缓存过期
+    // - initialLoad() 会正确检查缓存有效期，过期则刷新
     await Future.wait([
       _loadHomeCitiesIndependent(),
-      meetupController.ensureDataLoaded(),
+      meetupController.initialLoad(),
     ]);
   }
 
@@ -296,24 +299,20 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
   /// 从其他页面返回时重新加载数据
   Future<void> onRouteResume() async {
-    log('🔄 HomePageController: 从其他页面返回');
+    log('🔄 HomePageController: 从其他页面返回，刷新所有列表');
 
     clearSearchOnReturn();
 
-    // ⭐ 仅在 meetup 数据过期时才触发刷新，避免每次返回都闪屏
-    // SignalR 和 DataEventBus 已能处理实时变更（创建/更新/删除）
-    if (meetupController.isDataStale) {
-      log('🔄 HomePageController: meetup 数据已过期，触发刷新');
-      await refreshMeetups();
-    } else {
-      log('📦 HomePageController: meetup 数据仍在缓存有效期内，跳过刷新');
-    }
+    // ⭐ 每次返回首页都刷新所有列表数据
+    // 虽然 SignalR 已处理实时推送，但用户可能在其他页面做了操作（如创建/编辑 meetup），
+    // 返回首页时应确保数据为最新
+    // refreshMeetups 使用 forceRefresh，HomeMeetupsSection 在刷新时会保留旧数据避免闪屏
+    await Future.wait([
+      loadHomeCities(),
+      refreshMeetups(),
+    ]);
 
-    // 仅在城市数据为空时才重新加载（通常不会为空）
-    if (localCities.isEmpty) {
-      log('🔄 HomePageController: 城市数据为空，重新加载');
-      await loadHomeCities();
-    }
+    log('✅ HomePageController: 返回首页刷新完成');
   }
 
   /// 下拉刷新 - 刷新所有数据

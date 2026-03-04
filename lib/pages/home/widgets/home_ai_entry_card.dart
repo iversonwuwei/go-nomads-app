@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 首页 AI Chat 入口卡片
 /// 紧凑设计，整体可点击，适应不同分辨率
@@ -14,6 +15,7 @@ class HomeAiEntryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
@@ -74,7 +76,7 @@ class HomeAiEntryCard extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              'AI Copilot',
+                              l10n.homeAiCopilotTitle,
                               style: theme.textTheme.titleSmall?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
@@ -89,7 +91,7 @@ class HomeAiEntryCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(6.r),
                               ),
                               child: Text(
-                                'Beta',
+                                l10n.homeAiCopilotBeta,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 10.sp,
@@ -101,7 +103,7 @@ class HomeAiEntryCard extends StatelessWidget {
                         ),
                         SizedBox(height: 4.h),
                         Text(
-                          '智能问路 · 行程规划 · 旅行攻略',
+                          l10n.homeAiCopilotDescription,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: Colors.white.withValues(alpha: 0.75),
                             fontSize: 12.sp,

@@ -102,7 +102,7 @@ class HomeMeetupCard extends StatelessWidget {
                       ),
                       SizedBox(height: 8.h),
                       Text(
-                        '图片加载失败',
+                        AppLocalizations.of(context)!.imageLoadFailed,
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.grey[500],
@@ -238,6 +238,7 @@ class HomeMeetupCard extends StatelessWidget {
   }
 
   Widget _buildAttendeeInfo() {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final currentAttendees = meetup.capacity.currentAttendees;
     final maxAttendees = meetup.capacity.maxAttendees;
 
@@ -261,7 +262,7 @@ class HomeMeetupCard extends StatelessWidget {
         SizedBox(width: 12.w),
         if ((maxAttendees - currentAttendees) > 0)
           Text(
-            '${maxAttendees - currentAttendees} left',
+            l10n.spotsLeftCount(maxAttendees - currentAttendees),
             style: TextStyle(
               fontSize: 11.sp,
               color: Color(0xFFFF4458),
@@ -313,12 +314,14 @@ class HomeMeetupCard extends StatelessWidget {
   ) {
     // 已取消
     if (status == MeetupStatus.cancelled) {
-      return _buildDisabledButton(FontAwesomeIcons.ban, isOrganizer ? '已取消' : '活动已取消');
+      return _buildDisabledButton(
+          FontAwesomeIcons.ban, isOrganizer ? l10n.meetupStatusCancelled : l10n.meetupEventCancelled);
     }
 
     // 已结束
     if (status == MeetupStatus.completed || meetup.isEnded) {
-      return _buildDisabledButton(FontAwesomeIcons.circleCheck, isOrganizer ? '已结束' : '活动已结束');
+      return _buildDisabledButton(
+          FontAwesomeIcons.circleCheck, isOrganizer ? l10n.meetupStatusEnded : l10n.meetupEventEnded);
     }
 
     // 组织者按钮
@@ -471,7 +474,7 @@ class HomeMeetupCard extends StatelessWidget {
             SizedBox(width: 3.w),
             Flexible(
               child: Text(
-                isFull && !isJoined ? l10n.full : (isJoined ? 'Leave' : 'Join'),
+                isFull && !isJoined ? l10n.full : (isJoined ? l10n.leave : l10n.join),
                 style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
               ),
             ),
