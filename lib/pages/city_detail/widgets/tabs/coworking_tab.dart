@@ -1,14 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_page.dart';
 import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 import '../../../../features/coworking/domain/entities/coworking_space.dart' as coworking;
 import '../../../../features/coworking/presentation/controllers/coworking_state_controller.dart';
 import '../../city_detail_controller.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Coworking Tab - GetView 实现
 ///
@@ -37,14 +37,14 @@ class CoworkingTab extends GetView<CityDetailController> {
       // 显示空状态
       if (coworkingController.coworkingSpaces.isEmpty) {
         return _EmptyCoworkingState(
-          cityName: controller.cityName,
+          cityId: controller.cityId,
           onAddPressed: onAddCoworkingPressed,
         );
       }
 
       // 显示共享办公空间列表
       return _CoworkingList(
-        cityName: controller.cityName,
+        cityId: controller.cityId,
         spaces: coworkingController.coworkingSpaces,
         isAdminOrModerator: controller.isAdmin.value || controller.isModerator.value,
         onAddCoworkingPressed: onAddCoworkingPressed,
@@ -56,11 +56,11 @@ class CoworkingTab extends GetView<CityDetailController> {
 /// 空状态组件
 class _EmptyCoworkingState extends StatelessWidget {
   const _EmptyCoworkingState({
-    required this.cityName,
+    required this.cityId,
     required this.onAddPressed,
   });
 
-  final String cityName;
+  final String cityId;
   final VoidCallback onAddPressed;
 
   @override
@@ -68,7 +68,7 @@ class _EmptyCoworkingState extends StatelessWidget {
     final coworkingController = Get.find<CoworkingStateController>();
 
     return RefreshIndicator(
-      onRefresh: () => coworkingController.loadCoworkingSpacesByCity(cityName),
+      onRefresh: () => coworkingController.loadCoworkingSpacesByCity(cityId),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final minHeight = (constraints.maxHeight - 120).clamp(0.0, double.infinity);
@@ -203,13 +203,13 @@ class _EmptyCoworkingState extends StatelessWidget {
 /// 共享办公空间列表
 class _CoworkingList extends StatelessWidget {
   const _CoworkingList({
-    required this.cityName,
+    required this.cityId,
     required this.spaces,
     required this.isAdminOrModerator,
     required this.onAddCoworkingPressed,
   });
 
-  final String cityName;
+  final String cityId;
   final List<coworking.CoworkingSpace> spaces;
   final bool isAdminOrModerator;
   final VoidCallback onAddCoworkingPressed;
@@ -219,7 +219,7 @@ class _CoworkingList extends StatelessWidget {
     final coworkingController = Get.find<CoworkingStateController>();
 
     return RefreshIndicator(
-      onRefresh: () => coworkingController.loadCoworkingSpacesByCity(cityName),
+      onRefresh: () => coworkingController.loadCoworkingSpacesByCity(cityId),
       child: ListView.builder(
         padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 96.h),
         itemCount: spaces.length,
