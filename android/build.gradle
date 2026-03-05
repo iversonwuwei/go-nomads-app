@@ -47,6 +47,13 @@ subprojects {
             }
         }
     }
+
+    // Fallback for third-party plugin modules that still configure Java 8.
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = JavaVersion.VERSION_21.toString()
+        targetCompatibility = JavaVersion.VERSION_21.toString()
+        options.compilerArgs << '-Xlint:-options'
+    }
 }
 
 tasks.register("clean", Delete) {
