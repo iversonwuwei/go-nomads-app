@@ -8,6 +8,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/notifications_page_controller.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 通知列表页面
@@ -115,16 +116,13 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
   Widget _buildNotificationList(bool isMobile, bool? isRead) {
     return Obx(() {
       final notificationController = _controller.notificationController;
-
-      // 首次加载时显示中间加载指示器
-      if (notificationController.isLoading.value &&
+      final isLoading = notificationController.isLoading.value &&
           notificationController.notifications.isEmpty &&
-          !_controller.isRefreshing.value) {
-        return const NotificationListSkeleton();
-      }
+          !_controller.isRefreshing.value;
 
+      Widget content;
       if (notificationController.errorMessage.value.isNotEmpty) {
-        return Center(
+        content = Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -142,55 +140,61 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
             ],
           ),
         );
-      }
+      } else {
+        final notifications =
+            notificationController.notifications.where((n) => isRead == null || n.isRead == isRead).toList();
 
-      final notifications =
-          notificationController.notifications.where((n) => isRead == null || n.isRead == isRead).toList();
-
-      if (notifications.isEmpty) {
-        return RefreshIndicator(
-          onRefresh: _controller.handleRefresh,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(FontAwesomeIcons.bell, size: 64.r, color: AppColors.iconSecondary),
-                        SizedBox(height: 16.h),
-                        Text(
-                          isRead == null
-                              ? AppLocalizations.of(context)!.noNotifications
-                              : isRead
-                                  ? AppLocalizations.of(context)!.noReadNotifications
-                                  : AppLocalizations.of(context)!.noUnreadNotifications,
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
-                      ],
+        if (notifications.isEmpty) {
+          content = RefreshIndicator(
+            onRefresh: _controller.handleRefresh,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(FontAwesomeIcons.bell, size: 64.r, color: AppColors.iconSecondary),
+                          SizedBox(height: 16.h),
+                          Text(
+                            isRead == null
+                                ? AppLocalizations.of(context)!.noNotifications
+                                : isRead
+                                    ? AppLocalizations.of(context)!.noReadNotifications
+                                    : AppLocalizations.of(context)!.noUnreadNotifications,
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-        );
+                );
+              },
+            ),
+          );
+        } else {
+          content = RefreshIndicator(
+            onRefresh: notificationController.refresh,
+            child: ListView.separated(
+              padding: EdgeInsets.all(isMobile ? 8 : 16),
+              itemCount: notifications.length,
+              separatorBuilder: (context, index) => SizedBox(height: 8.h),
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+                return _buildNotificationCard(notification, isMobile);
+              },
+            ),
+          );
+        }
       }
 
-      return RefreshIndicator(
-        onRefresh: notificationController.refresh,
-        child: ListView.separated(
-          padding: EdgeInsets.all(isMobile ? 8 : 16),
-          itemCount: notifications.length,
-          separatorBuilder: (context, index) => SizedBox(height: 8.h),
-          itemBuilder: (context, index) {
-            final notification = notifications[index];
-            return _buildNotificationCard(notification, isMobile);
-          },
-        ),
+      return AppLoadingSwitcher(
+        isLoading: isLoading,
+        loading: const NotificationListSkeleton(),
+        child: content,
       );
     });
   }

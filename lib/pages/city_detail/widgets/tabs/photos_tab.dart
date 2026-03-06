@@ -1,14 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 import '../../city_detail_controller.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Photos Tab - GetView 实现
 class PhotosTab extends GetView<CityDetailController> {
@@ -26,25 +27,24 @@ class PhotosTab extends GetView<CityDetailController> {
       final photos = userContentController.photos;
       final isLoading = userContentController.isLoadingPhotos.value;
       final isRefreshing = controller.isRefreshingPhotos.value;
+      final showInitialLoading = isLoading && photos.isEmpty && !isRefreshing;
 
-      if (isLoading && photos.isEmpty && !isRefreshing) {
-        return const PhotosTabSkeleton();
-      }
+      final content = photos.isEmpty
+          ? _EmptyPhotosState(
+              tag: tag,
+              l10n: l10n,
+            )
+          : _PhotosContent(
+              tag: tag,
+              groupedList: _groupPhotos(photos, l10n),
+              allPhotos: photos,
+              l10n: l10n,
+            );
 
-      if (photos.isEmpty) {
-        return _EmptyPhotosState(
-          tag: tag,
-          l10n: l10n,
-        );
-      }
-
-      final groupedList = _groupPhotos(photos, l10n);
-
-      return _PhotosContent(
-        tag: tag,
-        groupedList: groupedList,
-        allPhotos: photos,
-        l10n: l10n,
+      return AppLoadingSwitcher(
+        isLoading: showInitialLoading,
+        loading: const PhotosTabSkeleton(),
+        child: content,
       );
     });
   }

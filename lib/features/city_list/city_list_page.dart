@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -6,9 +7,9 @@ import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/features/city_list/widgets/widgets.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/global_map_page.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市列表页面 - 使用 GetView 符合 GetX 标准
 class CityListPage extends GetView<CityListController> {
@@ -68,38 +69,36 @@ class CityListPage extends GetView<CityListController> {
 
   Widget _buildBody(bool isMobile) {
     return Obx(() {
-      // 阶段1：tabs 还没加载完 → 全页骨架屏
-      if (controller.isLoadingTabs.value && controller.regionTabs.isEmpty) {
-        return const CityListSkeleton();
-      }
+      final showTabsInitialLoading = controller.isLoadingTabs.value && controller.regionTabs.isEmpty;
 
-      // 阶段2+：tabs 已加载，显示 FilterBar + 列表区域
-      return Column(
+      final content = Column(
         children: [
           // 搜索栏 + 区域 Tab 栏
           CityFilterBar(isMobile: isMobile),
           // 城市网格列表区域
           Expanded(
             child: Obx(() {
-              // 城市数据加载中 → 列表区域骨架屏
-              if (controller.isLoading.value && controller.cities.isEmpty) {
-                return const CityListSkeleton();
-              }
+              final showCitiesInitialLoading = controller.isLoading.value && controller.cities.isEmpty;
+              final cityContent = controller.errorMessage.value != null && controller.cities.isEmpty
+                  ? const CityListErrorState()
+                  : controller.cities.isEmpty
+                      ? const CityListEmptyState()
+                      : _CityGridContent(isMobile: isMobile);
 
-              // 错误状态
-              if (controller.errorMessage.value != null && controller.cities.isEmpty) {
-                return const CityListErrorState();
-              }
-
-              // 空状态
-              if (controller.cities.isEmpty) {
-                return const CityListEmptyState();
-              }
-
-              return _CityGridContent(isMobile: isMobile);
+              return AppLoadingSwitcher(
+                isLoading: showCitiesInitialLoading,
+                loading: const CityListSkeleton(),
+                child: cityContent,
+              );
             }),
           ),
         ],
+      );
+
+      return AppLoadingSwitcher(
+        isLoading: showTabsInitialLoading,
+        loading: const CityListSkeleton(),
+        child: content,
       );
     });
   }

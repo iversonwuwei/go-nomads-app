@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_rating_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
@@ -191,57 +192,60 @@ class ManageCityRatingsPage extends StatelessWidget {
           log('  - categories: ${_controller.categories.length} 项');
           log('  - statistics: ${_controller.statistics.length} 项');
 
-          if (_controller.isLoading.value) {
-            return const ManageListSkeleton();
-          }
-
+          Widget content;
           if (_controller.categories.isEmpty) {
-            return _buildEmptyState();
+            content = _buildEmptyState();
+          } else {
+            content = ListView.separated(
+              padding: EdgeInsets.all(16.w),
+              itemBuilder: (context, index) {
+                final category = _controller.categories[index];
+                final stat = _controller.statistics.firstWhereOrNull(
+                  (s) => s.categoryId == category.id,
+                );
+
+                return Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                      child: Icon(
+                        _getIcon(category.icon),
+                        color: const Color(0xFFFF4458),
+                      ),
+                    ),
+                    title: Text(category.name),
+                    subtitle: Text(
+                      l10n.manageCityRatingsSubtitle(
+                        category.nameEn ?? '',
+                        stat?.averageRating.toStringAsFixed(1) ?? '0.0',
+                        stat?.ratingCount ?? 0,
+                      ),
+                    ),
+                    trailing: category.isDefault
+                        ? Chip(
+                            label: Text(l10n.defaultStatus, style: TextStyle(fontSize: 12.sp)),
+                            padding: EdgeInsets.symmetric(horizontal: 8.w),
+                          )
+                        : IconButton(
+                            icon: const Icon(FontAwesomeIcons.trash),
+                            tooltip: l10n.delete,
+                            onPressed: () => _deleteRating(category.id, category.name),
+                          ),
+                  ),
+                );
+              },
+              separatorBuilder: (_, __) => SizedBox(height: 12.h),
+              itemCount: _controller.categories.length,
+            );
           }
 
-          return ListView.separated(
-            padding: EdgeInsets.all(16.w),
-            itemBuilder: (context, index) {
-              final category = _controller.categories[index];
-              final stat = _controller.statistics.firstWhereOrNull(
-                (s) => s.categoryId == category.id,
-              );
-
-              return Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                    child: Icon(
-                      _getIcon(category.icon),
-                      color: const Color(0xFFFF4458),
-                    ),
-                  ),
-                  title: Text(category.name),
-                  subtitle: Text(
-                    l10n.manageCityRatingsSubtitle(
-                      category.nameEn ?? '',
-                      stat?.averageRating.toStringAsFixed(1) ?? '0.0',
-                      stat?.ratingCount ?? 0,
-                    ),
-                  ),
-                  trailing: category.isDefault
-                      ? Chip(
-                          label: Text(l10n.defaultStatus, style: TextStyle(fontSize: 12.sp)),
-                          padding: EdgeInsets.symmetric(horizontal: 8.w),
-                        )
-                      : IconButton(
-                          icon: const Icon(FontAwesomeIcons.trash),
-                          tooltip: l10n.delete,
-                          onPressed: () => _deleteRating(category.id, category.name),
-                        ),
-                ),
-              );
-            },
-            separatorBuilder: (_, __) => SizedBox(height: 12.h),
-            itemCount: _controller.categories.length,
+          return AppLoadingSwitcher(
+            isLoading: _controller.isLoading.value,
+            loading: const ManageListSkeleton(),
+            child: content,
           );
         }),
       ),

@@ -1,15 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
-import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/pages/manage_pros_cons_page.dart';
 import 'package:go_nomads_app/pages/pros_and_cons_add_page.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Pros & Cons Tab - 优缺点标签页
 /// 使用 GetView 绑定 CityDetailController
@@ -30,11 +31,7 @@ class ProsConsTab extends GetView<CityDetailController> {
     return Obx(() {
       final isLoading = prosConsController.isLoadingPros.value || prosConsController.isLoadingCons.value;
 
-      if (isLoading) {
-        return const ProsConsTabSkeleton();
-      }
-
-      return RefreshIndicator(
+      final content = RefreshIndicator(
         onRefresh: () => prosConsController.loadCityProsCons(controller.cityId),
         child: ListView(
           padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 80.h),
@@ -88,6 +85,12 @@ class ProsConsTab extends GetView<CityDetailController> {
                   )),
           ],
         ),
+      );
+
+      return AppLoadingSwitcher(
+        isLoading: isLoading,
+        loading: const ProsConsTabSkeleton(),
+        child: content,
       );
     });
   }

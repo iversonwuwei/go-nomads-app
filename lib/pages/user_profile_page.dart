@@ -1,15 +1,16 @@
+import 'package:flutter/material.dart' hide Badge;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/user_profile_page_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart' hide Badge;
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 用户个人资料页面
 class UserProfilePage extends StatelessWidget {
@@ -37,38 +38,41 @@ class UserProfilePage extends StatelessWidget {
       body: SafeArea(
         child: Obx(() {
           final chatUser = controller.chatTargetUser;
-
-          if (controller.shouldBlockForRemoteProfile) {
-            return const UserProfileSkeleton();
-          }
-
           final remoteError = controller.remoteProfileError.value;
+
+          Widget content;
           if (remoteError != null) {
-            return _buildRemoteErrorState(isMobile, controller, remoteError);
+            content = _buildRemoteErrorState(isMobile, controller, remoteError);
+          } else {
+            content = ListView(
+              padding: EdgeInsets.fromLTRB(
+                isMobile ? 16 : 24,
+                isMobile ? 24 : 32,
+                isMobile ? 16 : 24,
+                100,
+              ),
+              children: [
+                _buildUserInfoCard(isMobile, chatUser, controller),
+                SizedBox(height: 24.h),
+                _buildStatsSection(isMobile, controller),
+                SizedBox(height: 24.h),
+                _buildBadgesSection(isMobile, controller),
+                if (_travelHistoryEnabled) ...[
+                  SizedBox(height: 24.h),
+                  _buildTravelHistorySection(isMobile, controller),
+                ],
+                SizedBox(height: 24.h),
+                _buildSkillsSection(isMobile, controller),
+                SizedBox(height: 24.h),
+                _buildInterestsSection(isMobile, controller),
+              ],
+            );
           }
 
-          return ListView(
-            padding: EdgeInsets.fromLTRB(
-              isMobile ? 16 : 24,
-              isMobile ? 24 : 32,
-              isMobile ? 16 : 24,
-              100,
-            ),
-            children: [
-              _buildUserInfoCard(isMobile, chatUser, controller),
-              SizedBox(height: 24.h),
-              _buildStatsSection(isMobile, controller),
-              SizedBox(height: 24.h),
-              _buildBadgesSection(isMobile, controller),
-              if (_travelHistoryEnabled) ...[
-                SizedBox(height: 24.h),
-                _buildTravelHistorySection(isMobile, controller),
-              ],
-              SizedBox(height: 24.h),
-              _buildSkillsSection(isMobile, controller),
-              SizedBox(height: 24.h),
-              _buildInterestsSection(isMobile, controller),
-            ],
+          return AppLoadingSwitcher(
+            isLoading: controller.shouldBlockForRemoteProfile,
+            loading: const UserProfileSkeleton(),
+            child: content,
           );
         }),
       ),

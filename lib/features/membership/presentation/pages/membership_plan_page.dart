@@ -11,9 +11,9 @@ import 'package:go_nomads_app/features/payment/application/services/wechat_pay_s
 import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart' as payment_entities;
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
 
 /// 支付方式枚举
 enum PaymentMethod {
@@ -95,7 +95,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
 
         // 加载中状态
         if (isLoadingPlans && paidPlans.isEmpty) {
-          return _buildLoadingSkeleton();
+          return _buildLoadingView();
         }
 
         // 错误状态
@@ -192,27 +192,11 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     });
   }
 
-  /// 加载中骨架屏
-  Widget _buildLoadingSkeleton() {
-    return SafeShimmer(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          children: [
-            const _CurrentStatusSkeleton(),
-            SizedBox(height: 24.h),
-            ...List.generate(3, (index) {
-              final hasSpacing = index < 2;
-              return Padding(
-                padding: EdgeInsets.only(bottom: hasSpacing ? 16 : 0),
-                child: const _MembershipPlanSkeleton(),
-              );
-            }),
-            SizedBox(height: 32.h),
-            const _FooterSkeleton(),
-          ],
-        ),
-      ),
+  /// 加载中视图
+  Widget _buildLoadingView() {
+    return const AppSceneLoading(
+      scene: AppLoadingScene.generic,
+      fullScreen: true,
     );
   }
 
@@ -830,151 +814,6 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     if (selectedMethod != null && context.mounted) {
       await _processPayment(context, plan, targetLevel, selectedMethod);
     }
-  }
-}
-
-/// 会员计划骨架卡片
-class _MembershipPlanSkeleton extends StatelessWidget {
-  const _MembershipPlanSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10.r,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(20.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                SkeletonBox(width: 48.w, height: 48.h, borderRadius: 12),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonBox(width: 140.w, height: 18.h),
-                      SizedBox(height: 6.h),
-                      SkeletonBox(width: 200.w, height: 14.h),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SkeletonBox(width: 80.w, height: 22.h),
-                    SizedBox(height: 6.h),
-                    SkeletonBox(width: 50.w, height: 14.h),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Column(
-              children: [
-                _PlanBenefitSkeleton(),
-                SizedBox(height: 8.h),
-                _PlanBenefitSkeleton(),
-                SizedBox(height: 8.h),
-                _PlanBenefitSkeleton(),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Container(
-              width: double.infinity,
-              height: 44.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlanBenefitSkeleton extends StatelessWidget {
-  const _PlanBenefitSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SkeletonCircle(size: 12.r),
-        SizedBox(width: 8.w),
-        Expanded(child: SkeletonBox(height: 14.h)),
-      ],
-    );
-  }
-}
-
-/// 当前状态骨架
-class _CurrentStatusSkeleton extends StatelessWidget {
-  const _CurrentStatusSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10.r,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SkeletonBox(width: 160.w, height: 18.h),
-            SizedBox(height: 12.h),
-            SkeletonBox(width: 220.w, height: 16.h),
-            SizedBox(height: 12.h),
-            SkeletonBox(width: 120.w, height: 14.h),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 底部说明骨架
-class _FooterSkeleton extends StatelessWidget {
-  const _FooterSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SkeletonBox(width: 180.w, height: 16.h),
-        SizedBox(height: 8.h),
-        SkeletonBox(width: double.infinity, height: 14.h),
-        SizedBox(height: 6.h),
-        SkeletonBox(width: double.infinity, height: 14.h),
-      ],
-    );
   }
 }
 

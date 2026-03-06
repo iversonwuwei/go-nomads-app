@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -6,10 +7,10 @@ import 'package:go_nomads_app/controllers/manage_reviews_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/widgets/tabs/reviews_tab.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 import 'add_review_page.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Reviews 数据管理列表页面 - 使用独立数据集
 class ManageReviewsPage extends StatefulWidget {
@@ -104,12 +105,9 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
         ],
       ),
       body: Obx(() {
-        if (_controller.isLoading.value) {
-          return const ManageListSkeleton();
-        }
-
+        Widget content;
         if (_controller.reviews.isEmpty) {
-          return Center(
+          content = Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -140,44 +138,49 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
               ],
             ),
           );
+        } else {
+          content = ListView.builder(
+            controller: _controller.scrollController,
+            padding: EdgeInsets.all(16.w),
+            itemCount: _controller.reviews.length + 1,
+            itemBuilder: (context, index) {
+              if (index == _controller.reviews.length) {
+                return Obx(() {
+                  if (_controller.isLoadingMore.value) {
+                    return Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: const Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (!_controller.hasMore.value) {
+                    return Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: Center(
+                        child: Text(
+                          l10n.manageReviewsLoadedAll(_controller.reviews.length),
+                          style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
+                        ),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                });
+              }
+
+              final review = _controller.reviews[index];
+              return ReviewCard(
+                review: review,
+                l10n: l10n,
+                onDelete: _controller.canDelete.value ? () => _deleteReview(review.id) : null,
+              );
+            },
+          );
         }
 
-        return ListView.builder(
-          controller: _controller.scrollController,
-          padding: EdgeInsets.all(16.w),
-          itemCount: _controller.reviews.length + 1,
-          itemBuilder: (context, index) {
-            // 底部加载指示器
-            if (index == _controller.reviews.length) {
-              return Obx(() {
-                if (_controller.isLoadingMore.value) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                if (!_controller.hasMore.value) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Center(
-                      child: Text(
-                        l10n.manageReviewsLoadedAll(_controller.reviews.length),
-                        style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              });
-            }
-
-            final review = _controller.reviews[index];
-            return ReviewCard(
-              review: review,
-              l10n: l10n,
-              onDelete: _controller.canDelete.value ? () => _deleteReview(review.id) : null,
-            );
-          },
+        return AppLoadingSwitcher(
+          isLoading: _controller.isLoading.value,
+          loading: const ManageListSkeleton(),
+          child: content,
         );
       }),
     );

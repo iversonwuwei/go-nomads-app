@@ -1,11 +1,12 @@
-import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
-import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_user_tile.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
+import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_user_tile.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 指定版主页面的用户列表
 class AssignModeratorUserList extends GetView<AssignModeratorController> {
@@ -14,18 +15,12 @@ class AssignModeratorUserList extends GetView<AssignModeratorController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // 加载中状态
-      if (controller.isLoading.value) {
-        return const ManageListSkeleton();
-      }
-
-      // 空状态
-      if (controller.filteredUsers.isEmpty) {
-        return _buildEmptyState();
-      }
-
-      // 用户列表
-      return _buildUserList();
+      final content = controller.filteredUsers.isEmpty ? _buildEmptyState() : _buildUserList();
+      return AppLoadingSwitcher(
+        isLoading: controller.isLoading.value,
+        loading: const ManageListSkeleton(),
+        child: content,
+      );
     });
   }
 

@@ -15,6 +15,7 @@ import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/chat_more_options_sheet.dart';
@@ -606,51 +607,51 @@ class _DirectChatViewState extends State<_DirectChatView> {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading) {
-          return const MessagesSkeleton();
-        }
-
         final currentUserId = _currentUserId;
 
-        return Column(
-          children: [
-            // Messages
-            Expanded(
-              child: controller.messages.isEmpty && _uploadingImages.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      reverse: true,
-                      padding: EdgeInsets.all(16.w),
-                      itemCount: controller.messages.length + _uploadingImages.length,
-                      itemBuilder: (context, index) {
-                        // 先显示上传中的图片（在最底部/最新位置）
-                        if (index < _uploadingImages.length) {
-                          final uploadingImage = _uploadingImages[_uploadingImages.length - 1 - index];
-                          return _buildUploadingImageBubble(uploadingImage);
-                        }
-                        // 然后显示已发送的消息
-                        final messageIndex = index - _uploadingImages.length;
-                        final message = controller.messages[messageIndex];
-                        final isMe = currentUserId != null && message.author.userId == currentUserId;
-                        return _buildMessageBubble(message, isMe, controller);
-                      },
-                    ),
-            ),
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading,
+          loading: const MessagesSkeleton(),
+          child: Column(
+            children: [
+              // Messages
+              Expanded(
+                child: controller.messages.isEmpty && _uploadingImages.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.builder(
+                        reverse: true,
+                        padding: EdgeInsets.all(16.w),
+                        itemCount: controller.messages.length + _uploadingImages.length,
+                        itemBuilder: (context, index) {
+                          // 先显示上传中的图片（在最底部/最新位置）
+                          if (index < _uploadingImages.length) {
+                            final uploadingImage = _uploadingImages[_uploadingImages.length - 1 - index];
+                            return _buildUploadingImageBubble(uploadingImage);
+                          }
+                          // 然后显示已发送的消息
+                          final messageIndex = index - _uploadingImages.length;
+                          final message = controller.messages[messageIndex];
+                          final isMe = currentUserId != null && message.author.userId == currentUserId;
+                          return _buildMessageBubble(message, isMe, controller);
+                        },
+                      ),
+              ),
 
-            // Reply Preview
-            Obx(() {
-              if (controller.replyTo != null) {
-                return _buildReplyPreview(controller);
-              }
-              return const SizedBox.shrink();
-            }),
+              // Reply Preview
+              Obx(() {
+                if (controller.replyTo != null) {
+                  return _buildReplyPreview(controller);
+                }
+                return const SizedBox.shrink();
+              }),
 
-            // Input
-            _buildMessageInput(controller),
+              // Input
+              _buildMessageInput(controller),
 
-            // Emoji Panel
-            if (_showEmojiPanel) _buildEmojiPanel(),
-          ],
+              // Emoji Panel
+              if (_showEmojiPanel) _buildEmojiPanel(),
+            ],
+          ),
         );
       }),
     );

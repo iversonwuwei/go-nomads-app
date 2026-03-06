@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -10,10 +11,10 @@ import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_budget_card.
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_day_card.dart';
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_overview_card.dart';
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_recommendation_cards.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 旅行计划详情页 - 使用 GetView 模式重构
 ///
@@ -100,15 +101,15 @@ class _TravelPlanPageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.isLoading.value) {
-        return _TravelPlanLoadingView(controllerTag: controllerTag);
-      }
+      final content = controller.plan.value == null
+          ? const TravelPlanErrorView()
+          : _TravelPlanContentView(controllerTag: controllerTag);
 
-      if (controller.plan.value == null) {
-        return const TravelPlanErrorView();
-      }
-
-      return _TravelPlanContentView(controllerTag: controllerTag);
+      return AppLoadingSwitcher(
+        isLoading: controller.isLoading.value,
+        loading: _TravelPlanLoadingView(controllerTag: controllerTag),
+        child: content,
+      );
     });
   }
 }
@@ -212,134 +213,12 @@ class _SkeletonListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Padding(
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        children: [
-          // Overview Card Skeleton
-          _SkeletonCard(height: 150.h, shimmerController: controller.shimmerController),
-          SizedBox(height: 16.h),
-          // Transportation Card Skeleton
-          _SkeletonCard(height: 200.h, shimmerController: controller.shimmerController),
-          SizedBox(height: 16.h),
-          // Accommodation Card Skeleton
-          _SkeletonCard(height: 180.h, shimmerController: controller.shimmerController),
-          SizedBox(height: 16.h),
-          // Itinerary Card Skeleton
-          _SkeletonCard(height: 300.h, shimmerController: controller.shimmerController),
-          SizedBox(height: 16.h),
-          // Loading indicator
-          Center(
-            child: Column(
-              children: [
-                SizedBox(
-                  width: 24.w,
-                  height: 24.h,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  l10n.generatingAiPlan,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 骨架卡片
-class _SkeletonCard extends StatelessWidget {
-  final double height;
-  final AnimationController shimmerController;
-
-  const _SkeletonCard({
-    required this.height,
-    required this.shimmerController,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: shimmerController,
-      builder: (context, child) {
-        return Container(
-          height: height,
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.1),
-                blurRadius: 8.r,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  _buildShimmerBox(width: 24.w, height: 24.h, borderRadius: 6),
-                  SizedBox(width: 12.w),
-                  _buildShimmerBox(width: 120.w, height: 20.h, borderRadius: 4),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              _buildShimmerBox(width: double.infinity, height: 14.h, borderRadius: 4),
-              SizedBox(height: 10.h),
-              _buildShimmerBox(width: double.infinity, height: 14.h, borderRadius: 4),
-              SizedBox(height: 10.h),
-              _buildShimmerBox(width: 200.w, height: 14.h, borderRadius: 4),
-              const Spacer(),
-              Row(
-                children: [
-                  _buildShimmerBox(width: 80.w, height: 12.h, borderRadius: 4),
-                  const Spacer(),
-                  _buildShimmerBox(width: 60.w, height: 12.h, borderRadius: 4),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildShimmerBox({
-    required double width,
-    required double height,
-    required double borderRadius,
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.grey[300]!,
-            Colors.grey[100]!,
-            Colors.grey[300]!,
-          ],
-          begin: Alignment(-1.0 + shimmerController.value * 2, 0),
-          end: Alignment(1.0 + shimmerController.value * 2, 0),
-          stops: const [0.0, 0.5, 1.0],
-        ),
-        borderRadius: BorderRadius.circular(borderRadius),
+    return SizedBox(
+      height: 360.h,
+      child: AppSceneLoading(
+        scene: AppLoadingScene.travelPlan,
+        fullScreen: true,
+        subtitleOverride: controller.progressMessage.value,
       ),
     );
   }

@@ -10,6 +10,7 @@ import 'package:go_nomads_app/features/moderator/domain/entities/moderator_appli
 import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
 import 'package:go_nomads_app/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
@@ -261,12 +262,10 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
   Widget _buildBody() {
     final l10n = AppLocalizations.of(context)!;
-    if (_isLoading) {
-      return const UserProfileSkeleton();
-    }
+    Widget content;
 
     if (_error != null) {
-      return Center(
+      content = Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -290,10 +289,8 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
           ],
         ),
       );
-    }
-
-    if (_application == null) {
-      return Center(
+    } else if (_application == null) {
+      content = Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -306,36 +303,31 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
           ],
         ),
       );
+    } else {
+      content = SingleChildScrollView(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStatusCard(),
+            SizedBox(height: 16.h),
+            _buildApplicantCard(),
+            SizedBox(height: 16.h),
+            _buildCityCard(),
+            SizedBox(height: 16.h),
+            _buildReasonCard(),
+            SizedBox(height: 24.h),
+            if (_application!.isPending) _buildActionButtons(),
+            if (_application!.isApproved) _buildRevokeButton(),
+          ],
+        ),
+      );
     }
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 申请状态卡片
-          _buildStatusCard(),
-          SizedBox(height: 16.h),
-
-          // 申请人信息
-          _buildApplicantCard(),
-          SizedBox(height: 16.h),
-
-          // 申请城市
-          _buildCityCard(),
-          SizedBox(height: 16.h),
-
-          // 申请理由
-          _buildReasonCard(),
-          SizedBox(height: 24.h),
-
-          // 操作按钮（仅待处理状态显示）
-          if (_application!.isPending) _buildActionButtons(),
-
-          // 撤销版主按钮（仅已通过状态显示）
-          if (_application!.isApproved) _buildRevokeButton(),
-        ],
-      ),
+    return AppLoadingSwitcher(
+      isLoading: _isLoading,
+      loading: const UserProfileSkeleton(),
+      child: content,
     );
   }
 

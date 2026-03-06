@@ -1,13 +1,14 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/manage_pros_cons_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+
 import 'pros_and_cons_add_page.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Pros & Cons 数据管理列表页面
 /// 需要 StatefulWidget 因为 TabController 需要 SingleTickerProviderStateMixin
@@ -99,16 +100,16 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
         ],
       ),
       body: Obx(() {
-        if (_controller.isLoading.value) {
-          return const ManageListSkeleton();
-        }
-
-        return TabBarView(
-          controller: _tabController,
-          children: [
-            _buildProsList(),
-            _buildConsList(),
-          ],
+        return AppLoadingSwitcher(
+          isLoading: _controller.isLoading.value,
+          loading: const ManageListSkeleton(),
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildProsList(),
+              _buildConsList(),
+            ],
+          ),
         );
       }),
     );

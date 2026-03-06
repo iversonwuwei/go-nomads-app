@@ -1,13 +1,14 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
-import 'package:go_nomads_app/controllers/room_type_list_page_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/room_type_list_page_controller.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 房型列表页面
 class RoomTypeListPage extends StatelessWidget {
@@ -44,12 +45,9 @@ class RoomTypeListPage extends StatelessWidget {
         elevation: 0,
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const HotelListSkeleton();
-        }
-
+        Widget content;
         if (controller.roomTypes.isEmpty) {
-          return Center(
+          content = Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -62,15 +60,21 @@ class RoomTypeListPage extends StatelessWidget {
               ],
             ),
           );
+        } else {
+          content = ListView.builder(
+            padding: EdgeInsets.all(16.w),
+            itemCount: controller.roomTypes.length,
+            itemBuilder: (context, index) {
+              final roomType = controller.roomTypes[index];
+              return _buildRoomTypeCard(roomType, l10n);
+            },
+          );
         }
 
-        return ListView.builder(
-          padding: EdgeInsets.all(16.w),
-          itemCount: controller.roomTypes.length,
-          itemBuilder: (context, index) {
-            final roomType = controller.roomTypes[index];
-            return _buildRoomTypeCard(roomType, l10n);
-          },
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading.value,
+          loading: const HotelListSkeleton(),
+          child: content,
         );
       }),
     );

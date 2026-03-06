@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/edit_social_links_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 社交平台常量
@@ -170,45 +171,45 @@ class EditSocialLinksPage extends StatelessWidget {
         title: Text(l10n.modularProfileModuleSocialLinks),
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const EditFormSkeleton();
-        }
-
-        return Column(
-          children: [
-            // 统计信息
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(16.w),
-              color: Colors.blue.shade50,
-              child: Row(
-                children: [
-                  const Icon(FontAwesomeIcons.link, color: Colors.blue),
-                  SizedBox(width: 8.w),
-                  Obx(() => Text(
-                        l10n.editSocialLinksAddedCount(controller.linkedCount, SocialPlatforms.platforms.length),
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
-                        ),
-                      )),
-                ],
-              ),
-            ),
-
-            // 平台列表
-            Expanded(
-              child: ListView(
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading.value,
+          loading: const EditFormSkeleton(),
+          child: Column(
+            children: [
+              // 统计信息
+              Container(
+                width: double.infinity,
                 padding: EdgeInsets.all(16.w),
-                children: SocialPlatforms.platforms.entries.map((entry) {
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 8.h),
-                    child: _buildPlatformCard(context, controller, entry.key, entry.value),
-                  );
-                }).toList(),
+                color: Colors.blue.shade50,
+                child: Row(
+                  children: [
+                    const Icon(FontAwesomeIcons.link, color: Colors.blue),
+                    SizedBox(width: 8.w),
+                    Obx(() => Text(
+                          l10n.editSocialLinksAddedCount(controller.linkedCount, SocialPlatforms.platforms.length),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.sp,
+                          ),
+                        )),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // 平台列表
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.all(16.w),
+                  children: SocialPlatforms.platforms.entries.map((entry) {
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: _buildPlatformCard(context, controller, entry.key, entry.value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
         );
       }),
     );

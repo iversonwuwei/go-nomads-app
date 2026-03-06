@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_page.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
@@ -29,25 +30,23 @@ class CoworkingTab extends GetView<CityDetailController> {
     final coworkingController = Get.find<CoworkingStateController>();
 
     return Obx(() {
-      // 显示加载状态
-      if (coworkingController.isLoading.value) {
-        return const CoworkingTabSkeleton();
-      }
+      final spaces = coworkingController.coworkingSpaces;
+      final content = spaces.isEmpty
+          ? _EmptyCoworkingState(
+              cityId: controller.cityId,
+              onAddPressed: onAddCoworkingPressed,
+            )
+          : _CoworkingList(
+              cityId: controller.cityId,
+              spaces: spaces,
+              isAdminOrModerator: controller.isAdmin.value || controller.isModerator.value,
+              onAddCoworkingPressed: onAddCoworkingPressed,
+            );
 
-      // 显示空状态
-      if (coworkingController.coworkingSpaces.isEmpty) {
-        return _EmptyCoworkingState(
-          cityId: controller.cityId,
-          onAddPressed: onAddCoworkingPressed,
-        );
-      }
-
-      // 显示共享办公空间列表
-      return _CoworkingList(
-        cityId: controller.cityId,
-        spaces: coworkingController.coworkingSpaces,
-        isAdminOrModerator: controller.isAdmin.value || controller.isModerator.value,
-        onAddCoworkingPressed: onAddCoworkingPressed,
+      return AppLoadingSwitcher(
+        isLoading: coworkingController.isLoading.value,
+        loading: const CoworkingTabSkeleton(),
+        child: content,
       );
     });
   }
