@@ -9,6 +9,7 @@ import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_cont
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Guide Tab - AI 数字游民指南
 /// 使用 GetView 绑定 CityDetailController
@@ -296,35 +297,49 @@ class _GuideLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          SizedBox(height: 16.h),
-          Obx(() => Text(
-                aiController.isGeneratingGuide ? '🤖 AI 正在生成旅游指南...' : '📖 正在加载旅游指南...',
-                style: TextStyle(fontSize: 16.sp, color: Colors.grey),
-              )),
-          if (aiController.isGeneratingGuide) ...[
-            SizedBox(height: 12.h),
-            Obx(() => Text(
-                  aiController.guideGenerationMessage,
-                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                )),
-            SizedBox(height: 8.h),
-            Obx(() => Text(
-                  '${aiController.guideGenerationProgress}%',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.cityPrimary,
-                  ),
-                )),
-          ],
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Obx(() => AppLoadingWidget(
+                        fullScreen: false,
+                        cardWidth: 280,
+                        cardHeight: 180,
+                        title: aiController.isGeneratingGuide ? 'AI 正在生成旅游指南' : '正在加载旅游指南',
+                        subtitle: aiController.isGeneratingGuide ? 'Generating guide...' : 'Loading guide...',
+                        icon: Icons.menu_book_rounded,
+                        accentColor: AppColors.cityPrimary,
+                      )),
+                  if (aiController.isGeneratingGuide) ...[
+                    SizedBox(height: 12.h),
+                    Obx(() => Text(
+                          aiController.guideGenerationMessage,
+                          style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                          textAlign: TextAlign.center,
+                        )),
+                    SizedBox(height: 8.h),
+                    Obx(() => Text(
+                          '${aiController.guideGenerationProgress}%',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.cityPrimary,
+                          ),
+                        )),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

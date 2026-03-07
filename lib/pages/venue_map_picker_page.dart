@@ -2,6 +2,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/amap_poi_service.dart';
 import 'package:go_nomads_app/services/location_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
@@ -355,22 +356,12 @@ class _VenueMapPickerPageState extends State<VenueMapPickerPage> {
         borderRadius: BorderRadius.circular(12.r),
         child: Container(
           color: Colors.grey[200],
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(color: Color(0xFFFF4458)),
-                SizedBox(height: 16.h),
-                Text(
-                  '${l10n.loading}...',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
+            child: AppLoadingWidget(
+              fullScreen: true,
+              title: l10n.loading,
+              subtitle: '${l10n.loading}...',
+              icon: Icons.map_rounded,
+              accentColor: const Color(0xFFFF4458),
           ),
         ),
       );

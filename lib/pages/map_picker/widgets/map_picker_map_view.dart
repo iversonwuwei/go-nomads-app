@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_controller.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 地图视图组件（含中心标记和定位按钮）
@@ -17,20 +18,12 @@ class MapPickerMapView extends GetView<MapPickerController> {
       if (controller.isLoadingLocation.value && !controller.isInitialized.value) {
         return Container(
           color: Colors.white,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-                ),
-                SizedBox(height: 16.h),
-                Text(
-                  '正在获取您的位置... / Getting your location...',
-                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
-                ),
-              ],
-            ),
+          child: const AppLoadingWidget(
+            fullScreen: true,
+            title: '正在获取您的位置',
+            subtitle: 'Getting your location...',
+            icon: Icons.location_searching_rounded,
+            accentColor: Color(0xFFFF4458),
           ),
         );
       }

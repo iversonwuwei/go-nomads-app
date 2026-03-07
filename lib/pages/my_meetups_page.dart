@@ -474,16 +474,7 @@ class MyMeetupsPage extends StatelessWidget {
   Widget _buildLoadingFooter() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 24.w,
-            height: 24.h,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange),
-          ),
-        ],
-      ),
+      child: const Center(child: AppLoadingWidget(fullScreen: false)),
     );
   }
 

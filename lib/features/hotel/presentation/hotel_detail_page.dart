@@ -12,6 +12,7 @@ import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_review_
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_hotel_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
@@ -224,7 +225,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: Colors.grey[300],
-                          child: const Center(child: CircularProgressIndicator()),
+                          child: const AppLoadingWidget(fullScreen: false),
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: Colors.grey[300],
@@ -958,7 +959,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   placeholder: (context, url) => Container(
                     height: 150.h,
                     color: Colors.grey[200],
-                    child: const Center(child: CircularProgressIndicator()),
+                    child: const AppLoadingWidget(fullScreen: false),
                   ),
                   errorWidget: (context, url, error) => Container(
                     height: 150.h,
@@ -1656,11 +1657,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 SizedBox(height: 8.h),
                 // 评论列表
                 if (_isLoadingReviews && _reviews.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.w),
-                      child: CircularProgressIndicator(),
-                    ),
+                  Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: const Center(child: AppLoadingWidget(fullScreen: false)),
                   )
                 else if (_reviews.isEmpty)
                   Center(
@@ -1681,13 +1680,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         Padding(
                           padding: EdgeInsets.only(top: 8.h),
                           child: _isLoadingReviews
-                              ? Center(
-                                  child: SizedBox(
-                                    width: 24.w,
-                                    height: 24.h,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                )
+                              ? const Center(child: AppLoadingWidget(fullScreen: false))
                               : TextButton(
                                   onPressed: _loadReviews,
                                   child: Text(l10n.loadMoreReviews),

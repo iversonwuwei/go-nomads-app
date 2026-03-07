@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/legal_document.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 第三方SDK信息收集清单页面
 ///
@@ -55,7 +56,7 @@ class _SdkListPageState extends State<SdkListPage> {
 
   Widget _buildBody(AppLocalizations l10n) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
     }
 
     if (_sdkList == null || _sdkList!.isEmpty) {

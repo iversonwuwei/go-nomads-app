@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// 技能编辑页面
 class EditSkillsPage extends StatelessWidget {
@@ -30,7 +31,7 @@ class EditSkillsPage extends StatelessWidget {
         title: Text(l10n.editSkillsTitle),
       ),
       body: Obx(() => controller.loading.value
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: true)
           : Column(
               children: [
                 // 已选技能显示

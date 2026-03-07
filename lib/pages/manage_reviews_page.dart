@@ -149,7 +149,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                   if (_controller.isLoadingMore.value) {
                     return Padding(
                       padding: EdgeInsets.all(16.w),
-                      child: const Center(child: CircularProgressIndicator()),
+                      child: const AppLoadingWidget(fullScreen: false),
                     );
                   }
                   if (!_controller.hasMore.value) {

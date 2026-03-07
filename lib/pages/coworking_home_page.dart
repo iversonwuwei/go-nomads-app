@@ -388,9 +388,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.all(16.0.w),
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                      child: const Center(child: AppLoadingWidget(fullScreen: false)),
                   ),
                 ),
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -9,11 +10,11 @@ import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_hero_card.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_input_bar.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_message_list.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_streaming_status.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 页面
 /// 使用 GetView 模式，自动获取 AiChatController
@@ -160,7 +161,7 @@ class AiChatPage extends GetView<AiChatController> {
     return Obx(() {
       // 初始化加载中
       if (controller.isInitializing.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
       }
 
       // 初始化错误状态

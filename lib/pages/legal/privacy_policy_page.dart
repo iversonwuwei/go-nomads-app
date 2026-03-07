@@ -5,6 +5,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/legal_document.dart';
 import 'package:go_nomads_app/pages/legal/sdk_list_page.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
 
@@ -66,7 +67,7 @@ class _PrivacyPolicyPageState extends State<PrivacyPolicyPage> {
   Widget _buildBody() {
     final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
     }
 
     if (_error != null || _document == null) {

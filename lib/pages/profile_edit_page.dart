@@ -25,6 +25,7 @@ import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/utils/image_upload_helper.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
@@ -1617,7 +1618,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             ),
             child: Obx(() {
               if (_userManagementController!.isLoading.value && _userManagementController!.users.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
+                return const AppSceneLoading(scene: AppLoadingScene.profile, fullScreen: false);
               }
 
               if (_userManagementController!.errorMessage.value.isNotEmpty) {
@@ -1648,7 +1649,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
                       return Center(
                         child: Padding(
                           padding: EdgeInsets.all(16.0.w),
-                          child: CircularProgressIndicator(),
+                          child: const AppLoadingWidget(fullScreen: false),
                         ),
                       );
                     }
@@ -2108,7 +2109,9 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
               // 技能列表
               Expanded(
                 child:
-                    _isLoading ? const Center(child: CircularProgressIndicator()) : _buildSkillsList(scrollController),
+                    _isLoading
+                        ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: false)
+                        : _buildSkillsList(scrollController),
               ),
 
               // 底部按钮
@@ -2522,7 +2525,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
               // 兴趣列表
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                  ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: false)
                     : _buildInterestsList(scrollController),
               ),
 

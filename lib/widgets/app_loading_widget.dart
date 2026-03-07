@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -38,12 +40,16 @@ class AppSceneLoading extends StatelessWidget {
   final AppLoadingScene scene;
   final bool fullScreen;
   final String? subtitleOverride;
+  final double cardWidth;
+  final double cardHeight;
 
   const AppSceneLoading({
     super.key,
     this.scene = AppLoadingScene.generic,
     this.fullScreen = true,
     this.subtitleOverride,
+    this.cardWidth = 320,
+    this.cardHeight = 220,
   });
 
   static const _brandRed = Color(0xFFFF4458);
@@ -166,6 +172,8 @@ class AppSceneLoading extends StatelessWidget {
         fullScreen: fullScreen,
         title: 'Loading...',
         subtitle: subtitleOverride,
+        cardWidth: cardWidth,
+        cardHeight: cardHeight,
       );
     }
     final spec = _resolveSpec(l10n);
@@ -175,6 +183,8 @@ class AppSceneLoading extends StatelessWidget {
       subtitle: subtitleOverride ?? l10n.loading,
       icon: spec.icon,
       accentColor: spec.accentColor,
+      cardWidth: cardWidth,
+      cardHeight: cardHeight,
     );
   }
 }
@@ -188,6 +198,10 @@ class AppLoadingWidget extends StatefulWidget {
   final Color? accentColor;
   final bool showSpinner;
   final bool fullScreen;
+  final double cardWidth;
+  final double cardHeight;
+  final bool keepAspectScale;
+  final double minScale;
 
   const AppLoadingWidget({
     super.key,
@@ -197,6 +211,10 @@ class AppLoadingWidget extends StatefulWidget {
     this.accentColor,
     this.showSpinner = true,
     this.fullScreen = false,
+    this.cardWidth = 320,
+    this.cardHeight = 220,
+    this.keepAspectScale = true,
+    this.minScale = 0.3,
   });
 
   @override
@@ -224,89 +242,131 @@ class _AppLoadingWidgetState extends State<AppLoadingWidget> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final accent = widget.accentColor ?? Theme.of(context).colorScheme.primary;
+    final baseWidth = widget.cardWidth.w;
+    final baseHeight = widget.cardHeight.h;
 
-    final content = Center(
-      child: AnimatedBuilder(
-        animation: _pulseController,
-        builder: (context, child) {
-          final t = _pulseController.value;
-          final scale = 0.96 + (t * 0.04);
-          final opacity = 0.72 + (t * 0.28);
-
-          return Opacity(
-            opacity: opacity,
-            child: Transform.scale(
-              scale: scale,
-              child: child,
+    final card = Container(
+      width: baseWidth,
+      height: baseHeight,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: accent.withValues(alpha: 0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 18.r,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: constraints.maxWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 56.w,
+                      height: 56.w,
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(widget.icon, size: 28.r, color: accent),
+                    ),
+                    if (widget.showSpinner) ...[
+                      SizedBox(height: 14.h),
+                      SizedBox(
+                        width: 22.w,
+                        height: 22.w,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor: AlwaysStoppedAnimation<Color>(accent),
+                        ),
+                      ),
+                    ],
+                    if (widget.title != null) ...[
+                      SizedBox(height: 14.h),
+                      Text(
+                        widget.title!,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                    if (widget.subtitle != null) ...[
+                      SizedBox(height: 6.h),
+                      Text(
+                        widget.subtitle!,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           );
         },
-        child: Container(
-          constraints: BoxConstraints(maxWidth: 320.w),
-          margin: EdgeInsets.symmetric(horizontal: 20.w),
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: accent.withValues(alpha: 0.12)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 18.r,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 56.w,
-                height: 56.w,
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
+      ),
+    );
+
+    final content = Center(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final horizontalPadding = 24.w;
+          final verticalPadding = 24.h;
+          final availableWidth = constraints.maxWidth.isFinite
+              ? math.max(1.0, constraints.maxWidth - (horizontalPadding * 2))
+              : baseWidth;
+          final availableHeight = constraints.maxHeight.isFinite
+              ? math.max(1.0, constraints.maxHeight - (verticalPadding * 2))
+              : baseHeight;
+
+          final widthScale = availableWidth / baseWidth;
+          final heightScale = availableHeight / baseHeight;
+          final fitScale = math.min(widthScale, heightScale);
+          final safeFitScale = fitScale.isFinite ? fitScale : 1.0;
+          final adaptiveScale = widget.keepAspectScale
+              ? safeFitScale.clamp(widget.minScale, 1.0)
+              : 1.0;
+
+          return AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              final t = _pulseController.value;
+              final pulseScale = 0.96 + (t * 0.04);
+              final opacity = 0.72 + (t * 0.28);
+
+              return Opacity(
+                opacity: opacity,
+                child: Transform.scale(
+                  scale: pulseScale * adaptiveScale,
+                  child: child,
                 ),
-                child: Icon(widget.icon, size: 28.r, color: accent),
-              ),
-              if (widget.showSpinner) ...[
-                SizedBox(height: 14.h),
-                SizedBox(
-                  width: 22.w,
-                  height: 22.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.4,
-                    valueColor: AlwaysStoppedAnimation<Color>(accent),
-                  ),
-                ),
-              ],
-              if (widget.title != null) ...[
-                SizedBox(height: 14.h),
-                Text(
-                  widget.title!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-              if (widget.subtitle != null) ...[
-                SizedBox(height: 6.h),
-                Text(
-                  widget.subtitle!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+              );
+            },
+            child: card,
+          );
+        },
       ),
     );
 
@@ -326,6 +386,8 @@ class AppLoadingSwitcher extends StatelessWidget {
   final Widget? loading;
   final String? title;
   final String? subtitle;
+  final double loadingCardWidth;
+  final double loadingCardHeight;
 
   const AppLoadingSwitcher({
     super.key,
@@ -334,6 +396,8 @@ class AppLoadingSwitcher extends StatelessWidget {
     this.loading,
     this.title,
     this.subtitle,
+    this.loadingCardWidth = 320,
+    this.loadingCardHeight = 220,
   });
 
   @override
@@ -345,7 +409,14 @@ class AppLoadingSwitcher extends StatelessWidget {
       child: isLoading
           ? KeyedSubtree(
               key: const ValueKey('loading'),
-              child: loading ?? AppLoadingWidget(title: title, subtitle: subtitle, fullScreen: true),
+              child: loading ??
+                  AppLoadingWidget(
+                    title: title,
+                    subtitle: subtitle,
+                    fullScreen: true,
+                    cardWidth: loadingCardWidth,
+                    cardHeight: loadingCardHeight,
+                  ),
             )
           : KeyedSubtree(
               key: const ValueKey('content'),

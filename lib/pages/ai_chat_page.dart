@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/ai_chat_controller.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AiChatPage extends GetView<AiChatController> {
   const AiChatPage({super.key});
@@ -38,7 +39,7 @@ class AiChatPage extends GetView<AiChatController> {
             Expanded(
               child: Obx(() {
                 if (controller.isInitializing.value) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
                 }
 
                 // 显示初始化错误状态

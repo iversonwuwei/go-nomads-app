@@ -16,6 +16,7 @@ import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
@@ -381,12 +382,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
         // 首次加载时显示中间加载指示器
         if (isLoading && meetups.isEmpty && !_isRefreshing) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: const Color(0xFFFF4458),
-              strokeWidth: 3,
-            ),
-          );
+          return const AppSceneLoading(scene: AppLoadingScene.meetup, fullScreen: true);
         }
 
         if (meetups.isEmpty) {
@@ -466,12 +462,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                       // 加载更多指示器
                       return Padding(
                         padding: EdgeInsets.symmetric(vertical: 16.h),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: const Color(0xFFFF4458),
-                            strokeWidth: 2,
-                          ),
-                        ),
+                        child: const Center(child: AppLoadingWidget(fullScreen: false)),
                       );
                     }
                     return _buildMeetupCard(meetups[index]);

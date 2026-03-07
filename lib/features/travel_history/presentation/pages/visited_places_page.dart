@@ -210,13 +210,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
 
   Widget _buildCityMetrics(ThemeData theme) {
     if (controller.isCityLoading.value && controller.citySummary.value == null) {
-      return Center(
-        child: SizedBox(
-          height: 20.h,
-          width: 20.w,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      );
+      return const Center(child: AppLoadingWidget(fullScreen: false));
     }
 
     final weather = controller.weather.value;
@@ -509,16 +503,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       return SliverToBoxAdapter(
         child: Padding(
           padding: EdgeInsets.all(16.w),
-          child: Center(
-            child: SizedBox(
-              width: 24.w,
-              height: 24.h,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
+          child: const Center(child: AppLoadingWidget(fullScreen: false)),
         ),
       );
     });

@@ -14,6 +14,7 @@ import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/w
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:go_nomads_app/widgets/report_button.dart';
@@ -129,11 +130,7 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
         if (controller.isLoading.value) {
           return Container(
             padding: EdgeInsets.all(40.w),
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFFFF4458),
-              ),
-            ),
+            child: const AppSceneLoading(scene: AppLoadingScene.meetupDetail, fullScreen: false),
           );
         }
 

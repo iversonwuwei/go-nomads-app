@@ -205,12 +205,7 @@ class MeetupListView extends GetView<MeetupListController> {
   Widget _buildLoadingIndicator() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
-      child: Center(
-        child: CircularProgressIndicator(
-          color: const Color(0xFFFF4458),
-          strokeWidth: 2,
-        ),
-      ),
+      child: const Center(child: AppLoadingWidget(fullScreen: false)),
     );
   }
 

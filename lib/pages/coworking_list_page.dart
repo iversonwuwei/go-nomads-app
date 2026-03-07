@@ -526,9 +526,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
       if (controller.isLoadingMore.value) {
         return Padding(
           padding: EdgeInsets.all(16.0.w),
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
+          child: const Center(child: AppLoadingWidget(fullScreen: false)),
         );
       }
 

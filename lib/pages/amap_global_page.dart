@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -50,8 +51,12 @@ class AmapGlobalPage extends StatelessWidget {
             return const Positioned.fill(
               child: ColoredBox(
                 color: Colors.black26,
-                child: Center(
-                  child: CircularProgressIndicator(color: Colors.white),
+                child: AppLoadingWidget(
+                  fullScreen: true,
+                  title: 'Loading map...',
+                  subtitle: '正在加载地图',
+                  icon: Icons.public_rounded,
+                  accentColor: Colors.white,
                 ),
               ),
             );

@@ -10,6 +10,7 @@ import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/t
 import 'package:go_nomads_app/features/chat/presentation/controllers/tencent_im_chat_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/chat_voice.dart';
@@ -179,8 +180,12 @@ class _TencentIMDirectChatPageState extends State<TencentIMDirectChatPage> {
         leading: const AppBackButton(),
         title: Text(widget.user.name),
       ),
-      body: const Center(
-        child: CircularProgressIndicator(color: Color(0xFFFF3838)),
+      body: const AppLoadingWidget(
+        fullScreen: true,
+        title: 'Loading...',
+        subtitle: 'Connecting chat...',
+        icon: Icons.chat_rounded,
+        accentColor: Color(0xFFFF3838),
       ),
     );
   }

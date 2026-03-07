@@ -337,9 +337,7 @@ class UserProfilePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 
@@ -483,9 +481,7 @@ class UserProfilePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 
@@ -772,9 +768,7 @@ class UserProfilePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 
@@ -846,9 +840,7 @@ class UserProfilePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 

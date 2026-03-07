@@ -6,6 +6,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import '../../../../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../../../../features/city/infrastructure/models/city_detail_dto.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../widgets/app_loading_widget.dart';
 import '../../../../widgets/safe_network_image.dart';
 import '../../city_detail_controller.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -100,11 +101,12 @@ class _LoadingState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(),
-          SizedBox(height: 16.h),
-          Text(
-            controller.isGeneratingNearbyCities ? '🤖 AI 正在生成附近城市...' : '📍 正在加载附近城市...',
-            style: TextStyle(fontSize: 16.sp, color: Colors.grey),
+          AppLoadingWidget(
+            fullScreen: false,
+            title: controller.isGeneratingNearbyCities ? 'AI 正在生成附近城市' : '正在加载附近城市',
+            subtitle: controller.isGeneratingNearbyCities ? 'Generating nearby cities...' : 'Loading nearby cities...',
+            icon: Icons.map_rounded,
+            accentColor: const Color(0xFFFF4458),
           ),
           if (controller.isGeneratingNearbyCities) ...[
             SizedBox(height: 12.h),

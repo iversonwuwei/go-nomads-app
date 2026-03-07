@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Pros & Cons 添加页面
 /// 注意: 由于 TabController 需要 TickerProvider，保持 StatefulWidget 结构
@@ -320,7 +321,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
           // 列表区域
           Expanded(
             child: prosConsController.isLoadingPros.value
-                ? const Center(child: CircularProgressIndicator())
+              ? const AppSceneLoading(scene: AppLoadingScene.reviews, fullScreen: true)
                 : prosConsController.prosList.isEmpty
                     ? Center(
                         child: Column(
@@ -497,7 +498,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
           // 列表区域
           Expanded(
             child: prosConsController.isLoadingCons.value
-                ? const Center(child: CircularProgressIndicator())
+              ? const AppSceneLoading(scene: AppLoadingScene.reviews, fullScreen: true)
                 : prosConsController.consList.isEmpty
                     ? Center(
                         child: Column(

@@ -11,6 +11,7 @@ import 'package:go_nomads_app/pages/add_coworking/add_coworking_location_section
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_pricing_section.dart';
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_specs_section.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddCoworkingPage extends StatelessWidget {
@@ -79,7 +80,13 @@ class AddCoworkingPage extends StatelessWidget {
               if (controller.isSubmitting.value)
                 Container(
                   color: Colors.black26,
-                  child: const Center(child: CircularProgressIndicator(color: Color(0xFFFF4458))),
+                  child: AppLoadingWidget(
+                    fullScreen: true,
+                    title: l10n.submitting,
+                    subtitle: l10n.loading,
+                    icon: Icons.business_center_rounded,
+                    accentColor: const Color(0xFFFF4458),
+                  ),
                 ),
             ],
           )),
