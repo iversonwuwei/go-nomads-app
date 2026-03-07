@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
+import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
+import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -23,6 +27,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 class HomePageController extends GetxController with WidgetsBindingObserver implements RouteAware {
   // ==================== 依赖注入 ====================
   final ICityRepository _cityRepository = Get.find<ICityRepository>();
+  final IMeetupRepository _meetupRepository = Get.find<IMeetupRepository>();
   // 🔍 搜索服务 - 通过 Elasticsearch 提供高效搜索
   final SearchService _searchService = Get.find<SearchService>();
 
@@ -63,11 +68,38 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   /// 是否正在刷新
   final isRefreshing = false.obs;
 
+  /// 首页活动列表（独立于全局 MeetupStateController）
+  final homeMeetups = <Meetup>[].obs;
+
+  /// 首页活动加载状态
+  final homeMeetupsLoadState = LoadState.initial.obs;
+
+  /// 首页活动错误信息
+  final homeMeetupsErrorMessage = RxnString();
+
+  /// 首页活动是否正在加载更多
+  final isLoadingMoreHomeMeetups = false.obs;
+
+  /// 首页活动是否还有更多
+  final hasMoreHomeMeetups = true.obs;
+
   // ==================== 私有变量 ====================
   // 已移除 _cityListWorker，首页数据完全独立
 
   // SignalR 订阅
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
+
+  // 首页可见性检查节流，避免 build 高频触发重复刷新
+  DateTime? _lastHomeVisibleCheckAt;
+
+  // 首页活动加载节流与并发控制
+  DateTime? _lastHomeMeetupsLoadedAt;
+  Completer<void>? _homeMeetupsLoadCompleter;
+  int _homeMeetupsCurrentPage = 1;
+  static const int _homeMeetupsPageSize = 20;
+
+  // 首页 meetup 调试日志开关（仅 debug 下生效）
+  bool _enableHomeMeetupsDebugLogs = true;
 
   // ==================== 生命周期 ====================
   @override
@@ -238,13 +270,10 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     log('🏠 首页初始化，独立加载城市和活动数据');
 
     try {
-      // ⭐ 并行加载：首页城市数据（独立）+ Meetup 数据
-      // 使用 initialLoad() 代替 ensureDataLoaded():
-      // - ensureDataLoaded() 仅在 meetups 为空时加载，不考虑缓存过期
-      // - initialLoad() 会正确检查缓存有效期，过期则刷新
+      // ⭐ 并行加载：首页城市数据 + 首页专属活动数据（互不依赖）
       await Future.wait([
         _loadHomeCitiesIndependent(),
-        meetupController.initialLoad(),
+        loadHomeMeetups(forceRefresh: false),
       ]);
     } catch (e) {
       log('⚠️ HomePageController: _loadInitialData 失败: $e');
@@ -286,18 +315,142 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     await _loadHomeCitiesIndependent();
   }
 
-  /// 刷新 meetup 数据（重新加载，显示加载状态）
-  /// 参照 city 的独立加载逻辑，使用 forceRefresh 让控制器正确管理状态
+  /// 刷新首页 meetup 数据
   Future<void> refreshMeetups() async {
+    await loadHomeMeetups(forceRefresh: true);
+  }
+
+  /// 设置首页 meetup 调试日志开关（仅 debug 下有效）
+  void setHomeMeetupsDebugLogsEnabled(bool enabled) {
+    _enableHomeMeetupsDebugLogs = enabled;
+    _debugHomeMeetups('debug logs ${enabled ? 'enabled' : 'disabled'}');
+  }
+
+  void _debugHomeMeetups(String message) {
+    if (kDebugMode && _enableHomeMeetupsDebugLogs) {
+      log('🏠[HomeMeetups] $message');
+    }
+  }
+
+  void _setHomeMeetupsState(LoadState nextState, {required String reason}) {
+    final prev = homeMeetupsLoadState.value;
+    if (prev != nextState) {
+      _debugHomeMeetups('state ${prev.name} -> ${nextState.name} ($reason)');
+    }
+    homeMeetupsLoadState.value = nextState;
+  }
+
+  /// 首页活动加载（独立状态机）
+  Future<void> loadHomeMeetups({required bool forceRefresh}) async {
+    if (_homeMeetupsLoadCompleter != null && !_homeMeetupsLoadCompleter!.isCompleted) {
+      _debugHomeMeetups('skip: load already in progress');
+      return _homeMeetupsLoadCompleter!.future;
+    }
+
+    final now = DateTime.now();
+    if (!forceRefresh &&
+        _lastHomeMeetupsLoadedAt != null &&
+        now.difference(_lastHomeMeetupsLoadedAt!) < const Duration(seconds: 45) &&
+        homeMeetupsLoadState.value == LoadState.loaded &&
+        homeMeetups.isNotEmpty) {
+      _debugHomeMeetups('skip: use warm cache (${homeMeetups.length} items)');
+      return;
+    }
+
+    _homeMeetupsLoadCompleter = Completer<void>();
+    final hasCachedData = homeMeetups.isNotEmpty;
+    final startedAt = DateTime.now();
+    _debugHomeMeetups('start load: force=$forceRefresh, hasCached=$hasCachedData, page=1');
+
+    _setHomeMeetupsState(
+      hasCachedData ? LoadState.refreshing : LoadState.loading,
+      reason: hasCachedData ? 'refresh with cached data' : 'initial load',
+    );
+    homeMeetupsErrorMessage.value = null;
+
     try {
-      log('🔄 HomePageController: 刷新 meetup 数据');
-      // 使用 forceRefresh，让 MeetupStateController 正确管理状态
-      // forceRefresh 会: 1. 先 invalidateCache 2. 然后调用 refresh()
-      // refresh() 会设置 isRefreshing=true，然后调用 loadData()
-      // loadData() 会重置分页状态并重新加载第一页数据
-      await meetupController.forceRefresh();
+      final data = await _meetupRepository
+          .getMeetups(
+            status: 'upcoming',
+            page: 1,
+            pageSize: _homeMeetupsPageSize,
+          )
+          .timeout(const Duration(seconds: 15));
+
+      _homeMeetupsCurrentPage = 1;
+      homeMeetups.assignAll(data);
+      hasMoreHomeMeetups.value = data.length >= _homeMeetupsPageSize;
+      _lastHomeMeetupsLoadedAt = DateTime.now();
+
+      // 与共享控制器保持最小同步，确保 RSVP/详情等行为一致。
+      meetupController.meetups.assignAll(data);
+
+      _setHomeMeetupsState(
+        data.isEmpty ? LoadState.empty : LoadState.loaded,
+        reason: data.isEmpty ? 'load success with empty list' : 'load success',
+      );
+      _debugHomeMeetups(
+        'load done: ${data.length} items, hasMore=${hasMoreHomeMeetups.value}, elapsed=${DateTime.now().difference(startedAt).inMilliseconds}ms',
+      );
     } catch (e) {
-      log('⚠️ HomePageController: meetup 数据刷新失败: $e');
+      homeMeetupsErrorMessage.value = e.toString();
+      _setHomeMeetupsState(
+        hasCachedData ? LoadState.loaded : LoadState.error,
+        reason: hasCachedData ? 'load failed but keep old data' : 'load failed without cache',
+      );
+      _debugHomeMeetups(
+        'load failed: $e, elapsed=${DateTime.now().difference(startedAt).inMilliseconds}ms',
+      );
+    } finally {
+      _homeMeetupsLoadCompleter?.complete();
+    }
+  }
+
+  /// 加载更多首页活动
+  Future<void> loadMoreHomeMeetups() async {
+    if (isLoadingMoreHomeMeetups.value || !hasMoreHomeMeetups.value) {
+      _debugHomeMeetups(
+          'skip load more: loadingMore=${isLoadingMoreHomeMeetups.value}, hasMore=${hasMoreHomeMeetups.value}');
+      return;
+    }
+
+    isLoadingMoreHomeMeetups.value = true;
+    final startedAt = DateTime.now();
+    try {
+      final nextPage = _homeMeetupsCurrentPage + 1;
+      _debugHomeMeetups('start load more: page=$nextPage');
+      final data = await _meetupRepository
+          .getMeetups(
+            status: 'upcoming',
+            page: nextPage,
+            pageSize: _homeMeetupsPageSize,
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (data.isEmpty) {
+        hasMoreHomeMeetups.value = false;
+        _debugHomeMeetups('load more: empty result at page=$nextPage, stop pagination');
+        return;
+      }
+
+      final existingIds = homeMeetups.map((e) => e.id).toSet();
+      final newItems = data.where((item) => !existingIds.contains(item.id)).toList();
+      homeMeetups.addAll(newItems);
+      meetupController.meetups.assignAll(homeMeetups);
+
+      _homeMeetupsCurrentPage = nextPage;
+      hasMoreHomeMeetups.value = data.length >= _homeMeetupsPageSize;
+      _setHomeMeetupsState(
+        homeMeetups.isEmpty ? LoadState.empty : LoadState.loaded,
+        reason: 'load more success',
+      );
+      _debugHomeMeetups(
+        'load more done: +${newItems.length} items (raw=${data.length}), total=${homeMeetups.length}, hasMore=${hasMoreHomeMeetups.value}, elapsed=${DateTime.now().difference(startedAt).inMilliseconds}ms',
+      );
+    } catch (e) {
+      _debugHomeMeetups('load more failed: $e');
+    } finally {
+      isLoadingMoreHomeMeetups.value = false;
     }
   }
 
@@ -341,6 +494,53 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
       log('⚠️ HomePageController: 下拉刷新失败: $e');
     } finally {
       isRefreshing.value = false;
+    }
+  }
+
+  /// 首页可见时的轻量自愈检查
+  ///
+  /// 目标：
+  /// 1. 首次进入首页时，确保 meetup/city 数据一定会触发加载
+  /// 2. 从其他页面返回或底部导航切回首页时，补偿 route 回调遗漏
+  /// 3. 避免高频 build 导致重复网络请求
+  void onHomeVisible({bool forceRefresh = false}) {
+    final now = DateTime.now();
+    if (!forceRefresh &&
+        _lastHomeVisibleCheckAt != null &&
+        now.difference(_lastHomeVisibleCheckAt!) < const Duration(seconds: 8)) {
+      return;
+    }
+    _lastHomeVisibleCheckAt = now;
+    _debugHomeMeetups(
+      'onHomeVisible: force=$forceRefresh, state=${homeMeetupsLoadState.value.name}, count=${homeMeetups.length}',
+    );
+
+    // 城市数据为空时自动补拉
+    if (localCities.isEmpty && !isLoadingLocalCities.value) {
+      unawaited(loadHomeCities());
+    }
+
+    if (forceRefresh) {
+      _debugHomeMeetups('trigger force refresh from visible hook');
+      unawaited(loadHomeMeetups(forceRefresh: true));
+      return;
+    }
+
+    // 首页活动在初始/错误/空列表时，确保一定触发加载
+    if (homeMeetups.isEmpty &&
+        (homeMeetupsLoadState.value == LoadState.initial ||
+            homeMeetupsLoadState.value == LoadState.error ||
+            homeMeetupsLoadState.value == LoadState.empty)) {
+      _debugHomeMeetups('trigger load due to empty + state=${homeMeetupsLoadState.value.name}');
+      unawaited(loadHomeMeetups(forceRefresh: homeMeetupsLoadState.value == LoadState.error));
+      return;
+    }
+
+    // 已有数据且超过缓存窗口，后台刷新
+    if (homeMeetups.isNotEmpty &&
+        (_lastHomeMeetupsLoadedAt == null || now.difference(_lastHomeMeetupsLoadedAt!) > const Duration(minutes: 2))) {
+      _debugHomeMeetups('trigger background refresh due to stale cache');
+      unawaited(loadHomeMeetups(forceRefresh: true));
     }
   }
 

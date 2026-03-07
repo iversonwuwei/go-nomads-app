@@ -3938,6 +3938,18 @@ abstract class AppLocalizations {
   /// **'消息'**
   String get messages;
 
+  /// No description provided for @conversationListLoadingTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载好友列表'**
+  String get conversationListLoadingTitle;
+
+  /// No description provided for @conversationListLoadingSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载会话...'**
+  String get conversationListLoadingSubtitle;
+
   /// No description provided for @inbox.
   ///
   /// In zh, this message translates to:

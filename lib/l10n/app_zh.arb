@@ -1029,6 +1029,8 @@
   "typeMessage": "输入消息...",
   "newMessage": "新消息",
   "messages": "消息",
+  "conversationListLoadingTitle": "正在加载好友列表",
+  "conversationListLoadingSubtitle": "正在加载会话...",
   "inbox": "收件箱",
   "sent": "已发送",
   "draft": "草稿",

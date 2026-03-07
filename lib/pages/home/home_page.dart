@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
@@ -8,7 +9,6 @@ import 'package:go_nomads_app/pages/home/widgets/home_hero_section.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_meetups_section.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_search_bar.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 首页 - 使用 GetView 实现
 /// 路由监听由 HomePageController 内部管理
@@ -28,6 +28,12 @@ class HomePage extends GetView<HomePageController> {
         controller.scrollToCitiesList();
       });
     }
+
+    // 首页重新可见时执行一次轻量数据自愈检查。
+    // 控制器内部有节流，不会因 build 频繁导致重复请求。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.onHomeVisible();
+    });
 
     return Scaffold(
       backgroundColor: AppColors.background,

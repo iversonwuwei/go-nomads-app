@@ -2032,6 +2032,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get messages => '消息';
 
   @override
+  String get conversationListLoadingTitle => '正在加载好友列表';
+
+  @override
+  String get conversationListLoadingSubtitle => '正在加载会话...';
+
+  @override
   String get inbox => '收件箱';
 
   @override

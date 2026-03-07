@@ -61,6 +61,9 @@ class MeetupDetailController extends GetxController {
   /// 图片轮播控制器
   final PageController imagePageController = PageController();
 
+  /// 防止页面重复初始化触发多次详情请求
+  bool _initialized = false;
+
   // ==================== 数据变更订阅 ====================
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
 
@@ -105,6 +108,10 @@ class MeetupDetailController extends GetxController {
 
   /// 设置初始活动数据并加载详情
   void setInitialMeetup(Meetup initialMeetup) {
+    if (_initialized && meetup.value?.id == initialMeetup.id) {
+      return;
+    }
+    _initialized = true;
     meetup.value = initialMeetup;
     loadEventDetails();
   }

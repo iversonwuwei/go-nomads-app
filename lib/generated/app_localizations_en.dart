@@ -2068,6 +2068,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messages => 'Messages';
 
   @override
+  String get conversationListLoadingTitle => 'Loading Friend List';
+
+  @override
+  String get conversationListLoadingSubtitle => 'Loading conversations...';
+
+  @override
   String get inbox => 'Inbox';
 
   @override

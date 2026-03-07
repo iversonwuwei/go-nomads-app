@@ -123,10 +123,15 @@ class BottomNavController extends GetxController {
     if (Get.isRegistered<HomePageController>()) {
       final homeController = Get.find<HomePageController>();
       // ⭐ 不再手动设置 isLoading/loadState，让 onRouteResume 智能判断是否需要刷新
-      homeController.onRouteResume();
+      unawaited(homeController.onRouteResume());
     }
 
-    Get.offAllNamed(AppRoutes.home);
+    await Get.offAllNamed(AppRoutes.home);
+
+    // 导航完成后再做一次可见性强制检查，覆盖路由回调遗漏场景。
+    if (Get.isRegistered<HomePageController>()) {
+      Get.find<HomePageController>().onHomeVisible(forceRefresh: true);
+    }
   }
 
   /// 检查认证状态

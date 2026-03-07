@@ -1029,6 +1029,8 @@
   "typeMessage": "Type a message...",
   "newMessage": "New Message",
   "messages": "Messages",
+  "conversationListLoadingTitle": "Loading Friend List",
+  "conversationListLoadingSubtitle": "Loading conversations...",
   "inbox": "Inbox",
   "sent": "Sent",
   "draft": "Draft",

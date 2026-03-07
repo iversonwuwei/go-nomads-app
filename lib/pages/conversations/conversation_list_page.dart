@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/conversation_list_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:tencent_cloud_chat_sdk/enum/message_elem_type.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_conversation.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 会话列表页面 — 微信风格
 /// 展示所有 C2C 聊天会话，支持未读数量、最后消息预览、滑动删除
@@ -384,50 +385,13 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 8,
-      itemBuilder: (_, __) => Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        color: Colors.white,
-        child: Row(
-          children: [
-            // 头像骨架
-            Container(
-              width: 48.w,
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 120.w,
-                    height: 16.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Container(
-                    width: 200.w,
-                    height: 14.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    return AppLoadingWidget(
+      fullScreen: true,
+      title: l10n.conversationListLoadingTitle,
+      subtitle: l10n.conversationListLoadingSubtitle,
+      icon: Icons.chat_bubble_outline_rounded,
+      accentColor: const Color(0xFF07C160),
     );
   }
 }

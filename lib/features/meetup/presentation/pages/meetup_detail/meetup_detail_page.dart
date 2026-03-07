@@ -53,15 +53,39 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        body: CustomScrollView(
-          slivers: [
-            // 顶部图片和AppBar
-            _buildAppBar(context),
-            // 内容区域
-            _buildContent(),
-          ],
+        body: Obx(() {
+          if (controller.isLoading.value) {
+            return Stack(
+              children: [
+                const AppSceneLoading(
+                  scene: AppLoadingScene.meetupDetail,
+                  fullScreen: true,
+                ),
+                SafeArea(
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: SliverBackButton(
+                      onPressed: controller.handleBack,
+                      opacity: 0,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return CustomScrollView(
+            slivers: [
+              // 顶部图片和AppBar
+              _buildAppBar(context),
+              // 内容区域
+              _buildContent(),
+            ],
+          );
+        }),
+        bottomNavigationBar: Obx(
+          () => controller.isLoading.value ? const SizedBox.shrink() : const MeetupBottomActionBar(),
         ),
-        bottomNavigationBar: const MeetupBottomActionBar(),
       ),
     );
   }
@@ -125,40 +149,30 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
   /// 构建内容区域
   SliverToBoxAdapter _buildContent() {
     return SliverToBoxAdapter(
-      child: Obx(() {
-        // 显示加载指示器
-        if (controller.isLoading.value) {
-          return Container(
-            padding: EdgeInsets.all(40.w),
-            child: const AppSceneLoading(scene: AppLoadingScene.meetupDetail, fullScreen: false),
-          );
-        }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 基本信息
+          const MeetupBasicInfoSection(),
+          SizedBox(height: 16.h),
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 基本信息
-            const MeetupBasicInfoSection(),
-            SizedBox(height: 16.h),
+          // 时间地点
+          const MeetupTimeLocationSection(),
+          SizedBox(height: 16.h),
 
-            // 时间地点
-            const MeetupTimeLocationSection(),
-            SizedBox(height: 16.h),
+          // 描述
+          const MeetupDescriptionSection(),
+          SizedBox(height: 16.h),
 
-            // 描述
-            const MeetupDescriptionSection(),
-            SizedBox(height: 16.h),
+          // 组织者信息
+          const MeetupOrganizerSection(),
+          SizedBox(height: 16.h),
 
-            // 组织者信息
-            const MeetupOrganizerSection(),
-            SizedBox(height: 16.h),
-
-            // 参与者列表
-            const MeetupAttendeesSection(),
-            SizedBox(height: 100.h),
-          ],
-        );
-      }),
+          // 参与者列表
+          const MeetupAttendeesSection(),
+          SizedBox(height: 100.h),
+        ],
+      ),
     );
   }
 

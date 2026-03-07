@@ -89,6 +89,12 @@ class MeetupStateController extends PaginatedRefreshableController {
   /// 当前筛选的状态
   final RxString currentStatus = 'upcoming'.obs;
 
+  /// 最近一次列表加载尝试时间（用于检测异常卡住）
+  DateTime? _lastListLoadAttemptAt;
+
+  /// 防止重复进入卡住恢复流程
+  bool _isRecoveringFromStuckLoad = false;
+
   // ==================== Getters ====================
 
   /// 获取即将到来的活动 - 直接返回服务端已过滤的数据，按开始时间排序
@@ -311,12 +317,42 @@ class MeetupStateController extends PaginatedRefreshableController {
   /// 确保数据已加载（供页面调用）
   /// 如果数据未加载或之前加载失败，则触发加载
   Future<void> ensureDataLoaded() async {
+    await recoverIfStuckLoading();
+
     // 仅在初始状态或错误状态时触发加载
     // loading/refreshing/loaded 状态都不需要重新加载
     final state = loadState.value;
     if ((state == LoadState.initial || state == LoadState.error) && !isLoading.value && !isRefreshing.value) {
       log('📦 MeetupStateController: 触发数据加载 (当前状态: ${state.name})');
       await initialLoad();
+    }
+  }
+
+  /// 自恢复：当空列表长期停留在 loading/refreshing 时，重置状态并强制重试
+  Future<void> recoverIfStuckLoading() async {
+    final state = loadState.value;
+    final isPotentiallyStuck = (state == LoadState.loading || state == LoadState.refreshing) &&
+        meetups.isEmpty &&
+        _lastListLoadAttemptAt != null &&
+        DateTime.now().difference(_lastListLoadAttemptAt!) > const Duration(seconds: 25);
+
+    if (!isPotentiallyStuck || _isRecoveringFromStuckLoad) {
+      return;
+    }
+
+    _isRecoveringFromStuckLoad = true;
+    try {
+      log('⚠️ Meetup list seems stuck in ${state.name}, starting self-recovery...');
+
+      // 清理可能残留的状态，避免基类互斥锁导致后续请求被跳过。
+      isLoading.value = false;
+      isRefreshing.value = false;
+      loadState.value = LoadState.error;
+      errorMessage.value = 'Meetup loading stalled, retrying automatically...';
+
+      await initialLoad(forceRefresh: true);
+    } finally {
+      _isRecoveringFromStuckLoad = false;
     }
   }
 
@@ -336,12 +372,17 @@ class MeetupStateController extends PaginatedRefreshableController {
   @override
   Future<PaginatedResult> loadPageData(int page, int pageSize) async {
     log('🔄 加载活动列表: 城市=${currentCityId.value}, 状态=${currentStatus.value}, 页码=$page');
+    _lastListLoadAttemptAt = DateTime.now();
 
     final loadedMeetups = await _getMeetupsUseCase.execute(
       status: currentStatus.value,
       cityId: currentCityId.value.isEmpty ? null : currentCityId.value,
       page: page,
       pageSize: pageSize,
+        )
+        .timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => throw TimeoutException('Meetup list request timed out after 20 seconds'),
     );
 
     log('✅ 成功加载 ${loadedMeetups.length} 个活动');

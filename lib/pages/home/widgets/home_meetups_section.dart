@@ -6,10 +6,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
-import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
+import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_meetup_card.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
@@ -20,20 +20,18 @@ class HomeMeetupsSection extends StatelessWidget {
 
   const HomeMeetupsSection({super.key, required this.isMobile});
 
-  MeetupStateController get _meetupController => Get.find<MeetupStateController>();
+  HomePageController get _homeController => Get.find<HomePageController>();
   UserStateController get _userController => Get.find<UserStateController>();
 
   @override
   Widget build(BuildContext context) {
-    // ⚡ 安全保障：确保 meetup 数据已被加载
-    // 防止 HomePageController._loadInitialData() 静默失败时数据永远不加载
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _meetupController.ensureDataLoaded();
+      _homeController.onHomeVisible();
     });
 
     return Obx(() {
-      final upcomingMeetups = _meetupController.upcomingMeetups;
-      final loadState = _meetupController.loadState.value;
+      final upcomingMeetups = _homeController.homeMeetups;
+      final loadState = _homeController.homeMeetupsLoadState.value;
 
       // 1. 初始状态或首次加载中 → 显示骨架屏
       //    使用 loadState 而非 isLoading，避免业务操作（create/update）触发骨架屏
@@ -88,7 +86,7 @@ class HomeMeetupsSection extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            _meetupController.errorMessage.value ?? l10n.meetupLoadFailedDescription,
+            _homeController.homeMeetupsErrorMessage.value ?? l10n.meetupLoadFailedDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14.sp,
@@ -97,7 +95,7 @@ class HomeMeetupsSection extends StatelessWidget {
           ),
           SizedBox(height: 24.h),
           OutlinedButton.icon(
-            onPressed: () => _meetupController.forceRefresh(),
+            onPressed: () => _homeController.loadHomeMeetups(forceRefresh: true),
             icon: Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
             label: Text(l10n.retry),
             style: OutlinedButton.styleFrom(
@@ -341,16 +339,16 @@ class HomeMeetupsSection extends StatelessWidget {
       child: NotificationListener<ScrollNotification>(
         onNotification: (scrollInfo) {
           if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
-              !_meetupController.isLoadingMore.value &&
-              _meetupController.hasMoreData) {
+              !_homeController.isLoadingMoreHomeMeetups.value &&
+              _homeController.hasMoreHomeMeetups.value) {
             log('📜 接近滚动末尾，触发加载更多活动');
-            _meetupController.loadMoreMeetups();
+            _homeController.loadMoreHomeMeetups();
           }
           return false;
         },
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: upcomingMeetups.length + (_meetupController.hasMoreData ? 1 : 0),
+          itemCount: upcomingMeetups.length + (_homeController.hasMoreHomeMeetups.value ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == upcomingMeetups.length) {
               return _buildLoadMoreIndicator();
@@ -367,7 +365,7 @@ class HomeMeetupsSection extends StatelessWidget {
       width: 60.w,
       margin: EdgeInsets.only(left: 12.w),
       child: Center(
-        child: Obx(() => _meetupController.isLoadingMore.value
+        child: Obx(() => _homeController.isLoadingMoreHomeMeetups.value
             ? CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
