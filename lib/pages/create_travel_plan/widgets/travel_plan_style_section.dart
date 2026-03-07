@@ -1,24 +1,22 @@
-import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 /// 景点选择部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const TravelPlanAttractionsSection({super.key, required this.controllerTag});
+  const TravelPlanAttractionsSection({super.key});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // 安全检查
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -32,7 +30,7 @@ class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageControlle
           style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
         ),
         SizedBox(height: 12.h),
-        _AttractionsWrap(controllerTag: controllerTag),
+        const _AttractionsWrap(),
       ],
     );
   }
@@ -40,16 +38,14 @@ class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageControlle
 
 /// 景点选项网格
 class _AttractionsWrap extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _AttractionsWrap({required this.controllerTag});
+  const _AttractionsWrap();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -61,7 +57,6 @@ class _AttractionsWrap extends GetView<CreateTravelPlanPageController> {
           label: attraction['name'] as String,
           id: attraction['id'] as String,
           icon: attraction['icon'] as IconData,
-          controllerTag: controllerTag,
         );
       }).toList(),
     );
@@ -73,21 +68,19 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
   final String label;
   final String id;
   final IconData icon;
-  final String controllerTag;
 
   const _AttractionChip({
     required this.label,
     required this.id,
     required this.icon,
-    required this.controllerTag,
   });
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -145,19 +138,17 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
 
 /// 旅行风格部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanStyleSection extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const TravelPlanStyleSection({super.key, required this.controllerTag});
+  const TravelPlanStyleSection({super.key});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     // 安全检查
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -166,7 +157,7 @@ class TravelPlanStyleSection extends GetView<CreateTravelPlanPageController> {
       children: [
         _SectionTitle(title: l10n.travelStyle, icon: FontAwesomeIcons.paintbrush),
         SizedBox(height: 12.h),
-        _StyleChipsWrap(controllerTag: controllerTag),
+        const _StyleChipsWrap(),
       ],
     );
   }
@@ -174,18 +165,16 @@ class TravelPlanStyleSection extends GetView<CreateTravelPlanPageController> {
 
 /// 旅行风格选项网格
 class _StyleChipsWrap extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _StyleChipsWrap({required this.controllerTag});
+  const _StyleChipsWrap();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -193,17 +182,13 @@ class _StyleChipsWrap extends GetView<CreateTravelPlanPageController> {
       spacing: 8.w,
       runSpacing: 8.w,
       children: [
-        _StyleChip(
-            label: l10n.culture, value: 'culture', icon: FontAwesomeIcons.landmark, controllerTag: controllerTag),
-        _StyleChip(
-            label: l10n.adventure, value: 'adventure', icon: FontAwesomeIcons.mountain, controllerTag: controllerTag),
-        _StyleChip(
-            label: l10n.relaxation, value: 'relaxation', icon: FontAwesomeIcons.spa, controllerTag: controllerTag),
+        _StyleChip(label: l10n.culture, value: 'culture', icon: FontAwesomeIcons.landmark),
+        _StyleChip(label: l10n.adventure, value: 'adventure', icon: FontAwesomeIcons.mountain),
+        _StyleChip(label: l10n.relaxation, value: 'relaxation', icon: FontAwesomeIcons.spa),
         _StyleChip(
             label: l10n.nightlife,
             value: 'nightlife',
-            icon: FontAwesomeIcons.champagneGlasses,
-            controllerTag: controllerTag),
+          icon: FontAwesomeIcons.champagneGlasses),
       ],
     );
   }
@@ -214,21 +199,19 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
   final String label;
   final String value;
   final IconData icon;
-  final String controllerTag;
 
   const _StyleChip({
     required this.label,
     required this.value,
     required this.icon,
-    required this.controllerTag,
   });
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -277,19 +260,17 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
 
 /// 兴趣爱好部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanInterestsSection extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const TravelPlanInterestsSection({super.key, required this.controllerTag});
+  const TravelPlanInterestsSection({super.key});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     // 安全检查
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -298,7 +279,7 @@ class TravelPlanInterestsSection extends GetView<CreateTravelPlanPageController>
       children: [
         _SectionTitle(title: l10n.interests, icon: FontAwesomeIcons.heart),
         SizedBox(height: 12.h),
-        _InterestsWrap(controllerTag: controllerTag),
+        const _InterestsWrap(),
       ],
     );
   }
@@ -306,18 +287,16 @@ class TravelPlanInterestsSection extends GetView<CreateTravelPlanPageController>
 
 /// 兴趣选项网格
 class _InterestsWrap extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _InterestsWrap({required this.controllerTag});
+  const _InterestsWrap();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -325,14 +304,14 @@ class _InterestsWrap extends GetView<CreateTravelPlanPageController> {
       spacing: 8.w,
       runSpacing: 8.w,
       children: [
-        _InterestChip(label: l10n.photography, controllerTag: controllerTag),
-        _InterestChip(label: l10n.history, controllerTag: controllerTag),
-        _InterestChip(label: 'Art', controllerTag: controllerTag),
-        _InterestChip(label: l10n.nature, controllerTag: controllerTag),
-        _InterestChip(label: 'Beach', controllerTag: controllerTag),
-        _InterestChip(label: 'Temples', controllerTag: controllerTag),
-        _InterestChip(label: 'Markets', controllerTag: controllerTag),
-        _InterestChip(label: 'Coffee', controllerTag: controllerTag),
+        _InterestChip(label: l10n.photography),
+        _InterestChip(label: l10n.history),
+        _InterestChip(label: 'Art'),
+        _InterestChip(label: l10n.nature),
+        _InterestChip(label: 'Beach'),
+        _InterestChip(label: 'Temples'),
+        _InterestChip(label: 'Markets'),
+        _InterestChip(label: 'Coffee'),
       ],
     );
   }
@@ -341,19 +320,17 @@ class _InterestsWrap extends GetView<CreateTravelPlanPageController> {
 /// 兴趣选项芯片
 class _InterestChip extends GetView<CreateTravelPlanPageController> {
   final String label;
-  final String controllerTag;
 
   const _InterestChip({
     required this.label,
-    required this.controllerTag,
   });
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 

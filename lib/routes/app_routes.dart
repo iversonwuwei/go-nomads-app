@@ -27,6 +27,7 @@ import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_page.dart'
 import 'package:go_nomads_app/pages/coworking_home_page.dart';
 import 'package:go_nomads_app/pages/coworking_list_page.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
+import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_binding.dart';
 import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
 import 'package:go_nomads_app/pages/edit_basic_info_page.dart';
 import 'package:go_nomads_app/pages/edit_interests_page.dart';
@@ -415,13 +416,8 @@ class AppRoutes {
     ),
     GetPage(
       name: createTravelPlan,
-      page: () {
-        final args = Get.arguments as Map<String, dynamic>;
-        return CreateTravelPlanPage(
-          cityId: args['cityId'],
-          cityName: args['cityName'],
-        );
-      },
+      page: () => const CreateTravelPlanPage(),
+      binding: CreateTravelPlanBinding(),
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(

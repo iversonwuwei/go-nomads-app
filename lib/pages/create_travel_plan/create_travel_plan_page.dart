@@ -11,31 +11,24 @@ import '../travel_plan/travel_plan_page.dart';
 import 'widgets/widgets.dart';
 
 /// 创建旅行计划页面 - 使用 GetX + 组件化架构重构
-class CreateTravelPlanPage extends StatelessWidget {
-  final String cityId;
-  final String cityName;
+class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
+  static const String controllerTag = CreateTravelPlanPageController.controllerTag;
 
-  const CreateTravelPlanPage({super.key, required this.cityId, required this.cityName});
+  const CreateTravelPlanPage({super.key});
+
+  @override
+  String? get tag => controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    // 生成唯一 tag 避免多页面冲突
-    final uniqueTag = 'create_travel_plan_${cityId}_${DateTime.now().millisecondsSinceEpoch}';
-
-    // 注册 controller
-    Get.put(
-      CreateTravelPlanPageController(cityId: cityId, cityName: cityName),
-      tag: uniqueTag,
-    );
-
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          // 延迟删除控制器，等待当前帧渲染完成
+          // 延迟删除控制器，等待当前帧渲染完成。
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (Get.isRegistered<CreateTravelPlanPageController>(tag: uniqueTag)) {
-              Get.delete<CreateTravelPlanPageController>(tag: uniqueTag);
+            if (Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+              Get.delete<CreateTravelPlanPageController>(tag: controllerTag);
             }
           });
         }
@@ -47,7 +40,7 @@ class CreateTravelPlanPage extends StatelessWidget {
           child: Column(
             children: [
               // Header Card
-              _HeaderCard(cityName: cityName),
+              _HeaderCard(cityName: controller.cityName),
 
               // Form Section
               Container(
@@ -68,44 +61,44 @@ class CreateTravelPlanPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Departure Location
-                    TravelPlanDepartureSection(controllerTag: uniqueTag),
+                    TravelPlanDepartureSection(controllerTag: controllerTag),
 
                     SizedBox(height: 28.h),
 
                     // Departure Date
-                    TravelPlanDateSection(controllerTag: uniqueTag),
+                    TravelPlanDateSection(controllerTag: controllerTag),
 
                     SizedBox(height: 28.h),
 
                     // Trip Duration
-                    TravelPlanDurationSection(controllerTag: uniqueTag),
+                    const TravelPlanDurationSection(),
 
                     SizedBox(height: 28.h),
 
                     // Budget Level
-                    TravelPlanBudgetSection(controllerTag: uniqueTag),
+                    const TravelPlanBudgetSection(),
 
                     SizedBox(height: 28.h),
 
                     // Attractions
-                    TravelPlanAttractionsSection(controllerTag: uniqueTag),
+                    const TravelPlanAttractionsSection(),
 
                     SizedBox(height: 28.h),
 
                     // Travel Style
-                    TravelPlanStyleSection(controllerTag: uniqueTag),
+                    const TravelPlanStyleSection(),
 
                     SizedBox(height: 28.h),
 
                     // Interests
-                    TravelPlanInterestsSection(controllerTag: uniqueTag),
+                    const TravelPlanInterestsSection(),
                   ],
                 ),
               ),
             ],
           ),
         ),
-        bottomNavigationBar: _BottomBar(controllerTag: uniqueTag),
+        bottomNavigationBar: const _BottomBar(),
       ),
     );
   }
@@ -143,7 +136,7 @@ class CreateTravelPlanPage extends StatelessWidget {
                 ),
               ),
               Text(
-                l10n.planYourTrip(cityName),
+                l10n.planYourTrip(controller.cityName),
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey,
@@ -217,18 +210,11 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
-class _BottomBar extends StatelessWidget {
-  final String controllerTag;
+class _BottomBar extends GetView<CreateTravelPlanPageController> {
+  const _BottomBar();
 
-  const _BottomBar({required this.controllerTag});
-
-  CreateTravelPlanPageController? get _controller {
-    try {
-      return Get.find<CreateTravelPlanPageController>(tag: controllerTag);
-    } catch (e) {
-      return null;
-    }
-  }
+  @override
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
@@ -272,9 +258,6 @@ class _BottomBar extends StatelessWidget {
   }
 
   void _generatePlan() {
-    final controller = _controller;
-    if (controller == null) return;
-
     Get.to(
       () => TravelPlanPage(
         cityId: controller.cityId,

@@ -456,9 +456,14 @@ class MeetupStateController extends PaginatedRefreshableController {
 
     switch (event.changeType) {
       case DataChangeType.created:
-        // 创建事件：本地 createMeetup 已经直接插入列表，无需再刷新
-        // SignalR 推送也已经处理，这里只做日志记录
-        log('📝 Meetup 创建事件，列表已更新');
+        // 创建事件：通过 EventBus 统一触发列表更新，确保所有列表页可自动看到最新活动。
+        // 如果本地已存在该活动则跳过，避免不必要刷新。
+        if (event.entityId != null && meetups.any((m) => m.id == event.entityId)) {
+          log('📝 Meetup 创建事件: ${event.entityId} 已在列表中，跳过刷新');
+          break;
+        }
+        log('📝 Meetup 创建事件，触发列表刷新');
+        refresh();
         break;
       case DataChangeType.invalidated:
         // 缓存失效，需要刷新整个列表

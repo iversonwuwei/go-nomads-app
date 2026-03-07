@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/core/navigation/navigation_result.dart';
 import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -54,7 +55,10 @@ class HomeMeetupsSection extends StatelessWidget {
 
       // 4. 真正无数据 → 显示空状态
       if (upcomingMeetups.isEmpty) {
-        return HomeMeetupEmptyState(isMobile: isMobile);
+        return HomeMeetupEmptyState(
+          isMobile: isMobile,
+          onCreated: () => _homeController.loadHomeMeetups(forceRefresh: true),
+        );
       }
 
       // 5. 正常数据展示
@@ -294,10 +298,7 @@ class HomeMeetupsSection extends StatelessWidget {
   Widget _buildCreateButton(BuildContext context, AppLocalizations l10n) {
     return Obx(() => ElevatedButton.icon(
           onPressed: _userController.isLoggedIn
-              ? () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
-                  )
+              ? () => _openCreateMeetupAndRefresh(context)
               : () => AppToast.warning(l10n.pleaseLoginToCreateMeetup, title: l10n.loginRequired),
           icon: Icon(FontAwesomeIcons.plus, size: 18.r),
           label: Text(isMobile ? l10n.create : l10n.createMeetup),
@@ -311,6 +312,18 @@ class HomeMeetupsSection extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           ),
         ));
+  }
+
+  Future<void> _openCreateMeetupAndRefresh(BuildContext context) async {
+    final result = await Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
+    );
+
+    final needsRefresh = result == true || (result is NavigationResult && result.needsRefresh);
+    if (needsRefresh) {
+      await _homeController.loadHomeMeetups(forceRefresh: true);
+    }
   }
 
   Widget _buildViewAllButtonDesktop(AppLocalizations l10n) {
@@ -401,8 +414,13 @@ class HomeMeetupsSection extends StatelessWidget {
 /// Meetup 空状态组件
 class HomeMeetupEmptyState extends StatelessWidget {
   final bool isMobile;
+  final Future<void> Function()? onCreated;
 
-  const HomeMeetupEmptyState({super.key, required this.isMobile});
+  const HomeMeetupEmptyState({
+    super.key,
+    required this.isMobile,
+    this.onCreated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -450,10 +468,17 @@ class HomeMeetupEmptyState extends StatelessWidget {
           ),
           SizedBox(height: isMobile ? 32 : 40),
           ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
-            ),
+            onPressed: () async {
+              final result = await Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
+              );
+
+              final needsRefresh = result == true || (result is NavigationResult && result.needsRefresh);
+              if (needsRefresh && onCreated != null) {
+                await onCreated!();
+              }
+            },
             icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
             label: Text(
               l10n.createMeetup,

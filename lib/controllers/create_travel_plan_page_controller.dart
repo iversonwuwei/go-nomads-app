@@ -3,15 +3,17 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:go_nomads_app/services/amap_native_location_service.dart';
-import 'package:go_nomads_app/services/amap_poi_service.dart';
-import 'package:go_nomads_app/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/services/amap_native_location_service.dart';
+import 'package:go_nomads_app/services/amap_poi_service.dart';
+import 'package:go_nomads_app/services/location_service.dart';
 import 'package:http/http.dart' as http;
 
 class CreateTravelPlanPageController extends GetxController {
+  static const String controllerTag = 'create_travel_plan_page';
+
   final String cityId;
   final String cityName;
 
@@ -160,39 +162,62 @@ class CreateTravelPlanPageController extends GetxController {
     isLoadingLocation.value = true;
 
     try {
+      // 整体兜底超时，避免在真机上出现长时间卡在 loading。
+      await _loadCurrentLocationCore().timeout(
+        const Duration(seconds: 20),
+        onTimeout: () {
+          log('⏱️ 获取当前位置整体超时（20秒），结束加载状态');
+          departureLocation.value = '';
+        },
+      );
+    } catch (e) {
+      log('❌ 获取位置异常: $e');
+      departureLocation.value = '';
+    } finally {
+      isLoadingLocation.value = false;
+    }
+  }
+
+  Future<void> _loadCurrentLocationCore() async {
+    try {
       // Android/iOS 平台优先使用原生高德 SDK
       if (Platform.isAndroid || Platform.isIOS) {
-        final amapService = Get.find<AmapNativeLocationService>();
-        final platformName = Platform.isAndroid ? 'Android' : 'iOS';
-        log('📍 [$platformName] 使用原生高德 SDK 获取位置...');
-
-        final location = await amapService.getCurrentLocation().timeout(const Duration(seconds: 30), onTimeout: () {
-          log('⏱️ 原生高德定位超时（30秒）');
-          return null;
-        });
-
-        if (location != null) {
-          // 检查原生高德 SDK 是否返回了有效的地址信息
-          if (location.hasValidAddress) {
-            // 原生高德 SDK 已包含逆地理编码结果
-            // ⭐ 使用完整地址而非简短地址
-            departureLocation.value = location.address.isNotEmpty ? location.address : location.shortAddress;
-            log('✅ 原生高德定位成功（含地址）: ${departureLocation.value}');
-            log('   详细地址: ${location.address}');
-            log('   坐标: ${location.latitude}, ${location.longitude}');
-            isLoadingLocation.value = false;
-            return;
-          } else {
-            // 定位成功但没有地址信息（可能在海外），需要额外的逆地理编码
-            log('⚠️ 原生高德定位成功但无地址信息，尝试额外逆地理编码...');
-            log('   坐标: ${location.latitude}, ${location.longitude}');
-            await _reverseGeocodeWithFallback(location.latitude, location.longitude);
-            isLoadingLocation.value = false;
-            return;
-          }
+        if (!Get.isRegistered<AmapNativeLocationService>()) {
+          log('⚠️ 原生高德定位服务未注册，跳过原生定位');
         } else {
-          log('⚠️ 原生高德定位失败: ${amapService.errorMessage.value}');
-          // 继续尝试备用方案
+          final amapService = Get.find<AmapNativeLocationService>();
+          final platformName = Platform.isAndroid ? 'Android' : 'iOS';
+          log('📍 [$platformName] 使用原生高德 SDK 获取位置...');
+
+          final location = await amapService.getCurrentLocation().timeout(
+            const Duration(seconds: 12),
+            onTimeout: () {
+              log('⏱️ 原生高德定位超时（12秒）');
+              return null;
+            },
+          );
+
+          if (location != null) {
+            // 检查原生高德 SDK 是否返回了有效的地址信息
+            if (location.hasValidAddress) {
+              // 原生高德 SDK 已包含逆地理编码结果
+              // ⭐ 使用完整地址而非简短地址
+              departureLocation.value = location.address.isNotEmpty ? location.address : location.shortAddress;
+              log('✅ 原生高德定位成功（含地址）: ${departureLocation.value}');
+              log('   详细地址: ${location.address}');
+              log('   坐标: ${location.latitude}, ${location.longitude}');
+              return;
+            } else {
+              // 定位成功但没有地址信息（可能在海外），需要额外的逆地理编码
+              log('⚠️ 原生高德定位成功但无地址信息，尝试额外逆地理编码...');
+              log('   坐标: ${location.latitude}, ${location.longitude}');
+              await _reverseGeocodeWithFallback(location.latitude, location.longitude);
+              return;
+            }
+          } else {
+            log('⚠️ 原生高德定位失败: ${amapService.errorMessage.value}');
+            // 继续尝试备用方案
+          }
         }
       }
 
@@ -201,8 +226,6 @@ class CreateTravelPlanPageController extends GetxController {
     } catch (e) {
       log('❌ 获取位置异常: $e');
       departureLocation.value = '';
-    } finally {
-      isLoadingLocation.value = false;
     }
   }
 
@@ -241,8 +264,8 @@ class CreateTravelPlanPageController extends GetxController {
 
       log('📍 [Fallback] 使用 geolocator 获取位置... (最多等待60秒)');
 
-      final position = await locationService.getCurrentLocation().timeout(const Duration(seconds: 60), onTimeout: () {
-        log('⏱️ 定位超时（60秒）');
+      final position = await locationService.getCurrentLocation().timeout(const Duration(seconds: 12), onTimeout: () {
+        log('⏱️ 定位超时（12秒）');
         return null;
       });
 

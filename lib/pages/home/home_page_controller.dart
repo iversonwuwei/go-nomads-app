@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
-import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
@@ -89,6 +89,9 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   // SignalR 订阅
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
 
+  // EventBus 订阅：监听 meetup 数据变更
+  StreamSubscription<DataChangedEvent>? _meetupDataChangedSubscription;
+
   // 首页可见性检查节流，避免 build 高频触发重复刷新
   DateTime? _lastHomeVisibleCheckAt;
 
@@ -112,6 +115,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
     // 设置 SignalR 监听器（城市图片更新）
     _setupSignalRListeners();
+    _setupMeetupDataChangeListener();
 
     // ⭐ 首页使用独立的数据加载，不再监听全局 CityStateController
     // 这样首页和城市列表页面的数据完全独立，互不影响
@@ -136,6 +140,10 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     // 取消 SignalR 订阅
     _cityImageUpdatedSubscription?.cancel();
     _cityImageUpdatedSubscription = null;
+
+    // 取消 EventBus 订阅
+    _meetupDataChangedSubscription?.cancel();
+    _meetupDataChangedSubscription = null;
 
     // 注意：不要在 onClose() 中 dispose TextEditingController / ScrollController
     // GetX 的 onClose() 在 widget 卸载之前调用，此时 TextField 仍在使用 controller，
@@ -188,6 +196,25 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     });
 
     log('✅ [HomePageController] SignalR 监听已设置 (城市图片更新)');
+  }
+
+  /// 监听 meetup EventBus 事件，确保首页活动列表自动同步最新数据
+  void _setupMeetupDataChangeListener() {
+    _meetupDataChangedSubscription?.cancel();
+    _meetupDataChangedSubscription = DataEventBus.instance.on('meetup', (event) {
+      log('🔔 [HomePageController] 收到 meetup 变更事件: ${event.changeType.name}, id=${event.entityId}');
+
+      switch (event.changeType) {
+        case DataChangeType.created:
+        case DataChangeType.updated:
+        case DataChangeType.deleted:
+        case DataChangeType.invalidated:
+          unawaited(loadHomeMeetups(forceRefresh: true));
+          break;
+      }
+    });
+
+    log('✅ [HomePageController] EventBus 监听已设置 (meetup 数据变更)');
   }
 
   /// 从 SignalR 数据更新城市图片

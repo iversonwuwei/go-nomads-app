@@ -1,12 +1,12 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
-import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// AI 旅行计划浮动按钮
 class AiTravelPlanFab extends StatelessWidget {
@@ -99,9 +99,12 @@ class AiTravelPlanFab extends StatelessWidget {
     }
 
     // 跳转到创建旅行计划页面
-    Get.to(() => CreateTravelPlanPage(
-          cityId: cityId,
-          cityName: cityName,
-        ));
+    Get.toNamed(
+      AppRoutes.createTravelPlan,
+      arguments: {
+        'cityId': cityId,
+        'cityName': cityName,
+      },
+    );
   }
 }
