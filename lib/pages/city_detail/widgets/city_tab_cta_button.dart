@@ -31,7 +31,12 @@ class CityTabCtaButton extends StatelessWidget {
         ),
         onPressed: onPressed,
         icon: Icon(icon, size: 14.r),
-        label: Text(label),
+        label: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          softWrap: false,
+        ),
       ),
     );
   }

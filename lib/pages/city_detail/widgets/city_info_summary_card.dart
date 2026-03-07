@@ -1,9 +1,10 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 /// 城市信息摘要卡片 (评分、评论数、收藏按钮)
 class CityInfoSummaryCard extends StatelessWidget {
@@ -20,6 +21,12 @@ class CityInfoSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+    final scoreLabel = isEnglish ? 'Score' : l10n.scores;
+    final reviewLabel = isEnglish ? 'Reviews' : l10n.reviews;
+    final footerText = isEnglish ? 'Contributed by the nomad community' : '由数字游民社区贡献';
+
     return Container(
       margin: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
       padding: EdgeInsets.all(14.w),
@@ -49,13 +56,13 @@ class CityInfoSummaryCard extends StatelessWidget {
                     _InfoPill(
                       icon: FontAwesomeIcons.star,
                       iconColor: Colors.amber[700]!,
-                      label: '评分',
+                      label: scoreLabel,
                       value: overallScore.toStringAsFixed(1),
                     ),
                     _InfoPill(
                       icon: FontAwesomeIcons.solidMessage,
                       iconColor: Colors.blueGrey[700]!,
-                      label: '评论',
+                      label: reviewLabel,
                       value: '$reviewCount',
                     ),
                   ],
@@ -66,7 +73,9 @@ class CityInfoSummaryCard extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            '由数字游民社区贡献',
+            footerText,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: 12.sp,
@@ -111,6 +120,8 @@ class _InfoPill extends StatelessWidget {
             children: [
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey[700],
@@ -119,6 +130,8 @@ class _InfoPill extends StatelessWidget {
               SizedBox(height: 2.h),
               Text(
                 value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w700,

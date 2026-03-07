@@ -55,9 +55,15 @@ class ModeratorInfoCard extends StatelessWidget {
   /// 构建版主信息区域（已有版主）
   Widget _buildModeratorInfo(BuildContext context, City city) {
     final l10n = AppLocalizations.of(context)!;
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
     final moderator = city.moderator;
     final isCurrentUserModerator = city.isCurrentUserModerator;
     final isAdmin = city.isCurrentUserAdmin;
+
+    final headerTitle = isEnglish ? 'Moderator' : l10n.moderatorCardTitle;
+    final headerBadge = isEnglish ? 'Verified' : l10n.moderatorCardCertified;
+    final transferLabel = isEnglish ? 'Transfer' : l10n.moderatorCardTransferModerator;
+    final applyLabel = isEnglish ? 'Apply' : l10n.moderatorCardApplyModerator;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,8 +72,8 @@ class ModeratorInfoCard extends StatelessWidget {
         _HeaderRow(
           icon: FontAwesomeIcons.userShield,
           iconColor: AppColors.cityPrimary,
-          title: l10n.moderatorCardTitle,
-          badgeLabel: l10n.moderatorCardCertified,
+          title: headerTitle,
+          badgeLabel: headerBadge,
           isCertifiedBadge: true,
           badgeColor: const Color(0xFF10B981),
         ),
@@ -162,7 +168,7 @@ class ModeratorInfoCard extends StatelessWidget {
               FontAwesomeIcons.arrowRightArrowLeft,
               size: 14.r,
             ),
-            label: Text(l10n.moderatorCardTransferModerator),
+            label: Text(transferLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.orange,
               side: const BorderSide(color: Colors.orange),
@@ -181,7 +187,7 @@ class ModeratorInfoCard extends StatelessWidget {
               FontAwesomeIcons.userPlus,
               size: 14.r,
             ),
-            label: Text(l10n.moderatorCardApplyModerator),
+            label: Text(applyLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.cityPrimary,
               side: BorderSide(color: AppColors.cityPrimary),
@@ -199,10 +205,18 @@ class ModeratorInfoCard extends StatelessWidget {
   /// 构建申请版主区域（无版主）
   Widget _buildApplyModeratorSection(BuildContext context, City city) {
     final l10n = AppLocalizations.of(context)!;
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
     final isAdmin = city.isCurrentUserAdmin;
     final isCurrentUserModerator = city.isCurrentUserModerator;
     // 本城市版主或admin可以分配版主
     final canAssign = isAdmin || isCurrentUserModerator;
+
+    final headerTitle = isEnglish ? 'Moderator' : l10n.moderatorCardTitle;
+    final headerBadge = isEnglish ? 'Open' : l10n.moderatorCardUnclaimed;
+    final lookingForText =
+        isEnglish ? 'We are looking for a city moderator.' : l10n.moderatorCardLookingForModerator;
+    final assignLabel = isEnglish ? 'Assign' : l10n.moderatorCardAssignModerator;
+    final applyLabel = isEnglish ? 'Apply' : l10n.moderatorCardApplyModerator;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,8 +225,8 @@ class ModeratorInfoCard extends StatelessWidget {
         _HeaderRow(
           icon: FontAwesomeIcons.userSlash,
           iconColor: Colors.orange,
-          title: l10n.moderatorCardTitle,
-          badgeLabel: l10n.moderatorCardUnclaimed,
+          title: headerTitle,
+          badgeLabel: headerBadge,
           isCertifiedBadge: false,
           badgeColor: Colors.orange,
         ),
@@ -238,7 +252,7 @@ class ModeratorInfoCard extends StatelessWidget {
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
-                  l10n.moderatorCardLookingForModerator,
+                  lookingForText,
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: Colors.grey[700],
@@ -259,7 +273,7 @@ class ModeratorInfoCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () => _showTransferModeratorDialog(context, city),
               icon: Icon(FontAwesomeIcons.userGear, size: 14.r),
-              label: Text(l10n.moderatorCardAssignModerator),
+              label: Text(assignLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
@@ -278,7 +292,7 @@ class ModeratorInfoCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () => _navigateToApplyModerator(context, city),
               icon: Icon(FontAwesomeIcons.userPlus, size: 14.r),
-              label: Text(l10n.moderatorCardApplyModerator),
+              label: Text(applyLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
@@ -315,6 +329,8 @@ class ModeratorInfoCard extends StatelessWidget {
   /// 显示升级会员对话框
   void _showUpgradeMembershipDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+    final upgradeTitle = isEnglish ? 'Pro Required' : l10n.moderatorCardNeedUpgradeMembership;
     Get.dialog(
       AlertDialog(
         title: Row(
@@ -325,7 +341,13 @@ class ModeratorInfoCard extends StatelessWidget {
               size: 20.r,
             ),
             SizedBox(width: 8.w),
-            Text(l10n.moderatorCardNeedUpgradeMembership),
+            Expanded(
+              child: Text(
+                upgradeTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         content: Text(l10n.moderatorCardUpgradeContent),
@@ -388,15 +410,19 @@ class _HeaderRow extends StatelessWidget {
       children: [
         Icon(icon, color: iconColor, size: 16.r),
         SizedBox(width: 8.w),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
           ),
         ),
-        const Spacer(),
+        SizedBox(width: 8.w),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
           decoration: BoxDecoration(
@@ -414,6 +440,8 @@ class _HeaderRow extends StatelessWidget {
               SizedBox(width: 4.w),
               Text(
                 badgeLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w500,

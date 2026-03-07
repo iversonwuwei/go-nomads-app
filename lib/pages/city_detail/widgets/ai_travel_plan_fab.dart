@@ -21,6 +21,9 @@ class AiTravelPlanFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+    final fabLabel = isEnglish ? 'AI Plan' : 'AI Travel Plan';
+
     return Material(
       elevation: 6,
       shadowColor: AppColors.cityPrimary.withValues(alpha: 0.4),
@@ -62,7 +65,9 @@ class AiTravelPlanFab extends StatelessWidget {
               ),
               SizedBox(width: 10.w),
               Text(
-                'AI Travel Plan',
+                fabLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14.sp,

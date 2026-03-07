@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
@@ -6,7 +7,6 @@ import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市详情页 SliverAppBar，支持顶部图片左右滑动
 class CityDetailAppBar extends StatefulWidget {
@@ -95,6 +95,8 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
       opacity: titleOpacity,
       child: Text(
         widget.cityName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 18.sp,
@@ -236,6 +238,8 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                 IgnorePointer(
                   child: Text(
                     widget.cityName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 22.sp,
                       fontWeight: FontWeight.w700,
@@ -246,20 +250,29 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                 SizedBox(height: 8.h),
                 Row(
                   children: [
-                    IgnorePointer(
-                      child: _StatPill(
-                        label: '评分',
-                        value: displayScore.toStringAsFixed(1),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            IgnorePointer(
+                              child: _StatPill(
+                                label: '评分',
+                                value: displayScore.toStringAsFixed(1),
+                              ),
+                            ),
+                            SizedBox(width: 10.w),
+                            IgnorePointer(
+                              child: _StatPill(
+                                label: '评论',
+                                value: '$displayReviewCount',
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     SizedBox(width: 10.w),
-                    IgnorePointer(
-                      child: _StatPill(
-                        label: '评论',
-                        value: '$displayReviewCount',
-                      ),
-                    ),
-                    const Spacer(),
                     // 关注按钮不包裹 IgnorePointer，允许点击
                     _FavoriteButton(cityId: widget.controller.cityId),
                   ],
