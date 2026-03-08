@@ -66,6 +66,7 @@ dependencies:
   timeago: ^3.7.0
   share_plus: ^10.1.2
   app_links: ^6.3.3
+  web_socket_channel: ^3.0.3
   
   # 分享相关
   screenshot: ^3.0.0  # Widget 转图片

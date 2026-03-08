@@ -24,6 +24,9 @@ class CreateTravelPlanPageController extends GetxController {
   final RxString budget = 'medium'.obs;
   final RxString travelStyle = 'culture'.obs;
   final RxList<String> interests = <String>[].obs;
+  final RxString planningMode = 'balanced'.obs;
+  final RxString planningObjective = 'hybrid'.obs;
+  final RxList<String> openClawSignals = <String>['weather', 'events', 'coworking'].obs;
   final RxString departureLocation = ''.obs;
   final RxBool isLoadingLocation = true.obs;
   final Rx<DateTime?> departureDate = Rx<DateTime?>(null);
@@ -367,6 +370,18 @@ class CreateTravelPlanPageController extends GetxController {
 
   void setTravelStyle(String value) => travelStyle.value = value;
 
+  void setPlanningMode(String value) => planningMode.value = value;
+
+  void setPlanningObjective(String value) => planningObjective.value = value;
+
+  void toggleOpenClawSignal(String value) {
+    if (openClawSignals.contains(value)) {
+      openClawSignals.remove(value);
+      return;
+    }
+    openClawSignals.add(value);
+  }
+
   void toggleInterest(String interest) {
     if (interests.contains(interest)) {
       interests.remove(interest);
@@ -416,6 +431,27 @@ class CreateTravelPlanPageController extends GetxController {
     for (var attractionId in selectedAttractions) {
       allInterests.add('attraction:$attractionId');
     }
+
+    allInterests.add('openclaw_mode:${planningMode.value}');
+    allInterests.add('openclaw_goal:${planningObjective.value}');
+
+    if (planningMode.value == 'research') {
+      for (final signal in openClawSignals) {
+        allInterests.add('openclaw_signal:$signal');
+      }
+    }
+
     return allInterests;
+  }
+
+  String get planningModeLabel {
+    switch (planningMode.value) {
+      case 'quick':
+        return '快速草案';
+      case 'research':
+        return 'OpenClaw 研究增强';
+      default:
+        return '平衡规划';
+    }
   }
 }

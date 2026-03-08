@@ -80,6 +80,11 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
 
                     SizedBox(height: 28.h),
 
+                    // OpenClaw Research Layer
+                    const TravelPlanOpenClawSection(),
+
+                    SizedBox(height: 28.h),
+
                     // Attractions
                     const TravelPlanAttractionsSection(),
 
@@ -197,14 +202,50 @@ class _HeaderCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            l10n.tellPreferences(cityName),
+            '先设定偏好，再决定是否启用 OpenClaw 研究增强，最后由 AI 生成更贴近你任务目标的行程。',
             style: TextStyle(
               color: Colors.white,
               fontSize: 14.sp,
               height: 1.4,
             ),
           ),
+          SizedBox(height: 14.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _StepBadge(label: '1 偏好输入'),
+              _StepBadge(label: '2 OpenClaw 研究'),
+              _StepBadge(label: '3 AI 成稿'),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _StepBadge extends StatelessWidget {
+  final String label;
+
+  const _StepBadge({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -246,10 +287,10 @@ class _BottomBar extends GetView<CreateTravelPlanPageController> {
             children: [
               Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
               SizedBox(width: 8.w),
-              Text(
-                l10n.generatePlan,
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.3.sp),
-              ),
+              Obx(() => Text(
+                    controller.planningMode.value == 'research' ? '开始 OpenClaw 研究规划' : l10n.generatePlan,
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.3.sp),
+                  )),
             ],
           ),
         ),

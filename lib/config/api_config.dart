@@ -415,6 +415,43 @@ class ApiConfig {
   static String get currentApiBaseUrl => '$currentBaseUrl$apiVersion';
 
   // ============================================================
+  // OpenClaw Experimental Config
+  // ============================================================
+
+  /// OpenClaw Gateway WebSocket 地址。
+  ///
+  /// 推荐通过 dart-define 注入：
+  /// flutter run --dart-define=OPENCLAW_GATEWAY_URL=ws://127.0.0.1:18789
+  static const String _openClawGatewayUrlOverride = String.fromEnvironment('OPENCLAW_GATEWAY_URL', defaultValue: '');
+
+  /// OpenClaw Gateway Token。
+  ///
+  /// 仅在 Gateway 开启 token 鉴权时使用；不要硬编码到仓库。
+  static const String openClawGatewayToken = String.fromEnvironment('OPENCLAW_GATEWAY_TOKEN', defaultValue: '');
+
+  static String get openClawGatewayUrl {
+    if (_openClawGatewayUrlOverride.isNotEmpty) {
+      return _openClawGatewayUrlOverride;
+    }
+
+    if (kDebugMode) {
+      if (kIsWeb) {
+        return 'ws://127.0.0.1:18789';
+      }
+
+      if (Platform.isAndroid) {
+        return 'ws://10.0.2.2:18789';
+      }
+
+      return 'ws://127.0.0.1:18789';
+    }
+
+    return '';
+  }
+
+  static bool get hasOpenClawGatewayConfigured => openClawGatewayUrl.isNotEmpty;
+
+  // ============================================================
   // Helper Methods
   // ============================================================
 
