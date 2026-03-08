@@ -16,6 +16,7 @@ import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/utils/share_link_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
@@ -1088,7 +1089,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         '${meetup.description}';
 
     // 构建分享链接
-    final String shareUrl = 'https://nomadcities.app/meetups/${meetup.id}';
+    final String shareUrl = ShareLinkUtil.meetupDetail(meetup.id);
 
     // 显示分享底部抽屉
     ShareBottomSheet.show(
