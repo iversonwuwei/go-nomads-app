@@ -1,10 +1,12 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/utils/share_link_util.dart';
 
 import '../../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../../features/city/application/state_controllers/pros_cons_state_controller.dart';
@@ -32,7 +34,6 @@ import 'widgets/tabs/pros_cons_tab.dart';
 import 'widgets/tabs/reviews_tab.dart';
 import 'widgets/tabs/scores_tab.dart';
 import 'widgets/tabs/weather/weather_tab.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市详情页 - GetX 重构版
 ///
@@ -420,7 +421,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     final String description = descParts.join('\n');
 
     // 构建分享链接
-    final String shareUrl = 'https://nomadcities.app/cities/${city.id}';
+    final String shareUrl = ShareLinkUtil.cityDetail(city.id.toString());
 
     // 封面图
     final String? imageUrl = city.imageUrl;

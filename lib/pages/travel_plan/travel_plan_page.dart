@@ -11,6 +11,7 @@ import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_budget_card.
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_day_card.dart';
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_overview_card.dart';
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_recommendation_cards.dart';
+import 'package:go_nomads_app/utils/share_link_util.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
@@ -405,7 +406,7 @@ class _TravelPlanContentView extends StatelessWidget {
     }
 
     // 构建分享链接
-    final String shareUrl = 'https://nomadcities.app/travel-plans/${plan.id}';
+    final String shareUrl = ShareLinkUtil.travelPlanDetail(plan.id);
 
     // 显示分享底部抽屉
     ShareBottomSheet.show(

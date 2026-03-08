@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_cont
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/utils/share_link_util.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/async_task_progress_dialog.dart';
@@ -240,7 +241,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> {
     }
 
     // 构建分享链接
-    final String shareUrl = 'https://nomadcities.app/travel-plans/${plan.id}';
+    final String shareUrl = ShareLinkUtil.travelPlanDetail(plan.id);
 
     // 显示分享底部抽屉
     ShareBottomSheet.show(

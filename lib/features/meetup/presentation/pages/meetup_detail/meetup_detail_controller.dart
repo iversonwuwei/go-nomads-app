@@ -63,6 +63,7 @@ class MeetupDetailController extends GetxController {
 
   /// 防止页面重复初始化触发多次详情请求
   bool _initialized = false;
+  String? _requestedMeetupId;
 
   // ==================== 数据变更订阅 ====================
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
@@ -106,14 +107,30 @@ class MeetupDetailController extends GetxController {
 
   // ==================== 初始化方法 ====================
 
-  /// 设置初始活动数据并加载详情
-  void setInitialMeetup(Meetup initialMeetup) {
-    if (_initialized && meetup.value?.id == initialMeetup.id) {
+  /// 按需初始化活动数据
+  void ensureMeetupLoaded({Meetup? initialMeetup, String? meetupId}) {
+    if (initialMeetup != null) {
+      if (_initialized && meetup.value?.id == initialMeetup.id) {
+        return;
+      }
+      _initialized = true;
+      _requestedMeetupId = initialMeetup.id;
+      meetup.value = initialMeetup;
+      loadEventDetails();
       return;
     }
+
+    if (meetupId == null || meetupId.isEmpty) {
+      return;
+    }
+
+    if (_initialized && _requestedMeetupId == meetupId) {
+      return;
+    }
+
     _initialized = true;
-    meetup.value = initialMeetup;
-    loadEventDetails();
+    _requestedMeetupId = meetupId;
+    loadEventDetailsById(meetupId);
   }
 
   /// 检查管理员状态
@@ -161,10 +178,19 @@ class MeetupDetailController extends GetxController {
   Future<void> loadEventDetails() async {
     if (meetup.value == null) return;
 
+    await _loadMeetupFromApi(meetup.value!.id);
+  }
+
+  /// 通过活动 id 加载详情
+  Future<void> loadEventDetailsById(String meetupId) async {
+    await _loadMeetupFromApi(meetupId);
+  }
+
+  Future<void> _loadMeetupFromApi(String meetupId) async {
     try {
       isLoading.value = true;
 
-      final response = await _httpService.get('/events/${meetup.value!.id}');
+      final response = await _httpService.get('/events/$meetupId');
       final data = response.data as Map<String, dynamic>;
 
       // 提取参与者列表
@@ -179,6 +205,7 @@ class MeetupDetailController extends GetxController {
       final loadedMeetup = dto.toDomain();
 
       meetup.value = loadedMeetup;
+      _requestedMeetupId = loadedMeetup.id;
       meetup.refresh();
       log('✅ 成功加载活动详情: ${loadedMeetup.title}, 参与者: ${loadedMeetup.capacity.currentAttendees}');
     } catch (e) {

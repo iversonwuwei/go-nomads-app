@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -16,6 +17,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 class DeepLinkHandler {
   static final AppLinks _appLinks = AppLinks();
   static StreamSubscription<Uri>? _linkSubscription;
+  static const Set<String> _supportedWebHosts = {'go-nomads.com', 'www.go-nomads.com'};
 
   /// 初始化 Deep Link 监听
   static Future<void> init() async {
@@ -59,6 +61,15 @@ class DeepLinkHandler {
     log('   Path: ${uri.path}');
     log('   Query: ${uri.queryParameters}');
 
+    if (uri.scheme == 'https' || uri.scheme == 'http') {
+      if (_supportedWebHosts.contains(uri.host)) {
+        await _handlePathBasedDeepLink(uri);
+      } else {
+        log('⚠️ 未支持的 Web Host: ${uri.host}');
+      }
+      return;
+    }
+
     // 检查是否是我们的 app scheme
     if (uri.scheme != 'gonomads') {
       log('⚠️ 未知的 scheme: ${uri.scheme}');
@@ -82,6 +93,9 @@ class DeepLinkHandler {
       case 'coworking':
         await _handleCoworkingDeepLink(uri);
         break;
+      case 'travel-plan':
+        await _handleTravelPlanDeepLink(uri);
+        break;
       default:
         // 处理路径格式的深链 (如 gonomads:///city/detail?id=123)
         await _handlePathBasedDeepLink(uri);
@@ -103,56 +117,98 @@ class DeepLinkHandler {
   /// 处理城市详情深链
   static Future<void> _handleCityDeepLink(Uri uri) async {
     log('🏙️ 处理城市深链: ${uri.path}');
-    final queryParams = uri.queryParameters;
-    final cityId = queryParams['id'];
+    final cityId = _extractEntityId(uri);
     if (cityId != null) {
-      Get.toNamed('/city/detail', arguments: {'cityId': int.tryParse(cityId)});
+      Get.toNamed(AppRoutes.cityDetail, arguments: {'cityId': cityId});
     }
   }
 
   /// 处理 Meetup 详情深链
   static Future<void> _handleMeetupDeepLink(Uri uri) async {
     log('🤝 处理 Meetup 深链: ${uri.path}');
-    final queryParams = uri.queryParameters;
-    final meetupId = queryParams['id'];
+    final meetupId = _extractEntityId(uri);
     if (meetupId != null) {
-      Get.toNamed('/meetup/detail', arguments: {'meetupId': int.tryParse(meetupId)});
+      Get.toNamed(AppRoutes.meetupDetail, arguments: {'meetupId': meetupId});
     }
   }
 
   /// 处理 Coworking 详情深链
   static Future<void> _handleCoworkingDeepLink(Uri uri) async {
     log('💼 处理 Coworking 深链: ${uri.path}');
-    final queryParams = uri.queryParameters;
-    final coworkingId = queryParams['id'];
+    final coworkingId = _extractEntityId(uri);
     if (coworkingId != null) {
-      Get.toNamed('/coworking/detail', arguments: {'coworkingId': int.tryParse(coworkingId)});
+      Get.toNamed(AppRoutes.coworkingDetail, arguments: {'coworkingId': coworkingId});
+    }
+  }
+
+  /// 处理旅行计划深链
+  static Future<void> _handleTravelPlanDeepLink(Uri uri) async {
+    log('🗺️ 处理旅行计划深链: ${uri.path}');
+    final planId = _extractEntityId(uri);
+    if (planId != null) {
+      Get.toNamed(AppRoutes.travelPlan, arguments: {'planId': planId});
     }
   }
 
   /// 处理路径格式的深链 (如 gonomads:///city/detail?id=123)
   static Future<void> _handlePathBasedDeepLink(Uri uri) async {
-    final path = uri.path;
-    final queryParams = uri.queryParameters;
+    final path = uri.path.trim();
+    final normalizedPath = _normalizePath(path);
 
-    if (path.startsWith('/city/detail')) {
-      final cityId = queryParams['id'];
-      if (cityId != null) {
-        Get.toNamed('/city/detail', arguments: {'cityId': int.tryParse(cityId)});
-      }
-    } else if (path.startsWith('/meetup/detail')) {
-      final meetupId = queryParams['id'];
-      if (meetupId != null) {
-        Get.toNamed('/meetup/detail', arguments: {'meetupId': int.tryParse(meetupId)});
-      }
-    } else if (path.startsWith('/coworking/detail')) {
-      final coworkingId = queryParams['id'];
-      if (coworkingId != null) {
-        Get.toNamed('/coworking/detail', arguments: {'coworkingId': int.tryParse(coworkingId)});
-      }
+    if (normalizedPath == '/city-detail' || normalizedPath == '/city/detail') {
+      await _handleCityDeepLink(uri);
+    } else if (normalizedPath == '/meetup-detail' || normalizedPath == '/meetup/detail') {
+      await _handleMeetupDeepLink(uri);
+    } else if (normalizedPath == '/coworking-detail' || normalizedPath == '/coworking/detail') {
+      await _handleCoworkingDeepLink(uri);
+    } else if (normalizedPath == '/travel-plan' || normalizedPath == '/travel-plan/detail') {
+      await _handleTravelPlanDeepLink(uri);
     } else {
       log('⚠️ 未知的 deep link 路径: $path');
     }
+  }
+
+  static String _normalizePath(String path) {
+    if (path.isEmpty) {
+      return '/';
+    }
+
+    if (path.startsWith('/app/')) {
+      return path.substring(4);
+    }
+
+    return path;
+  }
+
+  static String? _extractEntityId(Uri uri) {
+    final queryId = uri.queryParameters['id']?.trim();
+    if (queryId != null && queryId.isNotEmpty) {
+      return queryId;
+    }
+
+    final segments = uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
+    if (segments.isEmpty) {
+      return null;
+    }
+
+    final lastSegment = segments.last.trim();
+    if (lastSegment.isEmpty) {
+      return null;
+    }
+
+    const reservedSegments = {
+      'app',
+      'city-detail',
+      'city',
+      'detail',
+      'meetup-detail',
+      'meetup',
+      'coworking-detail',
+      'coworking',
+      'travel-plan',
+    };
+
+    return reservedSegments.contains(lastSegment) ? null : lastSegment;
   }
 
   /// 处理支付回调

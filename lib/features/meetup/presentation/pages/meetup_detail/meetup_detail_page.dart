@@ -14,6 +14,7 @@ import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/w
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/utils/share_link_util.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
@@ -30,18 +31,20 @@ import 'package:intl/intl.dart';
 /// - 通过 Binding 注入依赖
 /// - 页面由多个小组件组成
 class MeetupDetailPage extends GetView<MeetupDetailController> {
-  final Meetup meetup;
+  final Meetup? meetup;
+  final String? meetupId;
 
   const MeetupDetailPage({
     super.key,
-    required this.meetup,
-  });
+    this.meetup,
+    this.meetupId,
+  }) : assert(meetup != null || meetupId != null, 'meetup or meetupId is required');
 
   @override
   Widget build(BuildContext context) {
     // 初始化 Controller 的数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.setInitialMeetup(meetup);
+      controller.ensureMeetupLoaded(initialMeetup: meetup, meetupId: meetupId);
     });
 
     return PopScope(
@@ -193,7 +196,7 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
         '${meetupData.description}';
 
     // 构建分享链接
-    final String shareUrl = 'https://nomadcities.app/meetups/${meetupData.id}';
+    final String shareUrl = ShareLinkUtil.meetupDetail(meetupData.id);
 
     // 显示分享底部抽屉
     ShareBottomSheet.show(

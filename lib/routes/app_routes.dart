@@ -4,6 +4,7 @@ import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
 import 'package:go_nomads_app/core/lifecycle/binding_helper.dart';
 import 'package:go_nomads_app/core/lifecycle/page_lifecycle_middleware.dart';
 import 'package:go_nomads_app/features/city_list/city_list.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:go_nomads_app/features/membership/presentation/pages/membership_plan_page.dart';
 import 'package:go_nomads_app/features/moderator/presentation/pages/moderator_application_detail_page.dart';
@@ -308,7 +309,19 @@ class AppRoutes {
     ),
     GetPage(
       name: meetupDetail,
-      page: () => MeetupDetailPage(meetup: Get.arguments),
+      page: () {
+        final args = Get.arguments;
+
+        if (args is Meetup) {
+          return MeetupDetailPage(meetup: args);
+        }
+
+        if (args is Map<String, dynamic>) {
+          return MeetupDetailPage(meetupId: args['meetupId']?.toString());
+        }
+
+        return MeetupDetailPage(meetupId: args?.toString());
+      },
       binding: MeetupDetailBinding(),
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
