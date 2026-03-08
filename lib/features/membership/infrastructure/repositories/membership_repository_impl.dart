@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/ai_usage_check.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
@@ -18,6 +19,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class MembershipRepositoryImpl implements MembershipRepository {
   static const String _membershipKey = 'user_membership';
   static const String _plansKey = 'membership_plans';
+
+  bool get _isIosExternalPaymentBlocked => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   final TokenStorageService _tokenService;
   final MembershipApiService _apiService = MembershipApiService();
@@ -237,6 +240,10 @@ class MembershipRepositoryImpl implements MembershipRepository {
 
   @override
   Future<Result<UserMembership>> payModeratorDeposit(double amount) async {
+    if (_isIosExternalPaymentBlocked) {
+      return Result.failure(BusinessLogicException('iOS 暂不支持第三方保证金支付'));
+    }
+
     try {
       // 调用后端 API 缴纳保证金
       final response = await _apiService.payDeposit(amount);
@@ -256,6 +263,10 @@ class MembershipRepositoryImpl implements MembershipRepository {
 
   @override
   Future<Result<String>> getPaymentUrl(MembershipLevel level) async {
+    if (_isIosExternalPaymentBlocked) {
+      return Result.failure(BusinessLogicException('iOS 暂不支持第三方支付链接'));
+    }
+
     try {
       // TODO: 调用后端 API 获取支付链接
       // 目前返回模拟链接

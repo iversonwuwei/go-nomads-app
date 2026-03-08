@@ -252,4 +252,46 @@ class PaymentRepository implements IPaymentRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<PaymentResult> completeAppleIapPurchase({
+    required String productId,
+    required String transactionId,
+    String? originalTransactionId,
+    String? verificationData,
+    bool isRestore = false,
+  }) async {
+    log('🍎 完成 Apple IAP 购买: productId=$productId, transactionId=$transactionId');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/payments/apple/complete',
+        data: {
+          'productId': productId,
+          'transactionId': transactionId,
+          if (originalTransactionId != null) 'originalTransactionId': originalTransactionId,
+          if (verificationData != null && verificationData.isNotEmpty) 'verificationData': verificationData,
+          'isRestore': isRestore,
+        },
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['data'] != null) {
+        final result = PaymentResult.fromJson(response.data['data'] as Map<String, dynamic>);
+        log('✅ Apple IAP 完成成功: success=${result.success}');
+        return result;
+      }
+
+      throw Exception(response.data['message'] ?? '完成 Apple IAP 购买失败');
+    } catch (e) {
+      log('❌ 完成 Apple IAP 购买失败: $e');
+      rethrow;
+    }
+  }
 }

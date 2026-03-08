@@ -103,6 +103,7 @@ import 'package:go_nomads_app/features/notification/presentation/controllers/not
 // Payment Domain
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
+import 'package:go_nomads_app/features/payment/application/services/apple_iap_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/unified_payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
 import 'package:go_nomads_app/features/payment/domain/repositories/i_payment_repository.dart';
@@ -1206,6 +1207,12 @@ class DependencyInjection {
     // PayPal 服务
     Get.lazyPut<PayPalService>(
       () => PayPalService(),
+      fenix: true,
+    );
+
+    // Apple IAP 服务
+    Get.lazyPut<AppleIapService>(
+      () => AppleIapService(),
       fenix: true,
     );
 

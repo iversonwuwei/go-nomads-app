@@ -75,6 +75,7 @@ dependencies:
   tencent_kit: ^6.2.0  # QQ 登录 SDK (腾讯开放平台)
   google_sign_in: ^6.2.2  # Google 登录
   sign_in_with_apple: ^6.1.4  # Apple 登录
+  in_app_purchase: ^3.2.3
   
   # 系统设置
   app_settings: ^5.1.1  # 打开系统设置页面

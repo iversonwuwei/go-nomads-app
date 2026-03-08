@@ -13,6 +13,7 @@ import 'core/lifecycle/page_lifecycle_observer.dart';
 import 'core/utils/deep_link_handler.dart';
 import 'features/auth/presentation/controllers/auth_state_controller.dart';
 import 'features/chat/infrastructure/services/tencent_im/tencent_im.dart';
+import 'features/payment/application/services/apple_iap_service.dart';
 import 'features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'generated/app_localizations.dart';
 import 'layouts/bottom_nav/bottom_nav.dart';
@@ -212,6 +213,20 @@ Future<void> _initializeBackgroundServices() async {
       log('✅ 社交 SDK 初始化完成');
     } catch (e) {
       log('❌ 社交 SDK 初始化失败: $e');
+    }
+  });
+
+  // 🍎 Apple IAP - 后台初始化购买监听
+  Future.microtask(() async {
+    if (!Get.isRegistered<AppleIapService>()) {
+      return;
+    }
+
+    try {
+      await Get.find<AppleIapService>().ensureInitialized();
+      log('✅ Apple IAP 初始化完成');
+    } catch (e) {
+      log('⚠️ Apple IAP 初始化失败: $e');
     }
   });
 

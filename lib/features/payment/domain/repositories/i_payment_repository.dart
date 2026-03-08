@@ -38,4 +38,13 @@ abstract class IPaymentRepository {
   Future<PaymentResult> confirmWeChatPayment({
     required String orderId,
   });
+
+  /// 完成 Apple IAP 购买并同步服务端会员状态
+  Future<PaymentResult> completeAppleIapPurchase({
+    required String productId,
+    required String transactionId,
+    String? originalTransactionId,
+    String? verificationData,
+    bool isRestore = false,
+  });
 }
