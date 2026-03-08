@@ -38,3 +38,24 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 ---
 
 Add whatever helps you do your job. This is your cheat sheet.
+
+## OpenClaw Local Commands
+
+### POI Search
+
+- AMap Web key is already configured locally for OpenClaw POI lookups.
+- Use the bundled local CLI first, not external web search.
+
+```bash
+python3 ~/.openclaw/skills/poi-discovery-guide/amap_poi.py geo "上海静安寺"
+python3 ~/.openclaw/skills/poi-discovery-guide/amap_poi.py around --location 121.4454,31.2297 --keywords 咖啡 --radius 1000 --limit 5 --output markdown
+python3 ~/.openclaw/skills/poi-discovery-guide/amap_poi.py text "联合办公" --city 上海 --limit 5 --output markdown
+```
+
+### Flight Search
+
+- Use the local `flight-search` tool before any web-search fallback.
+
+```bash
+uvx flight-search SHA TYO --date 2026-03-09 --limit 3 --output json
+```
