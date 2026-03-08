@@ -100,6 +100,7 @@ import 'package:go_nomads_app/features/moderator/presentation/controllers/modera
 import 'package:go_nomads_app/features/notification/domain/repositories/i_notification_repository.dart';
 import 'package:go_nomads_app/features/notification/infrastructure/repositories/notification_repository.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:go_nomads_app/features/payment/application/services/apple_iap_service.dart';
 // Payment Domain
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
@@ -1206,6 +1207,12 @@ class DependencyInjection {
     // PayPal 服务
     Get.lazyPut<PayPalService>(
       () => PayPalService(),
+      fenix: true,
+    );
+
+    // Apple IAP 服务
+    Get.lazyPut<AppleIapService>(
+      () => AppleIapService(),
       fenix: true,
     );
 

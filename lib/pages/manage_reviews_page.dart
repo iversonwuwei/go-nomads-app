@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -6,10 +7,10 @@ import 'package:go_nomads_app/controllers/manage_reviews_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/widgets/tabs/reviews_tab.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 import 'add_review_page.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Reviews 数据管理列表页面 - 使用独立数据集
 class ManageReviewsPage extends StatefulWidget {
@@ -51,19 +52,20 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
   }
 
   Future<void> _deleteReview(String reviewId) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('确认删除'),
-        content: const Text('确定要删除这条评论吗？此操作可以恢复。'),
+        title: Text(l10n.manageReviewsDeleteConfirmTitle),
+        content: Text(l10n.manageReviewsDeleteConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
             style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
-            child: const Text('删除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -81,7 +83,7 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('${widget.cityName} - 评论管理'),
+        title: Text(l10n.manageReviewsPageTitle(widget.cityName)),
         actions: [
           IconButton(
             icon: const Icon(FontAwesomeIcons.plus),
@@ -98,24 +100,21 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                 },
               );
             },
-            tooltip: '添加评论',
+            tooltip: l10n.addReview,
           ),
         ],
       ),
       body: Obx(() {
-        if (_controller.isLoading.value) {
-          return const ManageListSkeleton();
-        }
-
+        Widget content;
         if (_controller.reviews.isEmpty) {
-          return Center(
+          content = Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(FontAwesomeIcons.commentDots, size: 80.r, color: Colors.grey[300]),
                 SizedBox(height: 16.h),
                 Text(
-                  '暂无评论数据',
+                  l10n.manageReviewsNoData,
                   style: TextStyle(fontSize: 18.sp, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 24.h),
@@ -134,49 +133,54 @@ class _ManageReviewsPageState extends State<ManageReviewsPage> {
                     );
                   },
                   icon: const Icon(FontAwesomeIcons.plus),
-                  label: const Text('添加第一条评论'),
+                  label: Text(l10n.manageReviewsAddFirstReview),
                 ),
               ],
             ),
           );
+        } else {
+          content = ListView.builder(
+            controller: _controller.scrollController,
+            padding: EdgeInsets.all(16.w),
+            itemCount: _controller.reviews.length + 1,
+            itemBuilder: (context, index) {
+              if (index == _controller.reviews.length) {
+                return Obx(() {
+                  if (_controller.isLoadingMore.value) {
+                    return Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: const AppLoadingWidget(fullScreen: false),
+                    );
+                  }
+                  if (!_controller.hasMore.value) {
+                    return Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: Center(
+                        child: Text(
+                          l10n.manageReviewsLoadedAll(_controller.reviews.length),
+                          style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
+                        ),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                });
+              }
+
+              final review = _controller.reviews[index];
+              return ReviewCard(
+                review: review,
+                l10n: l10n,
+                onDelete: _controller.canDelete.value ? () => _deleteReview(review.id) : null,
+              );
+            },
+          );
         }
 
-        return ListView.builder(
-          controller: _controller.scrollController,
-          padding: EdgeInsets.all(16.w),
-          itemCount: _controller.reviews.length + 1,
-          itemBuilder: (context, index) {
-            // 底部加载指示器
-            if (index == _controller.reviews.length) {
-              return Obx(() {
-                if (_controller.isLoadingMore.value) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                if (!_controller.hasMore.value) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Center(
-                      child: Text(
-                        '已加载全部 ${_controller.reviews.length} 条评论',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              });
-            }
-
-            final review = _controller.reviews[index];
-            return ReviewCard(
-              review: review,
-              l10n: l10n,
-              onDelete: _controller.canDelete.value ? () => _deleteReview(review.id) : null,
-            );
-          },
+        return AppLoadingSwitcher(
+          isLoading: _controller.isLoading.value,
+          loading: const ManageListSkeleton(),
+          child: content,
         );
       }),
     );

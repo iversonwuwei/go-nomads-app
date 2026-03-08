@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_community_highlight.dart';
@@ -11,7 +13,6 @@ import 'package:go_nomads_app/pages/login/widgets/login_register_link.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_social_buttons.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_terms_checkbox.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 登录页面 - 使用响应式验证，无需 GlobalKey
 class LoginPage extends GetView<LoginController> {
@@ -173,6 +174,7 @@ class _LoginModeTabsState extends State<_LoginModeTabs> with SingleTickerProvide
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
@@ -218,14 +220,14 @@ class _LoginModeTabsState extends State<_LoginModeTabs> with SingleTickerProvide
               Row(
                 children: [
                   _buildTab(
-                    label: '邮箱登录',
+                    label: l10n.emailLogin,
                     icon: Icons.email_outlined,
                     colorAnimation: _emailTextColor,
                     scaleAnimation: _emailIconScale,
                     onTap: () => _controller.setLoginMode(LoginMode.email),
                   ),
                   _buildTab(
-                    label: '手机登录',
+                    label: l10n.phoneLogin,
                     icon: Icons.phone_android_outlined,
                     colorAnimation: _phoneTextColor,
                     scaleAnimation: _phoneIconScale,

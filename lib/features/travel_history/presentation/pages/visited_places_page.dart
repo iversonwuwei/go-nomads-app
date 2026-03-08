@@ -1,14 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/entities/visited_place.dart';
 import '../controllers/visited_places_controller.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 访问地点列表页面
 /// 两个卡片布局：城市信息卡片 + 访问地点列表卡片
@@ -23,45 +24,36 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       backgroundColor: theme.colorScheme.surfaceContainerLowest,
       appBar: _buildAppBar(theme),
       body: Obx(() {
-        if (controller.isLoading.value && controller.isCityLoading.value) {
-          return const ManageListSkeleton();
-        }
+        final showInitialLoading = controller.isLoading.value && controller.isCityLoading.value;
 
-        if (controller.error.value.isNotEmpty && controller.places.isEmpty) {
-          return _buildErrorView(context, theme);
-        }
+        final content = controller.error.value.isNotEmpty && controller.places.isEmpty
+            ? _buildErrorView(context, theme)
+            : RefreshIndicator(
+                onRefresh: controller.refresh,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _buildCityInfoCard(context, theme),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: 16.h),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildVisitedPlacesHeader(theme),
+                    ),
+                    _buildPlacesListSliver(context, theme),
+                    _buildLoadMoreIndicator(theme),
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: 24.h),
+                    ),
+                  ],
+                ),
+              );
 
-        return RefreshIndicator(
-          onRefresh: controller.refresh,
-          child: CustomScrollView(
-            slivers: [
-              // 城市信息卡片
-              SliverToBoxAdapter(
-                child: _buildCityInfoCard(context, theme),
-              ),
-
-              // 间距
-              SliverToBoxAdapter(
-                child: SizedBox(height: 16.h),
-              ),
-
-              // 访问地点列表卡片标题
-              SliverToBoxAdapter(
-                child: _buildVisitedPlacesHeader(theme),
-              ),
-
-              // 访问地点列表（无限滚动）
-              _buildPlacesListSliver(context, theme),
-
-              // 加载更多指示器
-              _buildLoadMoreIndicator(theme),
-
-              // 底部间距
-              SliverToBoxAdapter(
-                child: SizedBox(height: 24.h),
-              ),
-            ],
-          ),
+        return AppLoadingSwitcher(
+          isLoading: showInitialLoading,
+          loading: const ManageListSkeleton(),
+          child: content,
         );
       }),
     );
@@ -218,13 +210,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
 
   Widget _buildCityMetrics(ThemeData theme) {
     if (controller.isCityLoading.value && controller.citySummary.value == null) {
-      return Center(
-        child: SizedBox(
-          height: 20.h,
-          width: 20.w,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      );
+      return const Center(child: AppLoadingWidget(fullScreen: false));
     }
 
     final weather = controller.weather.value;
@@ -517,16 +503,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       return SliverToBoxAdapter(
         child: Padding(
           padding: EdgeInsets.all(16.w),
-          child: Center(
-            child: SizedBox(
-              width: 24.w,
-              height: 24.h,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
+          child: const Center(child: AppLoadingWidget(fullScreen: false)),
         ),
       );
     });

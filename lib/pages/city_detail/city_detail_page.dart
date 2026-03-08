@@ -105,6 +105,8 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
 
   final String controllerTag;
 
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
+
   @override
   String? get tag => controllerTag;
 
@@ -310,7 +312,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       },
       onResult: (result) {
         if (result.needsRefresh) {
-          AppToast.success('酒店将在审核后添加！');
+          AppToast.success(_l10n.hotelSubmittedSuccess);
         }
       },
     );
@@ -337,7 +339,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
   /// 显示评分对话框
   void _showRatingDialog(BuildContext context) {
     // 触发评分评价，滚动到第一个评分项并提示用户点击评分
-    AppToast.info('请点击下方评分项进行评分');
+    AppToast.info(_l10n.tapStarsToRate);
     // 确保当前 tab 是 Scores
     if (controller.tabController.index != CityDetailController.tabScores) {
       controller.tabController.animateTo(CityDetailController.tabScores);
@@ -449,7 +451,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
         if (result.needsRefresh) {
           AppToast.success(
             'Your coworking space will be reviewed and added soon!',
-            title: 'Success',
+            title: _l10n.success,
           );
         }
       },
@@ -480,7 +482,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     final aiController = Get.find<AiStateController>();
     _showAiGenerateProgressDialog(
       context: context,
-      title: 'AI 正在生成附近城市',
+      title: _l10n.cityDetailGeneratingNearbyCitiesTitle,
       icon: FontAwesomeIcons.mapLocationDot,
       progressGetter: () => aiController.nearbyCitiesGenerationProgress,
       messageGetter: () => aiController.nearbyCitiesGenerationMessage,
@@ -491,7 +493,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       ),
       onComplete: () {
         aiController.loadNearbyCities(cityId: controller.cityId);
-        AppToast.success('附近城市生成成功!');
+        AppToast.success(_l10n.cityDetailNearbyCitiesGeneratedSuccess);
       },
     );
   }

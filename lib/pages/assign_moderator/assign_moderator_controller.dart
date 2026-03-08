@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/user_management/domain/repositories/iuser_management_repository.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
@@ -43,6 +44,8 @@ class AssignModeratorController extends GetxController {
   final RxBool canManageCosts = true.obs;
   final RxBool canManageVisas = true.obs;
   final RxBool canModerateChats = true.obs;
+
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
 
   // ==================== Computed Properties ====================
   bool get hasSelectedUsers => selectedUserIds.isNotEmpty;
@@ -102,7 +105,7 @@ class AssignModeratorController extends GetxController {
         onFailure: (exception) {
           log('❌ [AssignModerator] 加载失败: ${exception.message}');
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            AppToast.error('加载版主候选人失败: ${exception.message}');
+            AppToast.error(_l10n.assignModeratorLoadCandidatesFailed(exception.message));
           });
         },
       );
@@ -110,7 +113,7 @@ class AssignModeratorController extends GetxController {
       log('❌ [AssignModerator] 加载异常: $e');
       log('❌ [AssignModerator] Stack: $stackTrace');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        AppToast.error('加载版主候选人失败: $e');
+        AppToast.error(_l10n.assignModeratorLoadCandidatesFailed(e.toString()));
       });
     } finally {
       isLoading.value = false;
@@ -161,7 +164,7 @@ class AssignModeratorController extends GetxController {
   // ==================== Submit ====================
   Future<void> submitAssignModerator() async {
     if (selectedUserIds.isEmpty) {
-      AppToast.error('请至少选择一个用户');
+      AppToast.error(_l10n.assignModeratorSelectAtLeastOneUser);
       return;
     }
 
@@ -180,20 +183,20 @@ class AssignModeratorController extends GetxController {
           if (result.isSuccess) {
             successCount++;
           } else {
-            final errorMsg = result.exceptionOrNull?.message ?? '未知错误';
+            final errorMsg = result.exceptionOrNull?.message ?? _l10n.assignModeratorUnknownError;
             failCount++;
-            errorMessages.add('用户 $userId: $errorMsg');
+            errorMessages.add(_l10n.assignModeratorUserError(userId, errorMsg));
           }
         } catch (e) {
           failCount++;
-          errorMessages.add('用户 $userId: $e');
+          errorMessages.add(_l10n.assignModeratorUserError(userId, e.toString()));
         }
       }
 
       if (successCount > 0) {
-        AppToast.success('成功指定 $successCount 个版主！');
+        AppToast.success(_l10n.assignModeratorSuccessCount(successCount));
         if (failCount > 0) {
-          AppToast.warning('$failCount 个用户指定失败，请查看日志');
+          AppToast.warning(_l10n.assignModeratorFailCount(failCount));
         }
         // 通过 DataEventBus 广播城市更新事件，通知所有监听者（CityDetail、CityList、Home等）
         DataEventBus.instance.emit(DataChangedEvent(
@@ -211,7 +214,7 @@ class AssignModeratorController extends GetxController {
         });
       } else {
         AppToast.error(
-          '所有用户指定失败: ${errorMessages.isNotEmpty ? errorMessages.first : "请重试"}',
+          _l10n.assignModeratorAllFailed(errorMessages.isNotEmpty ? errorMessages.first : _l10n.retry),
         );
         isSubmitting.value = false;
       }
@@ -224,15 +227,14 @@ class AssignModeratorController extends GetxController {
   Future<bool?> _showConfirmDialog() {
     return Get.dialog<bool>(
       AlertDialog(
-        title: const Text('确认指定版主'),
+        title: Text(_l10n.assignModeratorConfirmTitle),
         content: Text(
-          '确定要将 ${selectedUserIds.length} 个用户指定为版主吗？\n\n'
-          '这些用户将自动获得版主角色和相应权限。',
+          _l10n.assignModeratorConfirmMessage(selectedUserIds.length),
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
+            child: Text(_l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Get.back(result: true),
@@ -240,7 +242,7 @@ class AssignModeratorController extends GetxController {
               backgroundColor: AppColors.cityPrimary,
               foregroundColor: Colors.white,
             ),
-            child: const Text('确认'),
+            child: Text(_l10n.confirm),
           ),
         ],
       ),

@@ -69,7 +69,7 @@ class CreateMeetupTypeSection extends StatelessWidget {
             controller: _c.typeController,
             autofocus: true,
             decoration: InputDecoration(
-              hintText: '输入自定义类型',
+              hintText: l10n.meetupTypeHint,
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {

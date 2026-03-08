@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/apply_moderator/apply_moderator.dart';
 import 'package:go_nomads_app/pages/assign_moderator/assign_moderator.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 版主信息卡片 - 显示在城市详情页的版主区域
 ///
@@ -53,9 +54,16 @@ class ModeratorInfoCard extends StatelessWidget {
 
   /// 构建版主信息区域（已有版主）
   Widget _buildModeratorInfo(BuildContext context, City city) {
+    final l10n = AppLocalizations.of(context)!;
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
     final moderator = city.moderator;
     final isCurrentUserModerator = city.isCurrentUserModerator;
     final isAdmin = city.isCurrentUserAdmin;
+
+    final headerTitle = isEnglish ? 'Moderator' : l10n.moderatorCardTitle;
+    final headerBadge = isEnglish ? 'Verified' : l10n.moderatorCardCertified;
+    final transferLabel = isEnglish ? 'Transfer' : l10n.moderatorCardTransferModerator;
+    final applyLabel = isEnglish ? 'Apply' : l10n.moderatorCardApplyModerator;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,8 +72,9 @@ class ModeratorInfoCard extends StatelessWidget {
         _HeaderRow(
           icon: FontAwesomeIcons.userShield,
           iconColor: AppColors.cityPrimary,
-          title: '城市版主',
-          badgeLabel: '已认证',
+          title: headerTitle,
+          badgeLabel: headerBadge,
+          isCertifiedBadge: true,
           badgeColor: const Color(0xFF10B981),
         ),
         SizedBox(height: 12.h),
@@ -159,7 +168,7 @@ class ModeratorInfoCard extends StatelessWidget {
               FontAwesomeIcons.arrowRightArrowLeft,
               size: 14.r,
             ),
-            label: const Text('转让版主'),
+            label: Text(transferLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.orange,
               side: const BorderSide(color: Colors.orange),
@@ -178,7 +187,7 @@ class ModeratorInfoCard extends StatelessWidget {
               FontAwesomeIcons.userPlus,
               size: 14.r,
             ),
-            label: const Text('申请成为版主'),
+            label: Text(applyLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.cityPrimary,
               side: BorderSide(color: AppColors.cityPrimary),
@@ -195,10 +204,19 @@ class ModeratorInfoCard extends StatelessWidget {
 
   /// 构建申请版主区域（无版主）
   Widget _buildApplyModeratorSection(BuildContext context, City city) {
+    final l10n = AppLocalizations.of(context)!;
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
     final isAdmin = city.isCurrentUserAdmin;
     final isCurrentUserModerator = city.isCurrentUserModerator;
     // 本城市版主或admin可以分配版主
     final canAssign = isAdmin || isCurrentUserModerator;
+
+    final headerTitle = isEnglish ? 'Moderator' : l10n.moderatorCardTitle;
+    final headerBadge = isEnglish ? 'Open' : l10n.moderatorCardUnclaimed;
+    final lookingForText =
+        isEnglish ? 'We are looking for a city moderator.' : l10n.moderatorCardLookingForModerator;
+    final assignLabel = isEnglish ? 'Assign' : l10n.moderatorCardAssignModerator;
+    final applyLabel = isEnglish ? 'Apply' : l10n.moderatorCardApplyModerator;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -207,8 +225,9 @@ class ModeratorInfoCard extends StatelessWidget {
         _HeaderRow(
           icon: FontAwesomeIcons.userSlash,
           iconColor: Colors.orange,
-          title: '城市版主',
-          badgeLabel: '待认领',
+          title: headerTitle,
+          badgeLabel: headerBadge,
+          isCertifiedBadge: false,
           badgeColor: Colors.orange,
         ),
         SizedBox(height: 12.h),
@@ -233,7 +252,7 @@ class ModeratorInfoCard extends StatelessWidget {
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
-                  '这座城市正在寻找版主！如果你熟悉这里，可以申请成为版主，帮助其他数字游民了解这座城市。',
+                  lookingForText,
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: Colors.grey[700],
@@ -254,7 +273,7 @@ class ModeratorInfoCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () => _showTransferModeratorDialog(context, city),
               icon: Icon(FontAwesomeIcons.userGear, size: 14.r),
-              label: const Text('分配版主'),
+              label: Text(assignLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
@@ -273,7 +292,7 @@ class ModeratorInfoCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () => _navigateToApplyModerator(context, city),
               icon: Icon(FontAwesomeIcons.userPlus, size: 14.r),
-              label: const Text('申请成为版主'),
+              label: Text(applyLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
@@ -309,6 +328,9 @@ class ModeratorInfoCard extends StatelessWidget {
 
   /// 显示升级会员对话框
   void _showUpgradeMembershipDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+    final upgradeTitle = isEnglish ? 'Pro Required' : l10n.moderatorCardNeedUpgradeMembership;
     Get.dialog(
       AlertDialog(
         title: Row(
@@ -319,21 +341,20 @@ class ModeratorInfoCard extends StatelessWidget {
               size: 20.r,
             ),
             SizedBox(width: 8.w),
-            const Text('需要升级会员'),
+            Expanded(
+              child: Text(
+                upgradeTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
-        content: const Text(
-          '申请成为城市版主需要 Pro 会员或更高等级。\n\n'
-          '升级到 Pro 会员后，您将获得：\n'
-          '• 申请成为城市版主的资格\n'
-          '• 更多 AI 使用次数\n'
-          '• 专属会员徽章\n'
-          '• 更多高级功能',
-        ),
+        content: Text(l10n.moderatorCardUpgradeContent),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('稍后再说'),
+            child: Text(l10n.addInnovationMaybeLater),
           ),
           ElevatedButton.icon(
             onPressed: () {
@@ -341,7 +362,7 @@ class ModeratorInfoCard extends StatelessWidget {
               Get.toNamed(AppRoutes.membershipPlan);
             },
             icon: Icon(FontAwesomeIcons.arrowUp, size: 14.r),
-            label: const Text('立即升级'),
+            label: Text(l10n.moderatorCardUpgradeNow),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.cityPrimary,
               foregroundColor: Colors.white,
@@ -371,6 +392,7 @@ class _HeaderRow extends StatelessWidget {
   final Color iconColor;
   final String title;
   final String badgeLabel;
+  final bool isCertifiedBadge;
   final Color badgeColor;
 
   const _HeaderRow({
@@ -378,6 +400,7 @@ class _HeaderRow extends StatelessWidget {
     required this.iconColor,
     required this.title,
     required this.badgeLabel,
+    required this.isCertifiedBadge,
     required this.badgeColor,
   });
 
@@ -387,15 +410,19 @@ class _HeaderRow extends StatelessWidget {
       children: [
         Icon(icon, color: iconColor, size: 16.r),
         SizedBox(width: 8.w),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
           ),
         ),
-        const Spacer(),
+        SizedBox(width: 8.w),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
           decoration: BoxDecoration(
@@ -406,13 +433,15 @@ class _HeaderRow extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                badgeLabel == '已认证' ? FontAwesomeIcons.check : FontAwesomeIcons.exclamation,
+                isCertifiedBadge ? FontAwesomeIcons.check : FontAwesomeIcons.exclamation,
                 size: 10.r,
                 color: badgeColor,
               ),
               SizedBox(width: 4.w),
               Text(
                 badgeLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w500,

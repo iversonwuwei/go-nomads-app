@@ -5,6 +5,7 @@ import 'package:go_nomads_app/core/sync/data_sync_service.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_rating_category.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_rating_statistics.dart';
 import 'package:go_nomads_app/features/city/domain/usecases/city_rating_usecases.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// 城市评分控制器
@@ -104,7 +105,7 @@ class CityRatingController extends GetxController {
     } catch (e) {
       log('❌ [CityRatingController] 加载评分信息失败: $e');
       error.value = e.toString();
-      AppToast.error('加载评分信息失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.loadRatingFailed(e.toString()));
     } finally {
       isLoading.value = false;
     }
@@ -187,7 +188,7 @@ class CityRatingController extends GetxController {
           statistics.refresh(); // 触发 Obx 更新回滚状态
         }
 
-        AppToast.error('提交评分失败');
+        AppToast.error(AppLocalizations.of(Get.context!)!.submitRatingFailed);
       });
 
       // 100ms 后清除提交中状态（让用户看到反馈）
@@ -199,7 +200,7 @@ class CityRatingController extends GetxController {
     } catch (e) {
       submittingCategoryId.value = null;
       completedCategoryId.value = null;
-      AppToast.error('提交评分失败');
+      AppToast.error(AppLocalizations.of(Get.context!)!.submitRatingFailed);
     }
   }
 
@@ -257,12 +258,12 @@ class CityRatingController extends GetxController {
 
       showAddCategoryDialog.value = false;
 
-      AppToast.success('评分项创建成功');
+      AppToast.success(AppLocalizations.of(Get.context!)!.ratingItemCreated);
 
       // 创建成功后刷新数据
       await refreshRatings();
     } catch (e) {
-      AppToast.error('创建评分项失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.createRatingItemFailed(e.toString()));
     }
   }
 
@@ -276,12 +277,12 @@ class CityRatingController extends GetxController {
       categories.removeWhere((c) => c.id == categoryId);
       statistics.removeWhere((s) => s.categoryId == categoryId);
 
-      AppToast.success('评分项删除成功');
+      AppToast.success(AppLocalizations.of(Get.context!)!.ratingItemDeleted);
 
       // 删除成功后刷新数据
       await refreshRatings();
     } catch (e) {
-      AppToast.error('删除评分项失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.deleteRatingItemFailed(e.toString()));
     }
   }
 

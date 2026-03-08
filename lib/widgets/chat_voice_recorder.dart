@@ -3,12 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 语音录制配置
 class VoiceRecorderConfig {
@@ -133,10 +134,10 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
 
         HapticFeedback.mediumImpact();
       } else {
-        AppToast.error('请允许录音权限');
+        AppToast.error(AppLocalizations.of(Get.context!)!.allowMicPermission);
       }
     } catch (e) {
-      AppToast.error('录音失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.recordingFailed(e.toString()));
     }
   }
 
@@ -158,7 +159,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
       if (send && path != null && _recordDuration >= widget.config.minDuration) {
         widget.onSendVoice(path, _recordDuration);
       } else if (_recordDuration < widget.config.minDuration) {
-        AppToast.info('说话时间太短');
+        AppToast.info(AppLocalizations.of(Get.context!)!.talkTooShort);
         if (path != null) {
           try {
             await File(path).delete();
@@ -186,7 +187,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
       });
 
       HapticFeedback.lightImpact();
-      AppToast.info('已取消');
+      AppToast.info(AppLocalizations.of(Get.context!)!.recordingCancelled);
 
       if (path != null) {
         try {
@@ -274,7 +275,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
 
   Widget _buildIdleContent() {
     return Text(
-      '按住 说话',
+      AppLocalizations.of(Get.context!)!.holdToTalk,
       style: TextStyle(
         color: Color(0xFF999999),
         fontSize: 15.sp,
@@ -297,7 +298,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
         SizedBox(width: 8.w),
         // 时间和提示
         Text(
-          _isCancelArea ? '松开取消' : '${_formatDuration(_recordDuration)} ↑ 取消',
+          _isCancelArea ? AppLocalizations.of(Get.context!)!.releaseToCancel : '${_formatDuration(_recordDuration)} ↑ ${AppLocalizations.of(Get.context!)!.cancelRecording}',
           style: TextStyle(
             color: color,
             fontSize: 14.sp,
@@ -416,10 +417,10 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
 
         HapticFeedback.mediumImpact();
       } else {
-        AppToast.error('请允许录音权限');
+        AppToast.error(AppLocalizations.of(Get.context!)!.allowMicPermission);
       }
     } catch (e) {
-      AppToast.error('录音失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.recordingFailed(e.toString()));
     }
   }
 
@@ -442,7 +443,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
         Navigator.of(context).pop();
         widget.onSendVoice(path, _recordDuration);
       } else if (_recordDuration < widget.config.minDuration) {
-        AppToast.info('说话时间太短');
+        AppToast.info(AppLocalizations.of(Get.context!)!.talkTooShort);
         if (path != null) {
           try {
             await File(path).delete();
@@ -541,7 +542,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                   SizedBox(height: 16.h),
                   // 时间显示
                   Text(
-                    _isRecording ? _formatDuration(_recordDuration) : '按住下方按钮开始录音',
+                    _isRecording ? _formatDuration(_recordDuration) : AppLocalizations.of(context)!.holdButtonToRecord,
                     style: TextStyle(
                       fontSize: _isRecording ? 24 : 14,
                       fontWeight: _isRecording ? FontWeight.bold : FontWeight.normal,
@@ -551,7 +552,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                   if (_isRecording) ...[
                     SizedBox(height: 8.h),
                     Text(
-                      _isCancelArea ? '松开手指，取消发送' : '上滑取消',
+                      _isCancelArea ? AppLocalizations.of(context)!.releaseToCancelSend : AppLocalizations.of(context)!.swipeUpToCancel,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: _isCancelArea ? Colors.red : const Color(0xFF999999),
@@ -617,7 +618,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          _isRecording ? (_isCancelArea ? '松开取消' : '正在录音...') : '按住说话',
+                          _isRecording ? (_isCancelArea ? AppLocalizations.of(context)!.releaseToCancel : AppLocalizations.of(context)!.recording) : AppLocalizations.of(context)!.holdToTalk,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w500,

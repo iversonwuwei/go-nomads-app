@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide Badge;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -16,8 +17,8 @@ import 'package:go_nomads_app/pages/profile/widgets/social_links_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/travel_history_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/travel_plans_widget.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Profile 页面 - 使用 GetView 模式
 ///
@@ -65,20 +66,13 @@ class _ProfilePageContent extends GetView<ProfileController> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Obx(() {
-          // 加载中状态
-          if (controller.isPageLoading || controller.isLoadingUser) {
-            return const ProfileSkeleton();
-          }
-
           final user = controller.currentUser;
-
-          // 未登录或数据为空
-          if (user == null) {
-            return const ProfileSkeleton();
-          }
-
-          return _ProfileContentView(
-            onLogout: () => _showLogoutDialog(context, l10n),
+          return AppLoadingSwitcher(
+            isLoading: controller.isPageLoading || controller.isLoadingUser || user == null,
+            loading: const ProfileSkeleton(),
+            child: _ProfileContentView(
+              onLogout: () => _showLogoutDialog(context, l10n),
+            ),
           );
         }),
       ),

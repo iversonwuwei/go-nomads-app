@@ -85,14 +85,9 @@ class LocationService extends GetxService {
     }
 
     // 权限未授予（denied 状态）：先展示用途说明，再请求系统权限
-    final shouldRequest = await _showPurposeDialogIfNeeded();
-    if (!shouldRequest) {
-      log('📋 用户在用途说明对话框中拒绝了位置权限');
-      hasPermission.value = false;
-      return false;
-    }
+    await _showPurposeDialogIfNeeded();
 
-    // 用户同意后，发起系统权限请求
+    // 展示用途说明后，发起系统权限请求
     permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied) {
       AppToast.warning(
@@ -118,31 +113,24 @@ class LocationService extends GetxService {
 
   /// 在请求系统权限前，展示权限用途说明对话框
   ///
-  /// 首次请求时必须展示；后续如果用户之前看过说明且拒绝了系统权限，
-  /// 再次请求时也会展示，避免用户忘记为什么需要此权限。
-  Future<bool> _showPurposeDialogIfNeeded() async {
+  /// 向用户说明为什么需要此权限（Apple Review Guideline 5.1.1 合规）。
+  /// 对话框只有"继续"按钮，阅读后直接进入系统权限弹窗。
+  Future<void> _showPurposeDialogIfNeeded() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final hasShownBefore = prefs.getBool(_locationPurposeShownKey) ?? false;
 
-      // 始终展示用途说明（隐私合规要求：每次请求权限时都要清晰告知目的）
-      // 但如果已展示过且用户之前同意，可以跳过（用户已知悉）
       if (hasShownBefore) {
-        // 已经展示过，但权限被拒绝了才会走到这里
-        // 再次展示用途说明，提醒用户为什么需要
         log('📋 再次展示位置权限用途说明');
       }
 
-      final accepted = await PermissionPurposeDialog.showLocationPermissionPurpose();
+      await PermissionPurposeDialog.showLocationPermissionPurpose();
 
       // 记录已展示过
       await prefs.setBool(_locationPurposeShownKey, true);
-
-      return accepted;
     } catch (e) {
       log('⚠️ 展示权限用途说明对话框失败: $e');
       // 如果对话框展示失败，仍然允许继续请求权限
-      return true;
     }
   }
 

@@ -13,6 +13,7 @@ import 'package:go_nomads_app/features/user/application/use_cases/favorite_city_
 import 'package:go_nomads_app/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 import 'package:go_nomads_app/features/user/domain/entities/nomad_stats.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// 用户状态控制器 V2 (优化版)
@@ -434,7 +435,7 @@ class UserStateController extends GetxController {
   Future<bool> updateUser(Map<String, dynamic> updates) async {
     final user = currentUser.value;
     if (user == null) {
-      errorMessage.value = '用户未登录';
+      errorMessage.value = AppLocalizations.of(Get.context!)!.userNotLoggedIn;
       return false;
     }
 
@@ -452,7 +453,8 @@ class UserStateController extends GetxController {
       onSuccess: (updatedUser) {
         currentUser.value = updatedUser;
         _lastUserLoadTime = DateTime.now();
-        _showSnackbar('成功', '用户信息已更新');
+        _showSnackbar(
+            AppLocalizations.of(Get.context!)!.successTitle, AppLocalizations.of(Get.context!)!.userInfoUpdated);
 
         // 通知其他组件
         _notifyUserChanged();
@@ -539,7 +541,8 @@ class UserStateController extends GetxController {
       onSuccess: (success) {
         if (success) {
           favoriteCityIds.add(cityId);
-          _showSnackbar('成功', '已添加到收藏');
+          _showSnackbar(
+              AppLocalizations.of(Get.context!)!.successTitle, AppLocalizations.of(Get.context!)!.addedToFavorites);
 
           // 通知其他组件
           _notifyFavoriteChanged(cityId, true);
@@ -561,7 +564,8 @@ class UserStateController extends GetxController {
       onSuccess: (success) {
         if (success) {
           favoriteCityIds.remove(cityId);
-          _showSnackbar('成功', '已取消收藏');
+          _showSnackbar(
+              AppLocalizations.of(Get.context!)!.successTitle, AppLocalizations.of(Get.context!)!.removedFromFavorites);
 
           // 通知其他组件
           _notifyFavoriteChanged(cityId, false);
@@ -607,7 +611,7 @@ class UserStateController extends GetxController {
   Future<bool> removeSkill(String skillId) async {
     final user = currentUser.value;
     if (user == null) {
-      errorMessage.value = '用户未登录';
+      errorMessage.value = AppLocalizations.of(Get.context!)!.userNotLoggedIn;
       return false;
     }
 
@@ -624,8 +628,8 @@ class UserStateController extends GetxController {
 
       return success;
     } catch (e) {
-      errorMessage.value = '移除技能失败: $e';
-      AppToast.error('移除技能失败');
+      errorMessage.value = AppLocalizations.of(Get.context!)!.removeSkillFailedWithError(e.toString());
+      AppToast.error(AppLocalizations.of(Get.context!)!.removeSkillFailed);
       return false;
     }
   }
@@ -634,7 +638,7 @@ class UserStateController extends GetxController {
   Future<bool> removeInterest(String interestId) async {
     final user = currentUser.value;
     if (user == null) {
-      errorMessage.value = '用户未登录';
+      errorMessage.value = AppLocalizations.of(Get.context!)!.userNotLoggedIn;
       return false;
     }
 
@@ -651,8 +655,8 @@ class UserStateController extends GetxController {
 
       return success;
     } catch (e) {
-      errorMessage.value = '移除兴趣失败: $e';
-      AppToast.error('移除兴趣失败');
+      errorMessage.value = AppLocalizations.of(Get.context!)!.removeInterestFailedWithError(e.toString());
+      AppToast.error(AppLocalizations.of(Get.context!)!.removeInterestFailed);
       return false;
     }
   }
@@ -688,24 +692,25 @@ class UserStateController extends GetxController {
   // ==================== 异常处理 ====================
 
   void _handleException(DomainException exception, {bool silent = false}) {
-    String title = '错误';
+    final l10n = AppLocalizations.of(Get.context!)!;
+    String title = l10n.errorTitle;
     String message = exception.message;
 
     switch (exception) {
       case UnauthorizedException():
-        title = '未授权';
+        title = l10n.unauthorizedTitle;
         break;
       case NetworkException():
-        title = '网络错误';
+        title = l10n.networkErrorTitle;
         break;
       case ServerException():
-        title = '服务器错误';
+        title = l10n.serverErrorTitle;
         break;
       case ValidationException():
-        title = '验证失败';
+        title = l10n.validationFailedTitle;
         break;
       default:
-        title = '未知错误';
+        title = l10n.unknownErrorTitle;
     }
 
     if (!silent) {
@@ -719,7 +724,7 @@ class UserStateController extends GetxController {
   }
 
   void _showSnackbar(String title, String message) {
-    if (title == '成功') {
+    if (title == AppLocalizations.of(Get.context!)!.successTitle) {
       AppToast.success(message);
     } else {
       AppToast.error(message);

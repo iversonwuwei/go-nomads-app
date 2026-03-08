@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/coworking/application/use_cases/coworking_use_cases.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/verification_eligibility.dart';
 import 'package:go_nomads_app/features/coworking/infrastructure/services/signalr_coworking_service.dart';
-import 'package:get/get.dart';
 
 /// Coworking State Controller V2
 ///
@@ -334,10 +334,18 @@ class CoworkingStateController extends PaginatedRefreshableController {
       return;
     }
 
-    if (refresh || isNewCity) {
-      await forceRefresh();
-    } else {
-      await initialLoad();
+    try {
+      if (refresh || isNewCity) {
+        await forceRefresh();
+      } else {
+        await initialLoad();
+      }
+    } finally {
+      // When switching city we set isLoading manually to avoid flashing empty state.
+      // forceRefresh() internally toggles isRefreshing, so we must reset isLoading here.
+      if (isNewCity) {
+        isLoading.value = false;
+      }
     }
   }
 

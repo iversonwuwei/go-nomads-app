@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_form_field.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 注册表单 - 使用响应式验证，无需 Form/GlobalKey
 class RegisterForm extends GetView<RegisterController> {
@@ -32,9 +32,9 @@ class RegisterForm extends GetView<RegisterController> {
       case 'passwordsNotMatch':
         return l10n.passwordsNotMatch;
       case 'verificationCodeRequired':
-        return '请输入验证码';
+        return l10n.verificationCodeRequired;
       case 'verificationCodeLength':
-        return '验证码必须为6位';
+        return l10n.verificationCodeLength;
       default:
         return errorKey;
     }
@@ -78,8 +78,8 @@ class RegisterForm extends GetView<RegisterController> {
                 Expanded(
                   child: RegisterFormField(
                     controller: controller.verificationCodeController,
-                    labelText: '验证码',
-                    hintText: '请输入6位验证码',
+                    labelText: l10n.verificationCode,
+                    hintText: l10n.enterVerificationCode,
                     prefixIcon: FontAwesomeIcons.shieldHalved,
                     keyboardType: TextInputType.number,
                     errorText: controller.showValidationErrors.value
@@ -115,7 +115,7 @@ class RegisterForm extends GetView<RegisterController> {
                         : Text(
                             controller.countdown.value > 0
                                 ? '${controller.countdown.value}s'
-                                : (controller.codeSent.value ? '重新发送' : '获取验证码'),
+                                : (controller.codeSent.value ? l10n.resend : l10n.sendCode),
                             style: TextStyle(fontSize: 14.sp),
                           ),
                   ),

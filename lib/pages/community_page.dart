@@ -1,11 +1,12 @@
-import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart';
-import 'package:go_nomads_app/features/community/presentation/controllers/community_state_controller.dart';
-import 'package:go_nomads_app/widgets/safe_network_image.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart';
+import 'package:go_nomads_app/features/community/presentation/controllers/community_state_controller.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 class CommunityPage extends StatelessWidget {
   const CommunityPage({super.key});
@@ -45,16 +46,16 @@ class CommunityPage extends StatelessWidget {
         body: SafeArea(
           top: false, // AppBar 已经处理了顶部
           child: Obx(() {
-            if (controller.isLoading.value) {
-              return const CommunitySkeleton();
-            }
-
-            return TabBarView(
-              children: [
-                _buildTripReportsTab(controller, isMobile),
-                _buildRecommendationsTab(controller, isMobile),
-                _buildQATab(controller, isMobile),
-              ],
+            return AppLoadingSwitcher(
+              isLoading: controller.isLoading.value,
+              loading: const CommunitySkeleton(),
+              child: TabBarView(
+                children: [
+                  _buildTripReportsTab(controller, isMobile),
+                  _buildRecommendationsTab(controller, isMobile),
+                  _buildQATab(controller, isMobile),
+                ],
+              ),
             );
           }),
         ),

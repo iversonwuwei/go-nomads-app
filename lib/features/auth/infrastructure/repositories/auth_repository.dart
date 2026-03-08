@@ -325,6 +325,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     String? code,
     String? accessToken,
     String? openId,
+    String? nickname,
   }) async {
     return execute(() async {
       // 构建请求数据
@@ -335,6 +336,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
       if (code != null) requestData['code'] = code;
       if (accessToken != null) requestData['accessToken'] = accessToken;
       if (openId != null) requestData['openId'] = openId;
+      if (nickname != null) requestData['nickname'] = nickname;
 
       final response = await _httpService.post(
         ApiConfig.socialLoginEndpoint,

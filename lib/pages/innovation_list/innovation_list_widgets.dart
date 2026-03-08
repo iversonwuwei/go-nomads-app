@@ -1,9 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Innovation List Header Section
 /// 创意项目列表 - 头部区域（创建按钮和标题）
@@ -144,6 +145,7 @@ class InnovationListErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -157,7 +159,7 @@ class InnovationListErrorState extends StatelessWidget {
           SizedBox(height: 16.h),
           ElevatedButton(
             onPressed: onRetry,
-            child: const Text('重试'),
+            child: Text(l10n.retry),
           ),
         ],
       ),
@@ -194,9 +196,7 @@ class InnovationListLoadingIndicator extends StatelessWidget {
     if (isLoading) {
       return Padding(
         padding: EdgeInsets.all(16.w),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
@@ -48,6 +49,8 @@ class LoginController extends GetxController {
   final RxBool agreeToTerms = false.obs;
 
   Timer? _countdownTimer;
+
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
 
   /// 判断是否为中国区用户
   bool get isChineseUser {
@@ -200,7 +203,7 @@ class LoginController extends GetxController {
   /// 检查用户是否已同意协议，未同意则提示
   bool _checkTermsAgreed() {
     if (!agreeToTerms.value) {
-      AppToast.warning('请先同意用户协议和隐私政策', title: '提示');
+      AppToast.warning(_l10n.pleaseAgreeToTerms, title: _l10n.termsRequired);
       return false;
     }
     return true;
@@ -211,12 +214,12 @@ class LoginController extends GetxController {
   Future<void> sendSmsCode() async {
     final phone = phoneController.text.trim();
     if (phone.isEmpty) {
-      AppToast.warning('请输入手机号', title: '提示');
+      AppToast.warning(_l10n.loginPhoneRequired, title: _l10n.loginTipsTitle);
       return;
     }
 
     if (!RegExp(r'^1[3-9]\d{9}$').hasMatch(phone)) {
-      AppToast.warning('请输入正确的手机号', title: '提示');
+      AppToast.warning(_l10n.loginPhoneInvalid, title: _l10n.loginTipsTitle);
       return;
     }
 
@@ -228,14 +231,14 @@ class LoginController extends GetxController {
       );
 
       if (response.data['success'] == true) {
-        AppToast.success('验证码已发送', title: '成功');
+        AppToast.success(_l10n.loginSmsCodeSent, title: _l10n.success);
         _startCountdown();
       } else {
-        AppToast.error(response.data['message'] ?? '发送失败', title: '错误');
+        AppToast.error(response.data['message'] ?? _l10n.loginSendFailed, title: _l10n.error);
       }
     } catch (e) {
       log('❌ 发送验证码失败: $e');
-      AppToast.error('发送验证码失败', title: '错误');
+      AppToast.error(_l10n.loginSendSmsFailed, title: _l10n.error);
     }
   }
 
@@ -282,22 +285,22 @@ class LoginController extends GetxController {
           email: emailController.text.trim(),
         );
 
-        AppToast.success('Welcome back!', title: 'Login Successful');
+        AppToast.success(_l10n.loginWelcomeBack, title: _l10n.loginSuccessfulTitle);
 
         // 先导航到首页（正确卸载登录页，避免 TextEditingController disposed 错误）
         Get.offAllNamed(AppRoutes.home);
         // 在独立上下文中延迟检查隐私政策（不依赖已 dispose 的 LoginController）
         _schedulePrivacyPolicyCheck();
       } else {
-        AppToast.error('Invalid email or password', title: 'Login Failed');
+        AppToast.error(_l10n.loginInvalidEmailOrPassword, title: _l10n.loginFailedTitle);
       }
     } on HttpException catch (e) {
       if (context.mounted) Navigator.pop(context);
-      AppToast.error(e.message, title: 'Network Error');
+      AppToast.error(e.message, title: _l10n.networkError);
     } catch (e) {
       if (context.mounted) Navigator.pop(context);
       log('❌ 登录错误: $e');
-      AppToast.error('An error occurred. Please try again.', title: 'Error');
+      AppToast.error(_l10n.loginUnknownErrorRetry, title: _l10n.error);
     }
   }
 
@@ -326,27 +329,27 @@ class LoginController extends GetxController {
 
       if (success) {
         log('✅ 手机号登录成功');
-        AppToast.success('欢迎回来！', title: '登录成功');
+        AppToast.success(_l10n.loginWelcomeBack, title: _l10n.loginSuccessfulTitle);
 
         // 先导航到首页（正确卸载登录页）
         Get.offAllNamed(AppRoutes.home);
         // 在独立上下文中延迟检查隐私政策
         _schedulePrivacyPolicyCheck();
       } else {
-        AppToast.error('登录失败，请重试', title: '错误');
+        AppToast.error(_l10n.loginFailedRetry, title: _l10n.error);
       }
     } catch (e) {
       if (context.mounted) Navigator.pop(context);
       log('❌ 手机号登录失败: $e');
 
-      String errorMessage = '登录失败，请重试';
+      String errorMessage = _l10n.loginFailedRetry;
       if (e is DioException && e.error is HttpException) {
         final httpError = e.error as HttpException;
-        errorMessage = httpError.message.contains('验证码') ? '验证码无效或已过期' : httpError.message;
+        errorMessage = httpError.message.contains('验证码') ? _l10n.loginSmsCodeInvalidOrExpired : httpError.message;
       } else if (e.toString().contains('验证码')) {
-        errorMessage = '验证码无效或已过期';
+        errorMessage = _l10n.loginSmsCodeInvalidOrExpired;
       }
-      AppToast.error(errorMessage, title: '错误');
+      AppToast.error(errorMessage, title: _l10n.error);
     }
   }
 
@@ -375,7 +378,7 @@ class LoginController extends GetxController {
 
       if (success) {
         log('✅ $platformName 登录成功');
-        AppToast.success('欢迎回来！', title: '登录成功');
+        AppToast.success(_l10n.loginWelcomeBack, title: _l10n.loginSuccessfulTitle);
 
         // 先导航到首页（正确卸载登录页）
         Get.offAllNamed(AppRoutes.home);
@@ -388,15 +391,15 @@ class LoginController extends GetxController {
       isLoading.value = false;
 
       log('❌ $platformName 登录异常: $e');
-      AppToast.error('$platformName 登录失败，请稍后重试', title: '登录失败');
+      AppToast.error(_l10n.loginSocialFailed(platformName), title: _l10n.loginFailedTitle);
     }
   }
 
   /// 显示社交登录加载对话框
   void _showSocialLoginLoadingDialog(String platformName) {
     AppLoadingDialog.show(
-      title: '正在$platformName登录...',
-      subtitle: '请稍候',
+      title: _l10n.loginSocialLoading(platformName),
+      subtitle: _l10n.loginPleaseWait,
       indicatorColor: LoginConstants.primaryColor,
     );
   }

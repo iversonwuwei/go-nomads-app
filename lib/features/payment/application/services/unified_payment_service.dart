@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -28,6 +29,8 @@ class UnifiedPaymentResult {
 
 /// 统一支付服务 - 管理多种支付方式
 class UnifiedPaymentService extends GetxService {
+  bool get _isIosExternalPaymentBlocked => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
   WeChatPayService? get _wechatService {
     if (Get.isRegistered<WeChatPayService>()) {
       return Get.find<WeChatPayService>();
@@ -56,6 +59,14 @@ class UnifiedPaymentService extends GetxService {
     int durationDays = 365,
     bool isRenewal = false,
   }) async {
+    if (_isIosExternalPaymentBlocked) {
+      return UnifiedPaymentResult(
+        success: false,
+        method: method,
+        errorMessage: 'iOS 暂不支持第三方会员支付',
+      );
+    }
+
     final controller = _paymentController;
     if (controller == null) {
       return UnifiedPaymentResult(
@@ -258,6 +269,10 @@ class UnifiedPaymentService extends GetxService {
 
   /// 检查支付方式是否可用
   Future<bool> isPaymentMethodAvailable(PaymentMethod method) async {
+    if (_isIosExternalPaymentBlocked) {
+      return false;
+    }
+
     switch (method) {
       case PaymentMethod.paypal:
         return true; // PayPal 支持 App 和网页，始终可用

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -12,11 +13,10 @@ import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
 import 'package:go_nomads_app/pages/coworking_detail/coworking_detail_page.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
-import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Coworking List Page
 /// 共享办公空间列表页面
@@ -204,13 +204,11 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
         children: [
           Expanded(
             child: Obx(() {
-              // 显示骨架屏加载效果
-              if (controller.isLoading.value && controller.filteredSpaces.isEmpty) {
-                return _buildSkeletonList();
-              }
+              final isLoading = controller.isLoading.value && controller.filteredSpaces.isEmpty;
 
+              Widget content;
               if (controller.filteredSpaces.isEmpty) {
-                return Builder(
+                content = Builder(
                   builder: (context) {
                     final l10n = AppLocalizations.of(context)!;
                     return Center(
@@ -235,25 +233,31 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
                     );
                   },
                 );
+              } else {
+                content = RefreshIndicator(
+                  onRefresh: _refreshData,
+                  child: ListView.builder(
+                    controller: _scrollController, // 添加滚动控制器
+                    cacheExtent: 500, // 增加缓存范围，提升滚动性能
+                    padding: EdgeInsets.all(16.w),
+                    itemCount: controller.filteredSpaces.length + 1, // +1 用于底部加载指示器
+                    itemBuilder: (context, index) {
+                      // 最后一项显示加载指示器
+                      if (index == controller.filteredSpaces.length) {
+                        return _buildLoadMoreIndicator();
+                      }
+
+                      final space = controller.filteredSpaces[index];
+                      return _buildCoworkingCard(context, space);
+                    },
+                  ),
+                );
               }
 
-              return RefreshIndicator(
-                onRefresh: _refreshData,
-                child: ListView.builder(
-                  controller: _scrollController, // 添加滚动控制器
-                  cacheExtent: 500, // 增加缓存范围，提升滚动性能
-                  padding: EdgeInsets.all(16.w),
-                  itemCount: controller.filteredSpaces.length + 1, // +1 用于底部加载指示器
-                  itemBuilder: (context, index) {
-                    // 最后一项显示加载指示器
-                    if (index == controller.filteredSpaces.length) {
-                      return _buildLoadMoreIndicator();
-                    }
-
-                    final space = controller.filteredSpaces[index];
-                    return _buildCoworkingCard(context, space);
-                  },
-                ),
+              return AppLoadingSwitcher(
+                isLoading: isLoading,
+                loading: _buildSkeletonList(),
+                child: content,
               );
             }),
           ),
@@ -522,9 +526,7 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
       if (controller.isLoadingMore.value) {
         return Padding(
           padding: EdgeInsets.all(16.0.w),
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
+          child: const Center(child: AppLoadingWidget(fullScreen: false)),
         );
       }
 
@@ -551,96 +553,6 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
 
   /// 骨架屏列表（加载时显示）
   Widget _buildSkeletonList() {
-    return ListView.builder(
-      padding: EdgeInsets.all(16.w),
-      itemCount: 5, // 显示5个骨架项
-      itemBuilder: (context, index) => _buildSkeletonCard(),
-    );
-  }
-
-  /// 单个骨架屏卡片
-  Widget _buildSkeletonCard() {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: SafeShimmer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 图片骨架
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
-                ),
-              ),
-            ),
-            // 信息骨架
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 标题骨架
-                  Container(
-                    width: double.infinity,
-                    height: 20.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  // 地址骨架
-                  Container(
-                    width: 200.w,
-                    height: 14.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  // 标签骨架
-                  Row(
-                    children: [
-                      Container(
-                        width: 80.w,
-                        height: 24.h,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Container(
-                        width: 100.w,
-                        height: 24.h,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const AppSceneLoading(scene: AppLoadingScene.coworkingList, fullScreen: true);
   }
 }

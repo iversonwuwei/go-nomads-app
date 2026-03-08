@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// 支付方式枚举
 enum PaymentMethod {
   paypal,
@@ -38,7 +40,10 @@ extension PaymentMethodExtension on PaymentMethod {
 
   /// 是否当前平台可用
   bool get isAvailable {
-    // PayPal 始终可用，微信需要原生配置
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      return false;
+    }
+
     switch (this) {
       case PaymentMethod.paypal:
         return true;

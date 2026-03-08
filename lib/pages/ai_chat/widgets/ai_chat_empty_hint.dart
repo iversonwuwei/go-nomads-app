@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 空状态提示
@@ -11,18 +12,19 @@ class AiChatEmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildIcon(),
           SizedBox(height: 18.h),
-          const Text(
-            '还没有对话，向 AI 提问试试',
+          Text(
+            l10n.aiChatEmptyHint,
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 10.h),
-          _buildStartButton(),
+          _buildStartButton(l10n),
         ],
       ),
     );
@@ -50,7 +52,7 @@ class AiChatEmptyHint extends StatelessWidget {
     );
   }
 
-  Widget _buildStartButton() {
+  Widget _buildStartButton(AppLocalizations l10n) {
     return ElevatedButton(
       onPressed: onStart,
       style: ElevatedButton.styleFrom(
@@ -62,7 +64,7 @@ class AiChatEmptyHint extends StatelessWidget {
           borderRadius: BorderRadius.circular(14.r),
         ),
       ),
-      child: const Text('开始对话'),
+      child: Text(l10n.aiChatStartConversation),
     );
   }
 }

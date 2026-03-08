@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
@@ -5,13 +9,10 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_review_page.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/pages/manage_reviews_page.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Reviews Tab - 评论标签页
 /// 只加载5条评论预览，header有跳转icon可查看全部
@@ -32,68 +33,71 @@ class ReviewsTab extends GetView<CityDetailController> {
     return Obx(() {
       final reviews = contentController.reviews;
       final totalCount = contentController.reviewsTotalCount.value;
+      final showInitialLoading =
+          contentController.isLoadingReviews.value && reviews.isEmpty && !controller.isRefreshingReviews.value;
 
-      // 首次加载
-      if (contentController.isLoadingReviews.value && reviews.isEmpty && !controller.isRefreshingReviews.value) {
-        return const ReviewsTabSkeleton();
-      }
-
-      // 空状态
+      Widget content;
       if (reviews.isEmpty) {
-        return _ReviewsEmptyState(
+        content = _ReviewsEmptyState(
           onRefresh: () => _handleRefresh(contentController),
         );
-      }
-
-      return RefreshIndicator(
-        onRefresh: () => _handleRefresh(contentController),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n.reviews,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
+      } else {
+        content = RefreshIndicator(
+          onRefresh: () => _handleRefresh(contentController),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.reviews,
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      if (totalCount > 0)
-                        Text(
-                          '$totalCount ${l10n.reviews.toLowerCase()}',
-                          style: TextStyle(
-                            fontSize: 14.sp,
+                    Row(
+                      children: [
+                        if (totalCount > 0)
+                          Text(
+                            '$totalCount ${l10n.reviews.toLowerCase()}',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        SizedBox(width: 8.w),
+                        GestureDetector(
+                          onTap: () => _navigateToReviewList(),
+                          child: Icon(
+                            FontAwesomeIcons.chevronRight,
+                            size: 16.r,
                             color: Colors.grey[600],
                           ),
                         ),
-                      SizedBox(width: 8.w),
-                      GestureDetector(
-                        onTap: () => _navigateToReviewList(),
-                        child: Icon(
-                          FontAwesomeIcons.chevronRight,
-                          size: 16.r,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              ...reviews.map((review) => ReviewCard(
-                    review: review,
-                    l10n: l10n,
-                  )),
-            ],
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                ...reviews.map((review) => ReviewCard(
+                      review: review,
+                      l10n: l10n,
+                    )),
+              ],
+            ),
           ),
-        ),
+        );
+      }
+
+      return AppLoadingSwitcher(
+        isLoading: showInitialLoading,
+        loading: const ReviewsTabSkeleton(),
+        child: content,
       );
     });
   }
@@ -295,7 +299,7 @@ class _UserInfoRow extends StatelessWidget {
         Row(
           children: [
             Icon(FontAwesomeIcons.star, color: Colors.amber, size: 16.r),
-            Text(' ${review.rating}'),
+            Text(review.rating.toString()),
           ],
         ),
       ],

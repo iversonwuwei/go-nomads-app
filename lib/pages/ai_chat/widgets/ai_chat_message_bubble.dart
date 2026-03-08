@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -425,9 +426,10 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
   }
 
   void _copyCode() {
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: widget.code.trim()));
     setState(() => _copied = true);
-    AppToast.success('代码已复制');
+    AppToast.success(l10n.aiChatCodeCopied);
 
     // 2秒后重置状态
     Future.delayed(const Duration(seconds: 2), () {

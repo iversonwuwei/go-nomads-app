@@ -11,6 +11,7 @@ import 'package:go_nomads_app/features/auth/application/use_cases/auth_use_cases
 import 'package:go_nomads_app/features/auth/domain/entities/auth_token.dart';
 import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
 import 'package:go_nomads_app/features/auth/domain/repositories/iauth_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
@@ -360,15 +361,16 @@ class AuthStateController extends GetxController {
       final sdkResult = await _socialLoginService.login(type);
 
       if (!sdkResult.success) {
+        final l10n = AppLocalizations.of(Get.context!)!;
         if (sdkResult.isCancelled) {
           // 用户取消授权，使用普通提示
-          AppToast.info('用户取消授权');
+          AppToast.info(l10n.userCancelledAuth);
         } else if (sdkResult.errorMessage == 'WECHAT_NOT_INSTALLED') {
           // 微信未安装，提示用户安装
-          AppToast.warning('请先安装微信客户端', title: '未检测到微信');
+          AppToast.warning(l10n.wechatNotInstalled, title: l10n.wechatNotDetected);
         } else if (sdkResult.errorMessage == 'QQ_NOT_INSTALLED') {
           // QQ 未安装，提示用户安装
-          AppToast.warning('请先安装 QQ 客户端', title: '未检测到 QQ');
+          AppToast.warning(l10n.qqNotInstalled, title: l10n.qqNotDetected);
         } else if (sdkResult.errorMessage != null) {
           // 真正的错误，使用错误提示
           AppToast.error(sdkResult.errorMessage!);
@@ -388,6 +390,7 @@ class AuthStateController extends GetxController {
           code: sdkResult.code,
           accessToken: sdkResult.accessToken,
           openId: sdkResult.openId,
+          nickname: sdkResult.nickname,
         ),
       );
 
@@ -417,7 +420,7 @@ class AuthStateController extends GetxController {
     } catch (e) {
       isLoading.value = false;
       log('❌ 社交登录异常: $e');
-      AppToast.error('社交登录失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.socialLoginFailed(e.toString()));
       return false;
     }
   }
@@ -632,7 +635,7 @@ class AuthStateController extends GetxController {
 
     isLoading.value = false;
     log('✅ [AuthStateController] 登出完成');
-    AppToast.success('已退出登录');
+    AppToast.success(AppLocalizations.of(Get.context!)!.loggedOut);
   }
 
   /// 更新用户资料
@@ -656,7 +659,7 @@ class AuthStateController extends GetxController {
     return result.fold(
       onSuccess: (user) {
         currentUser.value = user;
-        AppToast.success('用户资料已更新');
+        AppToast.success(AppLocalizations.of(Get.context!)!.userProfileUpdated);
         return true;
       },
       onFailure: (error) {

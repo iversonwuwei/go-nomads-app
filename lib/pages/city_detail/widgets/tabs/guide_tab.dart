@@ -9,6 +9,7 @@ import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_cont
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Guide Tab - AI 数字游民指南
 /// 使用 GetView 绑定 CityDetailController
@@ -159,6 +160,7 @@ class _GuideActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -182,7 +184,7 @@ class _GuideActionBar extends StatelessWidget {
                         ? null
                         : () => aiController.loadCityGuide(cityId: cityId, cityName: cityName),
                     icon: Icon(FontAwesomeIcons.arrowsRotate, size: 18.r),
-                    label: const Text('刷新'),
+                    label: Text(l10n.refresh),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cityPrimary,
                       disabledForegroundColor: Colors.grey[400],
@@ -194,7 +196,7 @@ class _GuideActionBar extends StatelessWidget {
                         ? null
                         : () => _handleAIGenerate(context),
                     icon: Icon(FontAwesomeIcons.wandMagicSparkles, size: 18.r),
-                    label: const Text('AI 生成'),
+                    label: Text(l10n.guideTabAiGenerate),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cityPrimary,
                       disabledForegroundColor: Colors.grey[400],
@@ -220,11 +222,12 @@ class _GuideActionBar extends StatelessWidget {
   }
 
   void _showAIGenerateProgressDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('AI 生成指南'),
+        title: Text(l10n.guideTabAiGenerateGuide),
         content: Obx(() {
           final progress = aiController.guideGenerationProgress;
           final message = aiController.guideGenerationMessage;
@@ -294,35 +297,49 @@ class _GuideLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          SizedBox(height: 16.h),
-          Obx(() => Text(
-                aiController.isGeneratingGuide ? '🤖 AI 正在生成旅游指南...' : '📖 正在加载旅游指南...',
-                style: TextStyle(fontSize: 16.sp, color: Colors.grey),
-              )),
-          if (aiController.isGeneratingGuide) ...[
-            SizedBox(height: 12.h),
-            Obx(() => Text(
-                  aiController.guideGenerationMessage,
-                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                )),
-            SizedBox(height: 8.h),
-            Obx(() => Text(
-                  '${aiController.guideGenerationProgress}%',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.cityPrimary,
-                  ),
-                )),
-          ],
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Obx(() => AppLoadingWidget(
+                        fullScreen: false,
+                        cardWidth: 280,
+                        cardHeight: 180,
+                        title: aiController.isGeneratingGuide ? 'AI 正在生成旅游指南' : '正在加载旅游指南',
+                        subtitle: aiController.isGeneratingGuide ? 'Generating guide...' : 'Loading guide...',
+                        icon: Icons.menu_book_rounded,
+                        accentColor: AppColors.cityPrimary,
+                      )),
+                  if (aiController.isGeneratingGuide) ...[
+                    SizedBox(height: 12.h),
+                    Obx(() => Text(
+                          aiController.guideGenerationMessage,
+                          style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                          textAlign: TextAlign.center,
+                        )),
+                    SizedBox(height: 8.h),
+                    Obx(() => Text(
+                          '${aiController.guideGenerationProgress}%',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.cityPrimary,
+                          ),
+                        )),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -355,7 +372,7 @@ class _GuideEmptyState extends StatelessWidget {
             Obx(() => ElevatedButton.icon(
                   onPressed: aiController.isGeneratingGuide ? null : () => _handleAIGenerate(context),
                   icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
-                  label: const Text('AI 生成指南'),
+                  label: Text(l10n.guideTabAiGenerateGuide),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.cityPrimary,
                     foregroundColor: Colors.white,
@@ -437,7 +454,7 @@ class _TipItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('💡', style: TextStyle(fontSize: 18.sp, color: AppColors.cityPrimary)),
+          Icon(FontAwesomeIcons.lightbulb, size: 18.r, color: AppColors.cityPrimary),
           SizedBox(width: 8.w),
           Expanded(child: Text(tip, style: TextStyle(fontSize: 15.sp))),
         ],

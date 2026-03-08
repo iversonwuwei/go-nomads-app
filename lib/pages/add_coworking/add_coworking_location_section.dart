@@ -97,7 +97,7 @@ class AddCoworkingLocationSection extends StatelessWidget {
             controller: _c.latitudeController,
             decoration: InputDecoration(
               labelText: l10n.latitude,
-              hintText: 'e.g. 39.904200',
+              hintText: 39.904200.toString(),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
               filled: true,
               fillColor: Colors.grey[50],
@@ -115,7 +115,7 @@ class AddCoworkingLocationSection extends StatelessWidget {
             controller: _c.longitudeController,
             decoration: InputDecoration(
               labelText: l10n.longitude,
-              hintText: 'e.g. 116.407396',
+              hintText: 116.407396.toString(),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
               filled: true,
               fillColor: Colors.grey[50],

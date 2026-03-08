@@ -91,7 +91,8 @@ class CoworkingDetailPricingSection extends StatelessWidget {
           SizedBox(height: 4.h),
           Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
           SizedBox(height: 4.h),
-          Text('$currency ${price.toStringAsFixed(0)}', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+          Text([currency, price.toStringAsFixed(0)].join(' '),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
         ],
       ),
     );

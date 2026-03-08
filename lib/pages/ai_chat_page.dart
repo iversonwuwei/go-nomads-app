@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/ai_chat_controller.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AiChatPage extends GetView<AiChatController> {
   const AiChatPage({super.key});
@@ -37,7 +39,7 @@ class AiChatPage extends GetView<AiChatController> {
             Expanded(
               child: Obx(() {
                 if (controller.isInitializing.value) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
                 }
 
                 // 显示初始化错误状态
@@ -519,14 +521,16 @@ class _CodeBlockWidget extends StatelessWidget {
   }
 
   void _copyCode(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: code.trim()));
-    AppToast.success('代码已复制');
+    AppToast.success(l10n.aiChatCodeCopied);
   }
 
   void _downloadCode(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // 简单实现：复制到剪贴板并提示
     Clipboard.setData(ClipboardData(text: code.trim()));
-    AppToast.success('代码已复制到剪贴板');
+    AppToast.success(l10n.aiChatCodeCopiedToClipboard);
   }
 }
 
@@ -588,6 +592,7 @@ class _InputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       child: Padding(
@@ -609,8 +614,8 @@ class _InputBar extends StatelessWidget {
                   return TextField(
                     controller: controller.inputController,
                     enabled: !controller.isStreaming.value,
-                    decoration: const InputDecoration(
-                      hintText: '问路、问签证、生成行程，都可以直接开聊…',
+                    decoration: InputDecoration(
+                      hintText: l10n.aiChatInputHint,
                       border: InputBorder.none,
                     ),
                     minLines: 1,
@@ -650,6 +655,7 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -664,7 +670,7 @@ class _EmptyHint extends StatelessWidget {
             child: FaIcon(FontAwesomeIcons.solidComments, color: AppColors.cityPrimary, size: 28.r),
           ),
           SizedBox(height: 18.h),
-          const Text('还没有对话，向 AI 提问试试', style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(l10n.aiChatEmptyHint, style: const TextStyle(fontWeight: FontWeight.w600)),
           SizedBox(height: 10.h),
           ElevatedButton(
             onPressed: onStart,
@@ -675,7 +681,7 @@ class _EmptyHint extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
             ),
-            child: const Text('开始对话'),
+            child: Text(l10n.aiChatStartConversation),
           ),
         ],
       ),
@@ -690,6 +696,7 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
@@ -730,7 +737,7 @@ class _ErrorState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: FaIcon(FontAwesomeIcons.arrowRotateRight, size: 14.r),
-              label: const Text('重试'),
+              label: Text(l10n.retry),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,

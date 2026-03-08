@@ -7,6 +7,7 @@ import 'dart:math' as math;
 import 'package:crypto/crypto.dart';
 import 'package:fluwx/fluwx.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:tencent_kit/tencent_kit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -311,15 +312,58 @@ class SocialLoginService {
   }
 
   /// Apple 登录 (仅 iOS)
+  ///
+  /// 使用 Sign in with Apple SDK 进行 OAuth 授权。
+  /// Apple 首次登录返回 identityToken + authorizationCode + 用户信息(name/email)，
+  /// 后续登录只返回 identityToken + authorizationCode，不再返回用户信息。
   Future<SocialLoginResult> loginWithApple() async {
     if (!Platform.isIOS) {
       return const SocialLoginResult.failure('Apple 登录仅支持 iOS');
     }
 
     try {
-      log('📱 [SocialLogin] Apple 登录功能开发中...');
-      // 需要使用 sign_in_with_apple 插件
-      return const SocialLoginResult.failure('Apple 登录功能开发中');
+      log('📱 [SocialLogin] 开始 Apple 登录...');
+
+      // 检查 Apple Sign In 是否可用
+      final isAvailable = await SignInWithApple.isAvailable();
+      if (!isAvailable) {
+        log('⚠️ [SocialLogin] Apple Sign In 不可用');
+        return const SocialLoginResult.failure('Apple Sign In 不可用');
+      }
+
+      // 发起 Apple 授权请求
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      log('✅ [SocialLogin] Apple 授权成功, userIdentifier=${credential.userIdentifier}');
+
+      // 拼接用户名（Apple 仅在首次授权时返回姓名）
+      String? displayName;
+      if (credential.givenName != null || credential.familyName != null) {
+        displayName = [credential.familyName, credential.givenName]
+            .where((s) => s != null && s.isNotEmpty)
+            .join(' ')
+            .trim();
+        if (displayName.isEmpty) displayName = null;
+      }
+
+      return SocialLoginResult.success(
+        code: credential.authorizationCode, // 授权码，后端用于验证/换取 token
+        accessToken: credential.identityToken, // JWT identity token
+        openId: credential.userIdentifier, // Apple 用户唯一标识
+        nickname: displayName,
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        log('📱 [SocialLogin] 用户取消 Apple 授权');
+        return const SocialLoginResult.cancelled();
+      }
+      log('❌ [SocialLogin] Apple 授权异常: ${e.code} - ${e.message}');
+      return SocialLoginResult.failure('Apple 登录失败: ${e.message}');
     } catch (e) {
       log('❌ [SocialLogin] Apple 登录异常: $e');
       return SocialLoginResult.failure('Apple 登录失败: $e');

@@ -1,25 +1,23 @@
-import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 /// 行程天数部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanDurationSection extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const TravelPlanDurationSection({super.key, required this.controllerTag});
+  const TravelPlanDurationSection({super.key});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     // 安全检查
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -28,7 +26,7 @@ class TravelPlanDurationSection extends GetView<CreateTravelPlanPageController> 
       children: [
         _SectionTitle(title: l10n.tripDuration, icon: FontAwesomeIcons.calendar),
         SizedBox(height: 12.h),
-        _DurationCard(controllerTag: controllerTag),
+        const _DurationCard(),
       ],
     );
   }
@@ -36,18 +34,16 @@ class TravelPlanDurationSection extends GetView<CreateTravelPlanPageController> 
 
 /// 天数选择卡片
 class _DurationCard extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _DurationCard({required this.controllerTag});
+  const _DurationCard();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -79,7 +75,7 @@ class _DurationCard extends GetView<CreateTravelPlanPageController> {
                 ],
               )),
           SizedBox(height: 8.h),
-          _DurationLabel(controllerTag: controllerTag),
+          const _DurationLabel(),
         ],
       ),
     );
@@ -116,18 +112,16 @@ class _DurationBadge extends StatelessWidget {
 
 /// 天数标签
 class _DurationLabel extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _DurationLabel({required this.controllerTag});
+  const _DurationLabel();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 

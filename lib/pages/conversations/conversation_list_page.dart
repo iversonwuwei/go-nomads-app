@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/conversation_list_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:tencent_cloud_chat_sdk/enum/message_elem_type.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_conversation.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 会话列表页面 — 微信风格
 /// 展示所有 C2C 聊天会话，支持未读数量、最后消息预览、滑动删除
@@ -120,6 +122,7 @@ class _ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final unread = conversation.unreadCount ?? 0;
     final lastMsg = conversation.lastMessage;
     final timestamp = lastMsg?.timestamp;
@@ -201,17 +204,17 @@ class _ConversationTile extends StatelessWidget {
         return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('删除会话'),
-            content: const Text('确定要删除这个会话吗？聊天记录将被清除。'),
+            title: Text(l10n.conversationDeleteTitle),
+            content: Text(l10n.conversationDeleteMessage),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('取消'),
+                child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('删除'),
+                child: Text(l10n.delete),
               ),
             ],
           ),
@@ -382,50 +385,13 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 8,
-      itemBuilder: (_, __) => Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        color: Colors.white,
-        child: Row(
-          children: [
-            // 头像骨架
-            Container(
-              width: 48.w,
-              height: 48.h,
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 120.w,
-                    height: 16.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Container(
-                    width: 200.w,
-                    height: 14.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    return AppLoadingWidget(
+      fullScreen: true,
+      title: l10n.conversationListLoadingTitle,
+      subtitle: l10n.conversationListLoadingSubtitle,
+      icon: Icons.chat_bubble_outline_rounded,
+      accentColor: const Color(0xFF07C160),
     );
   }
 }
@@ -442,6 +408,7 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -461,7 +428,7 @@ class _ErrorView extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh),
-            label: const Text('重试'),
+            label: Text(l10n.retry),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF07C160),
               foregroundColor: Colors.white,

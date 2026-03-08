@@ -1,10 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// 城市列表错误状态组件
 class CityListErrorState extends GetView<CityListController> {
@@ -146,14 +147,7 @@ class CityListLoadingIndicator extends GetView<CityListController> {
         child: Center(
           child: Column(
             children: [
-              SizedBox(
-                width: 24.w,
-                height: 24.h,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
-                ),
-              ),
+              const AppLoadingWidget(fullScreen: false),
               SizedBox(height: 8.h),
               Text(
                 '加载更多城市...',

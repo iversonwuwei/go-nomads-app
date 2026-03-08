@@ -334,7 +334,7 @@ class HelpAndSupportPage extends StatelessWidget {
       await launchUrl(uri);
     } catch (e) {
       Clipboard.setData(const ClipboardData(text: supportEmail));
-      AppToast.success('Email address copied');
+      AppToast.success(supportEmail);
     }
   }
 }

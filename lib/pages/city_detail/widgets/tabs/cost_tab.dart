@@ -1,14 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_cost/add_cost_page.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/pages/manage_cost_page.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Cost Tab - 费用标签页
 /// 使用 GetView 绑定 CityDetailController
@@ -28,11 +29,7 @@ class CostTab extends GetView<CityDetailController> {
 
     return Obx(() {
       final communityCost = contentController.costSummary.value;
-
-      // 加载中
-      if (contentController.isLoadingCostSummary.value && communityCost == null) {
-        return const CostTabSkeleton();
-      }
+      final isLoadingInitial = contentController.isLoadingCostSummary.value && communityCost == null;
 
       // 使用默认值
       final total = communityCost?.total ?? 0.0;
@@ -45,7 +42,7 @@ class CostTab extends GetView<CityDetailController> {
       final shopping = communityCost?.shopping ?? 0.0;
       final other = communityCost?.other ?? 0.0;
 
-      return RefreshIndicator(
+      final content = RefreshIndicator(
         onRefresh: () => contentController.loadCityCostSummary(controller.cityId),
         child: ListView(
           padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 96.h),
@@ -82,6 +79,12 @@ class CostTab extends GetView<CityDetailController> {
             SizedBox(height: 32.h),
           ],
         ),
+      );
+
+      return AppLoadingSwitcher(
+        isLoading: isLoadingInitial,
+        loading: const CostTabSkeleton(),
+        child: content,
       );
     });
   }

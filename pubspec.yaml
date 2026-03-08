@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+2
+version: 1.0.1+8
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -74,6 +74,8 @@ dependencies:
   fluwx: ^5.7.5  # 微信 SDK
   tencent_kit: ^6.2.0  # QQ 登录 SDK (腾讯开放平台)
   google_sign_in: ^6.2.2  # Google 登录
+  sign_in_with_apple: ^6.1.4  # Apple 登录
+  in_app_purchase: ^3.2.3
   
   # 系统设置
   app_settings: ^5.1.1  # 打开系统设置页面
@@ -87,7 +89,6 @@ dependencies:
   crypto: ^3.0.3  # UserSig生成所需加密库
   
   # UI 增强
-  shimmer: ^3.0.0  # 骨架屏加载效果
   flutter_markdown: ^0.7.4+3  # Markdown 渲染
   flutter_highlighter: ^0.1.1  # 代码语法高亮
 

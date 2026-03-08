@@ -1,9 +1,10 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 
 /// 首页搜索栏组件
 class HomeSearchBar extends GetView<HomePageController> {
@@ -13,6 +14,7 @@ class HomeSearchBar extends GetView<HomePageController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
       decoration: BoxDecoration(
@@ -35,7 +37,7 @@ class HomeSearchBar extends GetView<HomePageController> {
             child: TextField(
               controller: controller.searchController,
               decoration: InputDecoration(
-                hintText: 'Search cities... (支持中英文搜索)',
+                hintText: l10n.searchCityOrCountry,
                 hintStyle: TextStyle(
                   color: AppColors.textTertiary,
                   fontSize: 14.sp,
@@ -92,7 +94,7 @@ class _SearchButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(6.r),
         ),
         child: Text(
-          'Search',
+          AppLocalizations.of(context)!.search,
           style: TextStyle(
             color: Colors.white,
             fontSize: 13.sp,
@@ -166,6 +168,8 @@ class HomeSearchResultHint extends GetView<HomePageController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Obx(() {
       final query = controller.localSearchQuery.value;
       if (query.isEmpty) return const SizedBox.shrink();
@@ -199,7 +203,7 @@ class HomeSearchResultHint extends GetView<HomePageController> {
                   ),
                   children: [
                     TextSpan(
-                      text: 'Search results for ',
+                      text: l10n.searchResultsFor,
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                     TextSpan(
@@ -214,7 +218,7 @@ class HomeSearchResultHint extends GetView<HomePageController> {
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                     TextSpan(
-                      text: '$cityCount ${cityCount == 1 ? "city" : "cities"} found',
+                      text: l10n.citiesFoundCount(cityCount),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -247,11 +251,13 @@ class HomeToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Popular',
+          l10n.popular,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 14.sp,

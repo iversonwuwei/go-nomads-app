@@ -1,17 +1,18 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/async_task_progress_dialog.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 旅行计划详情页
 class TravelPlanPage extends StatefulWidget {
@@ -44,10 +45,9 @@ class TravelPlanPage extends StatefulWidget {
   State<TravelPlanPage> createState() => _TravelPlanPageState();
 }
 
-class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProviderStateMixin {
+class _TravelPlanPageState extends State<TravelPlanPage> {
   TravelPlan? _plan;
   bool _isLoading = true;
-  late AnimationController _shimmerController;
 
   // 流式进度状态
   String _progressMessage = '正在准备...';
@@ -59,10 +59,6 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
 
     if (widget.plan != null) {
       _plan = widget.plan;
@@ -82,7 +78,6 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   @override
   void dispose() {
-    _shimmerController.dispose();
     // 取消所有 GetX 监听器
     for (final worker in _workers) {
       worker.dispose();
@@ -96,6 +91,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
   /// 从数据库加载已保存的旅行计划
   Future<void> _loadPlanFromDatabase() async {
     final aiController = Get.find<AiStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       setState(() {
@@ -113,14 +109,14 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
         });
       } else if (mounted) {
         setState(() => _isLoading = false);
-        AppToast.error('无法加载旅行计划');
+        AppToast.error(l10n.travelPlanUnableToLoad);
         Navigator.of(context).pop();
       }
     } catch (e) {
       debugPrint('❌ 加载旅行计划失败: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        AppToast.error('加载失败: $e');
+        AppToast.error(l10n.travelPlanLoadFailedWithError(e.toString()));
         Navigator.of(context).pop();
       }
     }
@@ -130,6 +126,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
   /// 流程: Flutter -> AIService(创建任务) -> RabbitMQ -> MessageService -> SignalR -> Flutter
   Future<void> _generatePlanAsync() async {
     final aiController = Get.find<AiStateController>();
+    final l10n = AppLocalizations.of(context)!;
 
     // 检查 AI 配额
     final canUse = await AiQuotaService().checkAndUseAI(featureName: '旅行计划生成');
@@ -166,7 +163,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
       debugPrint('❌ 生成旅行计划失败: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        AppToast.error('Error: $e');
+        AppToast.error(l10n.travelPlanGenerateErrorWithError(e.toString()));
         Navigator.of(context).pop();
       }
     }
@@ -174,6 +171,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   /// 设置 GetX 监听器
   void _setupListeners(AiStateController aiController) {
+    final l10n = AppLocalizations.of(context)!;
     // 清理之前的监听器
     for (final worker in _workers) {
       worker.dispose();
@@ -201,7 +199,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
           _plan = plan;
           _isLoading = false;
         });
-        AppToast.success('Travel plan generated successfully!');
+        AppToast.success(l10n.travelPlanGeneratedSuccess);
       }
     }));
 
@@ -209,7 +207,7 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
     _workers.add(ever(aiController.travelPlanErrorRx, (error) {
       if (error != null && mounted) {
         setState(() => _isLoading = false);
-        AppToast.error('Failed to generate: $error');
+        AppToast.error(l10n.travelPlanGenerateFailedWithError(error.toString()));
         Navigator.of(context).pop();
       }
     }));
@@ -217,8 +215,9 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   /// 分享旅行计划
   void _shareTravelPlan(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (_plan == null) {
-      AppToast.warning('计划还未生成完成');
+      AppToast.warning(l10n.travelPlanNotReadyWarning);
       return;
     }
 
@@ -254,15 +253,12 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return _buildLoadingSkeleton();
-    }
-
-    if (_plan == null) {
-      return _buildErrorPage();
-    }
-
-    return _buildPlanContent(_plan!);
+    final content = _plan == null ? _buildErrorPage() : _buildPlanContent(_plan!);
+    return AppLoadingSwitcher(
+      isLoading: _isLoading,
+      loading: _buildLoadingSkeleton(),
+      child: content,
+    );
   }
 
   Widget _buildLoadingSkeleton() {
@@ -340,133 +336,21 @@ class _TravelPlanPageState extends State<TravelPlanPage> with SingleTickerProvid
 
             // Loading Content
             SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Column(
-                  children: [
-                    // Overview Card Skeleton with details
-                    _buildDetailedSkeletonCard(height: 150.h),
-                    SizedBox(height: 16.h),
-                    // Transportation Card Skeleton
-                    _buildDetailedSkeletonCard(height: 200.h),
-                    SizedBox(height: 16.h),
-                    // Accommodation Card Skeleton
-                    _buildDetailedSkeletonCard(height: 180.h),
-                    SizedBox(height: 16.h),
-                    // Itinerary Card Skeleton
-                    _buildDetailedSkeletonCard(height: 300.h),
-                    SizedBox(height: 16.h),
-                    // Loading indicator
-                    Center(
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            width: 24.w,
-                            height: 24.h,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-                            ),
-                          ),
-                          SizedBox(height: 12.h),
-                          Builder(
-                            builder: (context) {
-                              final l10n = AppLocalizations.of(context)!;
-                              return Text(
-                                l10n.generatingAiPlan,
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+              child: Builder(
+                builder: (context) {
+                  return SizedBox(
+                    height: 360.h,
+                    child: AppSceneLoading(
+                      scene: AppLoadingScene.travelPlan,
+                      fullScreen: true,
+                      subtitleOverride: _progressMessage,
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailedSkeletonCard({required double height}) {
-    return AnimatedBuilder(
-      animation: _shimmerController,
-      builder: (context, child) {
-        return Container(
-          height: height,
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.1),
-                blurRadius: 8.r,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title bar
-              Row(
-                children: [
-                  _buildShimmerBox(width: 24.w, height: 24.h, borderRadius: 6),
-                  SizedBox(width: 12.w),
-                  _buildShimmerBox(width: 120.w, height: 20.h, borderRadius: 4),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              // Content lines
-              _buildShimmerBox(width: double.infinity, height: 14.h, borderRadius: 4),
-              SizedBox(height: 10.h),
-              _buildShimmerBox(width: double.infinity, height: 14.h, borderRadius: 4),
-              SizedBox(height: 10.h),
-              _buildShimmerBox(width: 200.w, height: 14.h, borderRadius: 4),
-              const Spacer(),
-              // Bottom info
-              Row(
-                children: [
-                  _buildShimmerBox(width: 80.w, height: 12.h, borderRadius: 4),
-                  const Spacer(),
-                  _buildShimmerBox(width: 60.w, height: 12.h, borderRadius: 4),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildShimmerBox({
-    required double width,
-    required double height,
-    required double borderRadius,
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.grey[300]!,
-            Colors.grey[100]!,
-            Colors.grey[300]!,
-          ],
-          begin: Alignment(-1.0 + _shimmerController.value * 2, 0),
-          end: Alignment(1.0 + _shimmerController.value * 2, 0),
-          stops: const [0.0, 0.5, 1.0],
-        ),
-        borderRadius: BorderRadius.circular(borderRadius),
       ),
     );
   }

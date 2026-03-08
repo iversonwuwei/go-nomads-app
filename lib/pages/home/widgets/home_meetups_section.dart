@@ -5,11 +5,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/core/navigation/navigation_result.dart';
 import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
-import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
+import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_meetup_card.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
@@ -20,14 +21,18 @@ class HomeMeetupsSection extends StatelessWidget {
 
   const HomeMeetupsSection({super.key, required this.isMobile});
 
-  MeetupStateController get _meetupController => Get.find<MeetupStateController>();
+  HomePageController get _homeController => Get.find<HomePageController>();
   UserStateController get _userController => Get.find<UserStateController>();
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _homeController.onHomeVisible();
+    });
+
     return Obx(() {
-      final upcomingMeetups = _meetupController.upcomingMeetups;
-      final loadState = _meetupController.loadState.value;
+      final upcomingMeetups = _homeController.homeMeetups;
+      final loadState = _homeController.homeMeetupsLoadState.value;
 
       // 1. 初始状态或首次加载中 → 显示骨架屏
       //    使用 loadState 而非 isLoading，避免业务操作（create/update）触发骨架屏
@@ -50,7 +55,10 @@ class HomeMeetupsSection extends StatelessWidget {
 
       // 4. 真正无数据 → 显示空状态
       if (upcomingMeetups.isEmpty) {
-        return HomeMeetupEmptyState(isMobile: isMobile);
+        return HomeMeetupEmptyState(
+          isMobile: isMobile,
+          onCreated: () => _homeController.loadHomeMeetups(forceRefresh: true),
+        );
       }
 
       // 5. 正常数据展示
@@ -60,6 +68,7 @@ class HomeMeetupsSection extends StatelessWidget {
 
   /// 错误状态 - 加载失败时显示，带重试按钮
   Widget _buildErrorState(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
       child: Column(
@@ -72,7 +81,7 @@ class HomeMeetupsSection extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'Failed to load meetups',
+            l10n.meetupLoadFailed,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
@@ -81,7 +90,7 @@ class HomeMeetupsSection extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            _meetupController.errorMessage.value ?? 'Please check your connection and try again',
+            _homeController.homeMeetupsErrorMessage.value ?? l10n.meetupLoadFailedDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14.sp,
@@ -90,9 +99,9 @@ class HomeMeetupsSection extends StatelessWidget {
           ),
           SizedBox(height: 24.h),
           OutlinedButton.icon(
-            onPressed: () => _meetupController.forceRefresh(),
+            onPressed: () => _homeController.loadHomeMeetups(forceRefresh: true),
             icon: Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
-            label: const Text('Retry'),
+            label: Text(l10n.retry),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFFFF4458),
               side: const BorderSide(color: Color(0xFFFF4458)),
@@ -289,10 +298,7 @@ class HomeMeetupsSection extends StatelessWidget {
   Widget _buildCreateButton(BuildContext context, AppLocalizations l10n) {
     return Obx(() => ElevatedButton.icon(
           onPressed: _userController.isLoggedIn
-              ? () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
-                  )
+              ? () => _openCreateMeetupAndRefresh(context)
               : () => AppToast.warning(l10n.pleaseLoginToCreateMeetup, title: l10n.loginRequired),
           icon: Icon(FontAwesomeIcons.plus, size: 18.r),
           label: Text(isMobile ? l10n.create : l10n.createMeetup),
@@ -306,6 +312,18 @@ class HomeMeetupsSection extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           ),
         ));
+  }
+
+  Future<void> _openCreateMeetupAndRefresh(BuildContext context) async {
+    final result = await Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
+    );
+
+    final needsRefresh = result == true || (result is NavigationResult && result.needsRefresh);
+    if (needsRefresh) {
+      await _homeController.loadHomeMeetups(forceRefresh: true);
+    }
   }
 
   Widget _buildViewAllButtonDesktop(AppLocalizations l10n) {
@@ -334,16 +352,16 @@ class HomeMeetupsSection extends StatelessWidget {
       child: NotificationListener<ScrollNotification>(
         onNotification: (scrollInfo) {
           if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
-              !_meetupController.isLoadingMore.value &&
-              _meetupController.hasMoreData) {
+              !_homeController.isLoadingMoreHomeMeetups.value &&
+              _homeController.hasMoreHomeMeetups.value) {
             log('📜 接近滚动末尾，触发加载更多活动');
-            _meetupController.loadMoreMeetups();
+            _homeController.loadMoreHomeMeetups();
           }
           return false;
         },
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: upcomingMeetups.length + (_meetupController.hasMoreData ? 1 : 0),
+          itemCount: upcomingMeetups.length + (_homeController.hasMoreHomeMeetups.value ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == upcomingMeetups.length) {
               return _buildLoadMoreIndicator();
@@ -360,7 +378,7 @@ class HomeMeetupsSection extends StatelessWidget {
       width: 60.w,
       margin: EdgeInsets.only(left: 12.w),
       child: Center(
-        child: Obx(() => _meetupController.isLoadingMore.value
+        child: Obx(() => _homeController.isLoadingMoreHomeMeetups.value
             ? CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
@@ -396,11 +414,18 @@ class HomeMeetupsSection extends StatelessWidget {
 /// Meetup 空状态组件
 class HomeMeetupEmptyState extends StatelessWidget {
   final bool isMobile;
+  final Future<void> Function()? onCreated;
 
-  const HomeMeetupEmptyState({super.key, required this.isMobile});
+  const HomeMeetupEmptyState({
+    super.key,
+    required this.isMobile,
+    this.onCreated,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 24 : 48,
@@ -424,7 +449,7 @@ class HomeMeetupEmptyState extends StatelessWidget {
           ),
           SizedBox(height: isMobile ? 24 : 32),
           Text(
-            'No Meetups Available',
+            l10n.noMeetupsAvailable,
             style: TextStyle(
               fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.bold,
@@ -433,7 +458,7 @@ class HomeMeetupEmptyState extends StatelessWidget {
           ),
           SizedBox(height: 12.h),
           Text(
-            'Be the first to create a meetup and connect\nwith fellow nomads in your city',
+            l10n.noMeetupsDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isMobile ? 14 : 16,
@@ -443,13 +468,20 @@ class HomeMeetupEmptyState extends StatelessWidget {
           ),
           SizedBox(height: isMobile ? 32 : 40),
           ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
-            ),
+            onPressed: () async {
+              final result = await Navigator.push<dynamic>(
+                context,
+                MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
+              );
+
+              final needsRefresh = result == true || (result is NavigationResult && result.needsRefresh);
+              if (needsRefresh && onCreated != null) {
+                await onCreated!();
+              }
+            },
             icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
             label: Text(
-              'Create Meetup',
+              l10n.createMeetup,
               style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
             ),
             style: ElevatedButton.styleFrom(

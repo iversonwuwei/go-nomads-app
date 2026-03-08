@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../config/app_colors.dart';
@@ -12,7 +14,6 @@ import '../../domain/entities/candidate_trip.dart';
 import '../../routes/travel_history_routes.dart';
 import '../controllers/travel_history_controller.dart';
 import '../widgets/trip_confirmation_card.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 旅行历史页面
 class TravelHistoryPage extends GetView<TravelHistoryController> {
@@ -79,11 +80,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const ManageListSkeleton();
-        }
-
-        return RefreshIndicator(
+        final content = RefreshIndicator(
           onRefresh: controller.refresh,
           child: CustomScrollView(
             slivers: [
@@ -146,6 +143,12 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
               ),
             ],
           ),
+        );
+
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading.value,
+          loading: const ManageListSkeleton(),
+          child: content,
         );
       }),
     );

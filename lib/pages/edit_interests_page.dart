@@ -1,8 +1,10 @@
 import 'package:go_nomads_app/controllers/edit_interests_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// 兴趣编辑页面
 class EditInterestsPage extends StatelessWidget {
@@ -22,13 +24,14 @@ class EditInterestsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('编辑兴趣'),
+        title: Text(l10n.editInterestsTitle),
       ),
       body: Obx(() => controller.loading.value
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: true)
           : Column(
               children: [
                 // 已选兴趣显示
@@ -79,11 +82,11 @@ class EditInterestsPage extends StatelessWidget {
                       Expanded(
                         child: TextField(
                           controller: controller.customInterestController,
-                          decoration: const InputDecoration(
-                            labelText: '添加自定义兴趣',
+                          decoration: InputDecoration(
+                            labelText: l10n.editInterestsAddCustomInterest,
                             border: OutlineInputBorder(),
-                            prefixIcon: Icon(FontAwesomeIcons.circlePlus),
-                            hintText: '输入兴趣名称',
+                            prefixIcon: const Icon(FontAwesomeIcons.circlePlus),
+                            hintText: l10n.enterInterestName,
                           ),
                           onSubmitted: (_) => controller.addCustomInterest(),
                         ),
@@ -91,7 +94,7 @@ class EditInterestsPage extends StatelessWidget {
                       SizedBox(width: 8.w),
                       ElevatedButton(
                         onPressed: controller.addCustomInterest,
-                        child: const Text('添加'),
+                        child: Text(l10n.add),
                       ),
                     ],
                   ),

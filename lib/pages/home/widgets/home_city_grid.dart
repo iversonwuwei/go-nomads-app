@@ -1,12 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_city_card.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市网格组件
 class HomeCityGrid extends GetView<HomePageController> {
@@ -244,7 +244,7 @@ class HomeCityEmptyState extends StatelessWidget {
           SizedBox(height: isMobile ? 24 : 32),
           // 标题
           Text(
-            isSearching ? 'No cities found' : l10n.noCitiesYet,
+            isSearching ? l10n.noCitiesFound : l10n.noCitiesYet,
             style: TextStyle(
               fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.bold,
@@ -254,9 +254,7 @@ class HomeCityEmptyState extends StatelessWidget {
           SizedBox(height: 12.h),
           // 描述
           Text(
-            isSearching
-                ? 'Try searching with a different keyword\n(支持中英文搜索)'
-                : 'Start exploring by adding your first city',
+            isSearching ? l10n.tryDifferentKeyword : l10n.startExploringCities,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isMobile ? 14 : 16,
@@ -270,7 +268,7 @@ class HomeCityEmptyState extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onClearSearch,
               icon: const Icon(FontAwesomeIcons.xmark),
-              label: const Text('Clear Search'),
+              label: Text(l10n.dataServiceClearSearch),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,

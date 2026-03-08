@@ -1,8 +1,9 @@
-import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// 登录提示组件
 class LoginNoticeWidget extends StatelessWidget {
@@ -15,6 +16,7 @@ class LoginNoticeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
@@ -39,7 +41,7 @@ class LoginNoticeWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '示例数据预览',
+                  l10n.sampleDataPreview,
                   style: TextStyle(
                     fontSize: isMobile ? 14 : 16,
                     fontWeight: FontWeight.bold,
@@ -48,7 +50,7 @@ class LoginNoticeWidget extends StatelessWidget {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  '您当前查看的是示例用户资料。登录后可查看您的真实个人信息。',
+                  l10n.sampleDataPreviewDescription,
                   style: TextStyle(
                     fontSize: isMobile ? 12 : 14,
                     color: const Color(0xFF6B7280),
@@ -71,7 +73,7 @@ class LoginNoticeWidget extends StatelessWidget {
               ),
             ),
             child: Text(
-              '去登录',
+              l10n.goToLogin,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: isMobile ? 12 : 14,

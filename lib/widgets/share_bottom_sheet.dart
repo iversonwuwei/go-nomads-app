@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/social_sdk_service.dart';
 import 'package:go_nomads_app/utils/app_logo_util.dart';
 import 'package:go_nomads_app/utils/qq_share_util.dart';
@@ -180,11 +181,11 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   String _getTitle() {
     switch (_expandedChannel) {
       case ShareChannelType.wechat:
-        return '分享到微信';
+        return AppLocalizations.of(Get.context!)!.shareToWechat;
       case ShareChannelType.qq:
-        return '分享到QQ';
+        return AppLocalizations.of(Get.context!)!.shareToQQ;
       case ShareChannelType.none:
-        return '分享到';
+        return AppLocalizations.of(Get.context!)!.shareTo;
     }
   }
 
@@ -209,14 +210,14 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.qq,
-              label: 'QQ好友',
+              label: AppLocalizations.of(context)!.qqFriends,
               color: const Color(0xFF12B7F5),
               onTap: () => _shareToQQFriend(context),
             ),
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.qq,
-              label: 'QQ空间',
+              label: AppLocalizations.of(context)!.qqZone,
               color: const Color(0xFFFECE00),
               onTap: () => _shareToQzone(context),
             ),
@@ -229,14 +230,14 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.weixin,
-              label: '微信好友',
+              label: AppLocalizations.of(context)!.wechatFriends,
               color: const Color(0xFF09B83E),
               onTap: () => _shareToWeChatFriend(context),
             ),
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.circleNotch,
-              label: '朋友圈',
+              label: AppLocalizations.of(context)!.moments,
               color: const Color(0xFF09B83E),
               onTap: () => _shareToWeChatMoments(context),
             ),
@@ -258,21 +259,21 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.link,
-              label: '复制链接',
+              label: AppLocalizations.of(context)!.copyLink,
               color: Colors.grey[700]!,
               onTap: () => _copyLink(context),
             ),
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.shareNodes,
-              label: '系统分享',
+              label: AppLocalizations.of(context)!.systemShare,
               color: Colors.blue[700]!,
               onTap: () => _shareSystem(context),
             ),
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.envelope,
-              label: '邮件',
+              label: AppLocalizations.of(context)!.email,
               color: Colors.orange[700]!,
               onTap: () => _shareToEmail(context),
             ),
@@ -290,7 +291,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
               _buildShareOption(
                 context,
                 icon: FontAwesomeIcons.weixin,
-                label: '微信',
+                label: AppLocalizations.of(context)!.wechat,
                 color: const Color(0xFF09B83E),
                 onTap: () => _toggleSubChannel(ShareChannelType.wechat),
                 hasSubChannel: true,
@@ -306,7 +307,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
               _buildShareOption(
                 context,
                 icon: FontAwesomeIcons.weibo,
-                label: '微博',
+                label: AppLocalizations.of(context)!.weibo,
                 color: const Color(0xFFE6162D),
                 onTap: () => _shareToWeibo(context),
               ),
@@ -397,7 +398,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
       final shareText = '$title\n$description\n$shareUrl';
       await Share.share(shareText);
       if (context.mounted) {
-        AppToast.info('微信未安装，已使用系统分享');
+        AppToast.info(AppLocalizations.of(context)!.wechatNotInstalledSystemShare);
       }
     }
   }
@@ -420,7 +421,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
       final shareText = '$title\n$description\n$shareUrl';
       await Share.share(shareText);
       if (context.mounted) {
-        AppToast.info('微信未安装，已使用系统分享');
+        AppToast.info(AppLocalizations.of(context)!.wechatNotInstalledSystemShare);
       }
     }
   }
@@ -524,7 +525,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   void _copyLink(BuildContext context) {
     Share.share(shareUrl);
     Navigator.pop(context);
-    AppToast.success('链接已复制');
+    AppToast.success(AppLocalizations.of(context)!.linkCopied);
   }
 
   /// 系统分享
@@ -622,13 +623,13 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
       } else {
         if (context.mounted) {
           Navigator.pop(context);
-          AppToast.error('无法打开分享链接');
+          AppToast.error(AppLocalizations.of(context)!.cannotOpenShareLink);
         }
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
-        AppToast.error('分享失败: ${e.toString()}');
+        AppToast.error(AppLocalizations.of(context)!.shareFailedWithError(e.toString()));
       }
     }
   }

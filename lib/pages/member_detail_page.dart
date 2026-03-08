@@ -1,18 +1,19 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/member_detail_page_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/controllers/member_detail_page_controller.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
-import 'tencent_im_direct_chat_page.dart';
 import 'invite_to_meetup_page.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'tencent_im_direct_chat_page.dart';
 
 class MemberDetailPage extends StatelessWidget {
   final models.User? user;
@@ -44,20 +45,21 @@ class MemberDetailPage extends StatelessWidget {
     final controller = _controller;
 
     return Obx(() {
-      if (controller.isLoading.value) {
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: const AppBackButton(),
-          ),
-          body: const UserProfileSkeleton(),
-        );
-      }
+      final loadingView = Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: const AppBackButton(),
+        ),
+        body: const UserProfileSkeleton(),
+      );
 
-      if (controller.user.value == null) {
-        return Scaffold(
+      Widget content;
+      final user = controller.user.value;
+
+      if (user == null) {
+        content = Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
@@ -84,16 +86,21 @@ class MemberDetailPage extends StatelessWidget {
                 SizedBox(height: 24.h),
                 ElevatedButton(
                   onPressed: controller.retry,
-                  child: const Text('重试'),
+                  child: Text(AppLocalizations.of(context)!.retry),
                 ),
               ],
             ),
           ),
         );
+      } else {
+        content = _buildContent(context, controller, user);
       }
 
-      final user = controller.user.value!;
-      return _buildContent(context, controller, user);
+      return AppLoadingSwitcher(
+        isLoading: controller.isLoading.value,
+        loading: loadingView,
+        child: content,
+      );
     });
   }
 

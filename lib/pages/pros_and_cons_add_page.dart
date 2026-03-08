@@ -1,9 +1,11 @@
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/pros_and_cons_add_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Pros & Cons 添加页面
 /// 注意: 由于 TabController 需要 TickerProvider，保持 StatefulWidget 结构
@@ -61,6 +63,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
 
   /// 显示删除确认对话框
   Future<bool> _showDeleteConfirmDialog(String title, String content) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: Text(title),
@@ -68,12 +71,12 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
             style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
-            child: const Text('删除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -99,11 +102,12 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('${widget.cityName} - 添加乐趣'),
+        title: Text(l10n.prosConsAddPageTitle(widget.cityName)),
         leading: IconButton(
           icon: const Icon(FontAwesomeIcons.xmark),
           onPressed: () {
@@ -206,6 +210,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
 
   // 优点标签页
   Widget _buildProsTab() {
+    final l10n = AppLocalizations.of(context)!;
     return Obx(() {
       final prosConsController = _controller.prosConsController;
       return Column(
@@ -233,7 +238,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
                   child: TextField(
                     controller: _controller.prosTextController,
                     decoration: InputDecoration(
-                      hintText: '分享这个城市的优点...',
+                      hintText: l10n.prosConsAddProsHint,
                       hintStyle: TextStyle(
                         color: Colors.grey[400],
                         fontSize: 15.sp,
@@ -316,7 +321,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
           // 列表区域
           Expanded(
             child: prosConsController.isLoadingPros.value
-                ? const Center(child: CircularProgressIndicator())
+              ? const AppSceneLoading(scene: AppLoadingScene.reviews, fullScreen: true)
                 : prosConsController.prosList.isEmpty
                     ? Center(
                         child: Column(
@@ -382,6 +387,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
 
   // 挑战标签页
   Widget _buildConsTab() {
+    final l10n = AppLocalizations.of(context)!;
     return Obx(() {
       final prosConsController = _controller.prosConsController;
       return Column(
@@ -409,7 +415,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
                   child: TextField(
                     controller: _controller.consTextController,
                     decoration: InputDecoration(
-                      hintText: '分享这个城市的挑战...',
+                      hintText: l10n.prosConsAddConsHint,
                       hintStyle: TextStyle(
                         color: Colors.grey[400],
                         fontSize: 15.sp,
@@ -492,7 +498,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
           // 列表区域
           Expanded(
             child: prosConsController.isLoadingCons.value
-                ? const Center(child: CircularProgressIndicator())
+              ? const AppSceneLoading(scene: AppLoadingScene.reviews, fullScreen: true)
                 : prosConsController.consList.isEmpty
                     ? Center(
                         child: Column(

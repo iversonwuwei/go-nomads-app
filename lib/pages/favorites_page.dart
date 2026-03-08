@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/user/presentation/controllers/user_state_
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
@@ -124,9 +125,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Colors.orange),
-            )
+          ? const AppSceneLoading(scene: AppLoadingScene.cityList, fullScreen: true)
           : Obx(() {
               final cities = _sortedCities;
               if (cities.isEmpty) {

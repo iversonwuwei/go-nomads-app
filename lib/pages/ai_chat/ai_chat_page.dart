@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_controller.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_empty_hint.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_error_state.dart';
@@ -8,11 +10,11 @@ import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_hero_card.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_input_bar.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_message_list.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_streaming_status.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 页面
 /// 使用 GetView 模式，自动获取 AiChatController
@@ -45,17 +47,18 @@ class AiChatPage extends GetView<AiChatController> {
 
   /// 构建 AppBar
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0.6,
-      title: const Text(
-        'Nomads AI Copilot',
+      title: Text(
+        l10n.aiChatDefaultConversationTitle,
         style: TextStyle(fontWeight: FontWeight.w700),
       ),
       leading: const AppBackButton(),
       actions: [
         IconButton(
-          tooltip: '历史对话',
+          tooltip: l10n.aiChatHistoryTooltip,
           icon: const Icon(Icons.history_rounded),
           onPressed: () => _showHistorySheet(context),
         ),
@@ -64,10 +67,11 @@ class AiChatPage extends GetView<AiChatController> {
   }
 
   Future<void> _showHistorySheet(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     // 显示优雅的加载对话框
     AppLoadingDialog.show(
-      title: '加载历史对话...',
-      subtitle: '请稍候',
+      title: l10n.aiChatLoadingHistoryTitle,
+      subtitle: l10n.loginPleaseWait,
     );
 
     try {
@@ -80,7 +84,7 @@ class AiChatPage extends GetView<AiChatController> {
 
     // 如果没有历史对话，直接提示
     if (controller.historyConversations.isEmpty) {
-      AppToast.info('暂无历史对话，直接开始新对话吧');
+      AppToast.info(l10n.aiChatNoHistoryStartNew);
       return;
     }
 
@@ -102,7 +106,7 @@ class AiChatPage extends GetView<AiChatController> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '历史对话',
+                  l10n.aiChatHistoryTitle,
                   style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 16.h),
@@ -157,7 +161,7 @@ class AiChatPage extends GetView<AiChatController> {
     return Obx(() {
       // 初始化加载中
       if (controller.isInitializing.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
       }
 
       // 初始化错误状态

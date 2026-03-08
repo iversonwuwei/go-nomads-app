@@ -6,6 +6,7 @@ import 'package:go_nomads_app/controllers/coworking_reviews_page_controller.dart
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_review.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 
@@ -93,12 +94,7 @@ class CoworkingReviewsPage extends StatelessWidget {
       body: Obx(() {
         // 首次加载时显示中间加载指示器
         if (controller.isLoading.value && controller.reviews.isEmpty) {
-          return Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Color(0xFF007AFF),
-            ),
-          );
+          return const AppSceneLoading(scene: AppLoadingScene.reviews, fullScreen: true);
         }
 
         if (controller.reviews.isEmpty) {
@@ -219,12 +215,7 @@ class CoworkingReviewsPage extends StatelessWidget {
   Widget _buildLoadingIndicator() {
     return Padding(
       padding: EdgeInsets.all(20.w),
-      child: Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Color(0xFF007AFF),
-        ),
-      ),
+      child: const Center(child: AppLoadingWidget(fullScreen: false)),
     );
   }
 

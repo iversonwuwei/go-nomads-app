@@ -15,6 +15,7 @@ import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/chat_more_options_sheet.dart';
@@ -87,10 +88,10 @@ class _DirectChatPageState extends State<DirectChatPage> {
   Widget build(BuildContext context) {
     // 显示连接动画
     if (_isConnecting) {
-      return _DirectChatLoadingView(
-        userName: widget.user.name,
-        userAvatar: widget.user.avatarUrl,
-        onBack: () => Get.back(),
+      return const Scaffold(
+        body: SafeArea(
+          child: AppSceneLoading(scene: AppLoadingScene.meetupDetail, fullScreen: true),
+        ),
       );
     }
 
@@ -100,306 +101,6 @@ class _DirectChatPageState extends State<DirectChatPage> {
       controller: _chatController,
     );
   }
-}
-
-// ==================== 加载动画视图 ====================
-
-/// 私聊加载动画视图
-class _DirectChatLoadingView extends StatefulWidget {
-  final String userName;
-  final String? userAvatar;
-  final VoidCallback onBack;
-
-  const _DirectChatLoadingView({
-    required this.userName,
-    this.userAvatar,
-    required this.onBack,
-  });
-
-  @override
-  State<_DirectChatLoadingView> createState() => _DirectChatLoadingViewState();
-}
-
-class _DirectChatLoadingViewState extends State<_DirectChatLoadingView> with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _bubbleController;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _rotationAnimation;
-
-  // 漂浮气泡数据
-  final List<_FloatingBubble> _bubbles = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _initAnimations();
-    _generateBubbles();
-  }
-
-  void _initAnimations() {
-    // 脉冲动画
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    // 气泡漂浮动画
-    _bubbleController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat();
-
-    _rotationAnimation = Tween<double>(begin: 0, end: 2 * 3.14159).animate(
-      CurvedAnimation(parent: _bubbleController, curve: Curves.linear),
-    );
-  }
-
-  void _generateBubbles() {
-    final random = DateTime.now().millisecondsSinceEpoch;
-    for (int i = 0; i < 8; i++) {
-      _bubbles.add(_FloatingBubble(
-        x: ((random + i * 137) % 100) / 100,
-        y: ((random + i * 251) % 100) / 100,
-        size: 20.r + ((random + i * 73) % 30).toDouble(),
-        speed: 0.3 + ((random + i * 41) % 50) / 100,
-        icon: _chatIcons[i % _chatIcons.length],
-      ));
-    }
-  }
-
-  static const List<IconData> _chatIcons = [
-    FontAwesomeIcons.heart,
-    FontAwesomeIcons.message,
-    FontAwesomeIcons.faceSmile,
-    FontAwesomeIcons.star,
-    FontAwesomeIcons.bolt,
-    FontAwesomeIcons.fire,
-    FontAwesomeIcons.handPeace,
-    FontAwesomeIcons.paperPlane,
-  ];
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _bubbleController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFFC00), // 黄色主题（Snapchat 风格）
-              Color(0xFFFFE600),
-              Color(0xFFFFD700),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // 漂浮气泡背景
-              ..._buildFloatingBubbles(),
-
-              // 返回按钮
-              Positioned(
-                top: 8.h,
-                left: 8.w,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
-                  onPressed: widget.onBack,
-                ),
-              ),
-
-              // 中心加载动画
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // 脉冲圆环动画 + 用户头像
-                    AnimatedBuilder(
-                      animation: _pulseController,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _pulseAnimation.value,
-                          child: Container(
-                            width: 140.w,
-                            height: 140.h,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                width: 3,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 20.r,
-                                  spreadRadius: 5.r,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: AnimatedBuilder(
-                                animation: _rotationAnimation,
-                                builder: (context, child) {
-                                  return Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      // 旋转光环
-                                      Transform.rotate(
-                                        angle: _rotationAnimation.value,
-                                        child: Container(
-                                          width: 110.w,
-                                          height: 110.h,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: SweepGradient(
-                                              colors: [
-                                                Colors.black.withValues(alpha: 0.3),
-                                                Colors.black.withValues(alpha: 0.05),
-                                                Colors.black.withValues(alpha: 0.3),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      // 用户头像
-                                      SafeCircleAvatar(
-                                        imageUrl: widget.userAvatar,
-                                        radius: 45,
-                                        backgroundColor: Colors.white,
-                                        errorWidget: Icon(
-                                          FontAwesomeIcons.user,
-                                          color: Colors.black54,
-                                          size: 36.r,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    SizedBox(height: 32.h),
-
-                    // 用户名称
-                    Text(
-                      widget.userName,
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black12,
-                            blurRadius: 4.r,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: 16.h),
-
-                    // 加载文字动画
-                    _buildLoadingText(),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Widget> _buildFloatingBubbles() {
-    return _bubbles.map((bubble) {
-      return AnimatedBuilder(
-        animation: _bubbleController,
-        builder: (context, child) {
-          final progress = (_bubbleController.value + bubble.speed) % 1.0;
-          final yOffset = progress * 200 - 100;
-          final xWave = 20 * (0.5 - (progress - 0.5).abs());
-
-          return Positioned(
-            left: bubble.x * MediaQuery.of(context).size.width + xWave,
-            top: bubble.y * MediaQuery.of(context).size.height + yOffset,
-            child: Opacity(
-              opacity: 0.3 + 0.3 * (1 - (progress - 0.5).abs() * 2),
-              child: Icon(
-                bubble.icon,
-                color: Colors.black54,
-                size: bubble.size,
-              ),
-            ),
-          );
-        },
-      );
-    }).toList();
-  }
-
-  Widget _buildLoadingText() {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        final dotCount = (_pulseController.value * 3).floor() + 1;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '正在连接',
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 16.sp,
-              ),
-            ),
-            SizedBox(
-              width: 30.w,
-              child: Text(
-                '.' * dotCount,
-                style: TextStyle(
-                  color: Colors.black54,
-                  fontSize: 16.sp,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// 漂浮气泡数据类
-class _FloatingBubble {
-  final double x;
-  final double y;
-  final double size;
-  final double speed;
-  final IconData icon;
-
-  _FloatingBubble({
-    required this.x,
-    required this.y,
-    required this.size,
-    required this.speed,
-    required this.icon,
-  });
 }
 
 // ==================== 聊天视图 ====================
@@ -515,7 +216,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                       ),
                     ),
                     Text(
-                      widget.user.currentCity ?? '在线',
+                      widget.user.currentCity ?? AppLocalizations.of(context)!.online,
                       style: TextStyle(
                         color: Color(0xFF666666),
                         fontSize: 13.sp,
@@ -529,15 +230,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         ),
         actions: [
           // TODO: 暂时隐藏视频通话按钮，功能待完善后启用
-          // IconButton(
-          //   icon: Icon(FontAwesomeIcons.video, color: Colors.black, size: 28.r),
-          //   onPressed: () => AppToast.info('视频通话功能即将推出'),
-          // ),
           // TODO: 暂时隐藏语音通话按钮，功能待完善后启用
-          // IconButton(
-          //   icon: Icon(FontAwesomeIcons.phone, color: Colors.black, size: 24.r),
-          //   onPressed: () => AppToast.info('语音通话功能即将推出'),
-          // ),
           PopupMenuButton<String>(
             icon: const Icon(FontAwesomeIcons.ellipsisVertical, color: Colors.black),
             onSelected: (value) {
@@ -614,51 +307,51 @@ class _DirectChatViewState extends State<_DirectChatView> {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading) {
-          return const MessagesSkeleton();
-        }
-
         final currentUserId = _currentUserId;
 
-        return Column(
-          children: [
-            // Messages
-            Expanded(
-              child: controller.messages.isEmpty && _uploadingImages.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      reverse: true,
-                      padding: EdgeInsets.all(16.w),
-                      itemCount: controller.messages.length + _uploadingImages.length,
-                      itemBuilder: (context, index) {
-                        // 先显示上传中的图片（在最底部/最新位置）
-                        if (index < _uploadingImages.length) {
-                          final uploadingImage = _uploadingImages[_uploadingImages.length - 1 - index];
-                          return _buildUploadingImageBubble(uploadingImage);
-                        }
-                        // 然后显示已发送的消息
-                        final messageIndex = index - _uploadingImages.length;
-                        final message = controller.messages[messageIndex];
-                        final isMe = currentUserId != null && message.author.userId == currentUserId;
-                        return _buildMessageBubble(message, isMe, controller);
-                      },
-                    ),
-            ),
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading,
+          loading: const MessagesSkeleton(),
+          child: Column(
+            children: [
+              // Messages
+              Expanded(
+                child: controller.messages.isEmpty && _uploadingImages.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.builder(
+                        reverse: true,
+                        padding: EdgeInsets.all(16.w),
+                        itemCount: controller.messages.length + _uploadingImages.length,
+                        itemBuilder: (context, index) {
+                          // 先显示上传中的图片（在最底部/最新位置）
+                          if (index < _uploadingImages.length) {
+                            final uploadingImage = _uploadingImages[_uploadingImages.length - 1 - index];
+                            return _buildUploadingImageBubble(uploadingImage);
+                          }
+                          // 然后显示已发送的消息
+                          final messageIndex = index - _uploadingImages.length;
+                          final message = controller.messages[messageIndex];
+                          final isMe = currentUserId != null && message.author.userId == currentUserId;
+                          return _buildMessageBubble(message, isMe, controller);
+                        },
+                      ),
+              ),
 
-            // Reply Preview
-            Obx(() {
-              if (controller.replyTo != null) {
-                return _buildReplyPreview(controller);
-              }
-              return const SizedBox.shrink();
-            }),
+              // Reply Preview
+              Obx(() {
+                if (controller.replyTo != null) {
+                  return _buildReplyPreview(controller);
+                }
+                return const SizedBox.shrink();
+              }),
 
-            // Input
-            _buildMessageInput(controller),
+              // Input
+              _buildMessageInput(controller),
 
-            // Emoji Panel
-            if (_showEmojiPanel) _buildEmojiPanel(),
-          ],
+              // Emoji Panel
+              if (_showEmojiPanel) _buildEmojiPanel(),
+            ],
+          ),
         );
       }),
     );
@@ -889,7 +582,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
                 // 状态文字
                 Text(
-                  hasError ? uploadingImage.errorMessage! : '上传中...',
+                  hasError ? uploadingImage.errorMessage! : AppLocalizations.of(context)!.uploading,
                   style: TextStyle(
                     fontSize: 11.sp,
                     color: hasError ? const Color(0xFFFF3838) : const Color(0xFF999999),
@@ -946,6 +639,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 构建上传错误遮罩
   Widget _buildUploadErrorOverlay(_UploadingImage uploadingImage) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -972,7 +666,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   children: [
                     Icon(FontAwesomeIcons.arrowRotateRight, size: 12.r, color: Color(0xFFFF3838)),
                     SizedBox(width: 4.w),
-                    Text('重试', style: TextStyle(fontSize: 12.sp, color: Color(0xFFFF3838))),
+                    Text(l10n.retry, style: TextStyle(fontSize: 12.sp, color: Color(0xFFFF3838))),
                   ],
                 ),
               ),
@@ -992,7 +686,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   children: [
                     Icon(FontAwesomeIcons.xmark, size: 12.r, color: Colors.white),
                     SizedBox(width: 4.w),
-                    Text('取消', style: TextStyle(fontSize: 12.sp, color: Colors.white)),
+                    Text(l10n.cancel, style: TextStyle(fontSize: 12.sp, color: Colors.white)),
                   ],
                 ),
               ),
@@ -1227,17 +921,18 @@ class _DirectChatViewState extends State<_DirectChatView> {
   }
 
   String _formatTime(DateTime time) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(time);
 
     if (difference.inMinutes < 1) {
-      return 'Just now';
+      return l10n.directChatJustNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m ago';
+      return l10n.directChatMinutesAgo(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return '${difference.inHours}h ago';
+      return l10n.directChatHoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
+      return l10n.directChatDaysAgo(difference.inDays);
     } else {
       return '${time.day}/${time.month}/${time.year}';
     }
@@ -1273,6 +968,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 选择位置
   Future<void> _pickLocation() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final result = await Get.to<Map<String, dynamic>>(
         () => const MapPickerPage(),
@@ -1284,23 +980,24 @@ class _DirectChatViewState extends State<_DirectChatView> {
         final address = result['address'] as String?;
         if (lat != null && lng != null) {
           widget.controller.sendMessage(
-            address ?? '位置',
+            address ?? l10n.location,
             messageType: 'location',
             attachment: {
               'latitude': lat,
               'longitude': lng,
-              'locationName': address ?? '位置',
+              'locationName': address ?? l10n.location,
             },
           );
         }
       }
     } catch (e) {
-      AppToast.error('选择位置失败: $e');
+      AppToast.error(l10n.directChatPickLocationFailed(e.toString()));
     }
   }
 
   /// 发送文件消息
   Future<void> _sendFile(PlatformFile platformFile) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final file = File(platformFile.path!);
       final imageUploadService = ImageUploadService();
@@ -1323,7 +1020,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         },
       );
     } catch (e) {
-      AppToast.error('发送文件失败: $e');
+      AppToast.error(l10n.directChatSendFileFailed(e.toString()));
     }
   }
 
@@ -1346,10 +1043,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 发送语音消息
   Future<void> _sendVoiceMessage(String localPath, int duration) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final file = File(localPath);
       if (!file.existsSync()) {
-        AppToast.error('语音文件不存在');
+        AppToast.error(l10n.directChatVoiceFileMissing);
         return;
       }
 
@@ -1361,7 +1059,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
       );
 
       widget.controller.sendMessage(
-        '语音消息',
+        l10n.directChatVoiceMessageText,
         messageType: 'voice',
         attachment: {
           'url': voiceUrl,
@@ -1376,7 +1074,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         debugPrint('⚠️ 删除临时语音文件失败: $e');
       }
     } catch (e) {
-      AppToast.error('发送语音失败: $e');
+      AppToast.error(l10n.directChatSendVoiceFailed(e.toString()));
     }
   }
 
@@ -1433,15 +1131,16 @@ class _DirectChatViewState extends State<_DirectChatView> {
     } catch (e) {
       debugPrint('❌ 图片上传失败: $e');
       // 标记上传失败
-      String errorMsg = '上传失败';
+      final l10n = AppLocalizations.of(context)!;
+      String errorMsg = l10n.uploadFailed;
       if (e.toString().contains('Bucket not found')) {
-        errorMsg = '存储服务错误';
+        errorMsg = l10n.storageServiceError;
       } else if (e.toString().contains('not authenticated')) {
-        errorMsg = '请重新登录';
+        errorMsg = l10n.pleaseReLogin;
       } else if (e.toString().contains('未初始化')) {
-        errorMsg = '请重启应用';
+        errorMsg = l10n.pleaseRestartApp;
       } else if (e.toString().contains('network') || e.toString().contains('Connection')) {
-        errorMsg = '网络错误';
+        errorMsg = l10n.networkError;
       }
 
       setState(() {
@@ -1558,7 +1257,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
       onTap: () => _showMapPicker(
         attachment.latitude!,
         attachment.longitude!,
-        attachment.locationName ?? '位置',
+        attachment.locationName ?? AppLocalizations.of(context)!.location,
       ),
       child: Container(
         width: 200.w,
@@ -1621,7 +1320,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
-                      attachment.locationName ?? '位置',
+                      attachment.locationName ?? AppLocalizations.of(context)!.location,
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: isMe ? Colors.white : Colors.black87,
@@ -1646,7 +1345,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     final voiceUrl = attachment?.url ?? '';
 
     if (voiceUrl.isEmpty) {
-      return const Text('语音消息不可用');
+      return Text(AppLocalizations.of(context)!.directChatVoiceMessageUnavailable);
     }
 
     return ChatVoiceMessageSimple(
@@ -1661,7 +1360,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
   /// 构建文件消息内容
   Widget _buildFileMessageContent(ChatMessage message, bool isMe) {
     final attachment = message.attachment;
-    final fileName = attachment?.fileName ?? '文件';
+    final fileName = attachment?.fileName ?? AppLocalizations.of(context)!.directChatFileFallback;
     final fileSize = attachment?.fileSize ?? 0;
 
     return GestureDetector(
@@ -1718,6 +1417,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 显示地图APP选择器
   void _showMapPicker(double latitude, double longitude, String name) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -1740,7 +1440,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
             Padding(
               padding: EdgeInsets.all(16.w),
               child: Text(
-                '选择地图导航',
+                l10n.directChatChooseMapNavigation,
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
@@ -1751,31 +1451,31 @@ class _DirectChatViewState extends State<_DirectChatView> {
             Divider(height: 1),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.apple,
-              title: 'Apple 地图',
+              title: l10n.directChatMapApple,
               iconColor: Colors.black87,
               onTap: () => _openAppleMaps(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.google,
-              title: 'Google 地图',
+              title: l10n.directChatMapGoogle,
               iconColor: const Color(0xFF4285F4),
               onTap: () => _openGoogleMaps(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.locationArrow,
-              title: '高德地图',
+              title: l10n.directChatMapAmap,
               iconColor: const Color(0xFF0091FF),
               onTap: () => _openAmap(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.mapPin,
-              title: '百度地图',
+              title: l10n.directChatMapBaidu,
               iconColor: const Color(0xFF3385FF),
               onTap: () => _openBaiduMap(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.mapLocation,
-              title: '腾讯地图',
+              title: l10n.directChatMapTencent,
               iconColor: const Color(0xFF12B7F5),
               onTap: () => _openTencentMap(latitude, longitude, name),
             ),
@@ -1793,7 +1493,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   ),
                 ),
                 child: Text(
-                  '取消',
+                  l10n.cancel,
                   style: TextStyle(
                     fontSize: 16.sp,
                     color: Colors.black54,
@@ -1814,7 +1514,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('Apple 地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapApple);
     }
   }
 
@@ -1824,7 +1524,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('Google 地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapGoogle);
     }
   }
 
@@ -1835,7 +1535,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('高德地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapAmap);
     }
   }
 
@@ -1846,7 +1546,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('百度地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapBaidu);
     }
   }
 
@@ -1856,12 +1556,13 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('腾讯地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapTencent);
     }
   }
 
   void _showMapError(String mapName) {
-    AppToast.warning('未安装$mapName');
+    final l10n = AppLocalizations.of(context)!;
+    AppToast.warning(l10n.directChatMapNotInstalled(mapName));
   }
 
   /// 检查是否是图片 URL
@@ -1942,6 +1643,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 构建图片占位符
   Widget _buildImagePlaceholder() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 150.w,
       height: 150.h,
@@ -1951,7 +1653,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         children: [
           Icon(FontAwesomeIcons.image, size: 40.r, color: Colors.grey),
           SizedBox(height: 8.h),
-          Text('图片加载失败', style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
+          Text(l10n.directChatImageLoadFailed, style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
         ],
       ),
     );
@@ -2108,7 +1810,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
-                  child: const Text('发送'),
+                  child: Text(AppLocalizations.of(context)!.send),
                 ),
               ],
             ),
@@ -2259,6 +1961,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> with Sin
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -2274,13 +1977,13 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> with Sin
                 IconButton(
                   icon: Icon(FontAwesomeIcons.download, color: Colors.white, size: 20.r),
                   onPressed: () {
-                    AppToast.info('保存功能即将推出');
+                    AppToast.info(l10n.directChatSaveComingSoon);
                   },
                 ),
                 IconButton(
                   icon: Icon(FontAwesomeIcons.share, color: Colors.white, size: 20.r),
                   onPressed: () {
-                    AppToast.info('分享功能即将推出');
+                    AppToast.info(l10n.directChatShareComingSoon);
                   },
                 ),
               ],
@@ -2384,7 +2087,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> with Sin
         Icon(FontAwesomeIcons.circleExclamation, size: 48.r, color: Colors.white54),
         SizedBox(height: 16.h),
         Text(
-          '无法加载图片',
+          AppLocalizations.of(context)!.cannotLoadImage,
           style: TextStyle(color: Colors.white54, fontSize: 16.sp),
         ),
       ],

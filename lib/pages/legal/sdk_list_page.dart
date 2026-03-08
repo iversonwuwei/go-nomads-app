@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/legal_document.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 第三方SDK信息收集清单页面
 ///
@@ -38,22 +40,23 @@ class _SdkListPageState extends State<SdkListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: const AppBackButton(),
-        title: const Text('第三方SDK信息收集清单'),
+        title: Text(l10n.thirdPartyServices),
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
-      body: _buildBody(),
+      body: _buildBody(l10n),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(AppLocalizations l10n) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
     }
 
     if (_sdkList == null || _sdkList!.isEmpty) {
@@ -63,7 +66,7 @@ class _SdkListPageState extends State<SdkListPage> {
           children: [
             Icon(Icons.info_outline, size: 48.r, color: AppColors.textTertiary),
             SizedBox(height: 12.h),
-            Text('暂无SDK清单数据', style: TextStyle(color: AppColors.textSecondary)),
+            Text(l10n.noData, style: TextStyle(color: AppColors.textSecondary)),
           ],
         ),
       );

@@ -1,12 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/venue_map_picker_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/amap_poi_service.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 地图区域组件
 class MapSection extends StatelessWidget {
@@ -39,22 +40,12 @@ class MapSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         child: Container(
           color: Colors.grey[200],
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(color: Color(0xFFFF4458)),
-                SizedBox(height: 16.h),
-                Text(
-                  '${l10n.loading}...',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
+          child: AppLoadingWidget(
+            fullScreen: true,
+            title: l10n.loading,
+            subtitle: '${l10n.loading}...',
+            icon: Icons.map_rounded,
+            accentColor: const Color(0xFFFF4458),
           ),
         ),
       );

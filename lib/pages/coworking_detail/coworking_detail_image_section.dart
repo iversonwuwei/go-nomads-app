@@ -1,4 +1,5 @@
 import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
 import 'package:go_nomads_app/pages/coworking_reviews_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
@@ -265,21 +266,22 @@ class CoworkingDetailImageSection extends StatelessWidget {
   }
 
   Future<void> _showDeleteConfirmation(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('删除确认'),
-          content: Text('确定要删除 "${_c.space.value.name}" 吗？此操作不可撤销。'),
+          title: Text(l10n.coworkingDetailDeleteConfirmTitle),
+          content: Text(l10n.coworkingDetailDeleteConfirmMessage(_c.space.value.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
+              child: Text(l10n.delete),
             ),
           ],
         );

@@ -9,8 +9,10 @@ import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel_review.dart';
 import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_repository.dart';
 import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_review_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_hotel_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
@@ -223,7 +225,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: Colors.grey[300],
-                          child: const Center(child: CircularProgressIndicator()),
+                          child: const AppLoadingWidget(fullScreen: false),
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: Colors.grey[300],
@@ -350,8 +352,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             runSpacing: 8.w,
             children: [
               _buildTag(hotel.category, Icons.hotel),
-              if (hotel.nomadScore >= 70) _buildTag('数字游民友好', Icons.laptop_mac, isHighlight: true),
-              if (hotel.hasCoworkingSpace) _buildTag('配套共享空间', Icons.business),
+              if (hotel.nomadScore >= 70)
+                _buildTag(AppLocalizations.of(context)!.nomadFriendly, Icons.laptop_mac, isHighlight: true),
+              if (hotel.hasCoworkingSpace) _buildTag(AppLocalizations.of(context)!.coworkingSpace, Icons.business),
             ],
           ),
         ],
@@ -391,15 +394,17 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 根据评分获取文字描述
   String _getRatingText(double rating) {
-    if (rating >= 4.5) return '极好';
-    if (rating >= 4.0) return '很好';
-    if (rating >= 3.5) return '不错';
-    if (rating >= 3.0) return '一般';
-    return '较差';
+    final l10n = AppLocalizations.of(context)!;
+    if (rating >= 4.5) return l10n.ratingExcellent;
+    if (rating >= 4.0) return l10n.ratingVeryGood;
+    if (rating >= 3.5) return l10n.ratingGood;
+    if (rating >= 3.0) return l10n.ratingAverage;
+    return l10n.ratingPoor;
   }
 
   /// 价格区域
   Widget _buildPricingSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(16.w),
@@ -414,7 +419,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '价格',
+            l10n.priceLabel,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -424,7 +429,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             children: [
               Expanded(
                 child: _buildPriceItem(
-                  '每晚',
+                  l10n.perNightLabel,
                   '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)}',
                   Icons.nights_stay,
                 ),
@@ -433,7 +438,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 SizedBox(width: 16.w),
                 Expanded(
                   child: _buildPriceItem(
-                    '长住优惠',
+                    l10n.longStayDiscount,
                     '-${hotel.longStayDiscountPercent!.toStringAsFixed(0)}%',
                     Icons.discount,
                   ),
@@ -472,6 +477,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 数字游民特性区域
   Widget _buildNomadFeaturesSection() {
+    final l10n = AppLocalizations.of(context)!;
     final hasAnyFeature = hotel.hasWifi || hotel.wifiSpeed != null || hotel.hasWorkDesk || hotel.hasCoworkingSpace;
 
     if (!hasAnyFeature) return const SizedBox.shrink();
@@ -482,7 +488,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '数字游民特性',
+            l10n.nomadFeatures,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -500,31 +506,31 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     _buildFeatureCard(
                       icon: Icons.wifi,
                       title: 'WiFi',
-                      subtitle: hotel.wifiSpeed != null ? '${hotel.wifiSpeed} Mbps' : '有',
+                      subtitle: hotel.wifiSpeed != null ? '${hotel.wifiSpeed} Mbps' : l10n.available,
                       color: Colors.blue,
                       cardWidth: cardWidth,
                     ),
                   if (hotel.hasWorkDesk)
                     _buildFeatureCard(
                       icon: Icons.desk,
-                      title: '工作桌',
-                      subtitle: '有',
+                      title: l10n.workDesk,
+                      subtitle: l10n.available,
                       color: Colors.green,
                       cardWidth: cardWidth,
                     ),
                   if (hotel.hasCoworkingSpace)
                     _buildFeatureCard(
                       icon: Icons.business,
-                      title: '共享空间',
-                      subtitle: '配套',
+                      title: l10n.coworkingSpace,
+                      subtitle: l10n.coworkingSpaceIncluded,
                       color: Colors.orange,
                       cardWidth: cardWidth,
                     ),
                   if (hotel.hasAirConditioning)
                     _buildFeatureCard(
                       icon: Icons.ac_unit,
-                      title: '空调',
-                      subtitle: '有',
+                      title: l10n.airConditioning,
+                      subtitle: l10n.available,
                       color: Colors.cyan,
                       cardWidth: cardWidth,
                     ),
@@ -589,6 +595,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 设施区域
   Widget _buildAmenitiesSection() {
+    final l10n = AppLocalizations.of(context)!;
     final amenities = hotel.amenities;
     if (amenities.isEmpty) return const SizedBox.shrink();
 
@@ -598,7 +605,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '设施服务',
+            l10n.facilities,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -657,6 +664,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 联系方式区域
   Widget _buildContactSection() {
+    final l10n = AppLocalizations.of(context)!;
     final hasContact = hotel.phone != null || hotel.email != null || hotel.website != null;
     if (!hasContact) return const SizedBox.shrink();
 
@@ -666,7 +674,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '联系方式',
+            l10n.contactInfo,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -675,21 +683,21 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           if (hotel.phone != null)
             _buildContactItem(
               icon: Icons.phone,
-              label: '电话',
+              label: l10n.phone,
               value: hotel.phone!,
               onTap: () => _launchUrl('tel:${hotel.phone}'),
             ),
           if (hotel.email != null)
             _buildContactItem(
               icon: Icons.email,
-              label: '邮箱',
+              label: l10n.emailLabel,
               value: hotel.email!,
               onTap: () => _launchUrl('mailto:${hotel.email}'),
             ),
           if (hotel.website != null)
             _buildContactItem(
               icon: Icons.language,
-              label: '网站',
+              label: l10n.website,
               value: hotel.website!,
               onTap: () => _launchUrl(hotel.website!),
             ),
@@ -760,6 +768,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 底部导航栏
   Widget _buildBottomBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -785,7 +794,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     child: ElevatedButton.icon(
                       onPressed: _showRoomTypesModal,
                       icon: Icon(Icons.bed, size: 20.r),
-                      label: Text('房型 (${hotel.roomTypes.length})'),
+                      label: Text(l10n.roomTypes(hotel.roomTypes.length.toString())),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.secondary,
                         foregroundColor: Colors.white,
@@ -802,7 +811,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   child: OutlinedButton.icon(
                     onPressed: _showWriteReviewDialog,
                     icon: Icon(Icons.rate_review, size: 20.r),
-                    label: const Text('写评论'),
+                    label: Text(l10n.writeReview),
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
@@ -822,7 +831,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   child: ElevatedButton.icon(
                     onPressed: _onNavigationPressed,
                     icon: const Icon(Icons.directions),
-                    label: const Text('路线导航'),
+                    label: Text(l10n.directions),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -840,7 +849,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     child: OutlinedButton.icon(
                       onPressed: () => _launchUrl(hotel.website!),
                       icon: const Icon(Icons.language),
-                      label: const Text('访问网站'),
+                      label: Text(l10n.visitWebsite),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
@@ -892,7 +901,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '房型列表',
+                      AppLocalizations.of(context)!.roomTypeList,
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -950,7 +959,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   placeholder: (context, url) => Container(
                     height: 150.h,
                     color: Colors.grey[200],
-                    child: const Center(child: CircularProgressIndicator()),
+                    child: const AppLoadingWidget(fullScreen: false),
                   ),
                   errorWidget: (context, url, error) => Container(
                     height: 150.h,
@@ -981,7 +990,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       borderRadius: BorderRadius.circular(4.r),
                     ),
                     child: Text(
-                      '已满',
+                      AppLocalizations.of(context)!.soldOut,
                       style: TextStyle(color: Colors.white, fontSize: 12.sp),
                     ),
                   ),
@@ -1006,7 +1015,8 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               runSpacing: 8.w,
               children: [
                 _buildRoomInfoChip(Icons.bed, roomType.bedType),
-                _buildRoomInfoChip(Icons.people, '最多${roomType.maxOccupancy}人'),
+                _buildRoomInfoChip(
+                    Icons.people, AppLocalizations.of(context)!.maxOccupancy(roomType.maxOccupancy.toString())),
                 if (roomType.size > 0) _buildRoomInfoChip(Icons.square_foot, '${roomType.size.toInt()}㎡'),
               ],
             ),
@@ -1040,7 +1050,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       ),
                     ),
                     Text(
-                      '/晚',
+                      AppLocalizations.of(context)!.perNight,
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: Colors.grey[600],
@@ -1080,10 +1090,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 显示写评论对话框
   void _showWriteReviewDialog() {
+    final l10n = AppLocalizations.of(context)!;
     // 检查用户是否已登录
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
-      AppToast.info('请先登录后再发表评论');
+      AppToast.info(l10n.pleaseLoginToReview);
       return;
     }
 
@@ -1129,7 +1140,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '写评论',
+                        l10n.writeReview,
                         style: TextStyle(
                           fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
@@ -1144,7 +1155,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   SizedBox(height: 16.h),
                   // 评分
                   Text(
-                    '评分',
+                    l10n.rating,
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
@@ -1184,8 +1195,8 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   TextField(
                     controller: titleController,
                     decoration: InputDecoration(
-                      labelText: '标题（选填）',
-                      hintText: '给您的评论起个标题',
+                      labelText: l10n.reviewTitleOptional,
+                      hintText: l10n.reviewTitleHint,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
@@ -1197,8 +1208,8 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     controller: contentController,
                     maxLines: 4,
                     decoration: InputDecoration(
-                      labelText: '评论内容',
-                      hintText: '分享您的入住体验...',
+                      labelText: l10n.reviewContent,
+                      hintText: l10n.reviewContentHint,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
@@ -1213,11 +1224,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ? null
                           : () async {
                               if (rating == 0) {
-                                AppToast.info('请选择评分');
+                                AppToast.info(l10n.selectRating);
                                 return;
                               }
                               if (contentController.text.trim().isEmpty) {
-                                AppToast.info('请输入评论内容');
+                                AppToast.info(l10n.enterReviewContent);
                                 return;
                               }
 
@@ -1229,7 +1240,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                                 content: contentController.text.trim(),
                                 onSuccess: () {
                                   Navigator.pop(context);
-                                  AppToast.success('评论发表成功！');
+                                  AppToast.success(l10n.reviewSubmitSuccess);
                                   // 标记数据已变更并重新加载酒店详情
                                   _hasDataChanged = true;
                                   _reloadHotelDetail();
@@ -1257,7 +1268,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Text('提交评论'),
+                          : Text(l10n.submitReview),
                     ),
                   ),
                   SizedBox(height: 16.h),
@@ -1302,27 +1313,28 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         },
         onFailure: (exception) {
           log('❌ 评论创建失败: ${exception.message}');
-          String errorMessage = '评论发表失败';
+          String errorMessage = AppLocalizations.of(Get.context!)!.reviewSubmitFailed;
           if (exception.message.contains('已经评论过')) {
-            errorMessage = '您已经评论过这家酒店了';
+            errorMessage = AppLocalizations.of(Get.context!)!.alreadyReviewed;
           }
           onError(errorMessage);
         },
       );
     } catch (e) {
       log('❌ 评论创建异常: $e');
-      onError('评论发表失败，请稍后重试');
+      onError(AppLocalizations.of(Get.context!)!.reviewSubmitFailedRetry);
     }
   }
 
   /// 获取评论评分文字
   String _getReviewRatingText(double rating) {
-    if (rating == 0) return '点击星星评分';
-    if (rating == 1) return '很差';
-    if (rating == 2) return '较差';
-    if (rating == 3) return '一般';
-    if (rating == 4) return '很好';
-    return '非常好';
+    final l10n = AppLocalizations.of(context)!;
+    if (rating == 0) return l10n.tapToRate;
+    if (rating == 1) return l10n.ratingVeryPoor;
+    if (rating == 2) return l10n.ratingFair;
+    if (rating == 3) return l10n.ratingNice;
+    if (rating == 4) return l10n.ratingGreat;
+    return l10n.ratingExcellentReview;
   }
 
   /// 加载评论列表
@@ -1378,6 +1390,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 房型区域
   Widget _buildRoomTypesSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(16.w),
@@ -1407,7 +1420,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    '房型',
+                    l10n.roomTypeList,
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -1417,7 +1430,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
               TextButton(
                 onPressed: _showRoomTypesModal,
-                child: Text('查看全部 (${hotel.roomTypes.length})'),
+                child: Text(l10n.viewAllCount(hotel.roomTypes.length.toString())),
               ),
             ],
           ),
@@ -1431,6 +1444,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 房型简介卡片
   Widget _buildRoomTypeSummary(RoomType roomType) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       padding: EdgeInsets.all(12.w),
@@ -1483,7 +1497,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  '${roomType.bedType} · 最多${roomType.maxOccupancy}人',
+                  '${roomType.bedType} · ${l10n.maxOccupancy(roomType.maxOccupancy.toString())}',
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.grey[600],
@@ -1505,7 +1519,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 ),
               ),
               Text(
-                '/晚',
+                l10n.perNight,
                 style: TextStyle(
                   fontSize: 10.sp,
                   color: Colors.grey[600],
@@ -1520,6 +1534,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 评论区域
   Widget _buildReviewsSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(16.w),
@@ -1549,7 +1564,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   ),
                   SizedBox(width: 8.w),
                   Text(
-                    '用户评论',
+                    l10n.userReviews,
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -1585,7 +1600,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           Row(
             children: [
               Text(
-                '${hotel.reviewCount} 条评论',
+                l10n.reviewCount(hotel.reviewCount.toString()),
                 style: TextStyle(
                   fontSize: 14.sp,
                   color: Colors.grey[600],
@@ -1611,7 +1626,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   Icon(Icons.chat_bubble_outline, size: 48.r, color: Colors.grey[300]),
                   SizedBox(height: 8.h),
                   Text(
-                    '暂无评论',
+                    l10n.noReviews,
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: Colors.grey[500],
@@ -1621,7 +1636,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   TextButton.icon(
                     onPressed: _showWriteReviewDialog,
                     icon: Icon(Icons.edit, size: 16.r),
-                    label: const Text('成为第一个评论的人'),
+                    label: Text(l10n.beFirstReviewer),
                   ),
                 ],
               ),
@@ -1636,22 +1651,20 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   child: TextButton.icon(
                     onPressed: _showWriteReviewDialog,
                     icon: Icon(Icons.edit, size: 16.r),
-                    label: const Text('写评论'),
+                    label: Text(l10n.writeReview),
                   ),
                 ),
                 SizedBox(height: 8.h),
                 // 评论列表
                 if (_isLoadingReviews && _reviews.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.w),
-                      child: CircularProgressIndicator(),
-                    ),
+                  Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: const Center(child: AppLoadingWidget(fullScreen: false)),
                   )
                 else if (_reviews.isEmpty)
                   Center(
                     child: Text(
-                      '暂无评论',
+                      l10n.noReviews,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: Colors.grey[500],
@@ -1667,16 +1680,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         Padding(
                           padding: EdgeInsets.only(top: 8.h),
                           child: _isLoadingReviews
-                              ? Center(
-                                  child: SizedBox(
-                                    width: 24.w,
-                                    height: 24.h,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                )
+                              ? const Center(child: AppLoadingWidget(fullScreen: false))
                               : TextButton(
                                   onPressed: _loadReviews,
-                                  child: const Text('加载更多评论'),
+                                  child: Text(l10n.loadMoreReviews),
                                 ),
                         ),
                     ],
@@ -1690,6 +1697,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 构建单个评论项
   Widget _buildReviewItem(HotelReview review) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.w),
@@ -1847,7 +1855,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 Icon(Icons.thumb_up_alt_outlined, size: 14.r, color: Colors.grey[500]),
                 SizedBox(width: 4.w),
                 Text(
-                  '${review.helpfulCount} 人觉得有用',
+                  l10n.helpfulCount(review.helpfulCount.toString()),
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.grey[500],
@@ -1863,20 +1871,21 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 格式化评论日期
   String _formatReviewDate(DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
-        return '${difference.inMinutes} 分钟前';
+        return l10n.minutesAgo(difference.inMinutes.toString());
       }
-      return '${difference.inHours} 小时前';
+      return l10n.hoursAgo(difference.inHours.toString());
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} 天前';
+      return l10n.daysAgo(difference.inDays.toString());
     } else if (difference.inDays < 30) {
-      return '${(difference.inDays / 7).floor()} 周前';
+      return l10n.weeksAgo((difference.inDays / 7).floor().toString());
     } else if (difference.inDays < 365) {
-      return '${(difference.inDays / 30).floor()} 个月前';
+      return l10n.monthsAgo((difference.inDays / 30).floor().toString());
     } else {
       return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     }
@@ -1893,11 +1902,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 获取评分描述
   String _getRatingDescription(double rating) {
-    if (rating >= 4.5) return '优秀';
-    if (rating >= 4.0) return '很好';
-    if (rating >= 3.0) return '良好';
-    if (rating >= 2.0) return '一般';
-    return '较差';
+    final l10n = AppLocalizations.of(context)!;
+    if (rating >= 4.5) return l10n.ratingDescExcellent;
+    if (rating >= 4.0) return l10n.ratingDescVeryGood;
+    if (rating >= 3.0) return l10n.ratingDescGood;
+    if (rating >= 2.0) return l10n.ratingDescAverage;
+    return l10n.ratingDescPoor;
   }
 
   /// 点击导航按钮

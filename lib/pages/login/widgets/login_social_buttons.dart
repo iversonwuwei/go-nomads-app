@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 社交登录按钮组
 class LoginSocialButtons extends GetView<LoginController> {
@@ -35,7 +38,7 @@ class _Divider extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w),
           child: Text(
-            'Or continue with',
+            AppLocalizations.of(context)!.orContinueWith,
             style: TextStyle(color: Colors.grey.shade600, fontSize: 14.sp),
           ),
         ),
@@ -52,10 +55,11 @@ class _ChineseSocialButtons extends GetView<LoginController> {
     return Row(
       children: [
         _SocialButton(
-          onPressed: () => controller.handleSocialLogin(SocialLoginType.wechat, '微信'),
+          onPressed: () =>
+              controller.handleSocialLogin(SocialLoginType.wechat, AppLocalizations.of(Get.context!)!.wechat),
           icon: FontAwesomeIcons.weixin,
           color: LoginConstants.wechatGreen,
-          label: '微信',
+          label: AppLocalizations.of(Get.context!)!.wechat,
         ),
         _SocialButton(
           onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
@@ -63,6 +67,14 @@ class _ChineseSocialButtons extends GetView<LoginController> {
           color: LoginConstants.qqBlue,
           label: 'QQ',
         ),
+        // Apple 登录仅在 iOS 上显示（Apple Review 要求）
+        if (Platform.isIOS)
+          _SocialButton(
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+            icon: FontAwesomeIcons.apple,
+            color: Colors.black,
+            label: 'Apple',
+          ),
       ],
     );
   }
@@ -72,6 +84,7 @@ class _ChineseSocialButtons extends GetView<LoginController> {
 class _InternationalSocialButtons extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         _SocialButton(
@@ -80,6 +93,14 @@ class _InternationalSocialButtons extends GetView<LoginController> {
           color: LoginConstants.googleRed,
           label: 'Google',
         ),
+        // Apple 登录仅在 iOS 上显示（Apple Review 要求）
+        if (Platform.isIOS)
+          _SocialButton(
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+            icon: FontAwesomeIcons.apple,
+            color: Colors.black,
+            label: 'Apple',
+          ),
         _SocialButton(
           onPressed: () => controller.handleSocialLogin(SocialLoginType.twitter, 'Twitter'),
           icon: FontAwesomeIcons.xTwitter,
@@ -87,7 +108,7 @@ class _InternationalSocialButtons extends GetView<LoginController> {
           label: 'Twitter',
         ),
         _SocialButton(
-          onPressed: () => AppToast.info('Facebook Sign In coming soon', title: 'Facebook'),
+          onPressed: () => AppToast.info(l10n.profileEditingComingSoon, title: l10n.continueWithFacebook),
           icon: FontAwesomeIcons.facebook,
           color: LoginConstants.facebookBlue,
           label: 'Facebook',

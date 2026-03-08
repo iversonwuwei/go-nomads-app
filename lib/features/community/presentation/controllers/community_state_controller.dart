@@ -1,9 +1,10 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart';
 import 'package:go_nomads_app/features/community/domain/repositories/i_community_repository.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// Community State Controller - 社区功能状态控制器 (DDD 架构)
@@ -55,9 +56,7 @@ class CommunityStateController extends GetxController {
     if (selectedCategory.value == 'All') {
       return recommendations;
     }
-    return recommendations
-        .where((rec) => rec.category == selectedCategory.value)
-        .toList();
+    return recommendations.where((rec) => rec.category == selectedCategory.value).toList();
   }
 
   /// 热门旅行报告
@@ -100,7 +99,7 @@ class CommunityStateController extends GetxController {
       // 检查是否所有请求都成功
       final allSuccess = results.every((result) => result);
       if (!allSuccess) {
-        AppToast.error('部分数据加载失败');
+        AppToast.error(AppLocalizations.of(Get.context!)!.partialDataLoadFailed);
       }
     } finally {
       isLoading.value = false;
@@ -176,7 +175,7 @@ class CommunityStateController extends GetxController {
       },
       onFailure: (error) {
         log('加载答案失败: ${error.message}');
-        AppToast.error('加载答案失败: ${error.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.loadAnswersFailed(error.message));
       },
     );
   }
@@ -228,7 +227,7 @@ class CommunityStateController extends GetxController {
       onFailure: (error) {
         // 失败则回滚
         tripReports[index] = report;
-        AppToast.error('操作失败: ${error.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.operationFailedWithError(error.message));
       },
     );
   }
@@ -272,7 +271,7 @@ class CommunityStateController extends GetxController {
       onFailure: (error) {
         // 失败则回滚
         questions[index] = question;
-        AppToast.error('操作失败: ${error.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.operationFailedWithError(error.message));
       },
     );
   }
@@ -319,7 +318,7 @@ class CommunityStateController extends GetxController {
         // 失败则回滚
         answerList[index] = answer;
         answers[questionId] = List.from(answerList);
-        AppToast.error('操作失败: ${error.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.operationFailedWithError(error.message));
       },
     );
   }
@@ -350,14 +349,14 @@ class CommunityStateController extends GetxController {
     recommendations.clear();
     questions.clear();
     answers.clear();
-    
+
     // 重置选择状态
     selectedCategory.value = 'All';
     selectedCity.value = 'All Cities';
-    
+
     // 重置加载状态
     isLoading.value = true;
-    
+
     super.onClose();
   }
 }

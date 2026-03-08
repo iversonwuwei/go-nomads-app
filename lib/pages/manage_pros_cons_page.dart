@@ -1,12 +1,14 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/manage_pros_cons_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+
 import 'pros_and_cons_add_page.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Pros & Cons 数据管理列表页面
 /// 需要 StatefulWidget 因为 TabController 需要 SingleTickerProviderStateMixin
@@ -66,11 +68,12 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('${widget.cityName} - 优缺点管理'),
+        title: Text(l10n.manageProsConsPageTitle(widget.cityName)),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -97,16 +100,16 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
         ],
       ),
       body: Obx(() {
-        if (_controller.isLoading.value) {
-          return const ManageListSkeleton();
-        }
-
-        return TabBarView(
-          controller: _tabController,
-          children: [
-            _buildProsList(),
-            _buildConsList(),
-          ],
+        return AppLoadingSwitcher(
+          isLoading: _controller.isLoading.value,
+          loading: const ManageListSkeleton(),
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildProsList(),
+              _buildConsList(),
+            ],
+          ),
         );
       }),
     );
@@ -157,11 +160,11 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
                     children: [
                       Icon(FontAwesomeIcons.arrowUp, size: 16.r, color: Colors.green[700]),
                       SizedBox(width: 4.w),
-                      Text('${item.upvotes}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(item.upvotes.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(width: 16.w),
                       Icon(FontAwesomeIcons.arrowDown, size: 16.r, color: Colors.red[700]),
                       SizedBox(width: 4.w),
-                      Text('${item.downvotes}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(item.downvotes.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   SizedBox(height: 4.h),
@@ -230,11 +233,11 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
                     children: [
                       Icon(FontAwesomeIcons.arrowUp, size: 16.r, color: Colors.green[700]),
                       SizedBox(width: 4.w),
-                      Text('${item.upvotes}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(item.upvotes.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(width: 16.w),
                       Icon(FontAwesomeIcons.arrowDown, size: 16.r, color: Colors.red[700]),
                       SizedBox(width: 4.w),
-                      Text('${item.downvotes}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(item.downvotes.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
                   SizedBox(height: 4.h),

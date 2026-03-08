@@ -6,8 +6,11 @@ import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferenc
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocaleController extends GetxController {
-  // 当前语言
+  // 业务语言（用于业务逻辑判断，默认中文）
   final locale = const Locale('zh', 'CN').obs;
+
+  // UI 显示语言（用于界面文案切换）
+  final uiLocale = const Locale('zh', 'CN').obs;
 
   // SharedPreferences 缓存 key
   static const _kLanguageCode = 'saved_language_code';
@@ -32,8 +35,8 @@ class LocaleController extends GetxController {
       final savedCode = prefs.getString(_kLanguageCode);
 
       if (savedCode != null) {
-        // 使用上次保存的语言
-        _applyLocale(savedCode);
+        // 使用上次保存的界面语言（不影响业务语言）
+        _applyUiLocale(savedCode);
         log('📦 从本地缓存恢复语言设置: $savedCode');
         return;
       }
@@ -44,16 +47,16 @@ class LocaleController extends GetxController {
     // 无缓存，使用系统语言
     final systemLocale = Get.deviceLocale;
     if (systemLocale != null && systemLocale.languageCode == 'en') {
-      locale.value = const Locale('en', 'US');
+      _applyUiLocale('en');
     } else {
-      locale.value = const Locale('zh', 'CN');
+      _applyUiLocale('zh');
     }
   }
 
   /// 从后端偏好设置同步语言（在加载 UserPreferences 后调用）
   void syncFromPreferences(String languageCode) {
-    if (languageCode.isNotEmpty && languageCode != locale.value.languageCode) {
-      _applyLocale(languageCode);
+    if (languageCode.isNotEmpty && languageCode != uiLocale.value.languageCode) {
+      _applyUiLocale(languageCode);
       _saveToLocal(languageCode);
       log('🔄 从后端偏好同步语言: $languageCode');
     }
@@ -70,14 +73,31 @@ class LocaleController extends GetxController {
     _saveToBackend(languageCode);
   }
 
+  // 仅切换界面语言（不触发后端偏好联动）
+  void changeLocaleUiOnly(String languageCode) {
+    _applyUiLocale(languageCode);
+  }
+
   /// 应用语言到 UI
   void _applyLocale(String languageCode) {
     if (languageCode == 'zh') {
       locale.value = const Locale('zh', 'CN');
+      uiLocale.value = const Locale('zh', 'CN');
     } else if (languageCode == 'en') {
       locale.value = const Locale('en', 'US');
+      uiLocale.value = const Locale('en', 'US');
     }
-    Get.updateLocale(locale.value);
+    Get.updateLocale(uiLocale.value);
+  }
+
+  /// 仅应用语言到 UI（不改变业务语言）
+  void _applyUiLocale(String languageCode) {
+    if (languageCode == 'en') {
+      uiLocale.value = const Locale('en', 'US');
+    } else {
+      uiLocale.value = const Locale('zh', 'CN');
+    }
+    Get.updateLocale(uiLocale.value);
   }
 
   /// 保存到 SharedPreferences（本地缓存，下次启动立即恢复）
@@ -106,7 +126,7 @@ class LocaleController extends GetxController {
 
   // 获取当前语言名称
   String get currentLanguageName {
-    return locale.value.languageCode == 'zh' ? '中文' : 'English';
+    return uiLocale.value.languageCode == 'zh' ? '中文' : 'English';
   }
 
   // 判断是否为中文

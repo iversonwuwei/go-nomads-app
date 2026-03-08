@@ -107,12 +107,8 @@ class TravelDetectionService extends GetxService {
 
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
-      // 权限未授予，先展示位置权限用途说明
-      final shouldRequest = await PermissionPurposeDialog.showLocationPermissionPurpose();
-      if (!shouldRequest) {
-        log('📋 用户在用途说明对话框中拒绝了位置权限（旅行检测）');
-        return false;
-      }
+      // 权限未授予，先展示位置权限用途说明（Apple Guideline 5.1.1 合规：不可跳过）
+      await PermissionPurposeDialog.showLocationPermissionPurpose();
       permission = await Geolocator.requestPermission();
     }
 

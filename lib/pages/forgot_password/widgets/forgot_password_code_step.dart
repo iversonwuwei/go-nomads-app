@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 步骤2：输入验证码 / Step 2: Enter verification code
@@ -11,6 +12,7 @@ class ForgotPasswordCodeStep extends GetView<ForgotPasswordController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -61,7 +63,7 @@ class ForgotPasswordCodeStep extends GetView<ForgotPasswordController> {
               LengthLimitingTextInputFormatter(6),
             ],
             decoration: InputDecoration(
-              hintText: '请输入6位验证码',
+              hintText: l10n.enterVerificationCode,
               hintStyle: TextStyle(color: AppColors.textTertiary),
               prefixIcon: Icon(Icons.pin_outlined, color: AppColors.textTertiary),
               filled: true,

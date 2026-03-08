@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/add_innovation_page_controller.dart';
@@ -6,7 +7,6 @@ import 'package:go_nomads_app/features/membership/presentation/controllers/membe
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddInnovationImageSection extends StatelessWidget {
   final String controllerTag;
@@ -60,7 +60,7 @@ class AddInnovationImageSection extends StatelessWidget {
           children: [
             ClipRRect(borderRadius: BorderRadius.circular(12.r), child: Image.file(_c.coverImage.value!, fit: BoxFit.cover)),
             _buildRemoveButton(),
-            _buildImageSourceBadge('本地图片', Icons.folder),
+            _buildImageSourceBadge(l10n.addInnovationImageSourceLocal, Icons.folder),
           ],
         );
       } else if (_c.coverImageUrl.value != null && _c.coverImageUrl.value!.isNotEmpty) {
@@ -76,11 +76,16 @@ class AddInnovationImageSection extends StatelessWidget {
                   if (loadingProgress == null) return child;
                   return Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null));
                 },
-                errorBuilder: (context, error, stackTrace) => Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(FontAwesomeIcons.circleExclamation, color: Colors.grey[400], size: 32.r), SizedBox(height: 8.h), Text('加载失败', style: TextStyle(color: Colors.grey[500], fontSize: 12.sp))])),
+                errorBuilder: (context, error, stackTrace) => Center(
+                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(FontAwesomeIcons.circleExclamation, color: Colors.grey[400], size: 32.r),
+                  SizedBox(height: 8.h),
+                  Text(l10n.loadFailed, style: TextStyle(color: Colors.grey[500], fontSize: 12.sp))
+                ])),
               ),
             ),
             _buildRemoveButton(),
-            _buildImageSourceBadge('AI 生成', Icons.auto_awesome),
+            _buildImageSourceBadge(l10n.addInnovationImageSourceAiGenerated, Icons.auto_awesome),
           ],
         );
       }
@@ -96,7 +101,10 @@ class AddInnovationImageSection extends StatelessWidget {
           children: [
             SizedBox(width: 40.w, height: 40.h, child: CircularProgressIndicator(strokeWidth: 3, valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)))),
             SizedBox(height: 16.h),
-            Obx(() => Text(_c.generatingStatus.value.isNotEmpty ? _c.generatingStatus.value : 'AI 正在创作中...', style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]), textAlign: TextAlign.center)),
+            Obx(() => Text(
+                _c.generatingStatus.value.isNotEmpty ? _c.generatingStatus.value : l10n.addInnovationAiGenerating,
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                textAlign: TextAlign.center)),
           ],
         );
       }
@@ -111,7 +119,7 @@ class AddInnovationImageSection extends StatelessWidget {
           SizedBox(height: 12.h),
           Text(l10n.tapToSelectPhoto, style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
           SizedBox(height: 4.h),
-          Text('支持相册选择或 AI 生成', style: TextStyle(fontSize: 12.sp, color: Colors.grey[400])),
+          Text(l10n.addInnovationSupportAlbumOrAi, style: TextStyle(fontSize: 12.sp, color: Colors.grey[400])),
         ],
       );
     });
@@ -168,15 +176,41 @@ class AddInnovationImageSection extends StatelessWidget {
                       child: Icon(Icons.add_photo_alternate_rounded, color: Colors.white, size: 22.r),
                     ),
                     SizedBox(width: 16.w),
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('选择封面图片', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, letterSpacing: -0.5)), SizedBox(height: 4.h), Text('为你的项目添加一张吸引眼球的封面', style: TextStyle(fontSize: 13.sp, color: Colors.grey))])),
+                    Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(AppLocalizations.of(context)!.addInnovationSelectCoverImage,
+                          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+                      SizedBox(height: 4.h),
+                      Text(AppLocalizations.of(context)!.addInnovationAddAttractiveCover,
+                          style: TextStyle(fontSize: 13.sp, color: Colors.grey))
+                    ])),
                   ],
                 ),
                 SizedBox(height: 28.h),
                 Row(
                   children: [
-                    Expanded(child: _buildModernOptionCard(icon: Icons.photo_library_rounded, title: '相册', subtitle: '从本地选择', gradientColors: const [Color(0xFF3B82F6), Color(0xFF60A5FA)], onTap: () { Navigator.pop(context); _c.pickImage(); })),
+                    Expanded(
+                        child: _buildModernOptionCard(
+                            icon: Icons.photo_library_rounded,
+                            title: AppLocalizations.of(context)!.addInnovationAlbum,
+                            subtitle: AppLocalizations.of(context)!.addInnovationPickFromLocal,
+                            gradientColors: const [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+                            onTap: () {
+                              Navigator.pop(context);
+                              _c.pickImage();
+                            })),
                     SizedBox(width: 16.w),
-                    Expanded(child: _buildModernOptionCard(icon: Icons.auto_awesome_rounded, title: 'AI 生成', subtitle: '智能创作', gradientColors: const [Color(0xFF8B5CF6), Color(0xFFA78BFA)], onTap: () { Navigator.pop(context); _handleAIGenerateClick(context); }, isPremium: true)),
+                    Expanded(
+                        child: _buildModernOptionCard(
+                            icon: Icons.auto_awesome_rounded,
+                            title: AppLocalizations.of(context)!.addInnovationAiGenerate,
+                            subtitle: AppLocalizations.of(context)!.addInnovationAiCreative,
+                            gradientColors: const [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+                            onTap: () {
+                              Navigator.pop(context);
+                              _handleAIGenerateClick(context);
+                            },
+                            isPremium: true)),
                   ],
                 ),
                 SizedBox(height: 20.h),
@@ -200,7 +234,27 @@ class AddInnovationImageSection extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 Container(width: 64.w, height: 64.h, decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradientColors), borderRadius: BorderRadius.circular(18.r), boxShadow: [BoxShadow(color: gradientColors[0].withAlpha(80), blurRadius: 16.r, offset: const Offset(0, 6))]), child: Icon(icon, color: Colors.white, size: 30.r)),
-                if (isPremium) Positioned(top: -6, right: -6, child: Container(padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h), decoration: BoxDecoration(gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]), borderRadius: BorderRadius.circular(8.r), boxShadow: [BoxShadow(color: const Color(0xFFF59E0B).withAlpha(60), blurRadius: 8.r, offset: const Offset(0, 2))]), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.star_rounded, color: Colors.white, size: 12.r), SizedBox(width: 2.w), Text('AI', style: TextStyle(color: Colors.white, fontSize: 10.sp, fontWeight: FontWeight.bold))]))),
+                if (isPremium)
+                  Positioned(
+                      top: -6,
+                      right: -6,
+                      child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                              gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)]),
+                              borderRadius: BorderRadius.circular(8.r),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: const Color(0xFFF59E0B).withAlpha(60),
+                                    blurRadius: 8.r,
+                                    offset: const Offset(0, 2))
+                              ]),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(Icons.star_rounded, color: Colors.white, size: 12.r),
+                            SizedBox(width: 2.w),
+                            Text(AppLocalizations.of(Get.context!)!.addInnovationAiBadge,
+                                style: TextStyle(color: Colors.white, fontSize: 10.sp, fontWeight: FontWeight.bold))
+                          ]))),
               ],
             ),
             SizedBox(height: 16.h),
@@ -215,7 +269,7 @@ class AddInnovationImageSection extends StatelessWidget {
 
   void _handleAIGenerateClick(BuildContext context) {
     if (!Get.isRegistered<MembershipStateController>()) {
-      AppToast.error('会员服务不可用，请稍后再试');
+      AppToast.error(AppLocalizations.of(context)!.addInnovationMembershipUnavailable);
       return;
     }
     final membershipController = Get.find<MembershipStateController>();
@@ -246,20 +300,25 @@ class AddInnovationImageSection extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
                 child: Column(
                   children: [
-                    Text('AI 图片生成', style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+                    Text(AppLocalizations.of(context)!.addInnovationAiImageGeneration,
+                        style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
                     SizedBox(height: 8.h),
-                    Text('会员专属功能', style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade500)),
+                    Text(AppLocalizations.of(context)!.addInnovationMemberExclusive,
+                        style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade500)),
                     SizedBox(height: 24.h),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () { Navigator.of(dialogContext).pop(); Get.toNamed(AppRoutes.membershipPlan); },
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B5CF6), foregroundColor: Colors.white, padding: EdgeInsets.symmetric(vertical: 16.h), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)), elevation: 0),
-                        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(FontAwesomeIcons.crown, size: 16.r), SizedBox(width: 8.w), Text('升级会员解锁', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold))]),
+                        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(FontAwesomeIcons.crown, size: 16.r), SizedBox(width: 8.w), Text(AppLocalizations.of(context)!.addInnovationUpgradeMembershipUnlock, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold))]),
                       ),
                     ),
                     SizedBox(height: 12.h),
-                    TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: Text('稍后再说', style: TextStyle(color: Colors.grey.shade500, fontSize: 14.sp))),
+                    TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: Text(AppLocalizations.of(context)!.addInnovationMaybeLater,
+                            style: TextStyle(color: Colors.grey.shade500, fontSize: 14.sp))),
                   ],
                 ),
               ),
@@ -278,7 +337,11 @@ class AddInnovationImageSection extends StatelessWidget {
 
     Get.dialog(
       AlertDialog(
-        title: Row(children: [Icon(Icons.auto_awesome, color: Theme.of(context).primaryColor), SizedBox(width: 8.w), const Text('AI 生成封面')]),
+        title: Row(children: [
+          Icon(Icons.auto_awesome, color: Theme.of(context).primaryColor),
+          SizedBox(width: 8.w),
+          Text(l10n.addInnovationAiGenerateCover)
+        ]),
         content: SizedBox(
           width: MediaQuery.of(context).size.width * 0.8,
           child: SingleChildScrollView(
@@ -290,11 +353,12 @@ class AddInnovationImageSection extends StatelessWidget {
                     controller: _c.aiPromptController,
                     maxLines: 3,
                     decoration: InputDecoration(
-                        hintText: '请描述您想要的封面图片...',
+                        hintText: l10n.addInnovationDescribeCoverHint,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
                         filled: true)),
                 SizedBox(height: 16.h),
-                Text('快速模板：', style: TextStyle(fontSize: 12.sp, color: Theme.of(context).hintColor)),
+                Text(l10n.addInnovationQuickTemplates,
+                    style: TextStyle(fontSize: 12.sp, color: Theme.of(context).hintColor)),
                 SizedBox(height: 8.h),
                 Wrap(
                   spacing: 8.w,
@@ -323,7 +387,7 @@ class AddInnovationImageSection extends StatelessWidget {
           Obx(() => ElevatedButton.icon(
             onPressed: _c.isGeneratingImage.value ? null : () { Get.back(); _c.generateImageWithAI(_c.aiPromptController.text); },
             icon: _c.isGeneratingImage.value ? SizedBox(width: 16.w, height: 16.h, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(Icons.auto_awesome, size: 18.r),
-            label: Text(_c.isGeneratingImage.value ? '生成中...' : '生成'),
+                label: Text(_c.isGeneratingImage.value ? l10n.addInnovationGenerating : l10n.generate),
           )),
         ],
       ),

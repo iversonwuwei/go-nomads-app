@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/change_password_page_controller.dart';
 import 'package:go_nomads_app/pages/change_password/widgets/change_password_email_section.dart';
 import 'package:go_nomads_app/pages/change_password/widgets/change_password_form.dart';
 import 'package:go_nomads_app/pages/change_password/widgets/change_password_submit_button.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 修改/设置密码页面 / Change or set password page
 class ChangePasswordPage extends GetView<ChangePasswordController> {
@@ -32,7 +33,7 @@ class ChangePasswordPage extends GetView<ChangePasswordController> {
       ),
       body: Obx(() {
         if (controller.isCheckingPassword.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const AppSceneLoading(scene: AppLoadingScene.form, fullScreen: true);
         }
 
         return SingleChildScrollView(

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -57,11 +58,13 @@ class ApplyModeratorController extends GetxController {
         reason: reasonController.text.trim(),
       );
 
-      AppToast.success('申请已提交，请等待管理员审核');
+      final l10n = AppLocalizations.of(Get.context!)!;
+      AppToast.success(l10n.applyModeratorSubmitSuccess);
       Get.back();
     } catch (e) {
+      final l10n = AppLocalizations.of(Get.context!)!;
       log('❌ [ApplyModeratorController] 提交申请失败: $e');
-      AppToast.error('提交失败: ${e.toString()}');
+      AppToast.error(l10n.submitFailed(e.toString()));
     } finally {
       isSubmitting.value = false;
     }

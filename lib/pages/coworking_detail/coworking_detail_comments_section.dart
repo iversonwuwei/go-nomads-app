@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_coworking_review/add_coworking_review_page.dart';
 import 'package:go_nomads_app/pages/coworking_reviews_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
@@ -17,6 +18,7 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.all(16.w),
       child: Column(
@@ -25,11 +27,11 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('用户评论', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+              Text(l10n.coworkingDetailUserComments, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
               TextButton.icon(
                 onPressed: () => _navigateToAddComment(context),
                 icon: Icon(FontAwesomeIcons.commentMedical, size: 20.r),
-                label: const Text('发表评论'),
+                label: Text(l10n.coworkingDetailPostComment),
               ),
             ],
           ),
@@ -63,7 +65,7 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
                         _c.reloadCoworkingDetail();
                       });
                     },
-                    child: const Text('查看更多评论'),
+                    child: Text(l10n.coworkingDetailViewMoreComments),
                   ),
                 ),
               );
@@ -76,6 +78,7 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
   }
 
   Widget _buildEmptyComments() {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Container(
       padding: EdgeInsets.all(32.w),
       alignment: Alignment.center,
@@ -83,9 +86,9 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
         children: [
           Icon(FontAwesomeIcons.comment, size: 48.r, color: Colors.grey[400]),
           SizedBox(height: 16.h),
-          Text('暂无评论', style: TextStyle(color: Colors.grey[600], fontSize: 16.sp)),
+          Text(l10n.coworkingDetailNoComments, style: TextStyle(color: Colors.grey[600], fontSize: 16.sp)),
           SizedBox(height: 8.h),
-          Text('成为第一个发表评论的人', style: TextStyle(color: Colors.grey[500], fontSize: 14.sp)),
+          Text(l10n.coworkingDetailBeFirstCommenter, style: TextStyle(color: Colors.grey[500], fontSize: 14.sp)),
         ],
       ),
     );

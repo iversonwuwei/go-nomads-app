@@ -1,10 +1,11 @@
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
 import 'package:go_nomads_app/controllers/edit_social_links_page_controller.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 社交平台常量
 class SocialPlatforms {
@@ -37,6 +38,7 @@ class EditSocialLinksPage extends StatelessWidget {
   }
 
   Future<void> _showEditDialog(BuildContext context, EditSocialLinksPageController controller, String platform) async {
+    final l10n = AppLocalizations.of(context)!;
     final platformInfo = SocialPlatforms.platforms[platform]!;
     final currentUrl = controller.getLink(platform);
     final textController = TextEditingController(text: currentUrl);
@@ -48,7 +50,7 @@ class EditSocialLinksPage extends StatelessWidget {
           children: [
             Text(platformInfo['icon'] as String, style: TextStyle(fontSize: 24.sp)),
             SizedBox(width: 8.w),
-            Text('${platformInfo['name']}'),
+            Text(platformInfo['name'] as String),
           ],
         ),
         content: Column(
@@ -57,7 +59,7 @@ class EditSocialLinksPage extends StatelessWidget {
             TextField(
               controller: textController,
               decoration: InputDecoration(
-                labelText: '链接地址',
+                labelText: l10n.editSocialLinksUrl,
                 border: const OutlineInputBorder(),
                 hintText: platformInfo['urlPattern'],
               ),
@@ -66,7 +68,7 @@ class EditSocialLinksPage extends StatelessWidget {
             SizedBox(height: 8.h),
             if (platformInfo['urlPattern'] != null)
               Text(
-                '示例: ${platformInfo['urlPattern']}',
+                l10n.editSocialLinksExample(platformInfo['urlPattern'] as String),
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey.shade600,
@@ -79,15 +81,15 @@ class EditSocialLinksPage extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(context, 'DELETE'),
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('删除'),
+              child: Text(l10n.delete),
             ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, textController.text.trim()),
-            child: const Text('保存'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -146,7 +148,7 @@ class EditSocialLinksPage extends StatelessWidget {
                   style: TextStyle(fontSize: 12.sp),
                 )
               : Text(
-                  '点击添加',
+                  AppLocalizations.of(context)!.editSocialLinksTapToAdd,
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
           trailing: Icon(
@@ -162,51 +164,52 @@ class EditSocialLinksPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = _useController();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('社交链接'),
+        title: Text(l10n.modularProfileModuleSocialLinks),
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const EditFormSkeleton();
-        }
-
-        return Column(
-          children: [
-            // 统计信息
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(16.w),
-              color: Colors.blue.shade50,
-              child: Row(
-                children: [
-                  const Icon(FontAwesomeIcons.link, color: Colors.blue),
-                  SizedBox(width: 8.w),
-                  Obx(() => Text(
-                        '已添加 ${controller.linkedCount} / ${SocialPlatforms.platforms.length} 个平台',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16.sp,
-                        ),
-                      )),
-                ],
-              ),
-            ),
-
-            // 平台列表
-            Expanded(
-              child: ListView(
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading.value,
+          loading: const EditFormSkeleton(),
+          child: Column(
+            children: [
+              // 统计信息
+              Container(
+                width: double.infinity,
                 padding: EdgeInsets.all(16.w),
-                children: SocialPlatforms.platforms.entries.map((entry) {
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 8.h),
-                    child: _buildPlatformCard(context, controller, entry.key, entry.value),
-                  );
-                }).toList(),
+                color: Colors.blue.shade50,
+                child: Row(
+                  children: [
+                    const Icon(FontAwesomeIcons.link, color: Colors.blue),
+                    SizedBox(width: 8.w),
+                    Obx(() => Text(
+                          l10n.editSocialLinksAddedCount(controller.linkedCount, SocialPlatforms.platforms.length),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.sp,
+                          ),
+                        )),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // 平台列表
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.all(16.w),
+                  children: SocialPlatforms.platforms.entries.map((entry) {
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: _buildPlatformCard(context, controller, entry.key, entry.value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
         );
       }),
     );

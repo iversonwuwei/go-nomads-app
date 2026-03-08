@@ -1,9 +1,11 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 import '../../../../../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../../../city_detail_controller.dart';
@@ -12,7 +14,6 @@ import 'sunrise_sunset_card.dart';
 import 'weather_main_card.dart';
 import 'weather_metric_card.dart';
 import 'weather_utils.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Weather Tab - GetView 实现
 class WeatherTab extends GetView<CityDetailController> {
@@ -29,22 +30,21 @@ class WeatherTab extends GetView<CityDetailController> {
     final weatherController = Get.find<WeatherStateController>();
 
     return Obx(() {
-      // 显示加载状态
-      if (weatherController.isLoading.value) {
-        return const WeatherTabSkeleton();
-      }
-
       final weather = weatherController.weather.value;
-      if (weather == null) {
-        return _WeatherEmptyState(
-          cityId: controller.cityId,
-          l10n: l10n,
-        );
-      }
+      final content = weather == null
+          ? _WeatherEmptyState(
+              cityId: controller.cityId,
+              l10n: l10n,
+            )
+          : _WeatherContent(
+              weatherTag: weatherTag,
+              l10n: l10n,
+            );
 
-      return _WeatherContent(
-        weatherTag: weatherTag,
-        l10n: l10n,
+      return AppLoadingSwitcher(
+        isLoading: weatherController.isLoading.value,
+        loading: const WeatherTabSkeleton(),
+        child: content,
       );
     });
   }

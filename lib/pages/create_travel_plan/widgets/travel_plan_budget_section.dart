@@ -1,25 +1,23 @@
-import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 /// 预算部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanBudgetSection extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const TravelPlanBudgetSection({super.key, required this.controllerTag});
+  const TravelPlanBudgetSection({super.key});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     // 安全检查
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -29,7 +27,7 @@ class TravelPlanBudgetSection extends GetView<CreateTravelPlanPageController> {
         _SectionTitle(title: l10n.budget, icon: FontAwesomeIcons.dollarSign),
         SizedBox(height: 12.h),
         // 预算选项
-        _BudgetChipsRow(controllerTag: controllerTag, l10n: l10n),
+        _BudgetChipsRow(l10n: l10n),
         SizedBox(height: 16.h),
         Text(
           l10n.enterBudget,
@@ -37,7 +35,7 @@ class TravelPlanBudgetSection extends GetView<CreateTravelPlanPageController> {
         ),
         SizedBox(height: 8.h),
         // 货币选择和自定义预算输入
-        _CustomBudgetRow(controllerTag: controllerTag),
+        const _CustomBudgetRow(),
       ],
     );
   }
@@ -45,27 +43,26 @@ class TravelPlanBudgetSection extends GetView<CreateTravelPlanPageController> {
 
 /// 预算选项行
 class _BudgetChipsRow extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
   final AppLocalizations l10n;
 
-  const _BudgetChipsRow({required this.controllerTag, required this.l10n});
+  const _BudgetChipsRow({required this.l10n});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
     return Row(
       children: [
-        Expanded(child: _BudgetChip(label: l10n.low, value: 'low', controllerTag: controllerTag)),
+        Expanded(child: _BudgetChip(label: l10n.low, value: 'low')),
         SizedBox(width: 12.w),
-        Expanded(child: _BudgetChip(label: l10n.medium, value: 'medium', controllerTag: controllerTag)),
+        Expanded(child: _BudgetChip(label: l10n.medium, value: 'medium')),
         SizedBox(width: 12.w),
-        Expanded(child: _BudgetChip(label: l10n.high, value: 'high', controllerTag: controllerTag)),
+        Expanded(child: _BudgetChip(label: l10n.high, value: 'high')),
       ],
     );
   }
@@ -75,20 +72,18 @@ class _BudgetChipsRow extends GetView<CreateTravelPlanPageController> {
 class _BudgetChip extends GetView<CreateTravelPlanPageController> {
   final String label;
   final String value;
-  final String controllerTag;
 
   const _BudgetChip({
     required this.label,
     required this.value,
-    required this.controllerTag,
   });
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -141,24 +136,22 @@ class _BudgetChip extends GetView<CreateTravelPlanPageController> {
 
 /// 自定义预算输入行
 class _CustomBudgetRow extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _CustomBudgetRow({required this.controllerTag});
+  const _CustomBudgetRow();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
     return Row(
       children: [
-        _CurrencyDropdown(controllerTag: controllerTag),
+        const _CurrencyDropdown(),
         SizedBox(width: 12.w),
-        Expanded(child: _CustomBudgetField(controllerTag: controllerTag)),
+        Expanded(child: _CustomBudgetField()),
       ],
     );
   }
@@ -166,16 +159,14 @@ class _CustomBudgetRow extends GetView<CreateTravelPlanPageController> {
 
 /// 货币下拉选择
 class _CurrencyDropdown extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _CurrencyDropdown({required this.controllerTag});
+  const _CurrencyDropdown();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -212,16 +203,14 @@ class _CurrencyDropdown extends GetView<CreateTravelPlanPageController> {
 
 /// 自定义预算输入框
 class _CustomBudgetField extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _CustomBudgetField({required this.controllerTag});
+  const _CustomBudgetField();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -229,7 +218,7 @@ class _CustomBudgetField extends GetView<CreateTravelPlanPageController> {
       controller: controller.customBudgetController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
-        hintText: '0.00',
+        hintText: 0.toStringAsFixed(2),
         hintStyle: TextStyle(color: Colors.grey[400]),
         filled: true,
         fillColor: Colors.grey[50],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -8,11 +9,11 @@ import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/m
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 我的 Meetups 页面 - 显示用户创建的活动
 class MyMeetupsPage extends StatelessWidget {
@@ -75,43 +76,43 @@ class MyMeetupsPage extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const MyMeetupsSkeleton();
-        }
-
+        Widget content;
         if (controller.errorMessage.value.isNotEmpty) {
-          return _buildErrorState(isMobile, controller);
+          content = _buildErrorState(isMobile, controller, l10n);
+        } else if (controller.meetups.isEmpty) {
+          content = _buildEmptyState(isMobile, l10n, controller);
+        } else {
+          final showFooter = controller.showFooter;
+          content = RefreshIndicator(
+            onRefresh: controller.refreshAll,
+            color: Colors.orange,
+            child: ListView.builder(
+              controller: controller.scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(isMobile ? 16 : 24),
+              itemCount: controller.meetups.length + (showFooter ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index >= controller.meetups.length) {
+                  return _buildLoadingFooter();
+                }
+
+                final meetup = controller.meetups[index];
+                return _buildMeetupCard(meetup, isMobile, l10n, controller);
+              },
+            ),
+          );
         }
 
-        if (controller.meetups.isEmpty) {
-          return _buildEmptyState(isMobile, l10n, controller);
-        }
-
-        final showFooter = controller.showFooter;
-
-        return RefreshIndicator(
-          onRefresh: controller.refreshAll,
-          color: Colors.orange,
-          child: ListView.builder(
-            controller: controller.scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.all(isMobile ? 16 : 24),
-            itemCount: controller.meetups.length + (showFooter ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index >= controller.meetups.length) {
-                return _buildLoadingFooter();
-              }
-
-              final meetup = controller.meetups[index];
-              return _buildMeetupCard(meetup, isMobile, l10n, controller);
-            },
-          ),
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading.value,
+          loading: const MyMeetupsSkeleton(),
+          child: content,
         );
       }),
     );
   }
 
-  Widget _buildErrorState(bool isMobile, MyMeetupsPageController controller) {
+  Widget _buildErrorState(bool isMobile, MyMeetupsPageController controller, AppLocalizations l10n) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
@@ -148,7 +149,7 @@ class MyMeetupsPage extends StatelessWidget {
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -473,16 +474,7 @@ class MyMeetupsPage extends StatelessWidget {
   Widget _buildLoadingFooter() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 24.w,
-            height: 24.h,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange),
-          ),
-        ],
-      ),
+      child: const Center(child: AppLoadingWidget(fullScreen: false)),
     );
   }
 

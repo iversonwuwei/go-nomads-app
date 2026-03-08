@@ -13,6 +13,7 @@ import 'core/lifecycle/page_lifecycle_observer.dart';
 import 'core/utils/deep_link_handler.dart';
 import 'features/auth/presentation/controllers/auth_state_controller.dart';
 import 'features/chat/infrastructure/services/tencent_im/tencent_im.dart';
+import 'features/payment/application/services/apple_iap_service.dart';
 import 'features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'generated/app_localizations.dart';
 import 'layouts/bottom_nav/bottom_nav.dart';
@@ -215,6 +216,20 @@ Future<void> _initializeBackgroundServices() async {
     }
   });
 
+  // 🍎 Apple IAP - 后台初始化购买监听
+  Future.microtask(() async {
+    if (!Get.isRegistered<AppleIapService>()) {
+      return;
+    }
+
+    try {
+      await Get.find<AppleIapService>().ensureInitialized();
+      log('✅ Apple IAP 初始化完成');
+    } catch (e) {
+      log('⚠️ Apple IAP 初始化失败: $e');
+    }
+  });
+
   // 注意：TencentIMService 已在第一阶段初始化
   // IM 登录会在 UserStateController 监听到认证状态变化时自动执行
 
@@ -237,7 +252,7 @@ class MyApp extends StatelessWidget {
               title: '行途 - GO-NOMADS',
 
               // 国际化配置
-              locale: localeController.locale.value,
+              locale: localeController.uiLocale.value,
               localizationsDelegates: const [
                 AppLocalizations.delegate,
                 GlobalMaterialLocalizations.delegate,

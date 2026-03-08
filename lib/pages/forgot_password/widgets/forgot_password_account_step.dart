@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 步骤1：输入邮箱或手机号 / Step 1: Enter email or phone
@@ -10,6 +11,7 @@ class ForgotPasswordAccountStep extends GetView<ForgotPasswordController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -56,7 +58,7 @@ class ForgotPasswordAccountStep extends GetView<ForgotPasswordController> {
             controller: controller.accountController,
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
-              hintText: '请输入邮箱地址或手机号码',
+              hintText: l10n.email,
               hintStyle: TextStyle(color: AppColors.textTertiary),
               prefixIcon:
                   Icon(Icons.person_outline, color: AppColors.textTertiary),

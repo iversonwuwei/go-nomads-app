@@ -1,4 +1,6 @@
 import 'package:go_nomads_app/controllers/global_map_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -75,10 +77,11 @@ class GlobalMapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('全球地图'),
+        title: Text(l10n.map),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 1,
@@ -117,23 +120,12 @@ class GlobalMapPage extends StatelessWidget {
           Obx(() => controller.isLoading.value
               ? Container(
                   color: Colors.white.withValues(alpha: 0.8),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-                        ),
-                        SizedBox(height: 16.h),
-                        Text(
-                          '加载地图中...',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: const AppLoadingWidget(
+                    fullScreen: true,
+                    title: '加载地图中',
+                    subtitle: 'Loading map...',
+                    icon: Icons.map_rounded,
+                    accentColor: Color(0xFFFF4458),
                   ),
                 )
               : const SizedBox.shrink()),
@@ -162,7 +154,7 @@ class GlobalMapPage extends StatelessWidget {
                         SizedBox(height: 16.h),
                         ElevatedButton(
                           onPressed: controller.retry,
-                          child: const Text('重试'),
+                          child: Text(l10n.retry),
                         ),
                       ],
                     ),

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -13,7 +14,6 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市卡片组件（网格视图）
 class HomeCityCard extends StatelessWidget {
@@ -51,7 +51,7 @@ class HomeCityCard extends StatelessWidget {
             // 背景图片
             _buildBackgroundImage(),
             // 内容层
-            _buildContent(isMobile),
+            _buildContent(isMobile, l10n: l10n),
           ],
         ),
       ),
@@ -124,13 +124,13 @@ class HomeCityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(bool isMobile) {
+  Widget _buildContent(bool isMobile, {required AppLocalizations l10n}) {
     return Stack(
       children: [
         // 顶部信息
         _buildTopRow(isMobile),
         // 底部城市信息
-        _buildBottomInfo(isMobile),
+        _buildBottomInfo(isMobile, l10n: l10n),
       ],
     );
   }
@@ -154,6 +154,7 @@ class HomeCityCard extends StatelessWidget {
   }
 
   Widget _buildModeratorBadge(bool isMobile) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Flexible(
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -175,12 +176,16 @@ class HomeCityCard extends StatelessWidget {
               size: isMobile ? 8 : 10,
             ),
             SizedBox(width: isMobile ? 2 : 4),
-            Text(
-              city.moderatorId != null ? '已指定版主' : '待指定版主',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 8 : 10,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                city.moderatorId != null ? l10n.moderatorAssigned : l10n.moderatorPending,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isMobile ? 8 : 10,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],
@@ -227,7 +232,11 @@ class HomeCityCard extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('📡', style: TextStyle(fontSize: isMobile ? 7 : 10)),
+              Icon(
+                FontAwesomeIcons.wifi,
+                color: Colors.white,
+                size: isMobile ? 7 : 10,
+              ),
               SizedBox(width: isMobile ? 1 : 3),
               Text(
                 city.displayInternetScore.toStringAsFixed(1),
@@ -244,7 +253,7 @@ class HomeCityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomInfo(bool isMobile) {
+  Widget _buildBottomInfo(bool isMobile, {required AppLocalizations l10n}) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -311,7 +320,7 @@ class HomeCityCard extends StatelessWidget {
                 ),
                 SizedBox(width: isMobile ? 3 : 4),
                 Text(
-                  '综合得分',
+                  l10n.overallScore,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: isMobile ? 11 : 12,
@@ -403,6 +412,8 @@ class _GenerateImageButton extends StatelessWidget {
     required this.isMobile,
   });
 
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
+
   Future<void> _generateImages() async {
     final cityController = Get.find<CityStateController>();
 
@@ -410,7 +421,7 @@ class _GenerateImageButton extends StatelessWidget {
 
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
-      AppToast.warning('Please login to generate images', title: 'Login Required');
+      AppToast.warning(_l10n.pleaseLogin, title: _l10n.loginRequired);
       Get.toNamed(AppRoutes.login);
       return;
     }
@@ -430,13 +441,13 @@ class _GenerateImageButton extends StatelessWidget {
     } catch (_) {}
 
     if (!isAdmin && !isCityModerator) {
-      AppToast.warning('Only administrators or city moderators can generate images', title: 'Permission Denied');
+      AppToast.warning(_l10n.dataServicePermissionDenied, title: _l10n.dataServicePermissionDenied);
       return;
     }
 
     AppToast.info(
-      'AI image generation task created for $cityName.\nYou will be notified when complete.',
-      title: 'Task Created',
+      _l10n.dataServiceImageTaskCreated(cityName),
+      title: _l10n.dataServiceTaskCreated,
     );
 
     final result = await cityController.generateCityImages(cityId);
@@ -448,7 +459,7 @@ class _GenerateImageButton extends StatelessWidget {
         log('🖼️ Image generation task created: taskId=$taskId');
       },
       onFailure: (exception) {
-        AppToast.error(exception.message, title: 'Task Creation Failed');
+        AppToast.error(exception.message, title: _l10n.dataServiceTaskCreationFailed);
       },
     );
   }

@@ -1,12 +1,13 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/interest/domain/entities/interest.dart';
 import 'package:go_nomads_app/features/interest/presentation/controllers/interest_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 兴趣爱好选择器组件
 class InterestsSelector extends StatefulWidget {
@@ -86,7 +87,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
       debugPrint('❌ 加载兴趣失败: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      AppToast.error('无法加载兴趣列表，请稍后重试');
+      AppToast.error(AppLocalizations.of(Get.context!)!.cannotLoadInterests);
     }
   }
 
@@ -102,7 +103,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
     } else {
       // 检查是否超过最大选择数
       if (widget.maxSelection > 0 && _selectedInterests.length >= widget.maxSelection) {
-        AppToast.error('最多只能选择 ${widget.maxSelection} 个兴趣');
+        AppToast.error(AppLocalizations.of(Get.context!)!.maxInterestsReached(widget.maxSelection.toString()));
         return;
       }
 
@@ -217,7 +218,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('喜爱程度', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(Get.context!)!.interestLevelTitle, style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 8.h),
                 Wrap(
                   spacing: 8.w,
@@ -242,14 +243,14 @@ class _InterestsSelectorState extends State<InterestsSelector> {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(Get.context!)!.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               Get.back();
               _addInterest(interest, selectedIntensity);
             },
-            child: const Text('确定'),
+            child: Text(AppLocalizations.of(Get.context!)!.confirm),
           ),
         ],
       ),
@@ -260,13 +261,13 @@ class _InterestsSelectorState extends State<InterestsSelector> {
     switch (level) {
       case 'casual':
       case 'low':
-        return '一般';
+        return AppLocalizations.of(Get.context!)!.interestLevelCasual;
       case 'moderate':
       case 'medium':
-        return '喜欢';
+        return AppLocalizations.of(Get.context!)!.interestLevelLike;
       case 'passionate':
       case 'high':
-        return '热爱';
+        return AppLocalizations.of(Get.context!)!.interestLevelPassionate;
       default:
         return level;
     }
@@ -315,7 +316,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
           padding: EdgeInsets.all(16.0.w),
           child: TextField(
             decoration: InputDecoration(
-              hintText: '搜索兴趣爱好...',
+              hintText: AppLocalizations.of(context)!.searchInterests,
               prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -339,7 +340,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               children: [
                 _CategoryChip(
-                  label: '全部',
+                  label: AppLocalizations.of(context)!.allCategories,
                   isSelected: _selectedCategory == null,
                   onTap: () => setState(() => _selectedCategory = null),
                 ),
@@ -370,7 +371,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
                 Row(
                   children: [
                     Text(
-                      '已选择',
+                      AppLocalizations.of(context)!.selected,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16.sp,
@@ -430,7 +431,7 @@ class _InterestsSelectorState extends State<InterestsSelector> {
           child: filteredInterests.isEmpty
               ? Center(
                   child: Text(
-                    _searchQuery.isEmpty ? '暂无兴趣' : '未找到匹配的兴趣',
+                    _searchQuery.isEmpty ? AppLocalizations.of(context)!.noInterests : AppLocalizations.of(context)!.noMatchingInterests,
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                 )
@@ -464,15 +465,16 @@ class _InterestsSelectorState extends State<InterestsSelector> {
   }
 
   String _getCategoryText(String category) {
-    const categoryMap = {
-      'Sports': '运动健身',
-      'Arts': '艺术文化',
-      'Food': '美食烹饪',
-      'Travel': '旅行探险',
-      'Technology': '科技数码',
-      'Reading': '阅读学习',
-      'Music': '音乐娱乐',
-      'Social': '社交公益',
+    final l10n = AppLocalizations.of(Get.context!)!;
+    final categoryMap = {
+      'Sports': l10n.categoryFitness,
+      'Arts': l10n.categoryArtCulture,
+      'Food': l10n.categoryCooking,
+      'Travel': l10n.categoryTravel,
+      'Technology': l10n.categoryTech,
+      'Reading': l10n.categoryReading,
+      'Music': l10n.categoryMusic,
+      'Social': l10n.categorySocial,
     };
     return categoryMap[category] ?? category;
   }
