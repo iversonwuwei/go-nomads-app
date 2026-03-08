@@ -2,13 +2,13 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
 import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
 import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 支付服务 - 处理支付流程
 class PaymentService extends GetxService {
