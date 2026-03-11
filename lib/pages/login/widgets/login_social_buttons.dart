@@ -52,6 +52,25 @@ class _Divider extends StatelessWidget {
 class _ChineseSocialButtons extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
+    if (Platform.isIOS) {
+      return Row(
+        children: [
+          _SocialButton(
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+            icon: FontAwesomeIcons.apple,
+            color: Colors.black,
+            label: 'Apple',
+          ),
+          _SocialButton(
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
+            icon: FontAwesomeIcons.google,
+            color: LoginConstants.googleRed,
+            label: 'Google',
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
         _SocialButton(
@@ -67,14 +86,6 @@ class _ChineseSocialButtons extends GetView<LoginController> {
           color: LoginConstants.qqBlue,
           label: 'QQ',
         ),
-        // Apple 登录仅在 iOS 上显示（Apple Review 要求）
-        if (Platform.isIOS)
-          _SocialButton(
-            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
-            icon: FontAwesomeIcons.apple,
-            color: Colors.black,
-            label: 'Apple',
-          ),
       ],
     );
   }

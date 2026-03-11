@@ -79,6 +79,24 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     return Get.find<AppleIapService>();
   }
 
+  bool _isApplePlanPurchasable(MembershipPlan plan) {
+    if (!_isIosStoreKitPlatform) {
+      return true;
+    }
+
+    final service = _appleIapService;
+    if (service == null) {
+      return false;
+    }
+
+    return service.isStoreAvailable.value &&
+        !service.isLoadingProducts.value &&
+        service.hasProductForPlan(
+          MembershipLevel.fromValue(plan.level),
+          controller.selectedBillingCycle,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -185,6 +203,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                         plan: plan,
                         isCurrentPlan: controller.shouldGreyOutPlan(plan.level),
                         isLoading: isLoading,
+                        isSelectable: _isIosStoreKitPlatform ? _isApplePlanPurchasable(plan) : true,
                         isPopular: isPopular,
                         isMonthly: controller.isMonthlyBilling,
                         customPriceText: _isIosStoreKitPlatform
@@ -193,7 +212,11 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                                 controller.selectedBillingCycle,
                               )
                             : null,
-                        customButtonLabel: _isIosStoreKitPlatform ? 'App Store 购买 / Buy with App Store' : null,
+                        customButtonLabel: _isIosStoreKitPlatform
+                            ? (_isApplePlanPurchasable(plan)
+                                  ? 'App Store 购买 / Buy with App Store'
+                                  : '暂不可购买 / Unavailable')
+                            : null,
                         onSelect: () => _handleUpgrade(context, plan),
                       ),
                     );
@@ -542,6 +565,17 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                       color: Colors.red.shade600,
                     ),
                   ),
+                ] else if (appleIapService != null &&
+                    !appleIapService.isLoadingProducts.value &&
+                    !appleIapService.hasAvailableProducts) ...[
+                  SizedBox(height: 10.h),
+                  Text(
+                    '当前没有可用的 App Store 订阅商品，请先检查 App Store Connect 的订阅配置、协议状态与沙盒可用性。\nNo App Store subscription products are currently available.',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.orange.shade700,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -696,6 +730,13 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     }
 
     if (_isIosStoreKitPlatform) {
+      if (!_isApplePlanPurchasable(plan)) {
+        AppToast.warning(
+          'App Store 商品尚未就绪，请先刷新商品后重试。\nApp Store products are not ready yet. Please refresh and try again.',
+        );
+        return;
+      }
+
       await _processAppleIapPurchase(context, targetLevel);
       return;
     }
@@ -1402,6 +1443,7 @@ class _MembershipPlanCard extends StatelessWidget {
   final MembershipPlan plan;
   final bool isCurrentPlan;
   final bool isLoading;
+  final bool isSelectable;
   final bool isPopular;
   final bool isMonthly;
   final String? customPriceText;
@@ -1412,6 +1454,7 @@ class _MembershipPlanCard extends StatelessWidget {
     required this.plan,
     required this.isCurrentPlan,
     required this.isLoading,
+    this.isSelectable = true,
     this.isPopular = false,
     this.isMonthly = false,
     this.customPriceText,
@@ -1590,9 +1633,9 @@ class _MembershipPlanCard extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: isCurrentPlan || isLoading ? null : onSelect,
+                    onPressed: isCurrentPlan || isLoading || !isSelectable ? null : onSelect,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isCurrentPlan ? Colors.grey.shade300 : planColor,
+                      backgroundColor: isCurrentPlan || !isSelectable ? Colors.grey.shade300 : planColor,
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
@@ -1609,7 +1652,9 @@ class _MembershipPlanCard extends StatelessWidget {
                             ),
                           )
                         : Text(
-                            customButtonLabel ?? (isCurrentPlan ? l10n.currentPlanLabel : l10n.selectPlanLabel),
+                            isCurrentPlan
+                                ? l10n.currentPlanLabel
+                                : (customButtonLabel ?? (isSelectable ? l10n.selectPlanLabel : '暂不可购买')),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 16.sp,

@@ -126,6 +126,10 @@ class AppleIapService extends GetxService {
       products
         ..clear()
         ..addEntries(response.productDetails.map((item) => MapEntry(item.id, item)));
+
+      if (products.isEmpty && errorMessage.value == null) {
+        errorMessage.value = '未加载到任何 App Store 商品，请检查 App Store Connect 配置或稍后重试';
+      }
     } catch (e) {
       errorMessage.value = e.toString();
       log('❌ AppleIapService: 拉取商品失败: $e');
@@ -141,6 +145,12 @@ class AppleIapService extends GetxService {
     }
     return products[mapping.productId];
   }
+
+  bool hasProductForPlan(MembershipLevel level, BillingCycle billingCycle) {
+    return getProductForPlan(level, billingCycle) != null;
+  }
+
+  bool get hasAvailableProducts => products.isNotEmpty;
 
   String? getDisplayPrice(MembershipLevel level, BillingCycle billingCycle) {
     final product = getProductForPlan(level, billingCycle);
