@@ -465,6 +465,11 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
+      final mediaQuery = MediaQuery.of(context);
+      final maxSheetHeight = (mediaQuery.size.height - mediaQuery.viewInsets.bottom - mediaQuery.padding.top - 24.h)
+          .clamp(240.0, mediaQuery.size.height * 0.9)
+          .toDouble();
+
       return StatefulBuilder(
         builder: (context, setSheetState) {
           final selectedPeriod = selectedScope == 'day' ? null : selectedScope;
@@ -478,166 +483,172 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
           };
 
           return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Container(
-              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '重排第${dayItinerary.day}天',
-                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    '当前主题：${dayItinerary.theme}。你可以直接调全天，也可以只改上午、下午或晚上。',
-                    style: TextStyle(fontSize: 12.sp, height: 1.5, color: Colors.grey[700]),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    '当前会重点影响：第${dayItinerary.day}天$selectedScopeLabel。',
-                    style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: const Color(0xFFFF7A57)),
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    '调整范围',
-                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
-                  ),
-                  SizedBox(height: 10.h),
-                  Wrap(
-                    spacing: 8.w,
-                    runSpacing: 8.h,
-                    children: const [
-                      _ReplanScopeUi(key: 'day', label: '全天'),
-                      _ReplanScopeUi(key: 'morning', label: '上午'),
-                      _ReplanScopeUi(key: 'afternoon', label: '下午'),
-                      _ReplanScopeUi(key: 'evening', label: '晚上'),
-                    ]
-                        .where((scope) => availableScopes.contains(scope.key))
-                        .map(
-                          (scope) => _ReplanScopeChip(
-                            scope: scope,
-                            isSelected: selectedScope == scope.key,
-                            onTap: () => setSheetState(() => selectedScope = scope.key),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    '快捷调整',
-                    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
-                  ),
-                  SizedBox(height: 10.h),
-                  Wrap(
-                    spacing: 10.w,
-                    runSpacing: 10.h,
-                    children: presets
-                        .map(
-                          (preset) => _ReplanPresetButton(
-                            width: (1.sw - 58.w) / 2,
-                            preset: _ReplanPresetUi(
-                              key: preset.key,
-                              title: preset.title,
-                              subtitle: preset.subtitle,
-                              icon: preset.icon,
-                            ),
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              controller.replanDayPeriodWithPreset(
-                                dayItinerary,
-                                preset.key,
-                                targetPeriod: selectedPeriod,
-                              );
-                            },
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  if (scopedActivities.isNotEmpty) ...[
-                    SizedBox(height: 16.h),
-                    Text(
-                      '当前命中活动',
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
-                    ),
-                    SizedBox(height: 10.h),
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 8.h,
-                      children: scopedActivities
-                          .take(5)
-                          .map(
-                            (activity) => Container(
-                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFF6EF),
-                                borderRadius: BorderRadius.circular(999.r),
-                                border: Border.all(color: const Color(0xFFFFE0CC)),
-                              ),
-                              child: Text(
-                                '${activity.time} ${activity.name}',
-                                style: TextStyle(
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    if (scopedActivities.length > 5) ...[
+            padding: EdgeInsets.only(bottom: mediaQuery.viewInsets.bottom),
+            child: SafeArea(
+              top: false,
+              child: Container(
+                constraints: BoxConstraints(maxHeight: maxSheetHeight),
+                padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '重排第${dayItinerary.day}天',
+                        style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
                       SizedBox(height: 8.h),
                       Text(
-                        '还有 ${scopedActivities.length - 5} 个活动会被一起考虑。',
-                        style: TextStyle(fontSize: 11.sp, color: Colors.grey[700]),
+                        '当前主题：${dayItinerary.theme}。你可以直接调全天，也可以只改上午、下午或晚上。',
+                        style: TextStyle(fontSize: 12.sp, height: 1.5, color: Colors.grey[700]),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        '当前会重点影响：第${dayItinerary.day}天$selectedScopeLabel。',
+                        style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: const Color(0xFFFF7A57)),
+                      ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        '调整范围',
+                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
+                      ),
+                      SizedBox(height: 10.h),
+                      Wrap(
+                        spacing: 8.w,
+                        runSpacing: 8.h,
+                        children: const [
+                          _ReplanScopeUi(key: 'day', label: '全天'),
+                          _ReplanScopeUi(key: 'morning', label: '上午'),
+                          _ReplanScopeUi(key: 'afternoon', label: '下午'),
+                          _ReplanScopeUi(key: 'evening', label: '晚上'),
+                        ]
+                            .where((scope) => availableScopes.contains(scope.key))
+                            .map(
+                              (scope) => _ReplanScopeChip(
+                                scope: scope,
+                                isSelected: selectedScope == scope.key,
+                                onTap: () => setSheetState(() => selectedScope = scope.key),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        '快捷调整',
+                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
+                      ),
+                      SizedBox(height: 10.h),
+                      Wrap(
+                        spacing: 10.w,
+                        runSpacing: 10.h,
+                        children: presets
+                            .map(
+                              (preset) => _ReplanPresetButton(
+                                width: (1.sw - 58.w) / 2,
+                                preset: _ReplanPresetUi(
+                                  key: preset.key,
+                                  title: preset.title,
+                                  subtitle: preset.subtitle,
+                                  icon: preset.icon,
+                                ),
+                                onTap: () {
+                                  Navigator.of(context).pop();
+                                  controller.replanDayPeriodWithPreset(
+                                    dayItinerary,
+                                    preset.key,
+                                    targetPeriod: selectedPeriod,
+                                  );
+                                },
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      if (scopedActivities.isNotEmpty) ...[
+                        SizedBox(height: 16.h),
+                        Text(
+                          '当前命中活动',
+                          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
+                        ),
+                        SizedBox(height: 10.h),
+                        Wrap(
+                          spacing: 8.w,
+                          runSpacing: 8.h,
+                          children: scopedActivities
+                              .take(5)
+                              .map(
+                                (activity) => Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF6EF),
+                                    borderRadius: BorderRadius.circular(999.r),
+                                    border: Border.all(color: const Color(0xFFFFE0CC)),
+                                  ),
+                                  child: Text(
+                                    '${activity.time} ${activity.name}',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        if (scopedActivities.length > 5) ...[
+                          SizedBox(height: 8.h),
+                          Text(
+                            '还有 ${scopedActivities.length - 5} 个活动会被一起考虑。',
+                            style: TextStyle(fontSize: 11.sp, color: Colors.grey[700]),
+                          ),
+                        ],
+                      ],
+                      SizedBox(height: 16.h),
+                      TextField(
+                        controller: textController,
+                        maxLines: 4,
+                        minLines: 3,
+                        decoration: InputDecoration(
+                          hintText: selectedScope == 'day'
+                              ? '例如：把这一天改成半天办公 + 半天博物馆，晚上安排安静餐厅'
+                              : '例如：把$selectedScopeLabel改成更轻松，减少打卡点并留出咖啡休息时间',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r)),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                            borderSide: const BorderSide(color: Color(0xFFFF4458), width: 1.4),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final prompt = textController.text.trim();
+                            Navigator.of(context).pop();
+                            controller.replanDayPeriodWithPrompt(
+                              dayItinerary,
+                              prompt,
+                              targetPeriod: selectedPeriod,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF4458),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                          ),
+                          child: Text('生成第${dayItinerary.day}天$selectedScopeLabel新版本'),
+                        ),
                       ),
                     ],
-                  ],
-                  SizedBox(height: 16.h),
-                  TextField(
-                    controller: textController,
-                    maxLines: 4,
-                    minLines: 3,
-                    decoration: InputDecoration(
-                      hintText: selectedScope == 'day'
-                          ? '例如：把这一天改成半天办公 + 半天博物馆，晚上安排安静餐厅'
-                          : '例如：把$selectedScopeLabel改成更轻松，减少打卡点并留出咖啡休息时间',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14.r),
-                        borderSide: const BorderSide(color: Color(0xFFFF4458), width: 1.4),
-                      ),
-                    ),
                   ),
-                  SizedBox(height: 16.h),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final prompt = textController.text.trim();
-                        Navigator.of(context).pop();
-                        controller.replanDayPeriodWithPrompt(
-                          dayItinerary,
-                          prompt,
-                          targetPeriod: selectedPeriod,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF4458),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-                      ),
-                      child: Text('生成第${dayItinerary.day}天$selectedScopeLabel新版本'),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           );
@@ -1305,60 +1316,71 @@ class _ReplanActionCard extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
+        final mediaQuery = MediaQuery.of(context);
+        final maxSheetHeight = (mediaQuery.size.height - mediaQuery.viewInsets.bottom - mediaQuery.padding.top - 24.h)
+            .clamp(240.0, mediaQuery.size.height * 0.9)
+            .toDouble();
+
         return Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Container(
-            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '你想怎么改这份路线？',
-                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  '例如：把白天改成工作优先，晚上安排城市夜生活；或者把第三天改成更轻松的节奏。',
-                  style: TextStyle(fontSize: 12.sp, height: 1.5, color: Colors.grey[700]),
-                ),
-                SizedBox(height: 16.h),
-                TextField(
-                  controller: textController,
-                  maxLines: 4,
-                  minLines: 3,
-                  decoration: InputDecoration(
-                    hintText: '输入你的调整要求...',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r)),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                      borderSide: const BorderSide(color: Color(0xFFFF4458), width: 1.4),
+          padding: EdgeInsets.only(bottom: mediaQuery.viewInsets.bottom),
+          child: SafeArea(
+            top: false,
+            child: Container(
+              constraints: BoxConstraints(maxHeight: maxSheetHeight),
+              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '你想怎么改这份路线？',
+                      style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final prompt = textController.text.trim();
-                      Navigator.of(context).pop();
-                      controller.replanWithPrompt(prompt);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF4458),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    SizedBox(height: 8.h),
+                    Text(
+                      '例如：把白天改成工作优先，晚上安排城市夜生活；或者把第三天改成更轻松的节奏。',
+                      style: TextStyle(fontSize: 12.sp, height: 1.5, color: Colors.grey[700]),
                     ),
-                    child: const Text('生成调整后的方案'),
-                  ),
+                    SizedBox(height: 16.h),
+                    TextField(
+                      controller: textController,
+                      maxLines: 4,
+                      minLines: 3,
+                      decoration: InputDecoration(
+                        hintText: '输入你的调整要求...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14.r),
+                          borderSide: const BorderSide(color: Color(0xFFFF4458), width: 1.4),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final prompt = textController.text.trim();
+                          Navigator.of(context).pop();
+                          controller.replanWithPrompt(prompt);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF4458),
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        ),
+                        child: const Text('生成调整后的方案'),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );

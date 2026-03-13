@@ -1,7 +1,7 @@
-import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 
 /// 住宿卡片组件 - 无状态组件
 class TravelPlanAccommodationCard extends StatelessWidget {
@@ -64,14 +64,17 @@ class TravelPlanAccommodationCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(FontAwesomeIcons.locationDot, size: 14.r, color: Colors.grey),
               SizedBox(width: 4.w),
-              Text(
-                accommodation.recommendedArea,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: Colors.grey[600],
+              Expanded(
+                child: Text(
+                  accommodation.recommendedArea,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Colors.grey[600],
+                  ),
                 ),
               ),
             ],
