@@ -7,7 +7,7 @@ import 'package:sqflite/sqflite.dart';
 
 /// 用户本地数据仓储
 /// 协调 SharedPreferences 和 SQLite 的数据存储
-/// 
+///
 /// 架构设计：
 /// - SharedPreferences: 存储 token 和快速访问的轻量级数据（userId, role）
 /// - SQLite: 存储完整的用户资料（支持复杂查询和离线缓存）
@@ -21,8 +21,64 @@ class UserLocalRepository {
   })  : _db = db,
         _tokenStorage = tokenStorage;
 
+  Future<void> _saveUserToSqliteSafely(AuthUser user) async {
+    try {
+      final database = await _db.database;
+      await database.insert(
+        'users',
+        {
+          'id': user.id,
+          'phone': user.phone,
+          'nickname': user.name,
+          'email': user.email,
+          'avatar': user.avatar,
+          'bio': '',
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      log('✅ 用户信息已保存到 SQLite: ${user.id}');
+    } catch (e) {
+      log('⚠️ SQLite 用户缓存保存失败，已降级为 SharedPreferences-only: $e');
+    }
+  }
+
+  Future<void> _updateUserInSqliteSafely(AuthUser user) async {
+    try {
+      final database = await _db.database;
+      await database.update(
+        'users',
+        {
+          'nickname': user.name,
+          'email': user.email,
+          'phone': user.phone,
+          'avatar': user.avatar,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        where: 'id = ?',
+        whereArgs: [user.id],
+      );
+      log('✅ SQLite 用户资料已更新: ${user.id}');
+    } catch (e) {
+      log('⚠️ SQLite 用户资料更新失败，已忽略: $e');
+    }
+  }
+
+  Future<void> _clearUserFromSqliteSafely(String? userId) async {
+    if (userId == null) return;
+
+    try {
+      final database = await _db.database;
+      await database.delete('users', where: 'id = ?', whereArgs: [userId]);
+      log('✅ SQLite 用户数据已清除: $userId');
+    } catch (e) {
+      log('⚠️ SQLite 用户数据清除失败，已忽略: $e');
+    }
+  }
+
   /// 保存用户完整信息（登录/注册时调用）
-  /// 
+  ///
   /// 流程：
   /// 1. 保存 token 到 SharedPreferences（快速访问）
   /// 2. 保存用户详细信息到 SQLite（持久化）
@@ -36,24 +92,10 @@ class UserLocalRepository {
         userRole: user.role,
       );
 
-      // 2. 保存完整用户信息到 SQLite（用于离线缓存和复杂查询）
-      final database = await _db.database;
-      await database.insert(
-        'users',
-        {
-          'id': user.id,
-          'phone': user.phone, // 允许为 null
-          'nickname': user.name,
-          'email': user.email,
-          'avatar': user.avatar, // 允许为 null
-          'bio': '', // 可以扩展
-          'created_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      // 2. 保存完整用户信息到 SQLite（失败不阻塞认证主流程）
+      await _saveUserToSqliteSafely(user);
 
-      log('✅ 用户信息已保存 (SharedPreferences + SQLite): ${user.id}');
+      log('✅ 用户信息已保存 (SharedPreferences + SQLite 可选): ${user.id}');
     } catch (e) {
       log('❌ 保存用户信息失败: $e');
       rethrow;
@@ -91,12 +133,12 @@ class UserLocalRepository {
 
       if (results.isEmpty) {
         log('⚠️ SQLite 中未找到用户: $userId');
-        
+
         // 尝试从 SharedPreferences 恢复基本信息
         final name = await _tokenStorage.getUserName();
         final email = await _tokenStorage.getUserEmail();
         final role = await _tokenStorage.getUserRole();
-        
+
         if (name != null && email != null) {
           return AuthUser(
             id: userId,
@@ -105,7 +147,7 @@ class UserLocalRepository {
             role: role ?? 'user',
           );
         }
-        
+
         return null;
       }
 
@@ -127,19 +169,7 @@ class UserLocalRepository {
   /// 更新用户资料（保存到 SQLite）
   Future<void> updateUserProfile(AuthUser user) async {
     try {
-      final database = await _db.database;
-      await database.update(
-        'users',
-        {
-          'nickname': user.name,
-          'email': user.email,
-          'phone': user.phone, // 允许为 null
-          'avatar': user.avatar, // 允许为 null
-          'updated_at': DateTime.now().toIso8601String(),
-        },
-        where: 'id = ?',
-        whereArgs: [user.id],
-      );
+      await _updateUserInSqliteSafely(user);
 
       // 同步更新 SharedPreferences 中的基本信息
       await _tokenStorage.saveUserInfo(
@@ -162,12 +192,8 @@ class UserLocalRepository {
       // 1. 先获取当前用户ID（在清除 token 之前）
       final userId = await _tokenStorage.getUserId();
 
-      // 2. 清除 SQLite 中的当前用户数据
-      if (userId != null) {
-        final database = await _db.database;
-        await database.delete('users', where: 'id = ?', whereArgs: [userId]);
-        log('✅ SQLite 用户数据已清除: $userId');
-      }
+      // 2. 清除 SQLite 中的当前用户数据（失败不阻塞登出）
+      await _clearUserFromSqliteSafely(userId);
 
       // 3. 清除 SharedPreferences（token + 用户信息）
       await _tokenStorage.clearTokens();
@@ -256,14 +282,16 @@ class UserLocalRepository {
         limit: 20,
       );
 
-      return results.map((row) => AuthUser(
-        id: row['id'] as String,
-        name: row['nickname'] as String? ?? row['email'] as String,
-        email: row['email'] as String,
-        phone: row['phone'] as String?,
-        avatar: row['avatar'] as String?,
-        role: 'user',
-      )).toList();
+      return results
+          .map((row) => AuthUser(
+                id: row['id'] as String,
+                name: row['nickname'] as String? ?? row['email'] as String,
+                email: row['email'] as String,
+                phone: row['phone'] as String?,
+                avatar: row['avatar'] as String?,
+                role: 'user',
+              ))
+          .toList();
     } catch (e) {
       log('❌ 搜索用户失败: $e');
       return [];
