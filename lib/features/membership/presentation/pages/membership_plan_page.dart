@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_plan.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:go_nomads_app/features/payment/application/services/apple_iap_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/unified_payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
-import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart' as payment_entities;
+import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart'
+    as payment_entities;
 import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -66,12 +69,178 @@ extension PaymentMethodExtension on PaymentMethod {
   }
 }
 
+const double _usdToCnyDisplayRate = 7.2;
+
+class _MembershipDisplayCurrency {
+  final String code;
+  final String symbol;
+
+  const _MembershipDisplayCurrency(this.code, this.symbol);
+}
+
+bool _isChineseMembershipLocale(BuildContext context) {
+  return _currentMembershipLanguageCode(context) == 'zh';
+}
+
+String _currentMembershipLanguageCode(BuildContext context) {
+  if (Get.isRegistered<LocaleController>()) {
+    return Get.find<LocaleController>()
+        .uiLocale
+        .value
+        .languageCode
+        .toLowerCase();
+  }
+
+  return Localizations.localeOf(context).languageCode.toLowerCase();
+}
+
+_MembershipDisplayCurrency _resolveMembershipDisplayCurrency(
+  BuildContext context, {
+  String? fallbackCurrencyCode,
+}) {
+  final languageCode = _currentMembershipLanguageCode(context);
+  if (languageCode == 'zh') {
+    return const _MembershipDisplayCurrency('CNY', '¥');
+  }
+  if (languageCode == 'en') {
+    return const _MembershipDisplayCurrency('USD', r'$');
+  }
+
+  switch ((fallbackCurrencyCode ?? 'USD').toUpperCase()) {
+    case 'CNY':
+      return const _MembershipDisplayCurrency('CNY', '¥');
+    case 'USD':
+    default:
+      return const _MembershipDisplayCurrency('USD', r'$');
+  }
+}
+
+double _convertMembershipDisplayAmount(
+  double amount, {
+  required String fromCurrencyCode,
+  required String toCurrencyCode,
+}) {
+  final from = fromCurrencyCode.toUpperCase();
+  final to = toCurrencyCode.toUpperCase();
+
+  if (from == to) {
+    return amount;
+  }
+
+  if (from == 'USD' && to == 'CNY') {
+    return amount * _usdToCnyDisplayRate;
+  }
+
+  if (from == 'CNY' && to == 'USD') {
+    return amount / _usdToCnyDisplayRate;
+  }
+
+  return amount;
+}
+
+String _formatMembershipDisplayPrice(
+  BuildContext context,
+  double amount, {
+  required String sourceCurrencyCode,
+  bool withSymbol = true,
+}) {
+  final displayCurrency = _resolveMembershipDisplayCurrency(
+    context,
+    fallbackCurrencyCode: sourceCurrencyCode,
+  );
+  final convertedAmount = _convertMembershipDisplayAmount(
+    amount,
+    fromCurrencyCode: sourceCurrencyCode,
+    toCurrencyCode: displayCurrency.code,
+  );
+  final formattedAmount = convertedAmount.toStringAsFixed(0);
+
+  if (!withSymbol) {
+    return formattedAmount;
+  }
+
+  return '${displayCurrency.symbol}$formattedAmount';
+}
+
+String _buildAppleMembershipDisplayPrice(
+  BuildContext context,
+  AppleIapService? service,
+  MembershipPlan plan,
+  BillingCycle billingCycle,
+) {
+  final fallbackAmount = billingCycle == BillingCycle.monthly
+      ? plan.priceMonthly
+      : plan.priceYearly;
+
+  if (service == null) {
+    return _formatMembershipDisplayPrice(
+      context,
+      fallbackAmount,
+      sourceCurrencyCode: plan.currency,
+    );
+  }
+
+  final product = service.getProductForPlan(
+    MembershipLevel.fromValue(plan.level),
+    billingCycle,
+  );
+
+  if (product == null) {
+    return _formatMembershipDisplayPrice(
+      context,
+      fallbackAmount,
+      sourceCurrencyCode: plan.currency,
+    );
+  }
+
+  return _formatMembershipDisplayPrice(
+    context,
+    product.rawPrice,
+    sourceCurrencyCode: product.currencyCode,
+  );
+}
+
+String _buildMembershipUpgradeSummary(
+  BuildContext context,
+  MembershipPlan plan,
+  bool isMonthly,
+) {
+  final amount = isMonthly ? plan.priceMonthly : plan.priceYearly;
+  final formattedPrice = _formatMembershipDisplayPrice(
+    context,
+    amount,
+    sourceCurrencyCode: plan.currency,
+  );
+
+  if (_isChineseMembershipLocale(context)) {
+    return '升级到 ${plan.name} - $formattedPrice';
+  }
+
+  return 'Upgrade to ${plan.name} - $formattedPrice';
+}
+
+String _buildMembershipSavingsLabel(BuildContext context, MembershipPlan plan) {
+  final amount = plan.priceMonthly * 12 - plan.priceYearly;
+  final formattedPrice = _formatMembershipDisplayPrice(
+    context,
+    amount,
+    sourceCurrencyCode: plan.currency,
+  );
+
+  if (_isChineseMembershipLocale(context)) {
+    return '省 $formattedPrice';
+  }
+
+  return 'Save $formattedPrice';
+}
+
 /// 会员计划页面
 /// 使用 GetView 模式，符合 GetX 标准
 class MembershipPlanPage extends GetView<MembershipStateController> {
   const MembershipPlanPage({super.key});
 
-  bool get _isIosStoreKitPlatform => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+  bool get _isIosStoreKitPlatform =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   AppleIapService? get _appleIapService {
     if (!Get.isRegistered<AppleIapService>()) {
@@ -161,12 +330,15 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 switchOutCurve: Curves.easeInOut,
                 transitionBuilder: (Widget child, Animation<double> animation) {
                   // 根据当前切换方向决定滑入/滑出方向
-                  final isIncoming = child.key == ValueKey<bool>(controller.isMonthlyBilling);
+                  final isIncoming =
+                      child.key == ValueKey<bool>(controller.isMonthlyBilling);
                   final isGoingToMonthly = controller.isMonthlyBilling;
 
                   // 切换到月度 → 新内容从左滑入，旧内容向右滑出
                   // 切换到年度 → 新内容从右滑入，旧内容向左滑出
-                  final beginX = isIncoming ? (isGoingToMonthly ? -0.15 : 0.15) : (isGoingToMonthly ? 0.15 : -0.15);
+                  final beginX = isIncoming
+                      ? (isGoingToMonthly ? -0.15 : 0.15)
+                      : (isGoingToMonthly ? 0.15 : -0.15);
 
                   return FadeTransition(
                     opacity: animation,
@@ -199,17 +371,22 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     final isPopular = plan.level == 2; // Pro 计划标记为热门
 
                     return Padding(
-                      padding: EdgeInsets.only(bottom: index < paidPlans.length - 1 ? 16 : 0),
+                      padding: EdgeInsets.only(
+                          bottom: index < paidPlans.length - 1 ? 16 : 0),
                       child: _MembershipPlanCard(
                         plan: plan,
                         isCurrentPlan: controller.shouldGreyOutPlan(plan.level),
                         isLoading: isLoading,
-                        isSelectable: _isIosStoreKitPlatform ? _isApplePlanPurchasable(plan) : true,
+                        isSelectable: _isIosStoreKitPlatform
+                            ? _isApplePlanPurchasable(plan)
+                            : true,
                         isPopular: isPopular,
                         isMonthly: controller.isMonthlyBilling,
                         customPriceText: _isIosStoreKitPlatform
-                            ? appleIapService?.getDisplayPrice(
-                                MembershipLevel.fromValue(plan.level),
+                            ? _buildAppleMembershipDisplayPrice(
+                                context,
+                                appleIapService,
+                                plan,
                                 controller.selectedBillingCycle,
                               )
                             : null,
@@ -290,7 +467,9 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 ),
                 SizedBox(height: 24.h),
                 ElevatedButton.icon(
-                  onPressed: controller.isLoadingPlans ? null : () => controller.loadPlans(),
+                  onPressed: controller.isLoadingPlans
+                      ? null
+                      : () => controller.loadPlans(),
                   icon: controller.isLoadingPlans
                       ? SizedBox(
                           width: 16.w,
@@ -303,11 +482,13 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                           ),
                         )
                       : Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
-                  label: Text(controller.isLoadingPlans ? l10n.loading : l10n.retry),
+                  label: Text(
+                      controller.isLoadingPlans ? l10n.loading : l10n.retry),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.r),
                     ),
@@ -439,7 +620,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
           children: [
             Row(
               children: [
-                Icon(FontAwesomeIcons.circleInfo, size: 16.r, color: const Color(0xFFEA580C)),
+                Icon(FontAwesomeIcons.circleInfo,
+                    size: 16.r, color: const Color(0xFFEA580C)),
                 SizedBox(width: 8.w),
                 const Expanded(
                   child: Text(
@@ -473,7 +655,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         children: [
           Row(
             children: [
-              Icon(FontAwesomeIcons.shield, size: 16.r, color: Colors.green.shade600),
+              Icon(FontAwesomeIcons.shield,
+                  size: 16.r, color: Colors.green.shade600),
               SizedBox(width: 8.w),
               Text(
                 l10n.securePayment,
@@ -535,7 +718,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                   runSpacing: 10.h,
                   children: [
                     OutlinedButton.icon(
-                      onPressed: appleIapService == null || appleIapService.isLoadingProducts.value
+                      onPressed: appleIapService == null ||
+                              appleIapService.isLoadingProducts.value
                           ? null
                           : _refreshAppleProducts,
                       icon: appleIapService?.isLoadingProducts.value == true
@@ -546,14 +730,18 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                                 size: 14.w,
                                 strokeWidth: 2,
                                 color1: Theme.of(context).colorScheme.primary,
-                                color2: Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
+                                color2: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.45),
                               ),
                             )
                           : Icon(FontAwesomeIcons.arrowsRotate, size: 14.r),
                       label: const Text('刷新商品'),
                     ),
                     OutlinedButton.icon(
-                      onPressed: appleIapService == null || appleIapService.isRestoreInProgress.value
+                      onPressed: appleIapService == null ||
+                              appleIapService.isRestoreInProgress.value
                           ? null
                           : () => _restoreApplePurchases(context),
                       icon: appleIapService?.isRestoreInProgress.value == true
@@ -564,7 +752,10 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                                 size: 14.w,
                                 strokeWidth: 2,
                                 color1: Theme.of(context).colorScheme.primary,
-                                color2: Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
+                                color2: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.45),
                               ),
                             )
                           : Icon(FontAwesomeIcons.clockRotateLeft, size: 14.r),
@@ -629,7 +820,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     }
 
     final latest = restored.last;
-    final success = await _syncMembershipAfterApplePurchase(latest, isRestore: true);
+    final success =
+        await _syncMembershipAfterApplePurchase(latest, isRestore: true);
 
     if (success) {
       AppToast.success('已恢复购买并同步会员状态');
@@ -654,9 +846,13 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     final purchaseDetails = result.purchaseDetails;
     final productId = result.productId;
     final transactionId = purchaseDetails?.purchaseID;
-    final verificationData = purchaseDetails?.verificationData.serverVerificationData;
+    final verificationData =
+        purchaseDetails?.verificationData.serverVerificationData;
 
-    if (productId == null || productId.isEmpty || transactionId == null || transactionId.isEmpty) {
+    if (productId == null ||
+        productId.isEmpty ||
+        transactionId == null ||
+        transactionId.isEmpty) {
       return false;
     }
 
@@ -765,7 +961,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
   }
 
   /// 显示支付方式选择底部弹窗
-  Future<PaymentMethod?> _showPaymentMethodSheet(BuildContext context, MembershipPlan plan) {
+  Future<PaymentMethod?> _showPaymentMethodSheet(
+      BuildContext context, MembershipPlan plan) {
     if (_isIosStoreKitPlatform) {
       AppToast.info('iOS 端会员购买已改为 App Store 应用内购买');
       return Future.value(null);
@@ -808,11 +1005,10 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      l10n.upgradeTo(
-                        plan.name,
-                        controller.isMonthlyBilling
-                            ? plan.priceMonthly.toStringAsFixed(0)
-                            : plan.priceYearly.toStringAsFixed(0),
+                      _buildMembershipUpgradeSummary(
+                        context,
+                        plan,
+                        controller.isMonthlyBilling,
                       ),
                       style: TextStyle(
                         fontSize: 14.sp,
@@ -873,7 +1069,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
   }
 
   /// 构建支付方式选项
-  Widget _buildPaymentMethodTile(BuildContext context, PaymentMethod method, String subtitle) {
+  Widget _buildPaymentMethodTile(
+      BuildContext context, PaymentMethod method, String subtitle) {
     final l10n = AppLocalizations.of(context)!;
     String title;
     switch (method) {
@@ -976,12 +1173,17 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                   SizedBox(height: 4.h),
                   Text(
                     l10n.priceForPlan(
-                      controller.isMonthlyBilling
-                          ? plan.priceMonthly.toStringAsFixed(0)
-                          : plan.priceYearly.toStringAsFixed(0),
+                      _formatMembershipDisplayPrice(
+                        context,
+                        controller.isMonthlyBilling
+                            ? plan.priceMonthly
+                            : plan.priceYearly,
+                        sourceCurrencyCode: plan.currency,
+                      ),
                       plan.name,
                     ),
-                    style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+                    style:
+                        TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -1001,7 +1203,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
 
     try {
       // 判断是升级还是续费
-      final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
+      final isRenewal = controller.membership?.isActive == true &&
+          controller.level.levelValue == plan.level;
 
       // 发起支付
       success = await paymentService.startMembershipPayment(
@@ -1079,13 +1282,18 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    l10n.cnyPriceForPlan(
-                      controller.isMonthlyBilling
-                          ? plan.priceMonthly.toStringAsFixed(0)
-                          : plan.priceYearly.toStringAsFixed(0),
+                    l10n.priceForPlan(
+                      _formatMembershipDisplayPrice(
+                        context,
+                        controller.isMonthlyBilling
+                            ? plan.priceMonthly
+                            : plan.priceYearly,
+                        sourceCurrencyCode: plan.currency,
+                      ),
                       plan.name,
                     ),
-                    style: TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
+                    style:
+                        TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -1101,7 +1309,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     await Future.delayed(const Duration(milliseconds: 100));
 
     try {
-      final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
+      final isRenewal = controller.membership?.isActive == true &&
+          controller.level.levelValue == plan.level;
 
       // 异步调用支付，不等待结果
       unifiedPaymentService
@@ -1176,7 +1385,8 @@ class _BillingCycleToggle extends StatefulWidget {
   State<_BillingCycleToggle> createState() => _BillingCycleToggleState();
 }
 
-class _BillingCycleToggleState extends State<_BillingCycleToggle> with SingleTickerProviderStateMixin {
+class _BillingCycleToggleState extends State<_BillingCycleToggle>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _slideAnimation;
 
@@ -1251,7 +1461,8 @@ class _BillingCycleToggleState extends State<_BillingCycleToggle> with SingleTic
             _isDragging = false;
             final velocity = details.primaryVelocity ?? 0;
             // 根据速度或位置判断最终归位
-            final goToYearly = velocity > 300 || (velocity.abs() < 300 && _dragValue > 0.5);
+            final goToYearly =
+                velocity > 300 || (velocity.abs() < 300 && _dragValue > 0.5);
             final target = goToYearly ? 1.0 : 0.0;
             _currentPosition = _dragValue;
             _animateTo(target);
@@ -1366,7 +1577,9 @@ class AnimatedBuilder extends StatelessWidget {
                         monthlyLabel,
                         style: TextStyle(
                           fontSize: 15.sp,
-                          fontWeight: monthlyActive > 0.5 ? FontWeight.bold : FontWeight.w500,
+                          fontWeight: monthlyActive > 0.5
+                              ? FontWeight.bold
+                              : FontWeight.w500,
                           color: Color.lerp(
                             Colors.grey.shade600,
                             Colors.black87,
@@ -1390,7 +1603,9 @@ class AnimatedBuilder extends StatelessWidget {
                             yearlyLabel,
                             style: TextStyle(
                               fontSize: 15.sp,
-                              fontWeight: yearlyActive > 0.5 ? FontWeight.bold : FontWeight.w500,
+                              fontWeight: yearlyActive > 0.5
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
                               color: Color.lerp(
                                 Colors.grey.shade600,
                                 Colors.black87,
@@ -1401,11 +1616,13 @@ class AnimatedBuilder extends StatelessWidget {
                           // 优惠标签随年付激活程度渐入
                           if (yearlyActive > 0.3)
                             Opacity(
-                              opacity: ((yearlyActive - 0.3) / 0.7).clamp(0.0, 1.0),
+                              opacity:
+                                  ((yearlyActive - 0.3) / 0.7).clamp(0.0, 1.0),
                               child: Padding(
                                 padding: EdgeInsets.only(left: 6.w),
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 6.w, vertical: 2.h),
                                   decoration: BoxDecoration(
                                     color: Colors.green.shade100,
                                     borderRadius: BorderRadius.circular(4.r),
@@ -1477,16 +1694,6 @@ class _MembershipPlanCard extends StatelessWidget {
     required this.onSelect,
   });
 
-  String get currencySymbol {
-    switch (plan.currency.toUpperCase()) {
-      case 'CNY':
-        return '¥';
-      case 'USD':
-      default:
-        return r'$';
-    }
-  }
-
   /// 根据计划等级获取颜色
   Color get planColor {
     switch (plan.level) {
@@ -1556,7 +1763,8 @@ class _MembershipPlanCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Center(
-                        child: Text(planIcon, style: TextStyle(fontSize: 24.sp)),
+                        child:
+                            Text(planIcon, style: TextStyle(fontSize: 24.sp)),
                       ),
                     ),
                     SizedBox(width: 12.w),
@@ -1588,7 +1796,13 @@ class _MembershipPlanCard extends StatelessWidget {
                       children: [
                         Text(
                           customPriceText ??
-                              '$currencySymbol${isMonthly ? plan.priceMonthly.toStringAsFixed(0) : plan.priceYearly.toStringAsFixed(0)}',
+                              _formatMembershipDisplayPrice(
+                                context,
+                                isMonthly
+                                    ? plan.priceMonthly
+                                    : plan.priceYearly,
+                                sourceCurrencyCode: plan.currency,
+                              ),
                           style: TextStyle(
                             fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
@@ -1605,7 +1819,7 @@ class _MembershipPlanCard extends StatelessWidget {
                         if (!isMonthly) ...[
                           SizedBox(height: 2.h),
                           Text(
-                            l10n.saveAmount((plan.priceMonthly * 12 - plan.priceYearly).toStringAsFixed(0)),
+                            _buildMembershipSavingsLabel(context, plan),
                             style: TextStyle(
                               fontSize: 11.sp,
                               fontWeight: FontWeight.w600,
@@ -1649,9 +1863,13 @@ class _MembershipPlanCard extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: isCurrentPlan || isLoading || !isSelectable ? null : onSelect,
+                    onPressed: isCurrentPlan || isLoading || !isSelectable
+                        ? null
+                        : onSelect,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isCurrentPlan || !isSelectable ? Colors.grey.shade300 : planColor,
+                      backgroundColor: isCurrentPlan || !isSelectable
+                          ? Colors.grey.shade300
+                          : planColor,
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
@@ -1672,7 +1890,10 @@ class _MembershipPlanCard extends StatelessWidget {
                         : Text(
                             isCurrentPlan
                                 ? l10n.currentPlanLabel
-                                : (customButtonLabel ?? (isSelectable ? l10n.selectPlanLabel : '暂不可购买')),
+                                : (customButtonLabel ??
+                                    (isSelectable
+                                        ? l10n.selectPlanLabel
+                                        : '暂不可购买')),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 16.sp,
