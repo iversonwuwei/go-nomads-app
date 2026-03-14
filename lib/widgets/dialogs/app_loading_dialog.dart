@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/widgets/double_spin_loader.dart';
 
 /// 通用加载对话框
