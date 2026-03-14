@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:ui';
 
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/core/application/use_case.dart';
 import 'package:go_nomads_app/core/auth/token_manager.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
@@ -11,6 +12,7 @@ import 'package:go_nomads_app/features/auth/application/use_cases/auth_use_cases
 import 'package:go_nomads_app/features/auth/domain/entities/auth_token.dart';
 import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
 import 'package:go_nomads_app/features/auth/domain/repositories/iauth_repository.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
@@ -150,6 +152,7 @@ class AuthStateController extends GetxController {
         if (isAuth) {
           // ✅ 加载并刷新用户信息(会更新本地缓存的角色)
           await _loadCurrentUser();
+          await _syncUserProfilePreferences();
           _autoRefreshToken();
 
           // 加入 SignalR 用户通知组（应用启动时恢复登录状态）
@@ -169,6 +172,20 @@ class AuthStateController extends GetxController {
       onSuccess: (user) => currentUser.value = user,
       onFailure: (_) => currentUser.value = null,
     );
+  }
+
+  Future<void> _syncUserProfilePreferences() async {
+    if (!isAuthenticated.value) return;
+    if (!Get.isRegistered<IUserPreferencesRepository>()) return;
+    if (!Get.isRegistered<LocaleController>()) return;
+
+    try {
+      final preferences = await Get.find<IUserPreferencesRepository>().getCurrentUserPreferences();
+      Get.find<LocaleController>().syncFromPreferences(preferences.language);
+      log('✅ 已按用户 profile 同步启动偏好: language=${preferences.language}');
+    } catch (e) {
+      log('⚠️ 同步用户 profile 偏好失败，继续使用本地/系统设置: $e');
+    }
   }
 
   /// 刷新当前用户信息 (公共方法)
@@ -274,6 +291,7 @@ class AuthStateController extends GetxController {
     try {
       // 加载当前用户（从服务器获取最新信息）
       await _loadCurrentUser();
+      await _syncUserProfilePreferences();
 
       // Token 已经在 AuthRepository.login() 中保存到 SQLite
       // 这里只需要设置 HttpService 的用户ID 和加入 SignalR 组
@@ -430,6 +448,7 @@ class AuthStateController extends GetxController {
     try {
       // 加载当前用户
       await _loadCurrentUser();
+      await _syncUserProfilePreferences();
 
       // 保存到数据库 (如果用户已加载)
       if (currentUser.value != null) {
@@ -561,6 +580,7 @@ class AuthStateController extends GetxController {
       currentToken.value = token;
       currentUser.value = user;
       isAuthenticated.value = true;
+      await _syncUserProfilePreferences();
 
       // 加入 SignalR 用户通知组（不阻塞登录流程）
       try {

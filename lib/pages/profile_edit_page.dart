@@ -23,9 +23,9 @@ import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/services/notification_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/utils/image_upload_helper.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 
 /// 用户资料编辑页面 - 浅色性冷淡风格
@@ -165,6 +165,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
 
     try {
       final preferences = await _preferencesRepository!.getCurrentUserPreferences();
+      final localeController = Get.find<LocaleController>();
       if (mounted) {
         setState(() {
           _notifications = preferences.notificationsEnabled;
@@ -174,6 +175,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
           _currency = preferences.currency;
           _temperatureUnit = preferences.temperatureUnit;
         });
+
+        localeController.syncFromPreferences(preferences.language);
 
         // 同步通知状态到 NotificationService
         if (Get.isRegistered<NotificationService>()) {
@@ -1128,7 +1131,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
             ],
             onChanged: (languageCode) {
               if (languageCode != null) {
-                localeController.changeLocaleUiOnly(languageCode);
+                localeController.changeLocale(languageCode);
               }
             },
           )),
@@ -1493,26 +1496,63 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.profileRolesManagement,
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: isMobile ? 18 : 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Obx(() => Text(
-                    l10n.profileSelectedUsers(_userManagementController!.selectedUserIds.length),
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14.sp,
+          isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.profileRolesManagement,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  )),
-            ],
-          ),
+                    SizedBox(height: 6.h),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Obx(() => Text(
+                            l10n.profileSelectedUsers(_userManagementController!.selectedUserIds.length),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14.sp,
+                            ),
+                          )),
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.profileRolesManagement,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Flexible(
+                      child: Obx(() => Text(
+                            l10n.profileSelectedUsers(_userManagementController!.selectedUserIds.length),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14.sp,
+                            ),
+                          )),
+                    ),
+                  ],
+                ),
           SizedBox(height: 16.h),
 
           // 角色加载状态提示
@@ -2108,10 +2148,9 @@ class _SkillsBottomSheetState extends State<_SkillsBottomSheet> {
 
               // 技能列表
               Expanded(
-                child:
-                    _isLoading
-                        ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: false)
-                        : _buildSkillsList(scrollController),
+                child: _isLoading
+                    ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: false)
+                    : _buildSkillsList(scrollController),
               ),
 
               // 底部按钮
@@ -2525,7 +2564,7 @@ class _InterestsBottomSheetState extends State<_InterestsBottomSheet> {
               // 兴趣列表
               Expanded(
                 child: _isLoading
-                  ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: false)
+                    ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: false)
                     : _buildInterestsList(scrollController),
               ),
 
