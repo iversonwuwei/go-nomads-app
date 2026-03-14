@@ -134,7 +134,7 @@ class ApiConfig {
   }
 
   /// 生产环境基础 URL
-  static String get productionUrl => 'http://$productionHost';
+  static String get productionUrl => 'https://$productionHost';
 
   /// 开发环境基础 URL
   static String get developmentUrl => 'http://$developmentHost:$gatewayPort';

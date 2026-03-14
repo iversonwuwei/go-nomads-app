@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/double_spin_loader.dart';
 
 /// 通用加载对话框
 ///
@@ -41,34 +42,24 @@ class AppLoadingDialog {
       PopScope(
         canPop: barrierDismissible,
         child: Center(
-          child: Container(
-            padding: EdgeInsets.all(24.w),
-            margin: EdgeInsets.symmetric(horizontal: 40.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20.r,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40.w),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(
-                  color: indicatorColor ?? AppColors.cityPrimary,
-                  strokeWidth: 3.w,
+                DoubleSpinLoader(
+                  size: 42.w,
+                  color1: indicatorColor ?? AppColors.cityPrimary,
+                  color2: const Color(0xFF4ECDC4),
+                  trackColor: Colors.white.withValues(alpha: 0.14),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: 18.h),
                 Text(
                   title,
                   style: TextStyle(
                     fontSize: 16.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                     decoration: TextDecoration.none,
                   ),
                   textAlign: TextAlign.center,
@@ -78,8 +69,8 @@ class AppLoadingDialog {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.grey.shade600,
+                      fontSize: 13.5.sp,
+                      color: Colors.white.withValues(alpha: 0.74),
                       decoration: TextDecoration.none,
                     ),
                     textAlign: TextAlign.center,
@@ -110,8 +101,11 @@ class AppLoadingDialog {
       PopScope(
         canPop: barrierDismissible,
         child: Center(
-          child: CircularProgressIndicator(
-            color: indicatorColor ?? AppColors.cityPrimary,
+          child: DoubleSpinLoader(
+            size: 44.w,
+            color1: indicatorColor ?? AppColors.cityPrimary,
+            color2: const Color(0xFF4ECDC4),
+            trackColor: Colors.white.withValues(alpha: 0.14),
           ),
         ),
       ),

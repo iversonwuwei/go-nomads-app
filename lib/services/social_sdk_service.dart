@@ -15,7 +15,7 @@ class SocialSdkService {
 
   /// QQ 互联 App ID
   static const String qqAppId = '102822014';
-  static const String qqUniversalLink = 'https://go-nomads.com/universal_link/gonomads/qq_conn/102822014/';
+  static const String qqUniversalLink = 'https://go-nomads.com/qq_conn/102822014/';
 
   /// 微博 AppKey 和 UniversalLink（从微博开放平台获取）
   static const String weiboAppKey = 'YOUR_WEIBO_APP_KEY';

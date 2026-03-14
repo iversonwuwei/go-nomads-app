@@ -52,20 +52,21 @@ class _Divider extends StatelessWidget {
 class _ChineseSocialButtons extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
-    if (Platform.isIOS) {
+    if (!Platform.isIOS) {
       return Row(
         children: [
           _SocialButton(
-            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
-            icon: FontAwesomeIcons.apple,
-            color: Colors.black,
-            label: 'Apple',
+            onPressed: () =>
+                controller.handleSocialLogin(SocialLoginType.wechat, AppLocalizations.of(Get.context!)!.wechat),
+            icon: FontAwesomeIcons.weixin,
+            color: LoginConstants.wechatGreen,
+            label: AppLocalizations.of(Get.context!)!.wechat,
           ),
           _SocialButton(
-            onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
-            icon: FontAwesomeIcons.google,
-            color: LoginConstants.googleRed,
-            label: 'Google',
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
+            icon: FontAwesomeIcons.qq,
+            color: LoginConstants.qqBlue,
+            label: 'QQ',
           ),
         ],
       );
@@ -73,6 +74,18 @@ class _ChineseSocialButtons extends GetView<LoginController> {
 
     return Row(
       children: [
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+          icon: FontAwesomeIcons.apple,
+          color: Colors.black,
+          label: 'Apple',
+        ),
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
+          icon: FontAwesomeIcons.google,
+          color: LoginConstants.googleRed,
+          label: 'Google',
+        ),
         _SocialButton(
           onPressed: () =>
               controller.handleSocialLogin(SocialLoginType.wechat, AppLocalizations.of(Get.context!)!.wechat),
@@ -104,7 +117,7 @@ class _InternationalSocialButtons extends GetView<LoginController> {
           color: LoginConstants.googleRed,
           label: 'Google',
         ),
-        // Apple 登录仅在 iOS 上显示（Apple Review 要求）
+        // Apple 登录仅在 iOS 上显示
         if (Platform.isIOS)
           _SocialButton(
             onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),

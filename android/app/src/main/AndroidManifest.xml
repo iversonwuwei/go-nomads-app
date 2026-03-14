@@ -235,8 +235,15 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-<data android:scheme="gonomads" android:host="douyin-callback" />
-
+                <data android:scheme="gonomads" android:host="douyin-callback" />
+            </intent-filter>
+            
+            <!-- Twitter OAuth 回调 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="gonomads" android:host="twitter-callback" />
             </intent-filter>
         </activity>
         

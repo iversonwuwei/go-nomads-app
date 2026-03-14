@@ -100,10 +100,6 @@ class SocialLoginService {
   /// 返回授权码 (code)，需要后端换取 access_token
   Future<SocialLoginResult> loginWithWechat() async {
     try {
-      if (Platform.isIOS) {
-        return const SocialLoginResult.failure('IOS_EXTERNAL_LOGIN_DISABLED');
-      }
-
       // 检查微信是否已安装
       final isInstalled = await isWechatInstalled();
       if (!isInstalled) {
@@ -229,10 +225,6 @@ class SocialLoginService {
   /// SDK 会自动唤起 QQ App 进行授权，返回 accessToken + openId
   Future<SocialLoginResult> loginWithQQ() async {
     try {
-      if (Platform.isIOS) {
-        return const SocialLoginResult.failure('IOS_EXTERNAL_LOGIN_DISABLED');
-      }
-
       log('📱 [SocialLogin] 开始 QQ 登录 (SDK)...');
 
       // 检查 QQ 是否已安装
@@ -352,10 +344,8 @@ class SocialLoginService {
       // 拼接用户名（Apple 仅在首次授权时返回姓名）
       String? displayName;
       if (credential.givenName != null || credential.familyName != null) {
-        displayName = [credential.familyName, credential.givenName]
-            .where((s) => s != null && s.isNotEmpty)
-            .join(' ')
-            .trim();
+        displayName =
+            [credential.familyName, credential.givenName].where((s) => s != null && s.isNotEmpty).join(' ').trim();
         if (displayName.isEmpty) displayName = null;
       }
 

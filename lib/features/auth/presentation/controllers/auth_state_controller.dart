@@ -365,10 +365,6 @@ class AuthStateController extends GetxController {
         if (sdkResult.isCancelled) {
           // 用户取消授权，使用普通提示
           AppToast.info(l10n.userCancelledAuth);
-        } else if (sdkResult.errorMessage == 'IOS_EXTERNAL_LOGIN_DISABLED') {
-          AppToast.info(
-            'iOS 端已移除依赖外部 App 的微信/QQ 登录，请使用 Apple、Google、邮箱或手机号登录。\nOn iOS, WeChat and QQ login are disabled. Please use Apple, Google, email, or phone login instead.',
-          );
         } else if (sdkResult.errorMessage == 'WECHAT_NOT_INSTALLED') {
           // 微信未安装，提示用户安装
           AppToast.warning(l10n.wechatNotInstalled, title: l10n.wechatNotDetected);

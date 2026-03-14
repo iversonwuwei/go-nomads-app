@@ -19,6 +19,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/double_spin_loader.dart';
 
 /// 支付方式枚举
 enum PaymentMethod {
@@ -214,8 +215,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                             : null,
                         customButtonLabel: _isIosStoreKitPlatform
                             ? (_isApplePlanPurchasable(plan)
-                                  ? 'App Store 购买 / Buy with App Store'
-                                  : '暂不可购买 / Unavailable')
+                                ? 'App Store 购买 / Buy with App Store'
+                                : '暂不可购买 / Unavailable')
                             : null,
                         onSelect: () => _handleUpgrade(context, plan),
                       ),
@@ -294,7 +295,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                       ? SizedBox(
                           width: 16.w,
                           height: 16.h,
-                          child: CircularProgressIndicator(strokeWidth: 2.r, color: Colors.white),
+                          child: DoubleSpinLoader(
+                            size: 16.w,
+                            strokeWidth: 2.2,
+                            color1: Colors.white,
+                            color2: Colors.white.withValues(alpha: 0.45),
+                          ),
                         )
                       : Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
                   label: Text(controller.isLoadingPlans ? l10n.loading : l10n.retry),
@@ -536,7 +542,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                           ? SizedBox(
                               width: 14.w,
                               height: 14.h,
-                              child: CircularProgressIndicator(strokeWidth: 2.r),
+                              child: DoubleSpinLoader(
+                                size: 14.w,
+                                strokeWidth: 2,
+                                color1: Theme.of(context).colorScheme.primary,
+                                color2: Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
+                              ),
                             )
                           : Icon(FontAwesomeIcons.arrowsRotate, size: 14.r),
                       label: const Text('刷新商品'),
@@ -549,7 +560,12 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                           ? SizedBox(
                               width: 14.w,
                               height: 14.h,
-                              child: CircularProgressIndicator(strokeWidth: 2.r),
+                              child: DoubleSpinLoader(
+                                size: 14.w,
+                                strokeWidth: 2,
+                                color1: Theme.of(context).colorScheme.primary,
+                                color2: Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
+                              ),
                             )
                           : Icon(FontAwesomeIcons.clockRotateLeft, size: 14.r),
                       label: const Text('恢复购买'),
@@ -707,7 +723,6 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
   }
 
   void _handleUpgrade(BuildContext context, MembershipPlan plan) async {
-
     final targetLevel = MembershipLevel.fromValue(plan.level);
     final l10n = AppLocalizations.of(context)!;
 
@@ -947,7 +962,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       AlertDialog(
         content: Row(
           children: [
-            const CircularProgressIndicator(),
+            const DoubleSpinLoader(size: 24, strokeWidth: 2.4),
             SizedBox(width: 16.w),
             Expanded(
               child: Column(
@@ -1051,7 +1066,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       AlertDialog(
         content: Row(
           children: [
-            const CircularProgressIndicator(),
+            const DoubleSpinLoader(size: 24, strokeWidth: 2.4),
             SizedBox(width: 16.w),
             Expanded(
               child: Column(
@@ -1572,7 +1587,8 @@ class _MembershipPlanCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          customPriceText ?? '$currencySymbol${isMonthly ? plan.priceMonthly.toStringAsFixed(0) : plan.priceYearly.toStringAsFixed(0)}',
+                          customPriceText ??
+                              '$currencySymbol${isMonthly ? plan.priceMonthly.toStringAsFixed(0) : plan.priceYearly.toStringAsFixed(0)}',
                           style: TextStyle(
                             fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
@@ -1646,9 +1662,11 @@ class _MembershipPlanCard extends StatelessWidget {
                         ? SizedBox(
                             width: 20.w,
                             height: 20.h,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.r,
-                              color: Colors.white,
+                            child: DoubleSpinLoader(
+                              size: 20.w,
+                              strokeWidth: 2.2,
+                              color1: Colors.white,
+                              color2: Colors.white.withValues(alpha: 0.45),
                             ),
                           )
                         : Text(
