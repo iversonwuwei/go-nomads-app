@@ -1,9 +1,9 @@
 import 'dart:ui';
 
-import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
 
 /// 导航栏项目数据模型
 class NavBarItem {
@@ -35,13 +35,14 @@ class ModernBottomNavBar extends GetView<BottomNavController> {
     // 根据屏幕宽度计算响应式尺寸
     // 基准: 390px (iPhone 14 标准尺寸)
     final scaleFactor = (screenWidth / 390).clamp(0.85, 1.3);
+    final isCompact = items.length >= 6;
 
     // 紧凑的导航栏尺寸
-    final iconSize = (30 * scaleFactor).clamp(28.0, 34.0);
-    final navBarHeight = (48 * scaleFactor).clamp(42.0, 54.0);
-    final indicatorSize = (44 * scaleFactor).clamp(40.0, 50.0);
+    final iconSize = ((isCompact ? 25 : 30) * scaleFactor).clamp(22.0, 34.0);
+    final navBarHeight = ((isCompact ? 44 : 48) * scaleFactor).clamp(40.0, 54.0);
+    final indicatorSize = ((isCompact ? 36 : 44) * scaleFactor).clamp(34.0, 50.0);
     final borderRadius = (36 * scaleFactor).clamp(30.0, 40.0);
-    final horizontalMargin = (14 * scaleFactor).clamp(10.0, 18.0);
+    final horizontalMargin = ((isCompact ? 10 : 14) * scaleFactor).clamp(8.0, 18.0);
     final bottomMargin = (18 * scaleFactor).clamp(12.0, 22.0);
 
     return Obx(() {
@@ -60,8 +61,8 @@ class ModernBottomNavBar extends GetView<BottomNavController> {
             badge: controller.imUnreadCount.value,
           );
         }
-        // 通知页面（索引3）显示通知未读数量
-        if (index == 3) {
+        // 通知页面（索引4）显示通知未读数量
+        if (index == 4) {
           return NavBarItem(
             icon: item.icon,
             label: item.label,
@@ -127,6 +128,7 @@ class ModernBottomNavBar extends GetView<BottomNavController> {
                           navBarHeight: navBarHeight,
                           indicatorSize: indicatorSize,
                           scaleFactor: scaleFactor,
+                          isCompact: isCompact,
                         ),
                       );
                     }),
@@ -150,6 +152,7 @@ class _NavBarItemWidget extends StatelessWidget {
   final double navBarHeight;
   final double indicatorSize;
   final double scaleFactor;
+  final bool isCompact;
 
   const _NavBarItemWidget({
     required this.item,
@@ -159,10 +162,19 @@ class _NavBarItemWidget extends StatelessWidget {
     required this.navBarHeight,
     required this.indicatorSize,
     required this.scaleFactor,
+    required this.isCompact,
   });
 
   @override
   Widget build(BuildContext context) {
+    final badgeText = item.badge > 99 ? '99+' : '${item.badge}';
+    final hasWideBadge = badgeText.length > 1;
+    final badgeHeight = ((isCompact ? 15 : 17) * scaleFactor).clamp(14.0, 19.0);
+    final badgeMinWidth = hasWideBadge ? ((isCompact ? 22 : 24) * scaleFactor).clamp(20.0, 28.0) : badgeHeight;
+    final badgeHorizontalPadding = ((isCompact ? 4 : 5) * scaleFactor).clamp(3.0, 6.0);
+    final badgeBorderWidth = ((isCompact ? 1.2 : 1.5) * scaleFactor).clamp(1.0, 1.6);
+    final badgeOffset = ((isCompact ? 3.5 : 6) * scaleFactor).clamp(3.0, 7.0);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -193,28 +205,31 @@ class _NavBarItemWidget extends StatelessWidget {
                 ),
                 if (item.badge > 0)
                   Positioned(
-                    right: -6,
-                    top: -6,
+                    right: -badgeOffset,
+                    top: -badgeOffset,
                     child: Container(
-                      padding: EdgeInsets.all(4.w),
+                      height: badgeHeight,
+                      padding: EdgeInsets.symmetric(horizontal: badgeHorizontalPadding),
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF4458),
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(badgeHeight / 2),
                         border: Border.all(
                           color: Colors.white,
-                          width: 1.5,
+                          width: badgeBorderWidth,
                         ),
                       ),
                       constraints: BoxConstraints(
-                        minWidth: 18.w,
-                        minHeight: 18.h,
+                        minWidth: badgeMinWidth,
+                        minHeight: badgeHeight,
                       ),
                       child: Text(
-                        item.badge > 99 ? '99+' : '${item.badge}',
+                        badgeText,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.bold,
+                          fontSize: ((isCompact ? 8.5 : 9.5) * scaleFactor).clamp(8.0, 10.5),
+                          fontWeight: FontWeight.w700,
+                          height: 1,
                         ),
                         textAlign: TextAlign.center,
                       ),

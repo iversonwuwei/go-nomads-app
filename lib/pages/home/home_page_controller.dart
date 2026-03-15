@@ -17,7 +17,6 @@ import 'package:go_nomads_app/features/user/presentation/controllers/user_state_
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
-import 'package:go_nomads_app/services/search_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -28,8 +27,6 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   // ==================== 依赖注入 ====================
   final ICityRepository _cityRepository = Get.find<ICityRepository>();
   final IMeetupRepository _meetupRepository = Get.find<IMeetupRepository>();
-  // 🔍 搜索服务 - 通过 Elasticsearch 提供高效搜索
-  final SearchService _searchService = Get.find<SearchService>();
 
   // 延迟获取的控制器
   CityStateController get cityController => Get.find<CityStateController>();
@@ -40,24 +37,17 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
   // ==================== UI 控制器 ====================
   final ScrollController scrollController = ScrollController();
-  final TextEditingController searchController = TextEditingController();
   final GlobalKey citiesListKey = GlobalKey();
 
   // ==================== 路由监听 ====================
   PageRoute<dynamic>? _currentRoute;
 
   // ==================== 响应式状态 ====================
-  /// 本地搜索关键词
-  final localSearchQuery = ''.obs;
-
   /// 本地城市列表（独立于全局 CityStateController）
   final localCities = <City>[].obs;
 
   /// 是否正在加载城市数据
   final isLoadingLocalCities = true.obs;
-
-  /// 是否正在进行本地搜索
-  final isLocalSearching = false.obs;
 
   /// 是否已滚动到城市列表
   final hasScrolled = false.obs;
@@ -485,8 +475,6 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   Future<void> onRouteResume() async {
     log('🔄 HomePageController: 从其他页面返回，刷新所有列表');
 
-    clearSearchOnReturn();
-
     // ⭐ 每次返回首页都刷新所有列表数据
     // 虽然 SignalR 已处理实时推送，但用户可能在其他页面做了操作（如创建/编辑 meetup），
     // 返回首页时应确保数据为最新
@@ -507,9 +495,6 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     isRefreshing.value = true;
 
     try {
-      // 清除搜索状态
-      clearSearchOnReturn();
-
       // 并行刷新城市和 meetup 数据
       await Future.wait([
         loadHomeCities(),
@@ -569,110 +554,6 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
       _debugHomeMeetups('trigger background refresh due to stale cache');
       unawaited(loadHomeMeetups(forceRefresh: true));
     }
-  }
-
-  // ==================== 搜索功能 ====================
-  /// 执行城市搜索（使用 Elasticsearch SearchService）
-  Future<void> performSearch(String query) async {
-    log('🔍 [首页] 开始使用 Elasticsearch 搜索城市: $query');
-
-    localSearchQuery.value = query;
-    isLocalSearching.value = true;
-
-    // 🔍 使用 SearchService 进行 Elasticsearch 搜索
-    final searchResult = await _searchService.searchCities(
-      query: query,
-      pageSize: 20,
-    );
-
-    searchResult.fold(
-      onSuccess: (data) {
-        // 将 CitySearchDocument 转换为 City 对象
-        final cities = data.items.map((item) => _convertSearchDocToCity(item.document)).toList();
-        localCities.assignAll(cities);
-        log('✅ [首页] Elasticsearch 搜索成功: ${cities.length} 个城市 (共 ${data.totalCount} 个)');
-        AppToast.success(
-          _l10n.dataServiceFoundCities(cities.length),
-          title: _l10n.search,
-        );
-      },
-      onFailure: (exception) {
-        log('⚠️ [首页] Elasticsearch 搜索失败，回退到传统搜索: ${exception.message}');
-        // 搜索失败时回退到传统方式
-        _fallbackSearch(query);
-      },
-    );
-  }
-
-  /// 将 CitySearchDocument 转换为 City 对象
-  City _convertSearchDocToCity(CitySearchDocument doc) {
-    return City(
-      id: doc.id,
-      name: doc.name,
-      nameEn: doc.nameEn,
-      country: doc.country,
-      region: doc.region,
-      description: doc.description,
-      latitude: doc.latitude,
-      longitude: doc.longitude,
-      imageUrl: doc.imageUrl,
-      portraitImageUrl: doc.portraitImageUrl,
-      timezone: doc.timeZone,
-      currency: doc.currency,
-      overallScore: doc.overallScore,
-      internetScore: doc.internetQualityScore,
-      safetyScore: doc.safetyScore,
-      costScore: doc.costScore,
-      communityScore: doc.communityScore,
-      weatherScore: doc.weatherScore,
-      tags: doc.tags,
-      // 扩展字段 - 从 ES 同步
-      averageCost: doc.averageCost,
-      meetupCount: doc.meetupCount,
-      coworkingCount: doc.coworkingCount,
-      reviewCount: doc.reviewCount,
-      moderatorId: doc.moderatorId,
-    );
-  }
-
-  /// Elasticsearch 搜索失败时的回退方案
-  Future<void> _fallbackSearch(String query) async {
-    // 使用 Repository 直接搜索
-    final result = await _cityRepository.searchCities(name: query, pageSize: 20);
-
-    result.fold(
-      onSuccess: (data) {
-        localCities.assignAll(data);
-        AppToast.success(
-          _l10n.dataServiceFoundCities(data.length),
-          title: _l10n.search,
-        );
-      },
-      onFailure: (exception) {
-        AppToast.error(exception.message, title: _l10n.dataServiceSearchFailed);
-      },
-    );
-  }
-
-  /// 清除搜索（仅清除本页面的搜索状态）
-  Future<void> clearSearch() async {
-    searchController.clear();
-    log('🧹 [首页] 清除搜索，重新加载全部城市');
-
-    localSearchQuery.value = '';
-    isLocalSearching.value = false;
-
-    // 重新加载全部城市到本地
-    await loadHomeCities();
-  }
-
-  /// 清除搜索状态（从 detail 页面返回时调用）
-  void clearSearchOnReturn() {
-    log('🔍 HomePageController: 清除搜索状态，当前 localSearchQuery=${localSearchQuery.value}');
-    localSearchQuery.value = '';
-    isLocalSearching.value = false;
-    searchController.clear();
-    log('🔍 HomePageController: 本地搜索状态已清除');
   }
 
   // ==================== 登录验证 ====================

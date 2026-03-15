@@ -19,7 +19,9 @@ import 'package:intl/intl.dart';
 /// AI Chat 页面
 /// 使用 GetView 模式，自动获取 AiChatController
 class AiChatPage extends GetView<AiChatController> {
-  const AiChatPage({super.key});
+  final bool embeddedInBottomNav;
+
+  const AiChatPage({super.key, this.embeddedInBottomNav = false});
 
   @override
   Widget build(BuildContext context) {
@@ -49,13 +51,14 @@ class AiChatPage extends GetView<AiChatController> {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: Colors.white,
       elevation: 0.6,
       title: Text(
         l10n.aiChatDefaultConversationTitle,
         style: TextStyle(fontWeight: FontWeight.w700),
       ),
-      leading: const AppBackButton(),
+      leading: embeddedInBottomNav ? null : const AppBackButton(),
       actions: [
         IconButton(
           tooltip: l10n.aiChatHistoryTooltip,

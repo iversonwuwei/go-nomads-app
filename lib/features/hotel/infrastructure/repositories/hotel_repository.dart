@@ -10,17 +10,71 @@ import 'package:go_nomads_app/services/http_service.dart';
 /// 对接后端 AccommodationService API
 class HotelRepository implements IHotelRepository {
   final HttpService _httpService;
+  final Map<String, Hotel> _hotelCache = <String, Hotel>{};
+  String _lastExternalDataStatus = 'not_requested';
+  bool _lastPartialExternalData = false;
+  String? _lastExternalDataMessage;
 
   /// API 基础路径（通过 Gateway 路由到 AccommodationService）
   static const String _basePath = '/hotels';
 
   HotelRepository(this._httpService);
 
+  String get lastExternalDataStatus => _lastExternalDataStatus;
+  bool get lastPartialExternalData => _lastPartialExternalData;
+  String? get lastExternalDataMessage => _lastExternalDataMessage;
+
+  Future<Result<List<Hotel>>> getHotelsForDiscovery({
+    String? cityId,
+    String? cityName,
+    String? countryName,
+    double? latitude,
+    double? longitude,
+    DateTime? checkInDate,
+    int? stayNights,
+    int? adultCount,
+    int? roomCount,
+    String? search,
+  }) async {
+    final result = await getHotels(
+      cityId: cityId,
+      cityName: cityName,
+      countryName: countryName,
+      latitude: latitude,
+      longitude: longitude,
+      checkInDate: checkInDate,
+      stayNights: stayNights,
+      adultCount: adultCount,
+      roomCount: roomCount,
+      search: search,
+    );
+
+    result.onSuccess((hotels) {
+      for (final hotel in hotels) {
+        _hotelCache[hotel.id] = hotel;
+      }
+    });
+
+    if (result is Success<List<Hotel>>) {
+      log('🏨 [HotelRepository] 服务端返回 ${result.data.length} 个酒店');
+    }
+
+    return result;
+  }
+
   @override
   Future<Result<List<Hotel>>> getHotels({
     int page = 1,
     int pageSize = 20,
     String? cityId,
+    String? cityName,
+    String? countryName,
+    double? latitude,
+    double? longitude,
+    DateTime? checkInDate,
+    int? stayNights,
+    int? adultCount,
+    int? roomCount,
     String? search,
     bool? hasWifi,
     bool? hasCoworkingSpace,
@@ -34,40 +88,94 @@ class HotelRepository implements IHotelRepository {
         'pageSize': pageSize.toString(),
       };
       if (cityId != null) queryParams['cityId'] = cityId;
+      if (cityName != null && cityName.isNotEmpty) {
+        queryParams['cityName'] = cityName;
+      }
+      if (countryName != null && countryName.isNotEmpty) {
+        queryParams['countryName'] = countryName;
+      }
+      if (latitude != null) queryParams['latitude'] = latitude.toString();
+      if (longitude != null) queryParams['longitude'] = longitude.toString();
+      if (checkInDate != null) {
+        queryParams['checkInDate'] = _formatDate(checkInDate);
+      }
+      if (stayNights != null) queryParams['stayNights'] = stayNights.toString();
+      if (adultCount != null) queryParams['adultCount'] = adultCount.toString();
+      if (roomCount != null) queryParams['roomCount'] = roomCount.toString();
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
       if (hasWifi != null) queryParams['hasWifi'] = hasWifi.toString();
-      if (hasCoworkingSpace != null) queryParams['hasCoworkingSpace'] = hasCoworkingSpace.toString();
+      if (hasCoworkingSpace != null) {
+        queryParams['hasCoworkingSpace'] = hasCoworkingSpace.toString();
+      }
       if (minPrice != null) queryParams['minPrice'] = minPrice.toString();
       if (maxPrice != null) queryParams['maxPrice'] = maxPrice.toString();
 
-      final queryString = queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      final queryString = queryParams.entries
+          .map((e) => '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}')
+          .join('&');
       final url = queryString.isNotEmpty ? '$_basePath?$queryString' : _basePath;
 
       log('🏨 HotelRepository.getHotels: $url');
 
       final response = await _httpService.get(url);
+      final externalDataStatus = response.data['externalDataStatus']?.toString();
+      final partialExternalData = response.data['partialExternalData'] == true;
+      final externalDataMessage = response.data['externalDataMessage']?.toString();
+
+      _lastExternalDataStatus = externalDataStatus?.isNotEmpty == true ? externalDataStatus! : 'not_requested';
+      _lastPartialExternalData = partialExternalData;
+      _lastExternalDataMessage = externalDataMessage;
 
       // 后端返回 { hotels: [...], totalCount, page, pageSize, totalPages }
       final List<dynamic> hotelsData = response.data['hotels'] ?? [];
       final hotels = hotelsData.map((json) => HotelDto.fromMap(json).toDomain()).toList();
 
+      if (externalDataStatus != null && externalDataStatus.isNotEmpty) {
+        log('🏨 [HotelRepository] 外部酒店状态: $externalDataStatus, partial=$partialExternalData');
+      }
+      if (externalDataMessage != null && externalDataMessage.isNotEmpty) {
+        log('🏨 [HotelRepository] 外部酒店说明: $externalDataMessage');
+      }
+
+      for (final hotel in hotels) {
+        _hotelCache[hotel.id] = hotel;
+      }
+
       log('🏨 获取到 ${hotels.length} 个酒店');
       return Success(hotels);
     } on HttpException catch (e) {
+      _lastExternalDataStatus = 'unavailable';
+      _lastPartialExternalData = false;
+      _lastExternalDataMessage = null;
       log('❌ HotelRepository.getHotels 失败: ${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e) {
+      _lastExternalDataStatus = 'unavailable';
+      _lastPartialExternalData = false;
+      _lastExternalDataMessage = null;
       log('❌ HotelRepository.getHotels 异常: $e');
       return Failure(NetworkException(e.toString()));
     }
   }
 
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
   @override
   Future<Result<Hotel>> getHotelById(String id) async {
     try {
+      final cachedHotel = _hotelCache[id];
+      if (cachedHotel != null) {
+        return Success(cachedHotel);
+      }
+
       log('🏨 HotelRepository.getHotelById: $id');
       final response = await _httpService.get('$_basePath/$id');
       final hotel = HotelDto.fromMap(response.data).toDomain();
+      _hotelCache[hotel.id] = hotel;
       return Success(hotel);
     } on HttpException catch (e) {
       log('❌ HotelRepository.getHotelById 失败: ${e.message}');
@@ -172,7 +280,7 @@ class HotelRepository implements IHotelRepository {
       log('🏨 HotelRepository.getMyHotels');
       final response = await _httpService.get('$_basePath/my');
 
-      final List<dynamic> hotelsData = response.data['hotels'] ?? [];
+      final List<dynamic> hotelsData = response.data is List ? response.data : (response.data['hotels'] ?? []);
       final hotels = hotelsData.map((json) => HotelDto.fromMap(json).toDomain()).toList();
 
       log('🏨 我的酒店: ${hotels.length} 个');

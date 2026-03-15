@@ -13,8 +13,9 @@ import 'widgets/widgets.dart';
 /// 创建旅行计划页面 - 使用 GetX + 组件化架构重构
 class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
   static const String controllerTag = CreateTravelPlanPageController.controllerTag;
+  final bool embeddedInBottomNav;
 
-  const CreateTravelPlanPage({super.key});
+  const CreateTravelPlanPage({super.key, this.embeddedInBottomNav = false});
 
   @override
   String? get tag => controllerTag;
@@ -97,13 +98,18 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
 
                     // Interests
                     const TravelPlanInterestsSection(),
+
+                    if (embeddedInBottomNav) ...[
+                      SizedBox(height: 28.h),
+                      const _GeneratePlanButton(),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
         ),
-        bottomNavigationBar: const _BottomBar(),
+        bottomNavigationBar: embeddedInBottomNav ? null : const _BottomBar(),
       ),
     );
   }
@@ -111,9 +117,10 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: AppColors.background,
       elevation: 0,
-      leading: const AppBackButton(color: AppColors.backButtonDark),
+      leading: embeddedInBottomNav ? null : const AppBackButton(color: AppColors.backButtonDark),
       title: Row(
         children: [
           Container(
@@ -140,14 +147,15 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
                   color: Colors.black87,
                 ),
               ),
-              Text(
-                l10n.planYourTrip(controller.cityName),
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.normal,
+              if (controller.cityName.isNotEmpty)
+                Text(
+                  l10n.planYourTrip(controller.cityName),
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
-              ),
             ],
           ),
         ],
@@ -259,7 +267,6 @@ class _BottomBar extends GetView<CreateTravelPlanPageController> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -273,27 +280,41 @@ class _BottomBar extends GetView<CreateTravelPlanPageController> {
         ],
       ),
       child: SafeArea(
-        child: ElevatedButton(
-          onPressed: () => _generatePlan(),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF4458),
-            foregroundColor: Colors.white,
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-            elevation: 0,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
-              SizedBox(width: 8.w),
-              Obx(() => Text(
-                    controller.planningMode.value == 'research' ? '开始 OpenClaw 研究规划' : l10n.generatePlan,
-                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.3.sp),
-                  )),
-            ],
-          ),
-        ),
+        child: const _GeneratePlanButton(),
+      ),
+    );
+  }
+}
+
+class _GeneratePlanButton extends GetView<CreateTravelPlanPageController> {
+  const _GeneratePlanButton();
+
+  @override
+  String? get tag => CreateTravelPlanPageController.controllerTag;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return ElevatedButton(
+      onPressed: () => _generatePlan(),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFFF4458),
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        minimumSize: Size(double.infinity, 0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        elevation: 0,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
+          SizedBox(width: 8.w),
+          Obx(() => Text(
+                controller.planningMode.value == 'research' ? '开始 OpenClaw 研究规划' : l10n.generatePlan,
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.3.sp),
+              )),
+        ],
       ),
     );
   }

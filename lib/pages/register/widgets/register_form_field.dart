@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
 
 /// 注册页面通用输入框 - 使用响应式错误显示，无需 Form/GlobalKey
@@ -11,6 +12,7 @@ class RegisterFormField extends StatelessWidget {
   final bool obscureText;
   final TextInputType? keyboardType;
   final String? errorText; // 直接传入错误文本
+  final double? compactHeight;
 
   const RegisterFormField({
     super.key,
@@ -22,11 +24,14 @@ class RegisterFormField extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType,
     this.errorText,
+    this.compactHeight,
   });
 
   @override
   Widget build(BuildContext context) {
     final hasError = errorText != null && errorText!.isNotEmpty;
+    final decorationConstraints =
+        compactHeight != null ? BoxConstraints(minHeight: compactHeight!, maxHeight: compactHeight!) : null;
 
     return TextField(
       controller: controller,
@@ -36,8 +41,17 @@ class RegisterFormField extends StatelessWidget {
         labelText: labelText,
         hintText: hintText,
         prefixIcon: Icon(prefixIcon),
+        prefixIconConstraints: compactHeight != null
+            ? BoxConstraints(
+                minWidth: 48.w,
+                minHeight: compactHeight!,
+              )
+            : null,
         suffixIcon: suffixIcon,
         errorText: errorText,
+        isDense: compactHeight != null,
+        contentPadding: compactHeight != null ? EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h) : null,
+        constraints: decorationConstraints,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(RegisterConstants.inputBorderRadius),
         ),

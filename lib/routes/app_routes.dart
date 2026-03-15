@@ -118,6 +118,7 @@ class AppRoutes {
   // ============================================================================
   static const String travelPlan = '/travel-plan';
   static const String createTravelPlan = '/create-travel-plan';
+  static const String aiPlannerTab = '/ai-planner-tab';
   static const String travelHistory = '/travel-history';
 
   // ============================================================================
@@ -151,6 +152,7 @@ class AppRoutes {
   // AI 和聊天相关路由
   // ============================================================================
   static const String aiChat = '/ai-chat';
+  static const String aiAssistantTab = '/ai-assistant-tab';
   static const String directChat = '/direct-chat';
   static const String conversations = '/conversations';
   static const String notifications = '/notifications';
@@ -434,6 +436,12 @@ class AppRoutes {
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
+      name: aiPlannerTab,
+      page: () => const BottomNavLayout(child: CreateTravelPlanPage(embeddedInBottomNav: true)),
+      binding: CreateTravelPlanBinding(),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
       name: travelHistory,
       page: () => const TravelHistoryPage(),
       binding: TravelHistoryBinding(),
@@ -545,6 +553,12 @@ class AppRoutes {
     GetPage(
       name: aiChat,
       page: () => const AiChatPage(),
+      binding: AiChatBinding(),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: aiAssistantTab,
+      page: () => const BottomNavLayout(child: AiChatPage(embeddedInBottomNav: true)),
       binding: AiChatBinding(),
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),

@@ -71,6 +71,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   /// 检查当前用户是否有权限编辑酒店
   /// 只有酒店创建者或管理员可以编辑
   bool _canEditHotel() {
+    if (_hotel.isBookingHotel) {
+      return false;
+    }
+
     final authController = Get.find<AuthStateController>();
     final currentUser = authController.currentUser.value;
     final currentUserId = currentUser?.id;
@@ -299,6 +303,54 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 ),
           ),
           SizedBox(height: 8.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: hotel.isBookingHotel ? const Color(0xFFF4F8FF) : const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(
+                color: hotel.isBookingHotel ? const Color(0xFFD6E8FF) : const Color(0xFFFED7AA),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  hotel.isBookingHotel ? Icons.public : Icons.people_alt_outlined,
+                  size: 18.r,
+                  color: hotel.isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hotel.sourceLabel,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w800,
+                          color: hotel.isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        hotel.isBookingHotel
+                            ? 'Live inventory and pricing provided by Booking.com.'
+                            : 'This listing was contributed by the Go Nomads community.',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          height: 1.35,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8.h),
           // 评分和星级
           Row(
             children: [
@@ -351,11 +403,43 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             spacing: 8.w,
             runSpacing: 8.w,
             children: [
+              _buildSourceTag(hotel),
               _buildTag(hotel.category, Icons.hotel),
               if (hotel.nomadScore >= 70)
                 _buildTag(AppLocalizations.of(context)!.nomadFriendly, Icons.laptop_mac, isHighlight: true),
               if (hotel.hasCoworkingSpace) _buildTag(AppLocalizations.of(context)!.coworkingSpace, Icons.business),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSourceTag(Hotel hotel) {
+    final isBookingHotel = hotel.isBookingHotel;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: isBookingHotel ? const Color(0xFFE8F3FF) : const Color(0xFFFFF0E0),
+        borderRadius: BorderRadius.circular(999.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isBookingHotel ? Icons.public : Icons.people_alt_outlined,
+            size: 14.r,
+            color: isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            hotel.sourceLabel,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
+              color: isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+            ),
           ),
         ],
       ),

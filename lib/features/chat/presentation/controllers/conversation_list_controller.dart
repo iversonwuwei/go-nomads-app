@@ -35,6 +35,8 @@ class ConversationListController extends GetxController {
   StreamSubscription? _conversationChangedSubscription;
   StreamSubscription? _newConversationSubscription;
   StreamSubscription? _syncFinishSubscription;
+  Worker? _currentUserWorker;
+  bool _isInitializing = false;
 
   // ==================== 生命周期 ====================
 
@@ -53,6 +55,7 @@ class ConversationListController extends GetxController {
     _conversationChangedSubscription?.cancel();
     _newConversationSubscription?.cancel();
     _syncFinishSubscription?.cancel();
+    _currentUserWorker?.dispose();
     super.onClose();
   }
 
@@ -60,7 +63,12 @@ class ConversationListController extends GetxController {
 
   /// 初始化腾讯云IM并加载会话列表
   Future<void> _initIM() async {
+    if (_isInitializing || isIMReady.value) {
+      return;
+    }
+
     try {
+      _isInitializing = true;
       isLoading.value = true;
       errorMessage.value = null;
 
@@ -74,8 +82,8 @@ class ConversationListController extends GetxController {
 
       final currentUser = authController.currentUser.value;
       if (currentUser == null) {
-        errorMessage.value = '用户信息不可用';
-        isLoading.value = false;
+        log('⏳ ConversationListController: 当前用户尚未加载，等待用户信息后重试');
+        _waitForCurrentUser(authController);
         return;
       }
 
@@ -130,7 +138,21 @@ class ConversationListController extends GetxController {
       log('❌ ConversationListController 初始化异常: $e');
       errorMessage.value = '初始化失败，请稍后重试';
       isLoading.value = false;
+    } finally {
+      _isInitializing = false;
     }
+  }
+
+  void _waitForCurrentUser(AuthStateController authController) {
+    _currentUserWorker?.dispose();
+    _currentUserWorker = ever(authController.currentUser, (user) {
+      if (user != null) {
+        log('✅ ConversationListController: 当前用户已就绪，继续初始化消息模块');
+        _currentUserWorker?.dispose();
+        _currentUserWorker = null;
+        unawaited(_initIM());
+      }
+    });
   }
 
   // ==================== 会话监听 ====================

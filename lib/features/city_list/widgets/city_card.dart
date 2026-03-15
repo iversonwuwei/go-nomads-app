@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
 
 /// 城市卡片组件 - 使用 GetView 符合 GetX 标准
 ///
@@ -40,7 +41,8 @@ class CityCard extends GetView<CityListController> {
         return const SizedBox.shrink();
       }
 
-      log('🏙️ City: ${city.name}, imageUrl: ${city.imageUrl?.substring(0, city.imageUrl!.length > 50 ? 50 : city.imageUrl!.length) ?? "null"}...');
+      final previewImageUrl = city.displayImageUrl;
+      log('🏙️ City: ${city.name}, imageUrl: ${previewImageUrl.substring(0, previewImageUrl.length > 50 ? 50 : previewImageUrl.length)}...');
 
       return Container(
         decoration: BoxDecoration(
@@ -73,7 +75,7 @@ class CityCard extends GetView<CityListController> {
           cityId: city.id,
           cityName: city.name,
           cityImages: city.landscapeImageUrls ?? [],
-          cityImage: city.imageUrl ?? 'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=400',
+          cityImage: city.displayImageUrl,
           overallScore: city.overallScore ?? 0.0,
           reviewCount: city.reviewCount ?? 0,
         ),
@@ -87,26 +89,17 @@ class CityCard extends GetView<CityListController> {
       children: [
         // 背景图片 - 填充整个卡片
         Positioned.fill(
-          child: city.imageUrl != null && city.imageUrl!.isNotEmpty
-              ? Image.network(
-                  city.imageUrl!,
-                  fit: BoxFit.cover,
-                  key: ValueKey(city.imageUrl),
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey[300],
-                      child: Center(
-                        child: Icon(FontAwesomeIcons.imagePortrait, size: 36.r, color: Colors.grey),
-                      ),
-                    );
-                  },
-                )
-              : Container(
-                  color: Colors.grey[300],
-                  child: Center(
-                    child: Icon(FontAwesomeIcons.imagePortrait, size: 36.r, color: Colors.grey),
-                  ),
-                ),
+          child: SafeNetworkImage(
+            imageUrl: city.displayImageUrl,
+            fit: BoxFit.cover,
+            key: ValueKey(city.displayImageUrl),
+            errorWidget: Container(
+              color: Colors.grey[300],
+              child: Center(
+                child: Icon(FontAwesomeIcons.imagePortrait, size: 36.r, color: Colors.grey),
+              ),
+            ),
+          ),
         ),
         // 渐变遮罩
         Positioned.fill(

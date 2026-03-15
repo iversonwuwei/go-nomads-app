@@ -17,8 +17,10 @@ class ConversationListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 延迟注入控制器
-    final controller = Get.put(ConversationListController());
+    // 复用底部导航预热的控制器，避免重复初始化 IM
+    final controller = Get.isRegistered<ConversationListController>()
+        ? Get.find<ConversationListController>()
+        : Get.put(ConversationListController());
 
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED), // 微信风格背景色

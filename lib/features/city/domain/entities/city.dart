@@ -313,12 +313,30 @@ class City {
   /// 显示用描述（默认: 城市简介）
   String get displayDescription => description ?? 'A vibrant city waiting to be explored by digital nomads.';
 
+  String? get _preferredImageUrl {
+    final candidates = <String?>[
+      imageUrl,
+      portraitImageUrl,
+      if (landscapeImageUrls != null && landscapeImageUrls!.isNotEmpty) landscapeImageUrls!.first,
+    ];
+
+    for (final candidate in candidates) {
+      final normalized = candidate?.trim();
+      if (normalized != null && normalized.isNotEmpty) {
+        return normalized;
+      }
+    }
+
+    return null;
+  }
+
   /// 显示用图片（默认占位图）
-  String get displayImageUrl => imageUrl ?? 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800';
+  String get displayImageUrl =>
+      _preferredImageUrl ?? 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800';
 
   /// 显示用竖屏图片（默认占位图）
   String get displayPortraitImageUrl =>
-      portraitImageUrl ?? 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=720&h=1280&fit=crop';
+      _preferredImageUrl ?? 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=720&h=1280&fit=crop';
 
   /// 获取天气图标
   String get weatherIcon {

@@ -424,7 +424,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     final String shareUrl = ShareLinkUtil.cityDetail(city.id.toString());
 
     // 封面图
-    final String? imageUrl = city.imageUrl;
+    final String imageUrl = city.displayImageUrl;
 
     // 显示分享底部抽屉
     ShareBottomSheet.show(

@@ -117,10 +117,8 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
         currentCity.landscapeImageUrls != null &&
         currentCity.landscapeImageUrls!.isNotEmpty) {
       liveImages = currentCity.landscapeImageUrls!;
-    } else if (currentCity != null &&
-        currentCity.imageUrl != null &&
-        currentCity.imageUrl!.isNotEmpty) {
-      liveImages = [currentCity.imageUrl!];
+    } else if (currentCity != null && currentCity.displayImageUrl.isNotEmpty) {
+      liveImages = [currentCity.displayImageUrl];
     } else {
       liveImages = widget.cityImages.isNotEmpty ? widget.cityImages : const [''];
     }

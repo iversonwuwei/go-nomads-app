@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 
 /// 登录页面通用输入框 - 使用响应式错误显示，无需 Form/GlobalKey
@@ -12,6 +13,7 @@ class LoginFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? errorText;
   final int? maxLength;
+  final double? compactHeight;
 
   const LoginFormField({
     super.key,
@@ -24,6 +26,7 @@ class LoginFormField extends StatelessWidget {
     this.keyboardType,
     this.errorText,
     this.maxLength,
+    this.compactHeight,
   });
 
   /// 检查 TextEditingController 是否仍然有效（未被 dispose）
@@ -56,6 +59,8 @@ class LoginFormField extends StatelessWidget {
     }
 
     final hasError = errorText != null && errorText!.isNotEmpty;
+    final decorationConstraints =
+        compactHeight != null ? BoxConstraints(minHeight: compactHeight!, maxHeight: compactHeight!) : null;
 
     return TextField(
       controller: controller,
@@ -66,9 +71,20 @@ class LoginFormField extends StatelessWidget {
         labelText: labelText,
         hintText: hintText,
         prefixIcon: Icon(prefixIcon),
+        prefixIconConstraints: compactHeight != null
+            ? BoxConstraints(
+                minWidth: 48.w,
+                minHeight: compactHeight!,
+              )
+            : null,
         suffixIcon: suffixIcon,
         errorText: errorText,
         counterText: maxLength != null ? '' : null,
+        isDense: compactHeight != null,
+        contentPadding: compactHeight != null
+            ? EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h)
+            : null,
+        constraints: decorationConstraints,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
         ),

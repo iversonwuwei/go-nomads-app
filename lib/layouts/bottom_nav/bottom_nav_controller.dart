@@ -92,13 +92,21 @@ class BottomNavController extends GetxController {
         log('   → 消息会话列表页面');
         Get.toNamed(AppRoutes.conversations);
         break;
-      case 2: // Profile
-        log('   → Profile 页面');
-        _navigateToProfile();
+      case 2: // AI 助手
+        log('   → AI 助手页面');
+        Get.toNamed(AppRoutes.aiAssistantTab);
         break;
-      case 3: // 通知列表
+      case 3: // AI 规划师
+        log('   → AI 旅行规划师页面');
+        Get.toNamed(AppRoutes.aiPlannerTab);
+        break;
+      case 4: // 通知列表
         log('   → 通知列表页面');
         Get.toNamed(AppRoutes.notifications);
+        break;
+      case 5: // Profile
+        log('   → Profile 页面');
+        _navigateToProfile();
         break;
     }
   }
@@ -189,10 +197,14 @@ class BottomNavController extends GetxController {
       currentIndex.value = 0;
     } else if (currentRoute == AppRoutes.conversations) {
       currentIndex.value = 1;
-    } else if (currentRoute == AppRoutes.profile || currentRoute == AppRoutes.profileEdit) {
+    } else if (currentRoute == AppRoutes.aiAssistantTab) {
       currentIndex.value = 2;
-    } else if (currentRoute == AppRoutes.notifications) {
+    } else if (currentRoute == AppRoutes.aiPlannerTab) {
       currentIndex.value = 3;
+    } else if (currentRoute == AppRoutes.notifications) {
+      currentIndex.value = 4;
+    } else if (currentRoute == AppRoutes.profile || currentRoute == AppRoutes.profileEdit) {
+      currentIndex.value = 5;
     }
   }
 
@@ -201,14 +213,22 @@ class BottomNavController extends GetxController {
   /// 设置 IM 未读数量监听器
   void _setupIMUnreadCountListener() {
     try {
-      if (Get.isRegistered<ConversationListController>()) {
-        final conversationController = Get.find<ConversationListController>();
-        _imUnreadCountWorker = ever(conversationController.totalUnreadCount, (count) {
-          log('💬 BottomNav: IM 未读数量更新为 $count');
-          imUnreadCount.value = count;
-        });
-        imUnreadCount.value = conversationController.totalUnreadCount.value;
+      final authController = Get.find<AuthStateController>();
+      if (!authController.isAuthenticated.value) {
+        imUnreadCount.value = 0;
+        return;
       }
+
+      final conversationController = Get.isRegistered<ConversationListController>()
+          ? Get.find<ConversationListController>()
+          : Get.put(ConversationListController(), permanent: true);
+
+      _imUnreadCountWorker?.dispose();
+      _imUnreadCountWorker = ever(conversationController.totalUnreadCount, (count) {
+        log('💬 BottomNav: IM 未读数量更新为 $count');
+        imUnreadCount.value = count;
+      });
+      imUnreadCount.value = conversationController.totalUnreadCount.value;
     } catch (e) {
       log('⚠️ BottomNav: 设置 IM 未读数量监听器失败: $e');
     }
@@ -264,8 +284,14 @@ class BottomNavController extends GetxController {
       final tokenService = TokenStorageService();
       final accessToken = await tokenService.getAccessToken();
       if (accessToken == null || accessToken.isEmpty) {
+        imUnreadCount.value = 0;
         unreadCount.value = 0;
         return;
+      }
+
+      if (Get.isRegistered<ConversationListController>()) {
+        final conversationController = Get.find<ConversationListController>();
+        await conversationController.loadConversations();
       }
 
       if (Get.isRegistered<NotificationStateController>()) {

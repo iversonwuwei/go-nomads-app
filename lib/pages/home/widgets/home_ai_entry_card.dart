@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 
-/// 首页 AI Chat 入口卡片
-/// 紧凑设计，整体可点击，适应不同分辨率
+/// 首页 AI 双入口模块
+/// 用整条分段按钮承载 AI 智能助手与 AI 旅行规划师
 class HomeAiEntryCard extends StatelessWidget {
   final bool isMobile;
 
@@ -14,129 +15,155 @@ class HomeAiEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Get.toNamed(AppRoutes.aiChat),
-          borderRadius: BorderRadius.circular(16.r),
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16.r),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF0F172A),
-                  Color(0xFF1E293B),
-                  Color(0xFF0EA5E9),
-                ],
-                stops: [0.0, 0.6, 1.0],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF0EA5E9).withValues(alpha: 0.18),
-                  blurRadius: 16.r,
-                  offset: const Offset(0, 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildAssistantAction(context, l10n, isChinese),
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: _buildPlannerAction(context, isChinese),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAssistantAction(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isChinese,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => Get.toNamed(AppRoutes.aiChat),
+        borderRadius: BorderRadius.circular(10.r),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.r),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF0F172A),
+                Color(0xFF1E293B),
+                Color(0xFF0EA5E9),
+              ],
+              stops: [0.0, 0.58, 1.0],
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 8.h),
+            child: Row(
+              children: [
+                FaIcon(
+                  FontAwesomeIcons.wandMagicSparkles,
+                  color: Colors.white,
+                  size: 13.r,
+                ),
+                SizedBox(width: 7.w),
+                Expanded(
+                  child: Text(
+                    isChinese ? 'AI 助手' : l10n.homeAiCopilotTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: isMobile ? 12.sp : 12.5.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 4.w),
+                FaIcon(
+                  FontAwesomeIcons.arrowRight,
+                  color: Colors.white.withValues(alpha: 0.82),
+                  size: 10.r,
                 ),
               ],
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-              child: Row(
-                children: [
-                  // AI 图标
-                  Container(
-                    width: 44.w,
-                    height: 44.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-                    ),
-                    child: Center(
-                      child: FaIcon(
-                        FontAwesomeIcons.wandMagicSparkles,
-                        color: Colors.white,
-                        size: 18.r,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 14.w),
-                  // 文字内容
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              l10n.homeAiCopilotTitle,
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15.sp,
-                              ),
-                            ),
-                            SizedBox(width: 8.w),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6.r),
-                              ),
-                              child: Text(
-                                l10n.homeAiCopilotBeta,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          l10n.homeAiCopilotDescription,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.75),
-                            fontSize: 12.sp,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  // 右侧箭头
-                  Container(
-                    width: 32.w,
-                    height: 32.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Center(
-                      child: FaIcon(
-                        FontAwesomeIcons.chevronRight,
-                        color: Colors.white,
-                        size: 14.r,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPlannerAction(BuildContext context, bool isChinese) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openTravelPlanner(context),
+        borderRadius: BorderRadius.circular(10.r),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.r),
+            color: const Color(0xFFFFFFFF),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 8.h),
+            child: Row(
+              children: [
+                FaIcon(
+                  FontAwesomeIcons.route,
+                  color: const Color(0xFFBE123C),
+                  size: 13.r,
+                ),
+                SizedBox(width: 7.w),
+                Expanded(
+                  child: Text(
+                    isChinese ? 'AI 规划师' : 'AI Planner',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: const Color(0xFF111827),
+                      fontWeight: FontWeight.w800,
+                      fontSize: isMobile ? 12.sp : 12.5.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 4.w),
+                FaIcon(
+                  FontAwesomeIcons.arrowRight,
+                  color: const Color(0xFFBE123C),
+                  size: 10.r,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openTravelPlanner(BuildContext context) async {
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+
+    try {
+      final check = await AiQuotaService().checkQuota();
+      if (!check.canUse) {
+        AiQuotaService().showQuotaExhaustedDialog(
+          check,
+          isChinese ? 'AI 旅行规划师' : 'AI Travel Planner',
+        );
+        return;
+      }
+    } catch (_) {
+      // 配额检查失败时允许继续进入，实际生成时再兜底。
+    }
+
+    Get.toNamed(
+      AppRoutes.createTravelPlan,
+      arguments: const {
+        'cityId': '',
+        'cityName': '',
+      },
     );
   }
 }

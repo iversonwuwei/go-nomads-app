@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -14,6 +13,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
 
 /// 城市卡片组件（网格视图）
 class HomeCityCard extends StatelessWidget {
@@ -78,7 +78,7 @@ class HomeCityCard extends StatelessWidget {
           cityId: city.id,
           cityName: city.name,
           cityImages: city.landscapeImageUrls ?? [],
-          cityImage: city.imageUrl?.toString() ?? '',
+          cityImage: city.displayImageUrl,
           overallScore: (city.overallScore as num?)?.toDouble() ?? 0.0,
           reviewCount: (city.reviewCount as num?)?.toInt() ?? 0,
         ),
@@ -95,14 +95,11 @@ class HomeCityCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          CachedNetworkImage(
+          SafeNetworkImage(
             imageUrl: city.displayImageUrl,
             fit: BoxFit.cover,
-            // 限制缓存尺寸，避免解码原始大图
-            memCacheWidth: 900,
-            memCacheHeight: 900,
-            placeholder: (_, __) => Container(color: Colors.grey[200]),
-            errorWidget: (_, __, ___) => Container(
+            placeholder: Container(color: Colors.grey[200]),
+            errorWidget: Container(
               color: Colors.grey[300],
               child: const Icon(FontAwesomeIcons.image, color: Colors.white70),
             ),

@@ -31,8 +31,6 @@ class HomeCityGrid extends GetView<HomePageController> {
       if (cities.isEmpty) {
         return HomeCityEmptyState(
           isMobile: isMobile,
-          isSearching: controller.searchController.text.trim().isNotEmpty,
-          onClearSearch: controller.clearSearch,
         );
       }
 
@@ -159,7 +157,6 @@ class HomeCityGrid extends GetView<HomePageController> {
           itemBuilder: (context, index) {
             return HomeCityCard(
               city: displayCities[index],
-              onReturnFromDetail: controller.clearSearchOnReturn,
             );
           },
         ),
@@ -205,14 +202,10 @@ class HomeCityGrid extends GetView<HomePageController> {
 /// 城市空状态组件
 class HomeCityEmptyState extends StatelessWidget {
   final bool isMobile;
-  final bool isSearching;
-  final VoidCallback onClearSearch;
 
   const HomeCityEmptyState({
     super.key,
     required this.isMobile,
-    required this.isSearching,
-    required this.onClearSearch,
   });
 
   @override
@@ -236,7 +229,7 @@ class HomeCityEmptyState extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isSearching ? FontAwesomeIcons.magnifyingGlass : FontAwesomeIcons.city,
+              FontAwesomeIcons.city,
               size: isMobile ? 50 : 60,
               color: const Color(0xFFFF4458),
             ),
@@ -244,7 +237,7 @@ class HomeCityEmptyState extends StatelessWidget {
           SizedBox(height: isMobile ? 24 : 32),
           // 标题
           Text(
-            isSearching ? l10n.noCitiesFound : l10n.noCitiesYet,
+            l10n.noCitiesYet,
             style: TextStyle(
               fontSize: isMobile ? 24 : 28,
               fontWeight: FontWeight.bold,
@@ -254,7 +247,7 @@ class HomeCityEmptyState extends StatelessWidget {
           SizedBox(height: 12.h),
           // 描述
           Text(
-            isSearching ? l10n.tryDifferentKeyword : l10n.startExploringCities,
+            l10n.startExploringCities,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: isMobile ? 14 : 16,
@@ -263,45 +256,26 @@ class HomeCityEmptyState extends StatelessWidget {
             ),
           ),
           SizedBox(height: isMobile ? 32 : 40),
-          // 按钮
-          if (isSearching)
-            ElevatedButton.icon(
-              onPressed: onClearSearch,
-              icon: const Icon(FontAwesomeIcons.xmark),
-              label: Text(l10n.dataServiceClearSearch),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 24 : 32,
-                  vertical: isMobile ? 12 : 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
+          ElevatedButton.icon(
+            onPressed: () => Get.toNamed(AppRoutes.cityList),
+            icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
+            label: Text(
+              l10n.browseCities,
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF4458),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 24 : 32,
+                vertical: isMobile ? 14 : 16,
               ),
-            )
-          else
-            ElevatedButton.icon(
-              onPressed: () => Get.toNamed(AppRoutes.cityList),
-              icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
-              label: Text(
-                l10n.browseCities,
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 24 : 32,
-                  vertical: isMobile ? 14 : 16,
-                ),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
               ),
             ),
+          ),
         ],
       ),
     );

@@ -82,6 +82,7 @@ class RegisterForm extends GetView<RegisterController> {
                     hintText: l10n.enterVerificationCode,
                     prefixIcon: FontAwesomeIcons.shieldHalved,
                     keyboardType: TextInputType.number,
+                    compactHeight: _registerCodeRowHeight.h,
                     errorText: controller.showValidationErrors.value
                         ? _getErrorText(controller.verificationCodeError.value, l10n)
                         : null,
@@ -89,7 +90,7 @@ class RegisterForm extends GetView<RegisterController> {
                 ),
                 SizedBox(width: 12.w),
                 SizedBox(
-                  height: 56.h,
+                  height: _registerCodeRowHeight.h,
                   child: ElevatedButton(
                     onPressed: controller.isSendingCode.value || controller.countdown.value > 0
                         ? null
@@ -98,6 +99,7 @@ class RegisterForm extends GetView<RegisterController> {
                       backgroundColor: RegisterConstants.primaryColor,
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: Colors.grey.shade300,
+                      minimumSize: Size(88.w, _registerCodeRowHeight.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(RegisterConstants.inputBorderRadius),
                       ),
@@ -157,6 +159,8 @@ class RegisterForm extends GetView<RegisterController> {
     );
   }
 }
+
+const double _registerCodeRowHeight = 56;
 
 /// 密码输入框 - 使用响应式验证
 class _PasswordField extends StatelessWidget {

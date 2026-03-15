@@ -1,9 +1,9 @@
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
-import 'package:go_nomads_app/layouts/bottom_nav/widgets/modern_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
+import 'package:go_nomads_app/layouts/bottom_nav/widgets/modern_bottom_nav_bar.dart';
 
 /// 全局底部导航布局包装器 - GetView 标准实现
 /// 包装任意页面内容，在底部显示导航栏
@@ -53,14 +53,22 @@ class BottomNavLayout extends GetView<BottomNavController> {
               label: '消息',
               badge: controller.imUnreadCount.value,
             ),
-            const NavBarItem(
-              icon: FontAwesomeIcons.user,
-              label: 'Profile',
+            NavBarItem(
+              icon: FontAwesomeIcons.wandMagicSparkles,
+              label: l10n.aiChat,
+            ),
+            NavBarItem(
+              icon: FontAwesomeIcons.route,
+              label: l10n.aiTravelPlanner,
             ),
             NavBarItem(
               icon: FontAwesomeIcons.solidBell,
               label: '通知',
               badge: controller.unreadCount.value,
+            ),
+            const NavBarItem(
+              icon: FontAwesomeIcons.user,
+              label: '我的',
             ),
           ],
         );
