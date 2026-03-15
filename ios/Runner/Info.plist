@@ -142,27 +142,22 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-		<key>NSAllowsArbitraryLoadsInWebContent</key>
-		<true/>
+<dict>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>127.0.0.1</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
+<key>NSIncludesSubdomains</key>
+<true/>
+
 			</dict>
 			<key>192.168.110.67</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-			</dict>
-			<key>api.go-nomads.com</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
+<true/>
+
 				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
@@ -170,6 +165,9 @@
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
+<key>NSIncludesSubdomains</key>
+<true/>
+
 			</dict>
 		</dict>
 	</dict>
