@@ -177,6 +177,8 @@
 	<string>行途需要访问您的日历，以便将您感兴趣的活动和聚会添加到日历中，并设置活动提醒。我们仅在您主动点击&quot;添加到日历&quot;时访问日历，不会读取您的其他日历信息。</string>
 	<key>NSCameraUsageDescription</key>
 <string>行途需要访问您的相机，用于拍摄头像照片和社区内容图片。我们仅在您主动拍照时使用相机，不会在后台访问。</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>行途在您开启旅行足迹记录或连续定位相关功能时，可能需要持续访问位置信息，以便识别您到达的新城市、更新行程状态并提供更准确的位置服务。我们仅在您主动启用相关功能后使用该权限，且您可随时在系统设置中关闭。</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>行途需要获取您的位置信息，用于为您推荐附近城市和目的地、查找附近的活动和聚会、发现附近的共享办公空间，以及提供地图导航和位置选择功能。我们仅在您使用相关功能时获取位置信息。</string>
 	<key>NSMicrophoneUsageDescription</key>
