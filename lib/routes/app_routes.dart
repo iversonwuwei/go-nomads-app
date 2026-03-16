@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/city_list/city_list.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:go_nomads_app/features/membership/presentation/pages/membership_plan_page.dart';
+import 'package:go_nomads_app/features/membership/presentation/widgets/ai_planner_membership_guard.dart';
 import 'package:go_nomads_app/features/moderator/presentation/pages/moderator_application_detail_page.dart';
 import 'package:go_nomads_app/features/travel_history/travel_history.dart';
 import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav.dart';
@@ -431,13 +432,15 @@ class AppRoutes {
     ),
     GetPage(
       name: createTravelPlan,
-      page: () => const CreateTravelPlanPage(),
+      page: () => const AiPlannerMembershipGuard(child: CreateTravelPlanPage()),
       binding: CreateTravelPlanBinding(),
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
       name: aiPlannerTab,
-      page: () => const BottomNavLayout(child: CreateTravelPlanPage(embeddedInBottomNav: true)),
+      page: () => const AiPlannerMembershipGuard(
+        child: BottomNavLayout(child: CreateTravelPlanPage(embeddedInBottomNav: true)),
+      ),
       binding: CreateTravelPlanBinding(),
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),

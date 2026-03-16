@@ -171,6 +171,8 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
               ],
             ),
           ),
+          SizedBox(width: 10.w),
+          const _MembershipExclusiveBadge(),
         ],
       ),
     );
@@ -235,6 +237,32 @@ class _HeaderCard extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(height: 12.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 18.r),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    '会员专享：AI 旅行规划师仅对有效会员开放。',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           SizedBox(height: 14.h),
           Wrap(
             spacing: 8.w,
@@ -272,6 +300,37 @@ class _StepBadge extends StatelessWidget {
           fontSize: 11.sp,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+}
+
+class _MembershipExclusiveBadge extends StatelessWidget {
+  const _MembershipExclusiveBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF4458).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.workspace_premium_rounded, color: const Color(0xFFFF4458), size: 14.r),
+          SizedBox(width: 4.w),
+          Text(
+            '会员专享',
+            style: TextStyle(
+              color: const Color(0xFFFF4458),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }

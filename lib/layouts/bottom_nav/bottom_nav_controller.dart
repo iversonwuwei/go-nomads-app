@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/conversation_list_controller.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_planner_access_service.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
@@ -84,6 +85,11 @@ class BottomNavController extends GetxController {
 
     // 认证有效，允许跳转
     log('✅ 认证有效，允许跳转');
+
+    if (index == 3 && !await _checkAiPlannerAccess()) {
+      return;
+    }
+
     changeTab(index);
 
     // 根据索引跳转到对应页面
@@ -168,6 +174,18 @@ class BottomNavController extends GetxController {
     }
 
     return true;
+  }
+
+  /// 检查 AI 旅行规划师访问权限
+  Future<bool> _checkAiPlannerAccess() async {
+    try {
+      return await AiPlannerAccessService().ensureAccess(
+        featureName: 'AI 旅行规划师',
+      );
+    } catch (error) {
+      log('⚠️ AI 旅行规划师会员检查失败，按降级策略继续放行: $error');
+      return true;
+    }
   }
 
   /// 切换标签页

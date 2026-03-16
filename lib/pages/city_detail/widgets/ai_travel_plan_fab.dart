@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_planner_access_service.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// AI 旅行计划浮动按钮
@@ -89,18 +89,16 @@ class AiTravelPlanFab extends StatelessWidget {
   }
 
   void _onTap(BuildContext context) async {
-    // 使用统一的 AiQuotaService 检查配额（只检查不扣减，配额不足时显示升级对话框）
     try {
-      final check = await AiQuotaService().checkQuota();
+      final allowed = await AiPlannerAccessService().ensureAccess(
+        featureName: 'AI 旅行规划师',
+      );
 
-      if (!check.canUse) {
-        // 通过 AiQuotaService 统一显示配额用尽对话框
-        AiQuotaService().showQuotaExhaustedDialog(check, 'AI 旅行计划');
+      if (!allowed) {
         return;
       }
     } catch (e) {
-      log('⚠️ AI 配额检查异常: $e');
-      // 出错时继续，让后续实际调用时再检查
+      log('⚠️ AI 旅行规划师会员检查异常: $e');
     }
 
     // 跳转到创建旅行计划页面
