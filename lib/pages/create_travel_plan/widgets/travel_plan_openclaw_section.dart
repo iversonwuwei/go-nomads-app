@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
 
 class TravelPlanOpenClawSection extends GetView<CreateTravelPlanPageController> {
-  const TravelPlanOpenClawSection({super.key});
+  final ValueChanged<String>? onStrategyTap;
+
+  const TravelPlanOpenClawSection({super.key, this.onStrategyTap});
 
   static const _planningModes = [
     ('quick', '快速草案', '更快出结果，适合先看方向', Icons.flash_on_outlined),
@@ -48,6 +50,11 @@ class TravelPlanOpenClawSection extends GetView<CreateTravelPlanPageController> 
           '把规划器升级成研究助手。你可以指定规划节奏、工作目标，以及希望 OpenClaw 优先核对的实时信号。',
           style: TextStyle(fontSize: 12.sp, color: Colors.grey[600], height: 1.45),
         ),
+        SizedBox(height: 8.h),
+        Text(
+          '点击策略卡会直接按该模式开始生成；如果你还想细调目标或信号，可以保留当前设置后再点底部生成按钮。',
+          style: TextStyle(fontSize: 11.sp, color: Colors.grey[500], height: 1.45),
+        ),
         SizedBox(height: 14.h),
         _SubSectionLabel(label: '规划模式'),
         SizedBox(height: 10.h),
@@ -61,7 +68,10 @@ class TravelPlanOpenClawSection extends GetView<CreateTravelPlanPageController> 
                       subtitle: mode.$3,
                       icon: mode.$4,
                       selected: controller.planningMode.value == mode.$1,
-                      onTap: () => controller.setPlanningMode(mode.$1),
+                      onTap: () {
+                        controller.setPlanningMode(mode.$1);
+                        onStrategyTap?.call(mode.$1);
+                      },
                     ))
                 .toList(),
           ),

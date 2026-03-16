@@ -88,7 +88,13 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
                     SizedBox(height: 28.h),
 
                     // OpenClaw Research Layer
-                    const TravelPlanOpenClawSection(),
+                    TravelPlanOpenClawSection(
+                      onStrategyTap: (planningMode) => _launchTravelPlanFromCreatePage(
+                        context,
+                        controller,
+                        overridePlanningMode: planningMode,
+                      ),
+                    ),
 
                     SizedBox(height: 28.h),
 
@@ -334,27 +340,42 @@ class _GeneratePlanButton extends GetView<CreateTravelPlanPageController> {
   }
 
   void _generatePlan(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (!controller.hasSelectedDestination) {
-      AppToast.warning(
-        l10n.selectDestination,
-        title: l10n.destination,
-      );
-      return;
-    }
-
-    Get.to(
-      () => TravelPlanPage(
-        cityId: controller.cityId,
-        cityName: controller.cityName,
-        duration: controller.duration.value,
-        budget: controller.getFinalBudget(),
-        travelStyle: controller.travelStyle.value,
-        interests: controller.getAllInterests(),
-        departureLocation: controller.departureLocation.value,
-        departureDate: controller.departureDate.value,
-      ),
+    _launchTravelPlanFromCreatePage(
+      context,
+      controller,
     );
   }
+}
+
+void _launchTravelPlanFromCreatePage(
+  BuildContext context,
+  CreateTravelPlanPageController controller, {
+  String? overridePlanningMode,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+
+  if (!controller.hasSelectedDestination) {
+    AppToast.warning(
+      l10n.selectDestination,
+      title: l10n.destination,
+    );
+    return;
+  }
+
+  if (overridePlanningMode != null && overridePlanningMode.isNotEmpty) {
+    controller.setPlanningMode(overridePlanningMode);
+  }
+
+  Get.to(
+    () => TravelPlanPage(
+      cityId: controller.cityId,
+      cityName: controller.cityName,
+      duration: controller.duration.value,
+      budget: controller.getFinalBudget(),
+      travelStyle: controller.travelStyle.value,
+      interests: controller.getAllInterests(),
+      departureLocation: controller.departureLocation.value,
+      departureDate: controller.departureDate.value,
+    ),
+  );
 }
