@@ -14,10 +14,21 @@ import 'package:http/http.dart' as http;
 class CreateTravelPlanPageController extends GetxController {
   static const String controllerTag = 'create_travel_plan_page';
 
-  final String cityId;
-  final String cityName;
+  final String initialCityId;
+  final String initialCityName;
 
-  CreateTravelPlanPageController({required this.cityId, required this.cityName});
+  CreateTravelPlanPageController({String? cityId, String? cityName})
+      : initialCityId = cityId ?? '',
+        initialCityName = cityName ?? '';
+
+  final RxString selectedCountryId = ''.obs;
+  final RxString selectedCountryName = ''.obs;
+  final RxString selectedCityId = ''.obs;
+  final RxString selectedCityName = ''.obs;
+
+  String get cityId => selectedCityId.value;
+  String get cityName => selectedCityName.value;
+  bool get hasSelectedDestination => cityId.isNotEmpty && cityName.isNotEmpty;
 
   // State
   final RxInt duration = 7.obs;
@@ -62,6 +73,7 @@ class CreateTravelPlanPageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    setDestination(cityId: initialCityId, cityName: initialCityName);
     _loadCurrentLocation();
 
     // 监听出发地位置变化，同步到搜索框
@@ -404,6 +416,18 @@ class CreateTravelPlanPageController extends GetxController {
   }
 
   void clearDepartureLocation() => departureLocation.value = '';
+
+  void setDestination({
+    String? countryId,
+    String? countryName,
+    String? cityId,
+    String? cityName,
+  }) {
+    selectedCountryId.value = countryId ?? '';
+    selectedCountryName.value = countryName ?? '';
+    selectedCityId.value = cityId ?? '';
+    selectedCityName.value = cityName ?? '';
+  }
 
   void setDepartureDate(DateTime? date) => departureDate.value = date;
 

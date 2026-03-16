@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 
 import '../travel_plan/travel_plan_page.dart';
@@ -41,7 +42,7 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
           child: Column(
             children: [
               // Header Card
-              _HeaderCard(cityName: controller.cityName),
+              _HeaderCard(controllerTag: controllerTag),
 
               // Form Section
               Container(
@@ -61,6 +62,11 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Destination
+                    TravelPlanDestinationSection(controllerTag: controllerTag),
+
+                    SizedBox(height: 28.h),
+
                     // Departure Location
                     TravelPlanDepartureSection(controllerTag: controllerTag),
 
@@ -136,27 +142,28 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
             ),
           ),
           SizedBox(width: 12.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.aiTravelPlanner,
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              if (controller.cityName.isNotEmpty)
+          Obx(
+            () => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  l10n.planYourTrip(controller.cityName),
+                  l10n.aiTravelPlanner,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  controller.cityName.isNotEmpty ? l10n.planYourTrip(controller.cityName) : l10n.selectDestination,
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.grey,
                     fontWeight: FontWeight.normal,
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -165,13 +172,14 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
 }
 
 class _HeaderCard extends StatelessWidget {
-  final String cityName;
+  final String controllerTag;
 
-  const _HeaderCard({required this.cityName});
+  const _HeaderCard({required this.controllerTag});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final controller = Get.find<CreateTravelPlanPageController>(tag: controllerTag);
     return Container(
       width: double.infinity,
       margin: EdgeInsets.all(16.w),
@@ -209,12 +217,16 @@ class _HeaderCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 8.h),
-          Text(
-            '先设定偏好，再决定是否启用 OpenClaw 研究增强，最后由 AI 生成更贴近你任务目标的行程。',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14.sp,
-              height: 1.4,
+          Obx(
+            () => Text(
+              controller.cityName.isNotEmpty
+                  ? '已为你预填 ${controller.cityName}，你也可以在下方重新选择目的地后再生成 AI 行程。'
+                  : '请先选择旅行目的地，再设定偏好并决定是否启用 OpenClaw 研究增强。',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                height: 1.4,
+              ),
             ),
           ),
           SizedBox(height: 14.h),
@@ -295,31 +307,43 @@ class _GeneratePlanButton extends GetView<CreateTravelPlanPageController> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return ElevatedButton(
-      onPressed: () => _generatePlan(),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFFF4458),
-        foregroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(vertical: 16.h),
-        minimumSize: Size(double.infinity, 0),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-        elevation: 0,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
-          SizedBox(width: 8.w),
-          Obx(() => Text(
-                controller.planningMode.value == 'research' ? '开始 OpenClaw 研究规划' : l10n.generatePlan,
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.3.sp),
-              )),
-        ],
+    return Obx(
+      () => ElevatedButton(
+        onPressed: () => _generatePlan(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFFF4458),
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          minimumSize: Size(double.infinity, 0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
+            SizedBox(width: 8.w),
+            Text(
+              controller.planningMode.value == 'research' ? '开始 OpenClaw 研究规划' : l10n.generatePlan,
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.3.sp),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  void _generatePlan() {
+  void _generatePlan(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (!controller.hasSelectedDestination) {
+      AppToast.warning(
+        l10n.selectDestination,
+        title: l10n.destination,
+      );
+      return;
+    }
+
     Get.to(
       () => TravelPlanPage(
         cityId: controller.cityId,
