@@ -71,7 +71,12 @@ class MeetupDetailController extends GetxController {
   // ==================== 计算属性 ====================
 
   /// 当前用户是否已加入活动
-  bool get isJoined => meetup.value != null && _meetupStateController.isRsvped(meetup.value!.id);
+  bool get isJoined {
+    final currentMeetup = meetup.value;
+    if (currentMeetup == null) return false;
+
+    return currentMeetup.isJoined || _meetupStateController.isRsvped(currentMeetup.id);
+  }
 
   /// 当前用户是否是组织者
   bool get isOrganizer => meetup.value?.isOrganizer ?? false;
@@ -115,7 +120,7 @@ class MeetupDetailController extends GetxController {
       }
       _initialized = true;
       _requestedMeetupId = initialMeetup.id;
-      meetup.value = initialMeetup;
+      meetup.value = _mergeMeetupWithLocalState(initialMeetup);
       loadEventDetails();
       return;
     }
@@ -202,7 +207,7 @@ class MeetupDetailController extends GetxController {
 
       // 映射为 Meetup 实体
       final dto = MeetupDto.fromJson(data);
-      final loadedMeetup = dto.toDomain();
+      final loadedMeetup = _mergeMeetupWithLocalState(dto.toDomain());
 
       meetup.value = loadedMeetup;
       _requestedMeetupId = loadedMeetup.id;
@@ -214,6 +219,32 @@ class MeetupDetailController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Meetup _mergeMeetupWithLocalState(Meetup sourceMeetup) {
+    final currentUser = Get.find<AuthStateController>().currentUser.value;
+    final wasJoinedLocally = meetup.value?.isJoined ?? false;
+    final isRsvpedLocally = _meetupStateController.isRsvped(sourceMeetup.id);
+    final isCurrentUserOrganizer = currentUser != null && currentUser.id == sourceMeetup.organizer.id;
+
+    return Meetup(
+      id: sourceMeetup.id,
+      title: sourceMeetup.title,
+      type: sourceMeetup.type,
+      eventType: sourceMeetup.eventType,
+      description: sourceMeetup.description,
+      location: sourceMeetup.location,
+      venue: sourceMeetup.venue,
+      schedule: sourceMeetup.schedule,
+      capacity: sourceMeetup.capacity,
+      organizer: sourceMeetup.organizer,
+      images: sourceMeetup.images,
+      attendeeIds: sourceMeetup.attendeeIds,
+      status: sourceMeetup.status,
+      createdAt: sourceMeetup.createdAt,
+      isJoined: sourceMeetup.isJoined || wasJoinedLocally || isRsvpedLocally,
+      isOrganizer: sourceMeetup.isOrganizer || isCurrentUserOrganizer,
+    );
   }
 
   // ==================== 业务操作方法 ====================
