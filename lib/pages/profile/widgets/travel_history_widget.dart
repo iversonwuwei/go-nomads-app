@@ -1,11 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/travel_history/routes/travel_history_routes.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 
 /// 旅行历史部分组件
 class TravelHistoryWidget extends StatelessWidget {
@@ -25,29 +27,12 @@ class TravelHistoryWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 标题行：点击可进入完整旅行历史页面
-        InkWell(
+        ProfileSectionHeader(
+          title: l10n.travelHistory,
           onTap: () => Get.toNamed(TravelHistoryRoutes.travelHistory),
-          borderRadius: BorderRadius.circular(8.r),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.travelHistory,
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1a1a1a),
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  color: Color(0xFF6b7280),
-                ),
-              ],
-            ),
+          trailing: const Icon(
+            Icons.chevron_right,
+            color: Color(0xFF6b7280),
           ),
         ),
         SizedBox(height: 16.h),
@@ -67,6 +52,8 @@ class _EmptyTravelHistory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.symmetric(
         vertical: isMobile ? 40 : 60,
@@ -90,7 +77,7 @@ class _EmptyTravelHistory extends StatelessWidget {
             ),
             SizedBox(height: 16.h),
             Text(
-              'No travel history yet',
+              l10n.noTravelHistoryYet,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: isMobile ? 16 : 18,
@@ -99,7 +86,7 @@ class _EmptyTravelHistory extends StatelessWidget {
             ),
             SizedBox(height: 8.h),
             Text(
-              'Start your digital nomad journey!',
+              l10n.profileStartNomadJourney,
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: isMobile ? 14 : 16,
@@ -124,7 +111,12 @@ class _LatestTripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateRange = _formatDateRange(trip.arrivalTime, trip.departureTime);
+    final l10n = AppLocalizations.of(context)!;
+    final dateRange = _formatDateRange(
+      context,
+      trip.arrivalTime,
+      trip.departureTime,
+    );
     final daysAgo = DateTime.now().difference(trip.arrivalTime).inDays;
 
     return Container(
@@ -187,7 +179,7 @@ class _LatestTripCard extends StatelessWidget {
                   children: [
                     _StatusBadge(isOngoing: trip.isOngoing),
                     Text(
-                      trip.isOngoing ? 'Now' : _formatDaysAgo(daysAgo),
+                      trip.isOngoing ? l10n.today : _formatDaysAgo(l10n, daysAgo),
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: Colors.grey[600],
@@ -245,25 +237,33 @@ class _LatestTripCard extends StatelessWidget {
     );
   }
 
-  String _formatDateRange(DateTime arrival, DateTime? departure) {
-    final arrivalStr = '${arrival.month}/${arrival.day}';
-    if (departure != null) {
-      final departureStr = '${departure.month}/${departure.day}';
-      if (arrival.year == departure.year) {
-        return '$arrivalStr - $departureStr, ${arrival.year}';
-      }
-      return '${arrival.year}/$arrivalStr - ${departure.year}/$departureStr';
+  String _formatDateRange(
+    BuildContext context,
+    DateTime arrival,
+    DateTime? departure,
+  ) {
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final fullFormat = DateFormat.yMMMd(localeTag);
+
+    if (departure == null) {
+      return '${fullFormat.format(arrival)} - ${AppLocalizations.of(context)!.present}';
     }
-    return '${arrival.year}/$arrivalStr - Present';
+
+    if (arrival.year == departure.year) {
+      final startFormat = DateFormat.MMMd(localeTag);
+      return '${startFormat.format(arrival)} - ${fullFormat.format(departure)}';
+    }
+
+    return '${fullFormat.format(arrival)} - ${fullFormat.format(departure)}';
   }
 
-  String _formatDaysAgo(int days) {
-    if (days == 0) return 'Today';
-    if (days == 1) return 'Yesterday';
-    if (days < 7) return '$days days ago';
-    if (days < 30) return '${(days / 7).floor()} weeks ago';
-    if (days < 365) return '${(days / 30).floor()} months ago';
-    return '${(days / 365).floor()} years ago';
+  String _formatDaysAgo(AppLocalizations l10n, int days) {
+    if (days == 0) return l10n.today;
+    if (days == 1) return l10n.yesterday;
+    if (days < 7) return l10n.daysAgo(days.toString());
+    if (days < 30) return l10n.weeksAgo(((days / 7).floor()).toString());
+    if (days < 365) return l10n.monthsAgo(((days / 30).floor()).toString());
+    return l10n.yearsAgo((days / 365).floor());
   }
 }
 
@@ -275,6 +275,8 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
@@ -291,7 +293,7 @@ class _StatusBadge extends StatelessWidget {
           ),
           SizedBox(width: 4.w),
           Text(
-            isOngoing ? 'Currently Here' : 'Recent Trip',
+            isOngoing ? l10n.profileCurrentlyHere : l10n.profileRecentTrip,
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w600,
@@ -436,6 +438,8 @@ class _BottomInfoBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -483,7 +487,7 @@ class _BottomInfoBar extends StatelessWidget {
                 ),
                 SizedBox(width: 6.w),
                 Text(
-                  '$durationDays ${durationDays == 1 ? 'day' : 'days'}',
+                  '$durationDays ${durationDays == 1 ? l10n.profileDayUnit : l10n.profileDayUnitPlural}',
                   style: TextStyle(
                     fontSize: 13.sp,
                     color: Colors.grey[700],

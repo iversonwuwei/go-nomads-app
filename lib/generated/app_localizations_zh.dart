@@ -4761,6 +4761,44 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noInterestsAddedYet => '还没有添加兴趣';
 
   @override
+  String get profileNomadJourney => '游民旅程';
+
+  @override
+  String get profileStartNomadJourney => '开启你的数字游民旅程！';
+
+  @override
+  String get profileActiveMeetups => '活跃 Meetup';
+
+  @override
+  String get profileMembershipActive => '有效';
+
+  @override
+  String get profileMembershipExpired => '会员已过期';
+
+  @override
+  String get profileUnlimitedAi => 'AI 不限量';
+
+  @override
+  String profileAiUsageLeft(int remaining, int total) {
+    return 'AI：剩余 $remaining/$total';
+  }
+
+  @override
+  String get profileCurrentlyHere => '当前在这里';
+
+  @override
+  String get profileRecentTrip => '最近旅程';
+
+  @override
+  String get profileDayUnit => '天';
+
+  @override
+  String get profileDayUnitPlural => '天';
+
+  @override
+  String get profileTravelPlansEmptySubtitle => '从城市详情页生成 AI 旅行计划';
+
+  @override
   String get enterInterest => '输入兴趣';
 
   @override

@@ -1,8 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 
 /// 技能与兴趣部分组件
 class SkillsInterestsWidget extends StatelessWidget {
@@ -23,38 +24,28 @@ class SkillsInterestsWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Skills Section
-        Text(
-          l10n.skills,
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1a1a1a),
-          ),
+        ProfileSectionHeader(
+          title: l10n.skills,
         ),
         SizedBox(height: 12.h),
         user.skills.isEmpty
             ? _EmptyStateCard(
                 icon: FontAwesomeIcons.lightbulb,
-                message: 'No skills added yet',
+                message: l10n.noSkillsAddedYet,
                 isMobile: isMobile,
               )
             : _SkillsWrap(skills: user.skills),
         SizedBox(height: 24.h),
 
         // Interests Section
-        Text(
-          l10n.interests,
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1a1a1a),
-          ),
+        ProfileSectionHeader(
+          title: l10n.interests,
         ),
         SizedBox(height: 12.h),
         user.interests.isEmpty
             ? _EmptyStateCard(
                 icon: FontAwesomeIcons.heart,
-                message: 'No interests added yet',
+                message: l10n.noInterestsAddedYet,
                 isMobile: isMobile,
               )
             : _InterestsWrap(interests: user.interests),

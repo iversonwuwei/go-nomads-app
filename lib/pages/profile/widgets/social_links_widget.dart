@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 
 /// 社交链接部分组件
 class SocialLinksWidget extends StatelessWidget {
@@ -22,13 +23,8 @@ class SocialLinksWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1a1a1a),
-          ),
+        ProfileSectionHeader(
+          title: title,
         ),
         SizedBox(height: 16.h),
         Wrap(

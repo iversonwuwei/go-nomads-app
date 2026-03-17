@@ -1,10 +1,11 @@
-import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
-import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
-import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
+import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// 会员卡片组件
 ///
@@ -15,9 +16,11 @@ class MembershipCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     // 检查会员控制器是否已注册，如果没有则显示默认卡片
     if (!Get.isRegistered<MembershipStateController>()) {
-      return _buildDefaultCard();
+      return _buildDefaultCard(l10n);
     }
 
     final membershipController = Get.find<MembershipStateController>();
@@ -28,6 +31,7 @@ class MembershipCardWidget extends StatelessWidget {
       final isActive = membershipController.isActive;
 
       return _buildMembershipCard(
+        l10n: l10n,
         level: level,
         membership: membership,
         isActive: isActive,
@@ -38,8 +42,9 @@ class MembershipCardWidget extends StatelessWidget {
   }
 
   /// 构建默认卡片（Free 会员）
-  Widget _buildDefaultCard() {
+  Widget _buildDefaultCard(AppLocalizations l10n) {
     return _buildMembershipCard(
+      l10n: l10n,
       level: MembershipLevel.free,
       membership: null,
       isActive: false,
@@ -50,6 +55,7 @@ class MembershipCardWidget extends StatelessWidget {
 
   /// 构建会员卡片
   Widget _buildMembershipCard({
+    required AppLocalizations l10n,
     required MembershipLevel level,
     required dynamic membership,
     required bool isActive,
@@ -120,7 +126,7 @@ class MembershipCardWidget extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: Text(
-                            'ACTIVE',
+                            l10n.profileMembershipActive,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 10.sp,
@@ -134,10 +140,10 @@ class MembershipCardWidget extends StatelessWidget {
                   SizedBox(height: 4.h),
                   Text(
                     level == MembershipLevel.free
-                        ? 'Upgrade to unlock more features'
+                        ? l10n.upgradeToUnlock
                         : isActive
-                            ? '$remainingDays days remaining'
-                            : 'Membership expired',
+                            ? l10n.daysRemaining(remainingDays)
+                            : l10n.profileMembershipExpired,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 13.sp,
@@ -156,8 +162,8 @@ class MembershipCardWidget extends StatelessWidget {
                         SizedBox(width: 6.w),
                         Text(
                           level == MembershipLevel.premium
-                              ? 'Unlimited AI'
-                              : 'AI: $aiUsageRemaining/${level.aiUsageLimit} left',
+                              ? l10n.profileUnlimitedAi
+                              : l10n.profileAiUsageLeft(aiUsageRemaining, level.aiUsageLimit),
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 12.sp,

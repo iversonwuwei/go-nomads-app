@@ -2535,6 +2535,28 @@
   "tellUsAboutYourself": "Tell us about yourself...",
   "noSkillsAddedYet": "No skills added yet",
   "noInterestsAddedYet": "No interests added yet",
+  "profileNomadJourney": "Nomad Journey",
+  "profileStartNomadJourney": "Start your digital nomad journey!",
+  "profileActiveMeetups": "Active Meetups",
+  "profileMembershipActive": "ACTIVE",
+  "profileMembershipExpired": "Membership expired",
+  "profileUnlimitedAi": "Unlimited AI",
+  "profileAiUsageLeft": "AI: {remaining}/{total} left",
+  "@profileAiUsageLeft": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileCurrentlyHere": "Currently Here",
+  "profileRecentTrip": "Recent Trip",
+  "profileDayUnit": "day",
+  "profileDayUnitPlural": "days",
+  "profileTravelPlansEmptySubtitle": "Generate AI-powered travel plans from city detail pages",
   "addSkill": "Add Skill",
   "addInterest": "Add Interest",
   "enterSkillName": "Enter skill name",

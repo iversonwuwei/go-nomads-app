@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
@@ -29,33 +30,19 @@ class TravelPlansWidget extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                FontAwesomeIcons.wandMagicSparkles,
-                color: Color(0xFFFF4458),
-                size: 20.r,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'My Travel Plans',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (latestPlan != null) ...[
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () => Get.toNamed(AppRoutes.cityList),
-                  icon: Icon(FontAwesomeIcons.plus, size: 16.r),
-                  label: Text(l10n.createNew),
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFFFF4458),
-                  ),
-                ),
-              ],
-            ],
+          ProfileSectionHeader(
+            title: l10n.myTravelPlans,
+            icon: FontAwesomeIcons.wandMagicSparkles,
+            trailing: latestPlan != null
+                ? TextButton.icon(
+                    onPressed: () => Get.toNamed(AppRoutes.cityList),
+                    icon: Icon(FontAwesomeIcons.plus, size: 16.r),
+                    label: Text(l10n.createNew),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFFF4458),
+                    ),
+                  )
+                : null,
           ),
           SizedBox(height: 16.h),
           if (isLoading)
@@ -119,7 +106,7 @@ class _EmptyPlansCard extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           Text(
-            'No Travel Plans Yet',
+            l10n.modularProfileNoTravelPlans,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
@@ -127,7 +114,7 @@ class _EmptyPlansCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Generate AI-powered travel plans from city detail pages',
+            l10n.profileTravelPlansEmptySubtitle,
             style: TextStyle(
               fontSize: 14.sp,
               color: Colors.grey[600],
@@ -165,6 +152,8 @@ class _LatestPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return GestureDetector(
       onTap: () {
         Get.toNamed(
@@ -215,7 +204,7 @@ class _LatestPlanCard extends StatelessWidget {
                     children: [
                       _PlanTag(
                         icon: FontAwesomeIcons.calendarDays,
-                        label: '${plan.duration} days',
+                        label: l10n.durationDays(plan.duration.toString()),
                       ),
                       _PlanTag(
                         icon: FontAwesomeIcons.dollarSign,
@@ -237,7 +226,7 @@ class _LatestPlanCard extends StatelessWidget {
                       ),
                       SizedBox(width: 6.w),
                       Text(
-                        'Created ${plan.formattedCreatedAt}',
+                        '${l10n.createdAt} ${plan.formattedCreatedAt}',
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: Colors.grey[500],
@@ -407,6 +396,8 @@ class _AiTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Positioned(
       top: 12.h,
       right: 12.w,
@@ -429,7 +420,7 @@ class _AiTag extends StatelessWidget {
             ),
             SizedBox(width: 4.w),
             Text(
-              'AI Generated',
+              l10n.aiGenerated,
               style: TextStyle(
                 fontSize: 11.sp,
                 color: Colors.white,

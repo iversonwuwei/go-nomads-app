@@ -9254,6 +9254,78 @@ abstract class AppLocalizations {
   /// **'还没有添加兴趣'**
   String get noInterestsAddedYet;
 
+  /// No description provided for @profileNomadJourney.
+  ///
+  /// In zh, this message translates to:
+  /// **'游民旅程'**
+  String get profileNomadJourney;
+
+  /// No description provided for @profileStartNomadJourney.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启你的数字游民旅程！'**
+  String get profileStartNomadJourney;
+
+  /// No description provided for @profileActiveMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'活跃 Meetup'**
+  String get profileActiveMeetups;
+
+  /// No description provided for @profileMembershipActive.
+  ///
+  /// In zh, this message translates to:
+  /// **'有效'**
+  String get profileMembershipActive;
+
+  /// No description provided for @profileMembershipExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'会员已过期'**
+  String get profileMembershipExpired;
+
+  /// No description provided for @profileUnlimitedAi.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 不限量'**
+  String get profileUnlimitedAi;
+
+  /// No description provided for @profileAiUsageLeft.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI：剩余 {remaining}/{total}'**
+  String profileAiUsageLeft(int remaining, int total);
+
+  /// No description provided for @profileCurrentlyHere.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前在这里'**
+  String get profileCurrentlyHere;
+
+  /// No description provided for @profileRecentTrip.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近旅程'**
+  String get profileRecentTrip;
+
+  /// No description provided for @profileDayUnit.
+  ///
+  /// In zh, this message translates to:
+  /// **'天'**
+  String get profileDayUnit;
+
+  /// No description provided for @profileDayUnitPlural.
+  ///
+  /// In zh, this message translates to:
+  /// **'天'**
+  String get profileDayUnitPlural;
+
+  /// No description provided for @profileTravelPlansEmptySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'从城市详情页生成 AI 旅行计划'**
+  String get profileTravelPlansEmptySubtitle;
+
   /// No description provided for @enterInterest.
   ///
   /// In zh, this message translates to:

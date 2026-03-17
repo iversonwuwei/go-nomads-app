@@ -12,16 +12,13 @@ import 'package:go_nomads_app/pages/pros_and_cons_add_page.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
-/// Pros & Cons Tab - 优缺点标签页
-/// 使用 GetView 绑定 CityDetailController
 class ProsConsTab extends GetView<CityDetailController> {
-  @override
-  final String? tag;
+  final String? customTag;
 
-  const ProsConsTab({
-    super.key,
-    required this.tag,
-  });
+  const ProsConsTab({super.key, String? tag}) : customTag = tag;
+
+  @override
+  String? get tag => customTag;
 
   @override
   Widget build(BuildContext context) {
@@ -30,21 +27,30 @@ class ProsConsTab extends GetView<CityDetailController> {
 
     return Obx(() {
       final isLoading = prosConsController.isLoadingPros.value || prosConsController.isLoadingCons.value;
-
+      
       final content = RefreshIndicator(
         onRefresh: () => prosConsController.loadCityProsCons(controller.cityId),
         child: ListView(
-          padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 80.h),
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 20.h, bottom: 80.h),
           children: [
-            // 优点部分
-            Text(
-              '优点',
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+            // Header for Pros
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration:
+                      BoxDecoration(color: Colors.green.withAlpha(20), borderRadius: BorderRadius.circular(12.r)),
+                  child: Icon(FontAwesomeIcons.solidThumbsUp, color: Colors.green, size: 18.r),
+                ),
+                SizedBox(width: 12.w),
+                Text('有点', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87)),
+              ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 16.h),
+            
             if (prosConsController.prosList.isEmpty)
               _EmptyProsConsState(
-                icon: FontAwesomeIcons.circleCheck,
+                icon: FontAwesomeIcons.solidThumbsUp,
                 iconColor: Colors.green,
                 title: l10n.prosConsNoProsTitle,
                 subtitle: l10n.prosConsNoProsSubtitle,
@@ -52,24 +58,32 @@ class ProsConsTab extends GetView<CityDetailController> {
                 onTap: () => _showAddProsConsPage(context, initialTab: 0),
               )
             else
-              ...prosConsController.prosList.map((item) => _ProsConsItem(
+              ...prosConsController.prosList.map((item) => _ModernProsConsItem(
                     item: item,
                     isPro: true,
                     hasVoted: prosConsController.hasUserVoted(item.id),
                     onVote: () => _handleVote(prosConsController, item),
                   )),
+              
+            SizedBox(height: 32.h),
 
-            SizedBox(height: 24.h),
-
-            // 挑战部分
-            Text(
-              '挑战',
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+            // Header for Cons
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.r),
+                  decoration: BoxDecoration(color: Colors.red.withAlpha(20), borderRadius: BorderRadius.circular(12.r)),
+                  child: Icon(FontAwesomeIcons.solidThumbsDown, color: Colors.red, size: 18.r),
+                ),
+                SizedBox(width: 12.w),
+                Text('挑战', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87)),
+              ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 16.h),
+            
             if (prosConsController.consList.isEmpty)
               _EmptyProsConsState(
-                icon: FontAwesomeIcons.ban,
+                icon: FontAwesomeIcons.solidThumbsDown,
                 iconColor: Colors.red,
                 title: l10n.prosConsNoConsTitle,
                 subtitle: l10n.prosConsNoConsSubtitle,
@@ -77,7 +91,7 @@ class ProsConsTab extends GetView<CityDetailController> {
                 onTap: () => _showAddProsConsPage(context, initialTab: 1),
               )
             else
-              ...prosConsController.consList.map((item) => _ProsConsItem(
+              ...prosConsController.consList.map((item) => _ModernProsConsItem(
                     item: item,
                     isPro: false,
                     hasVoted: prosConsController.hasUserVoted(item.id),
@@ -97,35 +111,26 @@ class ProsConsTab extends GetView<CityDetailController> {
 
   void _showAddProsConsPage(BuildContext context, {int initialTab = 0}) async {
     final prosConsController = Get.find<ProsConsStateController>();
-
     if (controller.isAdminOrModerator) {
-      await Get.to(() => ManageProsConsPage(
-            cityId: controller.cityId,
-            cityName: controller.cityName,
-          ));
+      await Get.to(() => ManageProsConsPage(cityId: controller.cityId, cityName: controller.cityName));
     } else {
-      await Get.to(() => ProsAndConsAddPage(
-            cityId: controller.cityId,
-            cityName: controller.cityName,
-          ));
+      await Get.to(() => ProsAndConsAddPage(cityId: controller.cityId, cityName: controller.cityName));
     }
     prosConsController.loadCityProsCons(controller.cityId);
   }
 
   void _handleVote(ProsConsStateController prosConsController, ProsCons item) async {
-    // 使用 upvote 方法进行投票（如果已投票，会自动取消）
     await prosConsController.upvote(item.id, item.isPro);
   }
 }
 
-/// 优缺点项
-class _ProsConsItem extends StatelessWidget {
+class _ModernProsConsItem extends StatelessWidget {
   final ProsCons item;
   final bool isPro;
   final bool hasVoted;
   final VoidCallback onVote;
 
-  const _ProsConsItem({
+  const _ModernProsConsItem({
     required this.item,
     required this.isPro,
     required this.hasVoted,
@@ -134,87 +139,74 @@ class _ProsConsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final primaryColor = isPro ? Colors.green : Colors.red;
+
+    return Container(
       margin: EdgeInsets.only(bottom: 12.h),
-      child: Padding(
-        padding: EdgeInsets.all(12.w),
-        child: Row(
-          children: [
-            Icon(
-              isPro ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.ban,
-              color: isPro ? Colors.green : Colors.red,
-              size: 24.r,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Text(
+              item.text,
+              style: TextStyle(
+                fontSize: 15.sp,
+                color: Colors.black87,
+                height: 1.4,
+              ),
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Text(item.text, style: TextStyle(fontSize: 15.sp)),
+          ),
+          SizedBox(width: 12.w),
+          GestureDetector(
+            onTap: onVote,
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: hasVoted ? primaryColor : Colors.grey[100],
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isPro ? FontAwesomeIcons.arrowUp : FontAwesomeIcons.arrowDown,
+                    size: 14.r,
+                    color: hasVoted ? Colors.white : Colors.grey[500],
+                  ),
+                  if (item.upvotes > 0 || hasVoted) ...[
+                    SizedBox(width: 6.w),
+                    Text(
+                      '${item.upvotes}',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                        color: hasVoted ? Colors.white : Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-            _VoteBadge(
-              hasVoted: hasVoted,
-              count: item.upvotes,
-              onTap: onVote,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// 投票徽章
-class _VoteBadge extends StatelessWidget {
-  final bool hasVoted;
-  final int count;
-  final VoidCallback? onTap;
-
-  const _VoteBadge({
-    required this.hasVoted,
-    required this.count,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Color color = hasVoted ? Colors.green : AppColors.cityPrimary;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12.r),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-          decoration: BoxDecoration(
-            color: hasVoted ? Colors.green.withValues(alpha: 0.12) : const Color(0xFFFFEEF2),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: color.withValues(alpha: 0.35)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                hasVoted ? FontAwesomeIcons.solidThumbsUp : FontAwesomeIcons.thumbsUp,
-                size: 18.r,
-                color: color,
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                '$count',
-                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold, color: color),
-              ),
-              Text(
-                hasVoted ? '取消' : '投票',
-                style: TextStyle(fontSize: 10.sp, color: color),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 空状态组件
 class _EmptyProsConsState extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -235,40 +227,47 @@ class _EmptyProsConsState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 40.h, horizontal: 20.w),
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 20.w),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.3), width: 1),
-        borderRadius: BorderRadius.circular(12.r),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, size: 48.r, color: iconColor.withValues(alpha: 0.4)),
+          Container(
+            padding: EdgeInsets.all(16.r),
+            decoration: BoxDecoration(
+              color: iconColor.withAlpha(20),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 32.r, color: iconColor),
+          ),
           SizedBox(height: 16.h),
           Text(
             title,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
           SizedBox(height: 8.h),
           Text(
             subtitle,
-            style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
           ),
           SizedBox(height: 20.h),
-          OutlinedButton.icon(
+          ElevatedButton(
             onPressed: onTap,
-            icon: Icon(FontAwesomeIcons.plus, size: 18.r),
-            label: Text(buttonText),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.cityPrimary,
-              side: const BorderSide(color: AppColors.cityPrimary),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.cityPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+            ),
+            child: Text(
+              buttonText,
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ),
         ],

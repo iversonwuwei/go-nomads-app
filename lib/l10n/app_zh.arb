@@ -2520,6 +2520,28 @@
   "tellUsAboutYourself": "介绍一下你自己...",
   "noSkillsAddedYet": "还没有添加技能",
   "noInterestsAddedYet": "还没有添加兴趣",
+  "profileNomadJourney": "游民旅程",
+  "profileStartNomadJourney": "开启你的数字游民旅程！",
+  "profileActiveMeetups": "活跃 Meetup",
+  "profileMembershipActive": "有效",
+  "profileMembershipExpired": "会员已过期",
+  "profileUnlimitedAi": "AI 不限量",
+  "profileAiUsageLeft": "AI：剩余 {remaining}/{total}",
+  "@profileAiUsageLeft": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileCurrentlyHere": "当前在这里",
+  "profileRecentTrip": "最近旅程",
+  "profileDayUnit": "天",
+  "profileDayUnitPlural": "天",
+  "profileTravelPlansEmptySubtitle": "从城市详情页生成 AI 旅行计划",
   "addSkill": "添加技能",
   "addInterest": "添加兴趣",
   "enterSkillName": "输入技能名称",

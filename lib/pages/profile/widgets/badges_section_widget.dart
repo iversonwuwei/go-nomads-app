@@ -1,7 +1,8 @@
-import 'package:go_nomads_app/features/user/domain/entities/user.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 
 /// 徽章部分组件
 class BadgesSectionWidget extends StatelessWidget {
@@ -23,13 +24,8 @@ class BadgesSectionWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.badges,
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1a1a1a),
-          ),
+        ProfileSectionHeader(
+          title: l10n.badges,
         ),
         SizedBox(height: 16.h),
         Wrap(

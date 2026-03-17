@@ -1,9 +1,11 @@
-import 'package:go_nomads_app/features/user/domain/entities/user.dart';
-import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:intl/intl.dart';
 
 /// 个人资料头部组件
 class ProfileHeaderWidget extends StatelessWidget {
@@ -18,6 +20,8 @@ class ProfileHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -131,7 +135,7 @@ class ProfileHeaderWidget extends StatelessWidget {
               ],
               SizedBox(height: 12.h),
               Text(
-                'Member since ${_formatJoinDate(user.joinedDate)}',
+                l10n.profileJoinedAt(_formatJoinDate(context, user.joinedDate)),
                 style: TextStyle(
                   fontSize: 13.sp,
                   color: Color(0xFF9ca3af),
@@ -197,8 +201,7 @@ class ProfileHeaderWidget extends StatelessWidget {
     );
   }
 
-  String _formatJoinDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month - 1]} ${date.year}';
+  String _formatJoinDate(BuildContext context, DateTime date) {
+    return DateFormat.yMMM(Localizations.localeOf(context).toLanguageTag()).format(date);
   }
 }

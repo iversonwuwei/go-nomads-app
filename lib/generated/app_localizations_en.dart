@@ -4844,6 +4844,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noInterestsAddedYet => 'No interests added yet';
 
   @override
+  String get profileNomadJourney => 'Nomad Journey';
+
+  @override
+  String get profileStartNomadJourney => 'Start your digital nomad journey!';
+
+  @override
+  String get profileActiveMeetups => 'Active Meetups';
+
+  @override
+  String get profileMembershipActive => 'ACTIVE';
+
+  @override
+  String get profileMembershipExpired => 'Membership expired';
+
+  @override
+  String get profileUnlimitedAi => 'Unlimited AI';
+
+  @override
+  String profileAiUsageLeft(int remaining, int total) {
+    return 'AI: $remaining/$total left';
+  }
+
+  @override
+  String get profileCurrentlyHere => 'Currently Here';
+
+  @override
+  String get profileRecentTrip => 'Recent Trip';
+
+  @override
+  String get profileDayUnit => 'day';
+
+  @override
+  String get profileDayUnitPlural => 'days';
+
+  @override
+  String get profileTravelPlansEmptySubtitle =>
+      'Generate AI-powered travel plans from city detail pages';
+
+  @override
   String get enterInterest => 'Enter interest';
 
   @override

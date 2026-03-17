@@ -1,8 +1,10 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市详情页 Tab 导航
 class CityDetailTabBar extends StatelessWidget {
@@ -20,27 +22,34 @@ class CityDetailTabBar extends StatelessWidget {
     return TabBar(
       controller: controller.tabController,
       isScrollable: true,
-      labelColor: AppColors.cityPrimary,
-      unselectedLabelColor: Colors.grey[600],
+      labelColor: Colors.white,
+      unselectedLabelColor: Colors.grey[700],
       labelStyle: TextStyle(
         fontWeight: FontWeight.w600,
-        fontSize: 15.sp,
+        fontSize: 14.sp,
+        letterSpacing: 0.5,
       ),
       unselectedLabelStyle: TextStyle(
         fontWeight: FontWeight.w500,
-        fontSize: 15.sp,
+        fontSize: 14.sp,
+        letterSpacing: 0.5,
       ),
-      indicatorSize: TabBarIndicatorSize.label,
+      indicatorSize: TabBarIndicatorSize.tab,
+      dividerColor: Colors.transparent, // 隐藏默认分割线
+      indicatorPadding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
       indicator: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.cityPrimary,
-            width: 3,
+        color: AppColors.cityPrimary,
+        borderRadius: BorderRadius.circular(30.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.cityPrimary.withAlpha(80),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
-        ),
+        ],
       ),
-      padding: EdgeInsets.symmetric(horizontal: 8.w),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      tabAlignment: TabAlignment.start,
       tabs: [
         Tab(text: l10n.scores),
         Tab(text: l10n.guide),
@@ -57,18 +66,24 @@ class CityDetailTabBar extends StatelessWidget {
   }
 }
 
-/// Tab 导航 SliverPersistentHeader 委托
+/// Tab 导航 SliverPersistentHeader 委托 - 加入毛玻璃透明效果
 class CityDetailTabBarDelegate extends SliverPersistentHeaderDelegate {
   final Widget tabBarWidget;
   final double height;
 
-  CityDetailTabBarDelegate(this.tabBarWidget, {this.height = 52.0});
+  CityDetailTabBarDelegate(this.tabBarWidget, {this.height = 56.0});
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white,
-      child: tabBarWidget,
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          // 背景透明加高斯模糊，显得特别轻盈现代
+          color: Colors.white.withAlpha(200),
+          child: tabBarWidget,
+        ),
+      ),
     );
   }
 
