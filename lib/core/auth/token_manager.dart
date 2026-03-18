@@ -1,9 +1,9 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/services/database/token_dao.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
-import 'package:get/get.dart';
 
 /// Token 数据结构
 class TokenData {
@@ -48,7 +48,7 @@ class TokenData {
 }
 
 /// 统一的 Token 管理器
-/// 
+///
 /// 作为 Token 操作的 Single Source of Truth
 /// 负责协调 SharedPreferences、SQLite、内存状态的一致性
 class TokenManager {
@@ -84,10 +84,71 @@ class TokenManager {
   /// 当前 AccessToken
   String? get accessToken => _cachedToken?.accessToken;
 
+  Future<void> _saveTokenToSqliteSafely(TokenData tokenData) async {
+    try {
+      await _tokenDao.saveToken(
+        userId: tokenData.userId,
+        accessToken: tokenData.accessToken,
+        refreshToken: tokenData.refreshToken,
+        tokenType: tokenData.tokenType,
+        expiresIn: tokenData.expiresIn,
+        userName: tokenData.userName ?? '',
+        userEmail: tokenData.userEmail ?? '',
+      );
+      log('   ✅ SQLite 已保存');
+    } catch (e) {
+      log('   ⚠️ SQLite 保存失败，已降级为 SharedPreferences-only: $e');
+    }
+  }
+
+  Future<void> _clearTokenFromSqliteSafely(String? userId) async {
+    try {
+      if (userId != null) {
+        await _tokenDao.deleteTokenByUserId(userId);
+        log('   ✅ SQLite 用户 Token 已删除');
+      } else {
+        await _tokenDao.deleteAllTokens();
+        log('   ✅ SQLite 所有 Token 已删除');
+      }
+    } catch (e) {
+      log('   ⚠️ SQLite Token 清除失败，已忽略: $e');
+    }
+  }
+
+  Future<TokenData?> _restoreTokenFromSqliteSafely() async {
+    try {
+      final dbToken = await _tokenDao.getLatestToken();
+      if (dbToken == null) {
+        return null;
+      }
+
+      final dbUserId = dbToken['user_id'] as String;
+      final isExpired = await _tokenDao.isTokenExpired(dbUserId);
+      if (isExpired) {
+        log('⚠️ [TokenManager] SQLite 中的 Token 已过期');
+        return null;
+      }
+
+      return TokenData(
+        userId: dbUserId,
+        accessToken: dbToken['access_token'] as String,
+        refreshToken: dbToken['refresh_token'] as String? ?? '',
+        tokenType: dbToken['token_type'] as String? ?? 'Bearer',
+        expiresIn: dbToken['expires_in'] as int? ?? 3600,
+        expiresAt: dbToken['expires_at'] != null ? DateTime.parse(dbToken['expires_at'] as String) : null,
+        userName: dbToken['user_name'] as String?,
+        userEmail: dbToken['user_email'] as String?,
+      );
+    } catch (e) {
+      log('⚠️ [TokenManager] SQLite 恢复失败，已降级为 SharedPreferences-only: $e');
+      return null;
+    }
+  }
+
   // ==================== 核心操作 ====================
 
   /// 保存 Token (统一入口)
-  /// 
+  ///
   /// 会同步写入:
   /// 1. SharedPreferences (用于 HttpService 拦截器快速获取)
   /// 2. SQLite (用于持久化和恢复)
@@ -95,7 +156,7 @@ class TokenManager {
   /// 4. HttpService 状态
   Future<void> saveToken(TokenData tokenData) async {
     log('📝 [TokenManager] 保存 Token: userId=${tokenData.userId}');
-    
+
     try {
       // 1. 保存到 SharedPreferences (最先，因为 HttpService 拦截器依赖它)
       await _tokenStorage.saveTokens(
@@ -103,7 +164,7 @@ class TokenManager {
         refreshToken: tokenData.refreshToken,
         expiresAt: tokenData.expiresAt,
       );
-      
+
       // 保存用户信息到 SharedPreferences
       if (tokenData.userName != null && tokenData.userEmail != null) {
         await _tokenStorage.saveUserInfo(
@@ -115,17 +176,8 @@ class TokenManager {
       }
       log('   ✅ SharedPreferences 已保存');
 
-      // 2. 保存到 SQLite
-      await _tokenDao.saveToken(
-        userId: tokenData.userId,
-        accessToken: tokenData.accessToken,
-        refreshToken: tokenData.refreshToken,
-        tokenType: tokenData.tokenType,
-        expiresIn: tokenData.expiresIn,
-        userName: tokenData.userName ?? '',
-        userEmail: tokenData.userEmail ?? '',
-      );
-      log('   ✅ SQLite 已保存');
+      // 2. 保存到 SQLite（降级为可选缓存，不阻塞主流程）
+      await _saveTokenToSqliteSafely(tokenData);
 
       // 3. 更新内存缓存
       _cachedToken = tokenData;
@@ -144,7 +196,7 @@ class TokenManager {
   }
 
   /// 清除所有 Token (统一入口)
-  /// 
+  ///
   /// 会同步清除:
   /// 1. SharedPreferences
   /// 2. SQLite (指定用户或全部)
@@ -159,14 +211,8 @@ class TokenManager {
       await _tokenStorage.clearTokens();
       log('   ✅ SharedPreferences 已清除');
 
-      // 2. 清除 SQLite
-      if (targetUserId != null) {
-        await _tokenDao.deleteTokenByUserId(targetUserId);
-        log('   ✅ SQLite 用户 Token 已删除');
-      } else {
-        await _tokenDao.deleteAllTokens();
-        log('   ✅ SQLite 所有 Token 已删除');
-      }
+      // 2. 清除 SQLite（失败不影响登出主流程）
+      await _clearTokenFromSqliteSafely(targetUserId);
 
       // 3. 清除内存缓存
       _cachedToken = null;
@@ -189,7 +235,7 @@ class TokenManager {
   }
 
   /// 从存储恢复 Token (应用启动时调用)
-  /// 
+  ///
   /// 优先级:
   /// 1. 先尝试从 SharedPreferences 恢复 (快速)
   /// 2. 如果失败，尝试从 SQLite 恢复
@@ -229,49 +275,28 @@ class TokenManager {
         }
       }
 
-      // 2. 尝试从 SQLite 恢复
-      final dbToken = await _tokenDao.getLatestToken();
+      // 2. 尝试从 SQLite 恢复（失败则忽略）
+      final dbToken = await _restoreTokenFromSqliteSafely();
       if (dbToken != null) {
-        final dbUserId = dbToken['user_id'] as String;
-        final isExpired = await _tokenDao.isTokenExpired(dbUserId);
-        
-        if (!isExpired) {
-          final tokenData = TokenData(
-            userId: dbUserId,
-            accessToken: dbToken['access_token'] as String,
-            refreshToken: dbToken['refresh_token'] as String? ?? '',
-            tokenType: dbToken['token_type'] as String? ?? 'Bearer',
-            expiresIn: dbToken['expires_in'] as int? ?? 3600,
-            expiresAt: dbToken['expires_at'] != null 
-                ? DateTime.parse(dbToken['expires_at'] as String)
-                : null,
-            userName: dbToken['user_name'] as String?,
-            userEmail: dbToken['user_email'] as String?,
+        await _tokenStorage.saveTokens(
+          accessToken: dbToken.accessToken,
+          refreshToken: dbToken.refreshToken,
+          expiresAt: dbToken.expiresAt,
+        );
+        if (dbToken.userName != null && dbToken.userEmail != null) {
+          await _tokenStorage.saveUserInfo(
+            userId: dbToken.userId,
+            userName: dbToken.userName!,
+            userEmail: dbToken.userEmail!,
+            userRole: dbToken.userRole ?? 'user',
           );
-
-          // 同步回 SharedPreferences
-          await _tokenStorage.saveTokens(
-            accessToken: tokenData.accessToken,
-            refreshToken: tokenData.refreshToken,
-            expiresAt: tokenData.expiresAt,
-          );
-          if (tokenData.userName != null && tokenData.userEmail != null) {
-            await _tokenStorage.saveUserInfo(
-              userId: tokenData.userId,
-              userName: tokenData.userName!,
-              userEmail: tokenData.userEmail!,
-              userRole: tokenData.userRole ?? 'user',
-            );
-          }
-
-          _cachedToken = tokenData;
-          _httpService?.setAuthToken(tokenData.accessToken);
-          _httpService?.setUserId(tokenData.userId);
-          log('✅ [TokenManager] 从 SQLite 恢复成功');
-          return tokenData;
-        } else {
-          log('⚠️ [TokenManager] SQLite 中的 Token 已过期');
         }
+
+        _cachedToken = dbToken;
+        _httpService?.setAuthToken(dbToken.accessToken);
+        _httpService?.setUserId(dbToken.userId);
+        log('✅ [TokenManager] 从 SQLite 恢复成功');
+        return dbToken;
       }
 
       log('ℹ️ [TokenManager] 没有有效的 Token 可恢复');

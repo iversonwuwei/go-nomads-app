@@ -3,13 +3,13 @@ enum MembershipLevel {
   /// 免费用户
   free,
 
-  /// 基础会员 - $49/年
+  /// 基础会员 - ¥298/年
   basic,
 
-  /// 专业会员 - $99/年
+  /// 专业会员 - ¥598/年
   pro,
 
-  /// 高级会员 - $149/年
+  /// 高级会员 - ¥998/年
   premium;
 
   /// 根据数值获取会员等级
@@ -59,23 +59,32 @@ extension MembershipLevelExtension on MembershipLevel {
     }
   }
 
-  /// 获取年费价格
+  /// 获取年费价格（CNY）
   int get price {
     switch (this) {
       case MembershipLevel.free:
         return 0;
       case MembershipLevel.basic:
-        return 49;
+        return 298;
       case MembershipLevel.pro:
-        return 99;
+        return 598;
       case MembershipLevel.premium:
-        return 149;
+        return 998;
     }
   }
 
-  /// 获取月费价格（按年计算）
+  /// 获取月费价格（CNY）
   double get monthlyPrice {
-    return price / 12;
+    switch (this) {
+      case MembershipLevel.free:
+        return 0;
+      case MembershipLevel.basic:
+        return 38;
+      case MembershipLevel.pro:
+        return 68;
+      case MembershipLevel.premium:
+        return 128;
+    }
   }
 
   /// 获取等级数值（用于比较）

@@ -9,6 +9,8 @@ class UserPreferences {
   final String currency;
   final String temperatureUnit;
   final String language;
+  final bool privacyPolicyAccepted;
+  final DateTime? privacyPolicyAcceptedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -22,6 +24,8 @@ class UserPreferences {
     required this.currency,
     required this.temperatureUnit,
     required this.language,
+    this.privacyPolicyAccepted = false,
+    this.privacyPolicyAcceptedAt,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -38,6 +42,10 @@ class UserPreferences {
       currency: json['currency'] as String? ?? 'USD',
       temperatureUnit: json['temperatureUnit'] as String? ?? 'Celsius',
       language: json['language'] as String? ?? 'en',
+      privacyPolicyAccepted: json['privacyPolicyAccepted'] as bool? ?? false,
+      privacyPolicyAcceptedAt: json['privacyPolicyAcceptedAt'] != null
+          ? DateTime.parse(json['privacyPolicyAcceptedAt'] as String)
+          : null,
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : DateTime.now(),
     );
@@ -55,6 +63,8 @@ class UserPreferences {
       'currency': currency,
       'temperatureUnit': temperatureUnit,
       'language': language,
+      'privacyPolicyAccepted': privacyPolicyAccepted,
+      'privacyPolicyAcceptedAt': privacyPolicyAcceptedAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -72,6 +82,8 @@ class UserPreferences {
       currency: 'USD',
       temperatureUnit: 'Celsius',
       language: 'en',
+      privacyPolicyAccepted: false,
+      privacyPolicyAcceptedAt: null,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -88,6 +100,8 @@ class UserPreferences {
     String? currency,
     String? temperatureUnit,
     String? language,
+    bool? privacyPolicyAccepted,
+    DateTime? privacyPolicyAcceptedAt,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -101,6 +115,8 @@ class UserPreferences {
       currency: currency ?? this.currency,
       temperatureUnit: temperatureUnit ?? this.temperatureUnit,
       language: language ?? this.language,
+      privacyPolicyAccepted: privacyPolicyAccepted ?? this.privacyPolicyAccepted,
+      privacyPolicyAcceptedAt: privacyPolicyAcceptedAt ?? this.privacyPolicyAcceptedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

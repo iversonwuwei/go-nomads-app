@@ -3,6 +3,7 @@ import 'package:go_nomads_app/controllers/add_cost_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 费用类别区域组件
 class CostCategoriesSection extends StatelessWidget {
@@ -21,20 +22,20 @@ class CostCategoriesSection extends StatelessWidget {
       children: [
         Text(
           l10n.monthlyCost,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Text(
           l10n.shareExperience,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 14.sp,
             color: Colors.grey[600],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         ...categories.map((category) => _buildCostInputField(context, controller, category)),
       ],
     );
@@ -47,7 +48,7 @@ class CostCategoriesSection extends StatelessWidget {
   ) {
     final currencySymbol = _getCurrencySymbol(context, controller);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -55,19 +56,19 @@ class CostCategoriesSection extends StatelessWidget {
             children: [
               Text(
                 category['icon'],
-                style: const TextStyle(fontSize: 20),
+                style: TextStyle(fontSize: 20.sp),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 category['name'],
-                style: const TextStyle(
-                  fontSize: 15,
+                style: TextStyle(
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           TextFormField(
             controller: controller.controllers[category['key']],
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -76,27 +77,27 @@ class CostCategoriesSection extends StatelessWidget {
             ],
             decoration: InputDecoration(
               hintText: category['hint'],
-              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+              hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
               prefixText: '$currencySymbol ',
-              prefixStyle: const TextStyle(
+              prefixStyle: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
               ),
               filled: true,
               fillColor: Colors.grey[50],
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
                 borderSide: BorderSide(color: Colors.grey[300]!),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
                 borderSide: BorderSide(color: Colors.grey[300]!),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFFF4458), width: 2),
+                borderRadius: BorderRadius.circular(12.r),
+                borderSide: BorderSide(color: Color(0xFFFF4458), width: 2),
               ),
             ),
           ),

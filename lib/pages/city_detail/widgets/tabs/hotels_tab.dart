@@ -25,6 +25,8 @@ class HotelsTab extends GetView<CityDetailController> {
       cityId: controller.cityId,
       cityName: controller.cityName,
       countryName: city?.country,
+      latitude: city?.latitude,
+      longitude: city?.longitude,
     );
   }
 }

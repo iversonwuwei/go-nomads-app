@@ -1,13 +1,15 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Guide Tab - AI 数字游民指南
 /// 使用 GetView 绑定 CityDetailController
@@ -101,7 +103,7 @@ class _GuideContent extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return ListView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+      padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 96.h),
       children: [
         // AI 操作栏
         _GuideActionBar(
@@ -109,35 +111,35 @@ class _GuideContent extends StatelessWidget {
           cityId: cityId,
           cityName: cityName,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
 
         // 概述
         Text(
           l10n.overview,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           guide.overview,
-          style: TextStyle(fontSize: 15, color: Colors.grey[700], height: 1.5),
+          style: TextStyle(fontSize: 15.sp, color: Colors.grey[700], height: 1.5),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // 最佳区域
-        const Text(
+        Text(
           'Best Areas to Stay',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         ...guide.bestAreas.map((area) => _BestAreaCard(area: area)),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // 实用建议
-        const Text(
+        Text(
           'Essential Tips',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         ...guide.tips.map((tip) => _TipItem(tip: tip)),
       ],
     );
@@ -158,20 +160,21 @@ class _GuideActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.green.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
         children: [
-          const Icon(FontAwesomeIcons.cloudArrowUp, color: Colors.green, size: 20),
-          const SizedBox(width: 8),
+          Icon(FontAwesomeIcons.cloudArrowUp, color: Colors.green, size: 20.r),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(
               '☁️ 从后端加载',
-              style: TextStyle(fontSize: 13, color: Colors.green[800]),
+              style: TextStyle(fontSize: 13.sp, color: Colors.green[800]),
             ),
           ),
           Obx(() => Row(
@@ -180,20 +183,20 @@ class _GuideActionBar extends StatelessWidget {
                     onPressed: aiController.isGeneratingGuide || aiController.isLoadingGuide
                         ? null
                         : () => aiController.loadCityGuide(cityId: cityId, cityName: cityName),
-                    icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
-                    label: const Text('刷新'),
+                    icon: Icon(FontAwesomeIcons.arrowsRotate, size: 18.r),
+                    label: Text(l10n.refresh),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cityPrimary,
                       disabledForegroundColor: Colors.grey[400],
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4.w),
                   TextButton.icon(
                     onPressed: aiController.isGeneratingGuide || aiController.isLoadingGuide
                         ? null
                         : () => _handleAIGenerate(context),
-                    icon: const Icon(FontAwesomeIcons.wandMagicSparkles, size: 18),
-                    label: const Text('AI 生成'),
+                    icon: Icon(FontAwesomeIcons.wandMagicSparkles, size: 18.r),
+                    label: Text(l10n.guideTabAiGenerate),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cityPrimary,
                       disabledForegroundColor: Colors.grey[400],
@@ -214,15 +217,17 @@ class _GuideActionBar extends StatelessWidget {
     );
 
     if (!canUse) return;
+    if (!context.mounted) return;
     _showAIGenerateProgressDialog(context);
   }
 
   void _showAIGenerateProgressDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('AI 生成指南'),
+        title: Text(l10n.guideTabAiGenerateGuide),
         content: Obx(() {
           final progress = aiController.guideGenerationProgress;
           final message = aiController.guideGenerationMessage;
@@ -236,8 +241,8 @@ class _GuideActionBar extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   SizedBox(
-                    width: 60,
-                    height: 60,
+                    width: 60.w,
+                    height: 60.h,
                     child: CircularProgressIndicator(
                       value: progress > 0 ? progress / 100 : null,
                       strokeWidth: 4,
@@ -250,23 +255,23 @@ class _GuideActionBar extends StatelessWidget {
                   if (progress > 0)
                     Text(
                       '$progress%',
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
                 message.isNotEmpty ? message : '后端运行中...',
-                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[700]),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 '⏳ 请耐心等待，AI 正在生成内容',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey[500]),
               ),
             ],
           );
@@ -277,7 +282,9 @@ class _GuideActionBar extends StatelessWidget {
     );
 
     aiController.generateDigitalNomadGuideStream(cityId: cityId, cityName: cityName).then((_) {
-      Navigator.pop(context);
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
     });
   }
 }
@@ -290,35 +297,49 @@ class _GuideLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Obx(() => Text(
-                aiController.isGeneratingGuide ? '🤖 AI 正在生成旅游指南...' : '📖 正在加载旅游指南...',
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
-              )),
-          if (aiController.isGeneratingGuide) ...[
-            const SizedBox(height: 12),
-            Obx(() => Text(
-                  aiController.guideGenerationMessage,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                )),
-            const SizedBox(height: 8),
-            Obx(() => Text(
-                  '${aiController.guideGenerationProgress}%',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.cityPrimary,
-                  ),
-                )),
-          ],
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Obx(() => AppLoadingWidget(
+                        fullScreen: false,
+                        cardWidth: 280,
+                        cardHeight: 180,
+                        title: aiController.isGeneratingGuide ? 'AI 正在生成旅游指南' : '正在加载旅游指南',
+                        subtitle: aiController.isGeneratingGuide ? 'Generating guide...' : 'Loading guide...',
+                        icon: Icons.menu_book_rounded,
+                        accentColor: AppColors.cityPrimary,
+                      )),
+                  if (aiController.isGeneratingGuide) ...[
+                    SizedBox(height: 12.h),
+                    Obx(() => Text(
+                          aiController.guideGenerationMessage,
+                          style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                          textAlign: TextAlign.center,
+                        )),
+                    SizedBox(height: 8.h),
+                    Obx(() => Text(
+                          '${aiController.guideGenerationProgress}%',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.cityPrimary,
+                          ),
+                        )),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -344,20 +365,20 @@ class _GuideEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(FontAwesomeIcons.map, size: 60, color: Colors.grey),
-            const SizedBox(height: 12),
-            Text(l10n.loadingGuide, style: const TextStyle(fontSize: 16, color: Colors.grey)),
-            const SizedBox(height: 16),
+            Icon(FontAwesomeIcons.map, size: 60.r, color: Colors.grey),
+            SizedBox(height: 12.h),
+            Text(l10n.loadingGuide, style: TextStyle(fontSize: 16.sp, color: Colors.grey)),
+            SizedBox(height: 16.h),
             Obx(() => ElevatedButton.icon(
                   onPressed: aiController.isGeneratingGuide ? null : () => _handleAIGenerate(context),
                   icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
-                  label: const Text('AI 生成指南'),
+                  label: Text(l10n.guideTabAiGenerateGuide),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.cityPrimary,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: Colors.grey[300],
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
                   ),
                 )),
           ],
@@ -388,26 +409,30 @@ class _BestAreaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(FontAwesomeIcons.locationDot, color: AppColors.cityPrimary, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  area.name,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Icon(FontAwesomeIcons.locationDot, color: AppColors.cityPrimary, size: 18.r),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    area.name,
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               area.description,
-              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey[700]),
             ),
           ],
         ),
@@ -425,13 +450,13 @@ class _TipItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('💡', style: TextStyle(fontSize: 18, color: AppColors.cityPrimary)),
-          const SizedBox(width: 8),
-          Expanded(child: Text(tip, style: const TextStyle(fontSize: 15))),
+          Icon(FontAwesomeIcons.lightbulb, size: 18.r, color: AppColors.cityPrimary),
+          SizedBox(width: 8.w),
+          Expanded(child: Text(tip, style: TextStyle(fontSize: 15.sp))),
         ],
       ),
     );

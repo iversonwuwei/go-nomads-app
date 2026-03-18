@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_form_field.dart';
@@ -9,15 +11,15 @@ import 'package:go_nomads_app/pages/login/widgets/login_form_field.dart';
 class LoginPhoneForm extends GetView<LoginController> {
   const LoginPhoneForm({super.key});
 
-  String? _getErrorText(String? errorKey) {
+  String? _getErrorText(String? errorKey, AppLocalizations l10n) {
     if (errorKey == null) return null;
     switch (errorKey) {
       case 'phoneRequired':
-        return '请输入手机号';
+        return l10n.loginPhoneRequired;
       case 'phoneInvalid':
-        return '请输入正确的手机号';
+        return l10n.loginPhoneInvalid;
       case 'smsCodeRequired':
-        return '请输入验证码';
+        return l10n.enterVerificationCode;
       default:
         return errorKey;
     }
@@ -25,32 +27,29 @@ class LoginPhoneForm extends GetView<LoginController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         // 手机号输入
         Obx(() => LoginFormField(
               controller: controller.phoneController,
-              labelText: '手机号',
-              hintText: '请输入手机号',
+              labelText: l10n.phoneNumber,
+              hintText: l10n.enterPhoneNumber,
               prefixIcon: FontAwesomeIcons.phone,
               keyboardType: TextInputType.phone,
-              errorText: controller.showValidationErrors.value ? _getErrorText(controller.phoneError.value) : null,
+              errorText:
+                  controller.showValidationErrors.value ? _getErrorText(controller.phoneError.value, l10n) : null,
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 验证码输入 + 发送按钮
         _SmsCodeRow(getErrorText: _getErrorText),
 
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // 手机登录按钮
         _PhoneLoginButton(),
-
-        const SizedBox(height: 16),
-
-        // 切换到邮箱登录
-        _SwitchToEmailButton(),
       ],
     );
   }
@@ -58,42 +57,48 @@ class LoginPhoneForm extends GetView<LoginController> {
 
 /// 验证码输入行
 class _SmsCodeRow extends GetView<LoginController> {
-  final String? Function(String?) getErrorText;
+  final String? Function(String?, AppLocalizations) getErrorText;
+  static const double _codeFieldHeight = 56;
 
   const _SmsCodeRow({required this.getErrorText});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Obx(() => LoginFormField(
                 controller: controller.smsCodeController,
-                labelText: '验证码',
-                hintText: '请输入验证码',
+                labelText: l10n.verificationCode,
+                hintText: l10n.enterVerificationCode,
                 prefixIcon: FontAwesomeIcons.message,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
-                errorText: controller.showValidationErrors.value ? getErrorText(controller.smsCodeError.value) : null,
+                compactHeight: _codeFieldHeight.h,
+                errorText:
+                    controller.showValidationErrors.value ? getErrorText(controller.smsCodeError.value, l10n) : null,
               )),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         SizedBox(
-          height: 56,
+          height: _codeFieldHeight.h,
           child: Obx(() => ElevatedButton(
                 onPressed: controller.countdown.value > 0 ? null : controller.sendSmsCode,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: LoginConstants.primaryColor,
                   foregroundColor: Colors.white,
                   disabledBackgroundColor: Colors.grey.shade300,
+                  padding: EdgeInsets.symmetric(horizontal: 18.w),
+                  minimumSize: Size(88.w, _codeFieldHeight.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
                   ),
                 ),
                 child: Text(
-                  controller.countdown.value > 0 ? '${controller.countdown.value}s' : '发送验证码',
-                  style: const TextStyle(fontSize: 14),
+                  controller.countdown.value > 0 ? '${controller.countdown.value}s' : l10n.sendCode,
+                  style: TextStyle(fontSize: 14.sp),
                 ),
               )),
         ),
@@ -106,6 +111,7 @@ class _SmsCodeRow extends GetView<LoginController> {
 class _PhoneLoginButton extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -113,34 +119,15 @@ class _PhoneLoginButton extends GetView<LoginController> {
         style: ElevatedButton.styleFrom(
           backgroundColor: LoginConstants.primaryColor,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
           ),
           elevation: 0,
         ),
-        child: const Text(
-          '登录',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-}
-
-/// 切换到邮箱登录按钮
-class _SwitchToEmailButton extends GetView<LoginController> {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: TextButton(
-        onPressed: () => controller.setLoginMode(LoginMode.email),
-        child: const Text(
-          '使用邮箱密码登录',
-          style: TextStyle(
-            color: LoginConstants.primaryColor,
-            fontWeight: FontWeight.w500,
-          ),
+        child: Text(
+          l10n.loginPhoneAction,
+          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
         ),
       ),
     );

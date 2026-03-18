@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
@@ -16,7 +20,7 @@ class LoginSocialButtons extends GetView<LoginController> {
       children: [
         // 分隔线
         _Divider(),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
         // 社交登录按钮
         if (controller.isChineseUser) _ChineseSocialButtons() else _InternationalSocialButtons(),
       ],
@@ -32,10 +36,10 @@ class _Divider extends StatelessWidget {
       children: [
         Expanded(child: Divider(color: Colors.grey.shade300)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
           child: Text(
-            'Or continue with',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            AppLocalizations.of(context)!.orContinueWith,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 14.sp),
           ),
         ),
         Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -48,35 +52,52 @@ class _Divider extends StatelessWidget {
 class _ChineseSocialButtons extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    if (!Platform.isIOS) {
+      return Row(
+        children: [
+          _SocialButton(
+            onPressed: () =>
+                controller.handleSocialLogin(SocialLoginType.wechat, AppLocalizations.of(Get.context!)!.wechat),
+            icon: FontAwesomeIcons.weixin,
+            color: LoginConstants.wechatGreen,
+            label: AppLocalizations.of(Get.context!)!.wechat,
+          ),
+          _SocialButton(
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
+            icon: FontAwesomeIcons.qq,
+            color: LoginConstants.qqBlue,
+            label: 'QQ',
+          ),
+        ],
+      );
+    }
+
+    return Row(
       children: [
-        Row(
-          children: [
-            _SocialButton(
-              onPressed: () => controller.handleSocialLogin(SocialLoginType.wechat, '微信'),
-              icon: FontAwesomeIcons.weixin,
-              color: LoginConstants.wechatGreen,
-              label: '微信',
-            ),
-            _SocialButton(
-              onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
-              icon: FontAwesomeIcons.qq,
-              color: LoginConstants.qqBlue,
-              label: 'QQ',
-            ),
-          ],
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+          icon: FontAwesomeIcons.apple,
+          color: Colors.black,
+          label: 'Apple',
         ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _SocialButton(
-              onPressed: () => controller.setLoginMode(LoginMode.phone),
-              icon: FontAwesomeIcons.mobile,
-              color: LoginConstants.phoneGreen,
-              label: '手机号',
-            ),
-          ],
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
+          icon: FontAwesomeIcons.google,
+          color: LoginConstants.googleRed,
+          label: 'Google',
+        ),
+        _SocialButton(
+          onPressed: () =>
+              controller.handleSocialLogin(SocialLoginType.wechat, AppLocalizations.of(Get.context!)!.wechat),
+          icon: FontAwesomeIcons.weixin,
+          color: LoginConstants.wechatGreen,
+          label: AppLocalizations.of(Get.context!)!.wechat,
+        ),
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
+          icon: FontAwesomeIcons.qq,
+          color: LoginConstants.qqBlue,
+          label: 'QQ',
         ),
       ],
     );
@@ -87,52 +108,34 @@ class _ChineseSocialButtons extends GetView<LoginController> {
 class _InternationalSocialButtons extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
       children: [
-        Row(
-          children: [
-            _SocialButton(
-              onPressed: () => AppToast.info('Google Sign In coming soon', title: 'Google'),
-              icon: FontAwesomeIcons.google,
-              color: LoginConstants.googleRed,
-              label: 'Google',
-            ),
-            _SocialButton(
-              onPressed: () => AppToast.info('Apple Sign In coming soon', title: 'Apple'),
-              icon: FontAwesomeIcons.apple,
-              color: Colors.black,
-              label: 'Apple',
-            ),
-            _SocialButton(
-              onPressed: () => AppToast.info('Twitter Sign In coming soon', title: 'Twitter'),
-              icon: FontAwesomeIcons.xTwitter,
-              color: Colors.black,
-              label: 'Twitter',
-            ),
-          ],
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
+          icon: FontAwesomeIcons.google,
+          color: LoginConstants.googleRed,
+          label: 'Google',
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            _SocialButton(
-              onPressed: () => controller.setLoginMode(LoginMode.phone),
-              icon: FontAwesomeIcons.mobile,
-              color: LoginConstants.phoneGreen,
-              label: 'Phone',
-            ),
-            _SocialButton(
-              onPressed: () => AppToast.info('Facebook Sign In coming soon', title: 'Facebook'),
-              icon: FontAwesomeIcons.facebook,
-              color: LoginConstants.facebookBlue,
-              label: 'Facebook',
-            ),
-            _SocialButton(
-              onPressed: () => AppToast.info('TikTok Sign In coming soon', title: 'TikTok'),
-              icon: FontAwesomeIcons.tiktok,
-              color: Colors.black,
-              label: 'TikTok',
-            ),
-          ],
+        // Apple 登录仅在 iOS 上显示
+        if (Platform.isIOS)
+          _SocialButton(
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+            icon: FontAwesomeIcons.apple,
+            color: Colors.black,
+            label: 'Apple',
+          ),
+        _SocialButton(
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.twitter, 'Twitter'),
+          icon: FontAwesomeIcons.xTwitter,
+          color: Colors.black,
+          label: 'Twitter',
+        ),
+        _SocialButton(
+          onPressed: () => AppToast.info(l10n.profileEditingComingSoon, title: l10n.continueWithFacebook),
+          icon: FontAwesomeIcons.facebook,
+          color: LoginConstants.facebookBlue,
+          label: 'Facebook',
         ),
       ],
     );
@@ -157,12 +160,12 @@ class _SocialButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        padding: EdgeInsets.symmetric(horizontal: 6.w),
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
@@ -172,11 +175,11 @@ class _SocialButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 FaIcon(icon, size: LoginConstants.iconSize, color: color),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: Colors.grey.shade700,
                     fontWeight: FontWeight.w500,
                   ),

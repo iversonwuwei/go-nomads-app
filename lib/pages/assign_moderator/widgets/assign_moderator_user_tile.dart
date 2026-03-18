@@ -3,6 +3,7 @@ import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 用户列表项
 class AssignModeratorUserTile extends StatelessWidget {
@@ -61,14 +62,14 @@ class AssignModeratorUserTile extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-              padding: const EdgeInsets.all(2),
+              padding: EdgeInsets.all(2.w),
               decoration: const BoxDecoration(
                 color: Colors.green,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 FontAwesomeIcons.check,
-                size: 10,
+                size: 10.r,
                 color: Colors.white,
               ),
             ),
@@ -95,10 +96,10 @@ class AssignModeratorUserTile extends StatelessWidget {
 
   Widget _buildBadge(Color badgeColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
       decoration: BoxDecoration(
         color: badgeColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
         border: Border.all(
           color: badgeColor.withValues(alpha: 0.3),
         ),
@@ -107,7 +108,7 @@ class AssignModeratorUserTile extends StatelessWidget {
         displayBadge,
         style: TextStyle(
           color: badgeColor,
-          fontSize: 10,
+          fontSize: 10.sp,
           fontWeight: FontWeight.w600,
         ),
       ),

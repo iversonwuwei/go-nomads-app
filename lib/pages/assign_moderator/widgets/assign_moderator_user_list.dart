@@ -1,9 +1,12 @@
-import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
-import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_user_tile.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
+import 'package:go_nomads_app/pages/assign_moderator/widgets/assign_moderator_user_tile.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 指定版主页面的用户列表
 class AssignModeratorUserList extends GetView<AssignModeratorController> {
@@ -12,18 +15,12 @@ class AssignModeratorUserList extends GetView<AssignModeratorController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // 加载中状态
-      if (controller.isLoading.value) {
-        return const ManageListSkeleton();
-      }
-
-      // 空状态
-      if (controller.filteredUsers.isEmpty) {
-        return _buildEmptyState();
-      }
-
-      // 用户列表
-      return _buildUserList();
+      final content = controller.filteredUsers.isEmpty ? _buildEmptyState() : _buildUserList();
+      return AppLoadingSwitcher(
+        isLoading: controller.isLoading.value,
+        loading: const ManageListSkeleton(),
+        child: content,
+      );
     });
   }
 
@@ -36,22 +33,22 @@ class AssignModeratorUserList extends GetView<AssignModeratorController> {
         children: [
           Icon(
             hasSearchQuery ? FontAwesomeIcons.magnifyingGlass : FontAwesomeIcons.users,
-            size: 64,
+            size: 64.r,
             color: Colors.grey[400],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             hasSearchQuery ? '未找到匹配的用户' : '暂无用户',
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 16,
+              fontSize: 16.sp,
             ),
           ),
           if (hasSearchQuery) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             TextButton(
               onPressed: controller.clearSearch,
-              child: const Text('清除搜索'),
+              child: Text(AppLocalizations.of(Get.context!)!.dataServiceClearSearch),
             ),
           ],
         ],
@@ -61,11 +58,11 @@ class AssignModeratorUserList extends GetView<AssignModeratorController> {
 
   Widget _buildUserList() {
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
       itemCount: controller.filteredUsers.length,
       separatorBuilder: (context, index) => Divider(
         height: 1,
-        indent: 72,
+        indent: 72.w,
         color: Colors.grey.shade200,
       ),
       itemBuilder: (context, index) {

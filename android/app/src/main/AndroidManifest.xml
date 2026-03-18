@@ -1,21 +1,30 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 <!-- 网络权限 -->
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-<!-- 位置权限 -->
+<!-- 位置权限 - 用于城市推荐、附近活动查找、共享办公空间发现、地图导航 -->
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<!-- 后台位置 - 仅用于旅行足迹检测功能（用户主动开启后使用） -->
 <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-<!-- 日历权限 -->
+<!-- 日历权限 - 仅用于将活动/聚会添加到用户日历，用户主动点击"添加到日历"时使用 -->
 <uses-permission android:name="android.permission.READ_CALENDAR" />
 <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
-<!-- 通知权限 (Android 13+) -->
+<!-- 通知权限 (Android 13+) - 用于旅行指南生成完成提醒、新消息提醒、活动开始提醒 -->
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 <uses-permission android:name="android.permission.VIBRATE" />
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+<!-- 工信部合规：显式移除第三方SDK引入的冗余权限（应用自身不使用）-->
+<uses-permission android:name="android.permission.READ_PHONE_STATE" tools:node="remove" />
+<uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" tools:node="remove" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+
 
 <!-- Android 11+ 需要声明 queries 才能检测其他App -->
 <queries>
@@ -29,14 +38,16 @@
     <package android:name="org.telegram.messenger" />
     <!-- LinkedIn -->
     <package android:name="com.linkedin.android" />
-    <!-- QQ -->
-    <package android:name="com.tencent.mobileqq" />
     <!-- 微信 -->
     <package android:name="com.tencent.mm" />
+    <!-- QQ -->
+    <package android:name="com.tencent.mobileqq" />
     <!-- 微博 -->
     <package android:name="com.sina.weibo" />
     <!-- 钉钉 -->
     <package android:name="com.alibaba.android.rimet" />
+    <!-- 抖音 -->
+    <package android:name="com.ss.android.ugc.aweme" />
     
     <!-- 允许查询 URL scheme -->
     <intent>
@@ -65,15 +76,56 @@
     </intent>
     <intent>
         <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="weixin" />
+    </intent>
+    <!-- QQ SDK scheme (SSO 登录 + 分享等功能需要) -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
         <data android:scheme="mqq" />
     </intent>
     <intent>
         <action android:name="android.intent.action.VIEW" />
-        <data android:scheme="mqqzone" />
+        <data android:scheme="mqqapi" />
     </intent>
     <intent>
         <action android:name="android.intent.action.VIEW" />
-        <data android:scheme="weixin" />
+        <data android:scheme="mqqopensdkapi" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdkapiV2" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdkapiV3" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdkapiV4" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqOpensdkSSoLogin" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqopensdknopasteboard" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mqqconnect" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="wtloginmqq2" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="tim" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="timapi" />
     </intent>
     <intent>
         <action android:name="android.intent.action.VIEW" />
@@ -82,6 +134,10 @@
     <intent>
         <action android:name="android.intent.action.VIEW" />
         <data android:scheme="dingtalk" />
+    </intent>
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="snssdk1128" />
     </intent>
     <intent>
         <action android:name="android.intent.action.SENDTO" />
@@ -114,6 +170,12 @@
     <intent>
         <action android:name="android.intent.action.VIEW" />
         <data android:scheme="qqmap" />
+    </intent>
+    <!-- PayPal -->
+    <package android:name="com.paypal.android.p2pmobile" />
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="paypal" />
     </intent>
 </queries>
     
@@ -171,12 +233,20 @@
                 <data android:scheme="https" android:host="go-nomads.com" />
             </intent-filter>
             
-            <!-- Alipay URL Scheme for payment callback -->
+<!-- Douyin OAuth 回调 -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="alipay2021006115624759" />
+                <data android:scheme="gonomads" android:host="douyin-callback" />
+            </intent-filter>
+            
+            <!-- Twitter OAuth 回调 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="gonomads" android:host="twitter-callback" />
             </intent-filter>
         </activity>
         
@@ -209,15 +279,6 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
-        </intent>
-        <!-- 支付宝包查询权限 -->
-        <package android:name="com.eg.android.AlipayGphone" />
-        <!-- PayPal 包查询权限 -->
-        <package android:name="com.paypal.android.p2pmobile" />
-        <!-- PayPal URL Scheme 查询 -->
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="paypal" />
         </intent>
     </queries>
 </manifest>

@@ -5,6 +5,7 @@ import 'package:go_nomads_app/pages/travel_plan/travel_plan_page_controller.dart
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 计划概览卡片组件
 class TravelPlanOverviewCard extends GetView<TravelPlanPageController> {
@@ -19,15 +20,15 @@ class TravelPlanOverviewCard extends GetView<TravelPlanPageController> {
       if (plan == null) return const SizedBox.shrink();
 
       return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(20),
+        margin: EdgeInsets.all(16.w),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
+              blurRadius: 10.r,
               offset: const Offset(0, 2),
             ),
           ],
@@ -39,33 +40,33 @@ class TravelPlanOverviewCard extends GetView<TravelPlanPageController> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     FontAwesomeIcons.wandMagicSparkles,
                     color: Color(0xFFFF4458),
-                    size: 20,
+                    size: 20.r,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         l10n.aiGeneratedPlan,
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         l10n.personalizedForYou,
-                        style: const TextStyle(
-                          fontSize: 13,
+                        style: TextStyle(
+                          fontSize: 13.sp,
                           color: Colors.grey,
                         ),
                       ),
@@ -74,9 +75,9 @@ class TravelPlanOverviewCard extends GetView<TravelPlanPageController> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             const Divider(),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             // 信息标签
             _InfoChips(plan: plan, l10n: l10n),
           ],
@@ -106,18 +107,18 @@ class _InfoChips extends GetView<TravelPlanPageController> {
               icon: FontAwesomeIcons.plane,
               label: '${l10n.from}: $departureLocation',
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
           ],
           _InfoChip(
             icon: FontAwesomeIcons.calendar,
             label: '${plan.metadata.duration} ${l10n.days}',
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           _InfoChip(
             icon: FontAwesomeIcons.dollarSign,
             label: plan.metadata.budgetLevel.displayName,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           _InfoChip(
             icon: FontAwesomeIcons.paintbrush,
             label: plan.metadata.style.name,
@@ -138,20 +139,20 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFFFF4458)),
-          const SizedBox(width: 4),
+          Icon(icon, size: 14.r, color: const Color(0xFFFF4458)),
+          SizedBox(width: 4.w),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -178,12 +179,12 @@ class TravelPlanSectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFFFF4458), size: 20),
-          const SizedBox(width: 8),
+          Icon(icon, color: const Color(0xFFFF4458), size: 20.r),
+          SizedBox(width: 8.w),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: 18.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -214,27 +215,27 @@ class TravelPlanErrorView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               FontAwesomeIcons.circleExclamation,
-              size: 64,
+              size: 64.r,
               color: Colors.red,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               l10n.failedToGeneratePlan,
-              style: const TextStyle(
-                fontSize: 18,
+              style: TextStyle(
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               l10n.pleaseTryAgain,
               style: const TextStyle(
                 color: Colors.grey,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             ElevatedButton(
               onPressed: () => Get.back(),
               style: ElevatedButton.styleFrom(

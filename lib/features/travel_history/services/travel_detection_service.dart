@@ -3,9 +3,10 @@ import 'dart:developer';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/dialogs/permission_purpose_dialog.dart';
 
-import '../domain/entities/entities.dart';
 import '../data/dao/travel_history_dao.dart';
+import '../domain/entities/entities.dart';
 
 /// 旅行检测服务
 /// 负责：
@@ -99,18 +100,20 @@ class TravelDetectionService extends GetxService {
   }
 
   /// 检查位置权限
+  /// 隐私合规：在请求权限前先展示用途说明
   Future<bool> _checkLocationPermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return false;
 
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
+      // 权限未授予，先展示位置权限用途说明（Apple Guideline 5.1.1 合规：不可跳过）
+      await PermissionPurposeDialog.showLocationPermissionPurpose();
       permission = await Geolocator.requestPermission();
     }
 
     // 对于后台定位，最好有 always 权限，但 whileInUse 也可以工作
-    return permission == LocationPermission.always ||
-        permission == LocationPermission.whileInUse;
+    return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
   }
 
   /// 启动后台位置采集
@@ -172,10 +175,7 @@ class TravelDetectionService extends GetxService {
       await _dao.saveStayPoints(stayPoints);
 
       // 标记位置点为已处理
-      final processedIds = unprocessedPoints
-          .where((p) => p.id != null)
-          .map((p) => p.id as int)
-          .toList();
+      final processedIds = unprocessedPoints.where((p) => p.id != null).map((p) => p.id as int).toList();
       if (processedIds.isNotEmpty) {
         await _dao.markLocationPointsAsProcessed(processedIds);
       }
@@ -199,9 +199,10 @@ class TravelDetectionService extends GetxService {
       // 如果有常住地，检查是否为旅行目的地
       if (home != null) {
         final distanceKm = stayPoint.distanceToCoordinates(
-          home.latitude,
-          home.longitude,
-        ) / 1000;
+              home.latitude,
+              home.longitude,
+            ) /
+            1000;
 
         log('📏 停留点距离常住地: ${distanceKm.toStringAsFixed(1)} km');
 

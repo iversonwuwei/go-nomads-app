@@ -1,10 +1,10 @@
-import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/create_meetup_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 class CreateMeetupTitleSection extends StatelessWidget {
   final String controllerTag;
@@ -20,14 +20,12 @@ class CreateMeetupTitleSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.meetupTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
-        const SizedBox(height: 8),
+        Text(l10n.meetupTitle, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.black87)),
+        SizedBox(height: 8.h),
         TextFormField(
           controller: _c.titleController,
           decoration: InputDecoration(
             hintText: l10n.enterMeetupTitle,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -55,9 +53,10 @@ class CreateMeetupTypeSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.meetupType, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87)),
-        const SizedBox(height: 8),
-        Obx(() => _c.showCustomTypeInput.value ? _buildCustomTypeInput(context, l10n) : _buildTypeSelector(context, l10n)),
+        Text(l10n.meetupType, style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.black87)),
+        SizedBox(height: 8.h),
+        Obx(() =>
+            _c.showCustomTypeInput.value ? _buildCustomTypeInput(context, l10n) : _buildTypeSelector(context, l10n)),
       ],
     );
   }
@@ -70,9 +69,7 @@ class CreateMeetupTypeSection extends StatelessWidget {
             controller: _c.typeController,
             autofocus: true,
             decoration: InputDecoration(
-              hintText: '输入自定义类型',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.borderLight)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              hintText: l10n.meetupTypeHint,
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -82,7 +79,7 @@ class CreateMeetupTypeSection extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         IconButton(
           icon: const Icon(FontAwesomeIcons.xmark, color: Colors.grey),
           onPressed: _c.cancelCustomType,
@@ -110,19 +107,14 @@ class CreateMeetupTypeSection extends StatelessWidget {
             child: InputDecorator(
               decoration: InputDecoration(
                 hintText: l10n.meetupTypeHint,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppColors.borderLight),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 filled: true,
                 fillColor: Colors.white,
                 suffixIcon: _c.isLoadingTypes.value
-                    ? const Padding(
-                        padding: EdgeInsets.all(8),
-                        child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                    ? Padding(
+                        padding: EdgeInsets.all(8.w),
+                        child: SizedBox(width: 20.w, height: 20.h, child: CircularProgressIndicator(strokeWidth: 2)),
                       )
-                    : const Icon(FontAwesomeIcons.chevronDown, size: 18),
+                    : Icon(FontAwesomeIcons.chevronDown, size: 18.r),
                 errorText: field.errorText,
               ),
               isEmpty: displayType == null || displayType.isEmpty,
@@ -161,19 +153,25 @@ class CreateMeetupTypeSection extends StatelessWidget {
 
     Get.bottomSheet(
       Container(
-        height: 300,
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+        height: 300.h,
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(20.r), topRight: Radius.circular(20.r))),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Colors.grey[300]!))),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextButton(onPressed: () => Get.back(), child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey))),
-                  Text(l10n.meetupType, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  TextButton(onPressed: () => Get.back(), child: Text(l10n.confirm, style: const TextStyle(color: Color(0xFFFF4458)))),
+                  TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey))),
+                  Text(l10n.meetupType, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+                  TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text(l10n.confirm, style: const TextStyle(color: Color(0xFFFF4458)))),
                 ],
               ),
             ),
@@ -184,7 +182,10 @@ class CreateMeetupTypeSection extends StatelessWidget {
                   final option = optionsWithCustom[index];
                   final isSelected = option == _c.selectedType.value;
                   return ListTile(
-                    title: Text(option, style: TextStyle(color: isSelected ? const Color(0xFFFF4458) : Colors.black87, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
+                    title: Text(option,
+                        style: TextStyle(
+                            color: isSelected ? const Color(0xFFFF4458) : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal)),
                     trailing: isSelected ? const Icon(FontAwesomeIcons.check, color: Color(0xFFFF4458)) : null,
                     onTap: () {
                       _c.selectType(option, localeCode, field);

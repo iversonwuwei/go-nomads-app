@@ -21,6 +21,9 @@ class HotelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<HotelListPageController>(tag: controllerTag);
+    final priceLabel = hotel.currency.isNotEmpty
+        ? '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)}'
+        : hotel.pricePerNight.toStringAsFixed(0);
 
     return GestureDetector(
       onTap: () async {
@@ -57,7 +60,7 @@ class HotelCard extends StatelessWidget {
                           return Container(
                             height: 200.h,
                             color: Colors.grey[300],
-                            child: const Icon(FontAwesomeIcons.hotel, size: 64),
+                            child: Icon(FontAwesomeIcons.hotel, size: 64.r),
                           );
                         },
                       )
@@ -65,7 +68,7 @@ class HotelCard extends StatelessWidget {
                         height: 200.h,
                         color: Colors.grey[300],
                         child: Center(
-                          child: Icon(FontAwesomeIcons.hotel, size: 64, color: Colors.grey[400]),
+                          child: Icon(FontAwesomeIcons.hotel, size: 64.r, color: Colors.grey[400]),
                         ),
                       ),
                 // 精选标签
@@ -95,6 +98,11 @@ class HotelCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                Positioned(
+                  top: 12.h,
+                  right: 12.w,
+                  child: _SourceBadge(hotel: hotel, elevated: true),
+                ),
               ],
             ),
 
@@ -155,31 +163,27 @@ class HotelCard extends StatelessWidget {
                       SizedBox(width: 8.w),
 
                       // 评论数
-                      Text(
-                        '(${hotel.reviewCount} reviews)',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-
-                      // 类别
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(6.r),
-                        ),
+                      Expanded(
                         child: Text(
-                          hotel.category,
+                          '(${hotel.reviewCount} reviews) · ${hotel.category}',
                           style: TextStyle(
                             fontSize: 11.sp,
                             color: Colors.grey[700],
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
+                  ),
+                  SizedBox(height: 8.h),
+
+                  Text(
+                    hotel.isBookingHotel ? 'Live from Booking.com' : 'Community-contributed listing',
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                      color: hotel.isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+                    ),
                   ),
                   SizedBox(height: 8.h),
 
@@ -202,7 +206,7 @@ class HotelCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            '\$${hotel.pricePerNight.toStringAsFixed(0)}',
+                            priceLabel,
                             style: TextStyle(
                               fontSize: 20.sp,
                               fontWeight: FontWeight.bold,
@@ -225,6 +229,58 @@ class HotelCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SourceBadge extends StatelessWidget {
+  final Hotel hotel;
+  final bool elevated;
+
+  const _SourceBadge({required this.hotel, this.elevated = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = hotel.isBookingHotel ? const Color(0xFFE8F3FF) : const Color(0xFFFFF0E0);
+    final foregroundColor = hotel.isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309);
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: elevated ? Colors.white.withValues(alpha: 0.92) : backgroundColor,
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(
+          color: elevated ? foregroundColor.withValues(alpha: 0.25) : Colors.transparent,
+        ),
+        boxShadow: elevated
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 12.r,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            hotel.isBookingHotel ? Icons.public : Icons.people_alt_outlined,
+            size: 10.sp,
+            color: foregroundColor,
+          ),
+          SizedBox(width: 4.w),
+          Text(
+            hotel.sourceLabel,
+            style: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
+              color: foregroundColor,
+            ),
+          ),
+        ],
       ),
     );
   }

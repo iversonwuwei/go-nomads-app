@@ -1,13 +1,13 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/user_city_content/domain/repositories/iuser_city_content_repository.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// AddReviewPage 控制器

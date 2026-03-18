@@ -16,6 +16,7 @@ import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
@@ -257,7 +258,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     } catch (e, stackTrace) {
       log('❌ Tab $tabIndex 加载失败: $e');
       log('Stack trace: $stackTrace');
-      AppToast.error('加载活动失败');
+      AppToast.error(AppLocalizations.of(context)!.loadFailed);
     } finally {
       _tabLoading[tabIndex]!.value = false;
     }
@@ -320,11 +321,11 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                   ),
                   if (_hasActiveFilters)
                     Positioned(
-                      right: 8,
-                      top: 8,
+                      right: 8.w,
+                      top: 8.h,
                       child: Container(
-                        width: 8,
-                        height: 8,
+                        width: 8.w,
+                        height: 8.h,
                         decoration: const BoxDecoration(
                           color: Color(0xFFFF4458),
                           shape: BoxShape.circle,
@@ -355,22 +356,22 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           isScrollable: true,
           labelColor: const Color(0xFFFF4458),
           unselectedLabelColor: Colors.grey[600],
-          labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+          labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp),
+          unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 15.sp),
           indicatorSize: TabBarIndicatorSize.label,
           indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: const Border(
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border(
               bottom: BorderSide(color: Color(0xFFFF4458), width: 3),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
           onTap: (index) => setState(() {}),
           tabs: [
             Tab(text: l10n.allMeetups),
             Tab(text: l10n.joined),
             Tab(text: l10n.past),
-            const Tab(text: '已取消'),
+            Tab(text: l10n.cancelledTab),
           ],
         ),
       ),
@@ -381,12 +382,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
         // 首次加载时显示中间加载指示器
         if (isLoading && meetups.isEmpty && !_isRefreshing) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: const Color(0xFFFF4458),
-              strokeWidth: 3.w,
-            ),
-          );
+          return const AppSceneLoading(scene: AppLoadingScene.meetup, fullScreen: true);
         }
 
         if (meetups.isEmpty) {
@@ -466,12 +462,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
                       // 加载更多指示器
                       return Padding(
                         padding: EdgeInsets.symmetric(vertical: 16.h),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: const Color(0xFFFF4458),
-                            strokeWidth: 2.w,
-                          ),
-                        ),
+                        child: const Center(child: AppLoadingWidget(fullScreen: false)),
                       );
                     }
                     return _buildMeetupCard(meetups[index]);
@@ -495,22 +486,22 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     switch (_tabController.index) {
       case 1: // Joined
         emptyMessage = l10n.noJoinedMeetupsYet;
-        emptyHint = '参加一些活动来认识新朋友吧！';
+        emptyHint = l10n.joinMeetupsHint;
         emptyIcon = FontAwesomeIcons.calendarPlus;
         break;
       case 2: // Past
         emptyMessage = l10n.noPastMeetups;
-        emptyHint = '还没有参加过任何活动';
+        emptyHint = l10n.noPastMeetupsHint;
         emptyIcon = FontAwesomeIcons.clockRotateLeft;
         break;
       case 3: // Cancelled
-        emptyMessage = '暂无已取消的活动';
-        emptyHint = '这里会显示你取消参与的活动记录';
+        emptyMessage = l10n.noCancelledMeetups;
+        emptyHint = l10n.cancelledMeetupHistory;
         emptyIcon = FontAwesomeIcons.calendarXmark;
         break;
       default: // All/Upcoming
         emptyMessage = l10n.noMeetupsAvailable;
-        emptyHint = '目前没有即将举行的活动';
+        emptyHint = l10n.noUpcomingMeetupsHint;
         emptyIcon = FontAwesomeIcons.calendarDay;
         break;
     }
@@ -728,7 +719,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         if (widget.onRefresh != null) {
           await widget.onRefresh!();
         }
-        AppToast.info('您已经加入了这个活动');
+        AppToast.info(AppLocalizations.of(context)!.dataServiceAlreadyJoinedMeetup);
         return;
       }
 
@@ -746,13 +737,15 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         if (widget.onRefresh != null) {
           await widget.onRefresh!();
         }
-        AppToast.info('您尚未加入这个活动');
+        AppToast.info(AppLocalizations.of(context)!.dataServiceNotJoinedMeetup);
         return;
       }
 
       // 其他错误正常提示
       AppToast.error(
-        _isJoined ? '退出活动失败' : '加入活动失败',
+        _isJoined
+            ? AppLocalizations.of(context)!.dataServiceLeaveMeetupFailed
+            : AppLocalizations.of(context)!.dataServiceJoinMeetupFailed,
       );
     }
   }
@@ -764,8 +757,8 @@ class _MeetupListCardState extends State<_MeetupListCard> {
     // 显示确认对话框
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('取消活动'),
-        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+        title: Text(l10n.confirmCancelMeetupTitle),
+        content: Text(l10n.confirmCancelMeetupMessage),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
@@ -776,7 +769,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
             style: TextButton.styleFrom(
               foregroundColor: Colors.red,
             ),
-            child: const Text('确定'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -790,8 +783,8 @@ class _MeetupListCardState extends State<_MeetupListCard> {
 
       // 显示成功消息
       AppToast.success(
-        '活动已取消',
-        title: '成功',
+        l10n.cancelMeetupSuccess,
+        title: l10n.success,
       );
 
       // 刷新列表数据
@@ -800,7 +793,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
       }
     } catch (e) {
       log('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败');
+      AppToast.error(l10n.cancelMeetupFailed);
     }
   }
 
@@ -913,7 +906,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
-                            '已取消',
+                            l10n.cancelled,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18.sp,
@@ -984,7 +977,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
                   // 参与人数和剩余名额 - 使用本地状态
                   _buildInfoRow(
                     FontAwesomeIcons.users,
-                    '$_currentAttendees/$_maxAttendees attendees · $_remainingSlots spots left',
+                    l10n.attendeesSpotsInfo('$_currentAttendees', '$_maxAttendees', '$_remainingSlots'),
                     _isFull ? Colors.orange : (_remainingSlots <= 3 ? Colors.red : null),
                   ),
 
@@ -1320,16 +1313,16 @@ class _MeetupFilterDrawer extends StatelessWidget {
 
     return Container(
       height: screenHeight * 0.85,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: Column(
         children: [
           // 顶部栏
           Container(
             padding: EdgeInsets.all(20.w),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: AppColors.borderLight, width: 1),
               ),
@@ -1539,7 +1532,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
           // 底部应用按钮
           Container(
             padding: EdgeInsets.all(20.w),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 top: BorderSide(color: AppColors.borderLight, width: 1),
               ),
@@ -1554,7 +1547,7 @@ class _MeetupFilterDrawer extends StatelessWidget {
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     elevation: 0,
                   ),

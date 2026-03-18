@@ -6,6 +6,7 @@ import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 城市搜索和筛选页面
 class CitySearchPage extends StatelessWidget {
@@ -51,14 +52,14 @@ class CitySearchPage extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF1a1a1a),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Obx(() => TextField(
                   controller: controller.searchController,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(color: Colors.white, fontSize: 16.sp),
                   decoration: InputDecoration(
                     hintText: l10n.search,
                     hintStyle: TextStyle(
@@ -76,9 +77,9 @@ class CitySearchPage extends StatelessWidget {
                           )
                         : null,
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 16.h,
                     ),
                   ),
                   onChanged: (_) {},
@@ -92,7 +93,7 @@ class CitySearchPage extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16 : 24,
-                vertical: 8,
+                vertical: 8.h,
               ),
               child: Text(
                 l10n.filter,
@@ -117,8 +118,8 @@ class CitySearchPage extends StatelessWidget {
                     l10n.region,
                     isMobile,
                     child: Obx(() => Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 8.w,
+                      runSpacing: 8.w,
                       children: controller.regions.map((region) {
                         final isSelected = controller.selectedRegion.value == region;
                         return FilterChip(
@@ -145,7 +146,7 @@ class CitySearchPage extends StatelessWidget {
                     )),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // 价格范围
                   _buildFilterSection(
@@ -156,9 +157,9 @@ class CitySearchPage extends StatelessWidget {
                       children: [
                         Text(
                           '\$${controller.priceRange.value.start.round()} - \$${controller.priceRange.value.end.round()}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.orange,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -175,7 +176,7 @@ class CitySearchPage extends StatelessWidget {
                     )),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // 网速筛选
                   _buildFilterSection(
@@ -186,9 +187,9 @@ class CitySearchPage extends StatelessWidget {
                       children: [
                         Text(
                           '${controller.minInternetSpeed.value.round()} Mbps',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.orange,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -205,15 +206,15 @@ class CitySearchPage extends StatelessWidget {
                     )),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // 气候筛选
                   _buildFilterSection(
                     l10n.climate,
                     isMobile,
                     child: Obx(() => Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 8.w,
+                      runSpacing: 8.w,
                       children: controller.climates.map((climate) {
                         final isSelected = controller.selectedClimate.value == climate;
                         return FilterChip(
@@ -240,7 +241,7 @@ class CitySearchPage extends StatelessWidget {
                     )),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
 
                   // 应用筛选按钮
                   SizedBox(
@@ -261,7 +262,7 @@ class CitySearchPage extends StatelessWidget {
                           vertical: isMobile ? 16 : 20,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       child: Text(
@@ -274,7 +275,7 @@ class CitySearchPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
 
                   // 重置按钮
                   SizedBox(
@@ -290,7 +291,7 @@ class CitySearchPage extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.3),
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       child: Text(
@@ -303,7 +304,7 @@ class CitySearchPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                 ],
               ),
             ),
@@ -329,7 +330,7 @@ class CitySearchPage extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         child,
       ],
     );

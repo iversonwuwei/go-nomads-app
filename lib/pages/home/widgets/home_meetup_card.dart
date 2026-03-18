@@ -1,5 +1,9 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
@@ -7,9 +11,6 @@ import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_st
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// Meetup 卡片组件 - Nomads.com 风格
 class HomeMeetupCard extends StatelessWidget {
@@ -43,11 +44,11 @@ class HomeMeetupCard extends StatelessWidget {
 
       return Container(
         width: isMobile ? 280 : 320,
-        margin: const EdgeInsets.only(right: 16),
+        margin: EdgeInsets.only(right: 16.w),
         child: Card(
           elevation: 2,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             side: BorderSide(color: AppColors.borderLight, width: 1),
           ),
           child: Column(
@@ -70,40 +71,40 @@ class HomeMeetupCard extends StatelessWidget {
   Widget _buildImageSection(BuildContext context) {
     return InkWell(
       onTap: () => Get.toNamed(AppRoutes.meetupDetail, arguments: meetup),
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
             child: Image.network(
               meetup.images.isNotEmpty
                   ? meetup.images.first
                   : 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400',
               width: double.infinity,
-              height: 140,
+              height: 140.h,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 // 图片加载失败时显示占位符
                 return Container(
                   width: double.infinity,
-                  height: 140,
+                  height: 140.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         FontAwesomeIcons.image,
-                        size: 40,
+                        size: 40.r,
                         color: Colors.grey[400],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
-                        '图片加载失败',
+                        AppLocalizations.of(context)!.imageLoadFailed,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[500],
                         ),
                       ),
@@ -115,10 +116,10 @@ class HomeMeetupCard extends StatelessWidget {
                 if (loadingProgress == null) return child;
                 return Container(
                   width: double.infinity,
-                  height: 140,
+                  height: 140.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
                   ),
                   child: Center(
                     child: CircularProgressIndicator(
@@ -134,19 +135,19 @@ class HomeMeetupCard extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: 12,
-            left: 12,
+            top: 12.h,
+            left: 12.w,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: _getTypeColor(meetup.eventType?.enName ?? meetup.type.value),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(6.r),
               ),
               child: Text(
                 meetup.eventType?.name ?? meetup.type.value,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -161,7 +162,7 @@ class HomeMeetupCard extends StatelessWidget {
     return InkWell(
       onTap: () => Get.toNamed(AppRoutes.meetupDetail, arguments: meetup),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
+        padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 6.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,18 +170,18 @@ class HomeMeetupCard extends StatelessWidget {
             // 标题
             Text(
               meetup.title,
-              style: const TextStyle(
-                fontSize: 15,
+              style: TextStyle(
+                fontSize: 15.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             // 日期和地点
             _buildDateLocation(date),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             // 参与者信息
             _buildAttendeeInfo(),
           ],
@@ -195,13 +196,13 @@ class HomeMeetupCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(FontAwesomeIcons.calendar, size: 13, color: AppColors.textSecondary),
-            const SizedBox(width: 4),
+            Icon(FontAwesomeIcons.calendar, size: 13.r, color: AppColors.textSecondary),
+            SizedBox(width: 4.w),
             Expanded(
               child: Text(
                 '${_formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
-                style: const TextStyle(
-                  fontSize: 11,
+                style: TextStyle(
+                  fontSize: 11.sp,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
@@ -210,19 +211,19 @@ class HomeMeetupCard extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Row(
           children: [
-            const Icon(FontAwesomeIcons.locationDot, size: 13, color: AppColors.textSecondary),
-            const SizedBox(width: 4),
+            Icon(FontAwesomeIcons.locationDot, size: 13.r, color: AppColors.textSecondary),
+            SizedBox(width: 4.w),
             Expanded(
               child: Text(
                 [
                   if (meetup.venue.name.isNotEmpty) meetup.venue.name,
                   meetup.location.fullDescription,
                 ].where((s) => s.isNotEmpty).join(', '),
-                style: const TextStyle(
-                  fontSize: 11,
+                style: TextStyle(
+                  fontSize: 11.sp,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
@@ -237,6 +238,7 @@ class HomeMeetupCard extends StatelessWidget {
   }
 
   Widget _buildAttendeeInfo() {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final currentAttendees = meetup.capacity.currentAttendees;
     final maxAttendees = meetup.capacity.maxAttendees;
 
@@ -245,24 +247,24 @@ class HomeMeetupCard extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(FontAwesomeIcons.users, size: 13, color: AppColors.textSecondary),
-            const SizedBox(width: 4),
+            Icon(FontAwesomeIcons.users, size: 13.r, color: AppColors.textSecondary),
+            SizedBox(width: 4.w),
             Text(
               '$currentAttendees',
-              style: const TextStyle(
-                fontSize: 11,
+              style: TextStyle(
+                fontSize: 11.sp,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         if ((maxAttendees - currentAttendees) > 0)
           Text(
-            '${maxAttendees - currentAttendees} left',
-            style: const TextStyle(
-              fontSize: 11,
+            l10n.spotsLeftCount(maxAttendees - currentAttendees),
+            style: TextStyle(
+              fontSize: 11.sp,
               color: Color(0xFFFF4458),
               fontWeight: FontWeight.w600,
             ),
@@ -272,13 +274,13 @@ class HomeMeetupCard extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(FontAwesomeIcons.user, size: 13, color: AppColors.textSecondary),
-              const SizedBox(width: 3),
+              Icon(FontAwesomeIcons.user, size: 13.r, color: AppColors.textSecondary),
+              SizedBox(width: 3.w),
               Flexible(
                 child: Text(
                   meetup.organizer.name,
-                  style: const TextStyle(
-                    fontSize: 11,
+                  style: TextStyle(
+                    fontSize: 11.sp,
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
@@ -297,7 +299,7 @@ class HomeMeetupCard extends StatelessWidget {
     final status = meetup.status;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      padding: EdgeInsets.fromLTRB(10.w, 6.h, 10.w, 6.h),
       child: _buildButtonContent(context, l10n, status, isJoined, isFull, isOrganizer),
     );
   }
@@ -312,12 +314,14 @@ class HomeMeetupCard extends StatelessWidget {
   ) {
     // 已取消
     if (status == MeetupStatus.cancelled) {
-      return _buildDisabledButton(FontAwesomeIcons.ban, isOrganizer ? '已取消' : '活动已取消');
+      return _buildDisabledButton(
+          FontAwesomeIcons.ban, isOrganizer ? l10n.meetupStatusCancelled : l10n.meetupEventCancelled);
     }
 
     // 已结束
     if (status == MeetupStatus.completed || meetup.isEnded) {
-      return _buildDisabledButton(FontAwesomeIcons.circleCheck, isOrganizer ? '已结束' : '活动已结束');
+      return _buildDisabledButton(
+          FontAwesomeIcons.circleCheck, isOrganizer ? l10n.meetupStatusEnded : l10n.meetupEventEnded);
     }
 
     // 组织者按钮
@@ -332,23 +336,23 @@ class HomeMeetupCard extends StatelessWidget {
   Widget _buildDisabledButton(IconData icon, String text) {
     return SizedBox(
       width: double.infinity,
-      height: 32,
+      height: 32.h,
       child: ElevatedButton(
         onPressed: null,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.borderLight,
           foregroundColor: AppColors.textSecondary,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
           disabledBackgroundColor: AppColors.borderLight,
           disabledForegroundColor: AppColors.textSecondary,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 14),
-            const SizedBox(width: 4),
-            Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            Icon(icon, size: 14.r),
+            SizedBox(width: 4.w),
+            Text(text, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -359,7 +363,7 @@ class HomeMeetupCard extends StatelessWidget {
     return Row(
       children: [
         Expanded(child: _buildChatButton(context, true)),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         Expanded(child: _buildCancelButton(context)),
       ],
     );
@@ -369,7 +373,7 @@ class HomeMeetupCard extends StatelessWidget {
     return Row(
       children: [
         Expanded(child: _buildChatButton(context, isJoined)),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         Expanded(child: _buildJoinButton(context, l10n, isJoined, isFull)),
       ],
     );
@@ -379,7 +383,7 @@ class HomeMeetupCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return SizedBox(
-      height: 32,
+      height: 32.h,
       child: OutlinedButton(
         onPressed: enabled
             ? () {
@@ -403,18 +407,18 @@ class HomeMeetupCard extends StatelessWidget {
             color: enabled ? Colors.blue : Colors.grey.shade300,
             width: 1.5,
           ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          padding: const EdgeInsets.symmetric(horizontal: 6),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
+          padding: EdgeInsets.symmetric(horizontal: 6.w),
           backgroundColor: enabled ? null : Colors.grey.shade50,
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FontAwesomeIcons.message, size: 14),
-            SizedBox(width: 3),
+            Icon(FontAwesomeIcons.message, size: 14.r),
+            SizedBox(width: 3.w),
             Flexible(
-              child: Text('Chat', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              child: Text(l10n.homeMeetupChatButton, style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -424,22 +428,23 @@ class HomeMeetupCard extends StatelessWidget {
 
   Widget _buildCancelButton(BuildContext context) {
     return SizedBox(
-      height: 32,
+      height: 32.h,
       child: ElevatedButton(
         onPressed: () => _handleCancelMeetup(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.ban, size: 14),
-            SizedBox(width: 4),
+            Icon(FontAwesomeIcons.ban, size: 14.r),
+            SizedBox(width: 4.w),
             Flexible(
-              child: Text('取消活动', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              child: Text(AppLocalizations.of(context)!.confirmCancelMeetupTitle,
+                  style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -449,15 +454,15 @@ class HomeMeetupCard extends StatelessWidget {
 
   Widget _buildJoinButton(BuildContext context, AppLocalizations l10n, bool isJoined, bool isFull) {
     return SizedBox(
-      height: 32,
+      height: 32.h,
       child: ElevatedButton(
         onPressed: (isFull && !isJoined) ? null : () => _handleToggleJoin(context, isJoined),
         style: ElevatedButton.styleFrom(
           backgroundColor: isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
           foregroundColor: isJoined ? AppColors.textSecondary : Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          padding: const EdgeInsets.symmetric(horizontal: 6),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
+          padding: EdgeInsets.symmetric(horizontal: 6.w),
           disabledBackgroundColor: AppColors.borderLight,
           disabledForegroundColor: AppColors.textSecondary,
         ),
@@ -465,12 +470,12 @@ class HomeMeetupCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(isJoined ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circlePlus, size: 14),
-            const SizedBox(width: 3),
+            Icon(isJoined ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circlePlus, size: 14.r),
+            SizedBox(width: 3.w),
             Flexible(
               child: Text(
-                isFull && !isJoined ? l10n.full : (isJoined ? 'Leave' : 'Join'),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                isFull && !isJoined ? l10n.full : (isJoined ? l10n.leave : l10n.join),
+                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -516,17 +521,22 @@ class HomeMeetupCard extends StatelessWidget {
       if (!_meetupController.rsvpedMeetupIds.contains(meetup.id)) {
         _meetupController.rsvpedMeetupIds.add(meetup.id);
       }
-      AppToast.info('您已经加入了这个活动');
+      AppToast.info(AppLocalizations.of(Get.context!)!.dataServiceAlreadyJoinedMeetup);
       return;
     }
 
     if (errorMessage.contains('未参加') || errorMessage.contains('not joined')) {
       _meetupController.rsvpedMeetupIds.remove(meetup.id);
-      AppToast.info('您尚未加入这个活动');
+      AppToast.info(AppLocalizations.of(Get.context!)!.dataServiceNotJoinedMeetup);
       return;
     }
 
-    AppToast.error(isCurrentlyJoined ? '退出活动失败' : '加入活动失败', title: '操作失败');
+    AppToast.error(
+      isCurrentlyJoined
+          ? AppLocalizations.of(Get.context!)!.dataServiceLeaveMeetupFailed
+          : AppLocalizations.of(Get.context!)!.dataServiceJoinMeetupFailed,
+      title: AppLocalizations.of(Get.context!)!.dataServiceOperationFailed,
+    );
   }
 
   Future<void> _handleCancelMeetup(BuildContext context) async {
@@ -534,14 +544,14 @@ class HomeMeetupCard extends StatelessWidget {
 
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('取消活动'),
-        content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
+        title: Text(l10n.confirmCancelMeetupTitle),
+        content: Text(l10n.confirmCancelMeetupMessage),
         actions: [
           TextButton(onPressed: () => Get.back(result: false), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () => Get.back(result: true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('确定'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -558,7 +568,7 @@ class HomeMeetupCard extends StatelessWidget {
       // 无需调用 refreshMeetups()，cancelMeetup 已经单点更新了列表
     } catch (e) {
       log('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败');
+      AppToast.error(l10n.cancelMeetupFailed);
     }
   }
 

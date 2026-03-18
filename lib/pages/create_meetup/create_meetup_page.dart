@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/create_meetup_page_controller.dart';
@@ -59,7 +60,7 @@ class CreateMeetupPage extends StatelessWidget {
                   _buildHeaderBanner(l10n, isEditMode),
                   // Main form content
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -67,40 +68,40 @@ class CreateMeetupPage extends StatelessWidget {
                         _buildSectionCard(
                           child: CreateMeetupTitleSection(controllerTag: _controllerTag),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         // Type section
                         _buildSectionCard(
                           child: CreateMeetupTypeSection(controllerTag: _controllerTag),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         // Location section
                         _buildSectionCard(
                           child: CreateMeetupLocationSection(controllerTag: _controllerTag),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         // Date & Time section
                         _buildSectionCard(
                           child: CreateMeetupDateTimeSection(controllerTag: _controllerTag),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         // Attendees section
                         _buildSectionCard(
                           child: CreateMeetupAttendeesSection(controllerTag: _controllerTag),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         // Description section
                         _buildSectionCard(
                           child: CreateMeetupDescriptionSection(controllerTag: _controllerTag),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         // Images section
                         _buildSectionCard(
                           child: CreateMeetupImagesSection(controllerTag: _controllerTag),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24.h),
                         // Submit button
                         _buildSubmitButton(context, l10n, controller, isEditMode),
-                        const SizedBox(height: 32),
+                        SizedBox(height: 32.h),
                       ],
                     ),
                   ),
@@ -119,12 +120,12 @@ class CreateMeetupPage extends StatelessWidget {
       foregroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(FontAwesomeIcons.arrowLeft, size: 18),
+        icon: Icon(FontAwesomeIcons.arrowLeft, size: 18.r),
         onPressed: () => Get.back(),
       ),
       title: Text(
         isEditMode ? l10n.editMeetup : l10n.createMeetup,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18.sp),
       ),
       centerTitle: true,
     );
@@ -133,7 +134,7 @@ class CreateMeetupPage extends StatelessWidget {
   Widget _buildHeaderBanner(AppLocalizations l10n, bool isEditMode) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -144,26 +145,26 @@ class CreateMeetupPage extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
               isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.calendarPlus,
               color: Colors.white,
-              size: 28,
+              size: 28.r,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             isEditMode ? l10n.editMeetup : l10n.createMeetup,
-            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+            style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             isEditMode ? l10n.editMeetup : l10n.createMeetup,
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13.sp),
           ),
         ],
       ),
@@ -173,14 +174,14 @@ class CreateMeetupPage extends StatelessWidget {
   Widget _buildSectionCard({required Widget child}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -193,7 +194,6 @@ class CreateMeetupPage extends StatelessWidget {
       BuildContext context, AppLocalizations l10n, CreateMeetupPageController controller, bool isEditMode) {
     return Obx(() => SizedBox(
           width: double.infinity,
-          height: 52,
           child: ElevatedButton(
             onPressed: controller.isSubmitting.value || controller.isUploadingImages.value
                 ? null
@@ -203,32 +203,31 @@ class CreateMeetupPage extends StatelessWidget {
               disabledBackgroundColor: Colors.grey.shade300,
               foregroundColor: Colors.white,
               elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
             child: controller.isSubmitting.value || controller.isUploadingImages.value
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
+                      SizedBox(
+                        width: 20.w,
+                        height: 20.h,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Text(
                         l10n.submitting,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
                       ),
                     ],
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.calendarPlus, size: 18),
-                      const SizedBox(width: 10),
+                      Icon(isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.calendarPlus, size: 18.r),
+                      SizedBox(width: 10.w),
                       Text(
                         isEditMode ? l10n.editMeetup : l10n.createMeetup,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),

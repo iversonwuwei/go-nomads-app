@@ -1,7 +1,12 @@
+import 'package:flutter/material.dart' hide Badge;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
 import 'package:go_nomads_app/pages/profile/widgets/badges_section_widget.dart';
+import 'package:go_nomads_app/pages/profile/widgets/help_and_support_widget.dart';
+import 'package:go_nomads_app/pages/profile/widgets/legal_info_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/login_notice_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/logout_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/membership_card_widget.dart';
@@ -11,29 +16,41 @@ import 'package:go_nomads_app/pages/profile/widgets/skills_interests_widget.dart
 import 'package:go_nomads_app/pages/profile/widgets/social_links_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/travel_history_widget.dart';
 import 'package:go_nomads_app/pages/profile/widgets/travel_plans_widget.dart';
+import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart' hide Badge;
-import 'package:get/get.dart';
 
 /// Profile 页面 - 使用 GetView 模式
 ///
 /// 展示用户个人资料、会员信息、旅行计划等
-class ProfilePage extends GetView<ProfileController> {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // 确保控制器已注册
-    _ensureControllerRegistered();
+  State<ProfilePage> createState() => _ProfilePageState();
+}
 
-    return const _ProfilePageContent();
+class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<ProfilePage> {
+  late final ProfileController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Get.isRegistered<ProfileController>()) {
+      _controller = Get.find<ProfileController>();
+    } else {
+      _controller = Get.put(ProfileController());
+    }
   }
 
-  /// 确保控制器已注册
-  void _ensureControllerRegistered() {
-    if (!Get.isRegistered<ProfileController>()) {
-      Get.put(ProfileController());
-    }
+  @override
+  Future<void> onRouteResume() async {
+    await _controller.onRouteResume();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const _ProfilePageContent();
   }
 }
 
@@ -49,20 +66,13 @@ class _ProfilePageContent extends GetView<ProfileController> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Obx(() {
-          // 加载中状态
-          if (controller.isPageLoading || controller.isLoadingUser) {
-            return const ProfileSkeleton();
-          }
-
           final user = controller.currentUser;
-
-          // 未登录或数据为空
-          if (user == null) {
-            return const ProfileSkeleton();
-          }
-
-          return _ProfileContentView(
-            onLogout: () => _showLogoutDialog(context, l10n),
+          return AppLoadingSwitcher(
+            isLoading: controller.isPageLoading || controller.isLoadingUser || user == null,
+            loading: const ProfileSkeleton(),
+            child: _ProfileContentView(
+              onLogout: () => _showLogoutDialog(context, l10n),
+            ),
           );
         }),
       ),
@@ -157,34 +167,34 @@ class _ProfileSections extends GetView<ProfileController> {
 
           // 用户头像和基本信息
           ProfileHeaderWidget(user: user, isMobile: isMobile),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 会员卡片
           const MembershipCardWidget(),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 旅行计划
           TravelPlansWidget(isMobile: isMobile),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // Nomad 统计
           NomadStatsWidget(isMobile: isMobile),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 徽章
           BadgesSectionWidget(badges: user.badges, isMobile: isMobile),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 技能和兴趣
           SkillsInterestsWidget(user: user, isMobile: isMobile),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 旅行历史
           TravelHistoryWidget(
             latestTrip: user.latestTravelHistory,
             isMobile: isMobile,
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32.h),
 
           // 社交链接
           SocialLinksWidget(
@@ -192,7 +202,15 @@ class _ProfileSections extends GetView<ProfileController> {
             isMobile: isMobile,
             title: l10n.connect,
           ),
-          const SizedBox(height: 48),
+          SizedBox(height: 32.h),
+
+          // 帮助与客服
+          const HelpAndSupportWidget(),
+          SizedBox(height: 16.h),
+
+          // 法律信息（隐私政策、用户协议）
+          const LegalInfoWidget(),
+          SizedBox(height: 48.h),
 
           // 退出登录按钮
           LogoutWidget(onLogout: onLogout),

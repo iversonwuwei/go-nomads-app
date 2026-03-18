@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:sqflite/sqflite.dart';
-
 import 'package:go_nomads_app/features/city/domain/entities/digital_nomad_guide.dart';
+import 'package:sqflite/sqflite.dart';
 
 /// DigitalNomadGuide 数据访问对象
 /// 负责管理城市指南的本地存储和检索
@@ -17,7 +16,8 @@ class DigitalNomadGuideDao {
   static Future<void> createTable(Database db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS $tableName (
-        city_id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+        city_id TEXT NOT NULL,
         city_name TEXT NOT NULL,
         overview TEXT NOT NULL,
         visa_info TEXT NOT NULL,
@@ -26,14 +26,15 @@ class DigitalNomadGuideDao {
         tips TEXT NOT NULL,
         essential_info TEXT NOT NULL,
         created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        PRIMARY KEY (user_id, city_id)
       )
     ''');
 
     // 创建索引以加速查询
     await db.execute('''
-      CREATE INDEX IF NOT EXISTS idx_guides_city_id 
-      ON $tableName(city_id)
+      CREATE INDEX IF NOT EXISTS idx_guides_user_city 
+      ON $tableName(user_id, city_id)
     ''');
 
     await db.execute('''
@@ -42,12 +43,13 @@ class DigitalNomadGuideDao {
     ''');
   }
 
-  /// 保存或更新城市指南
-  Future<void> saveGuide(DigitalNomadGuide guide) async {
+  /// 保存或更新城市指南（按用户区分）
+  Future<void> saveGuide(DigitalNomadGuide guide, {required String userId}) async {
     final now = DateTime.now().millisecondsSinceEpoch;
-    
+
     // 将 DTO 转为可存储的 Map
     final data = {
+      'user_id': userId,
       'city_id': guide.cityId,
       'city_name': guide.cityName,
       'overview': guide.overview,
@@ -69,12 +71,12 @@ class DigitalNomadGuideDao {
     );
   }
 
-  /// 根据城市ID获取指南
-  Future<DigitalNomadGuide?> getGuide(String cityId) async {
+  /// 根据用户ID和城市ID获取指南
+  Future<DigitalNomadGuide?> getGuide(String userId, String cityId) async {
     final List<Map<String, dynamic>> maps = await _db.query(
       tableName,
-      where: 'city_id = ?',
-      whereArgs: [cityId],
+      where: 'user_id = ? AND city_id = ?',
+      whereArgs: [userId, cityId],
       limit: 1,
     );
 
@@ -86,22 +88,22 @@ class DigitalNomadGuideDao {
   }
 
   /// 检查指南是否存在
-  Future<bool> hasGuide(String cityId) async {
+  Future<bool> hasGuide(String userId, String cityId) async {
     final count = Sqflite.firstIntValue(
       await _db.rawQuery(
-        'SELECT COUNT(*) FROM $tableName WHERE city_id = ?',
-        [cityId],
+        'SELECT COUNT(*) FROM $tableName WHERE user_id = ? AND city_id = ?',
+        [userId, cityId],
       ),
     );
     return (count ?? 0) > 0;
   }
 
-  /// 删除指定城市的指南
-  Future<void> deleteGuide(String cityId) async {
+  /// 删除指定用户的指定城市的指南
+  Future<void> deleteGuide(String userId, String cityId) async {
     await _db.delete(
       tableName,
-      where: 'city_id = ?',
-      whereArgs: [cityId],
+      where: 'user_id = ? AND city_id = ?',
+      whereArgs: [userId, cityId],
     );
   }
 
@@ -121,12 +123,12 @@ class DigitalNomadGuideDao {
   }
 
   /// 获取指南更新时间
-  Future<DateTime?> getGuideUpdatedAt(String cityId) async {
+  Future<DateTime?> getGuideUpdatedAt(String userId, String cityId) async {
     final List<Map<String, dynamic>> maps = await _db.query(
       tableName,
       columns: ['updated_at'],
-      where: 'city_id = ?',
-      whereArgs: [cityId],
+      where: 'user_id = ? AND city_id = ?',
+      whereArgs: [userId, cityId],
       limit: 1,
     );
 
@@ -139,8 +141,8 @@ class DigitalNomadGuideDao {
   }
 
   /// 检查指南是否过期（默认30天）
-  Future<bool> isGuideExpired(String cityId, {int maxDays = 30}) async {
-    final updatedAt = await getGuideUpdatedAt(cityId);
+  Future<bool> isGuideExpired(String userId, String cityId, {int maxDays = 30}) async {
+    final updatedAt = await getGuideUpdatedAt(userId, cityId);
     if (updatedAt == null) return true;
 
     final difference = DateTime.now().difference(updatedAt);
@@ -149,9 +151,7 @@ class DigitalNomadGuideDao {
 
   /// 删除过期指南
   Future<int> deleteExpiredGuides({int maxDays = 30}) async {
-    final expiredTimestamp = DateTime.now()
-        .subtract(Duration(days: maxDays))
-        .millisecondsSinceEpoch;
+    final expiredTimestamp = DateTime.now().subtract(Duration(days: maxDays)).millisecondsSinceEpoch;
 
     return await _db.delete(
       tableName,
@@ -170,8 +170,7 @@ class DigitalNomadGuideDao {
       'overview': map['overview'],
       'visaInfo': jsonDecode(map['visa_info'] as String),
       'bestAreas': jsonDecode(map['best_areas'] as String),
-      'workspaceRecommendations':
-          jsonDecode(map['workspace_recommendations'] as String),
+      'workspaceRecommendations': jsonDecode(map['workspace_recommendations'] as String),
       'tips': jsonDecode(map['tips'] as String),
       'essentialInfo': jsonDecode(map['essential_info'] as String),
     });

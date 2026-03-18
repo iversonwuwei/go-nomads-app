@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_controller.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_empty_hint.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_error_state.dart';
@@ -8,13 +10,18 @@ import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_hero_card.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_input_bar.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_message_list.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_streaming_status.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 import 'package:intl/intl.dart';
 
 /// AI Chat 页面
 /// 使用 GetView 模式，自动获取 AiChatController
 class AiChatPage extends GetView<AiChatController> {
-  const AiChatPage({super.key});
+  final bool embeddedInBottomNav;
+
+  const AiChatPage({super.key, this.embeddedInBottomNav = false});
 
   @override
   Widget build(BuildContext context) {
@@ -42,17 +49,19 @@ class AiChatPage extends GetView<AiChatController> {
 
   /// 构建 AppBar
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: Colors.white,
       elevation: 0.6,
-      title: const Text(
-        'Nomads AI Copilot',
+      title: Text(
+        l10n.aiChatDefaultConversationTitle,
         style: TextStyle(fontWeight: FontWeight.w700),
       ),
-      leading: const AppBackButton(),
+      leading: embeddedInBottomNav ? null : const AppBackButton(),
       actions: [
         IconButton(
-          tooltip: '历史对话',
+          tooltip: l10n.aiChatHistoryTooltip,
           icon: const Icon(Icons.history_rounded),
           onPressed: () => _showHistorySheet(context),
         ),
@@ -60,58 +69,66 @@ class AiChatPage extends GetView<AiChatController> {
     );
   }
 
-  void _showHistorySheet(BuildContext context) {
-    controller.loadConversationList();
+  Future<void> _showHistorySheet(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    // 显示优雅的加载对话框
+    AppLoadingDialog.show(
+      title: l10n.aiChatLoadingHistoryTitle,
+      subtitle: l10n.loginPleaseWait,
+    );
+
+    try {
+      // 加载历史对话
+      await controller.loadConversationList();
+    } finally {
+      // 关闭加载对话框
+      AppLoadingDialog.hide();
+    }
+
+    // 如果没有历史对话，直接提示
+    if (controller.historyConversations.isEmpty) {
+      AppToast.info(l10n.aiChatNoHistoryStartNew);
+      return;
+    }
+
+    // 有历史对话才显示底部抽屉
+    if (!context.mounted) return;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       backgroundColor: Colors.white,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.6,
+      ),
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 6),
-                const Text(
-                  '历史对话',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                Text(
+                  l10n.aiChatHistoryTitle,
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
                 ),
-                const SizedBox(height: 12),
-                Flexible(
+                SizedBox(height: 16.h),
+                Expanded(
                   child: Obx(() {
-                    if (controller.isHistoryLoading.value) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
                     final items = controller.historyConversations;
-                    if (items.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Text(
-                          '暂无历史对话',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      );
-                    }
-
                     return ListView.separated(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: EdgeInsets.zero,
                       itemCount: items.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      separatorBuilder: (_, __) => Divider(height: 1),
                       itemBuilder: (context, index) {
                         final item = items[index];
                         final currentId = controller.conversation.value?.id;
                         final time = item.updatedAt ?? item.createdAt;
                         final timeLabel = time == null ? '' : DateFormat('yyyy-MM-dd HH:mm').format(time);
-
                         return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 4.h,
                           ),
                           title: Text(
                             controller.getHistoryTitle(item),
@@ -122,9 +139,9 @@ class AiChatPage extends GetView<AiChatController> {
                               ? null
                               : Text(
                                   timeLabel,
-                                  style: const TextStyle(fontSize: 12),
+                                  style: TextStyle(fontSize: 12.sp),
                                 ),
-                          trailing: currentId == item.id ? const Icon(Icons.check_rounded, size: 18) : null,
+                          trailing: currentId == item.id ? Icon(Icons.check_rounded, size: 18.r) : null,
                           onTap: () async {
                             Navigator.of(sheetContext).pop();
                             await controller.selectConversation(item);
@@ -147,7 +164,7 @@ class AiChatPage extends GetView<AiChatController> {
     return Obx(() {
       // 初始化加载中
       if (controller.isInitializing.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
       }
 
       // 初始化错误状态

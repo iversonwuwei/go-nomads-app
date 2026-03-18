@@ -16,6 +16,7 @@ import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repos
 import 'package:go_nomads_app/features/meetup/infrastructure/models/meetup_dto.dart';
 import 'package:go_nomads_app/features/meetup/infrastructure/services/meetup_signalr_service.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -87,6 +88,12 @@ class MeetupStateController extends PaginatedRefreshableController {
 
   /// 当前筛选的状态
   final RxString currentStatus = 'upcoming'.obs;
+
+  /// 最近一次列表加载尝试时间（用于检测异常卡住）
+  DateTime? _lastListLoadAttemptAt;
+
+  /// 防止重复进入卡住恢复流程
+  bool _isRecoveringFromStuckLoad = false;
 
   // ==================== Getters ====================
 
@@ -308,11 +315,44 @@ class MeetupStateController extends PaginatedRefreshableController {
   }
 
   /// 确保数据已加载（供页面调用）
-  /// 如果数据未加载，则触发加载
+  /// 如果数据未加载或之前加载失败，则触发加载
   Future<void> ensureDataLoaded() async {
-    if (meetups.isEmpty && !isLoading.value) {
-      log('📦 MeetupStateController: 触发首次数据加载');
+    await recoverIfStuckLoading();
+
+    // 仅在初始状态或错误状态时触发加载
+    // loading/refreshing/loaded 状态都不需要重新加载
+    final state = loadState.value;
+    if ((state == LoadState.initial || state == LoadState.error) && !isLoading.value && !isRefreshing.value) {
+      log('📦 MeetupStateController: 触发数据加载 (当前状态: ${state.name})');
       await initialLoad();
+    }
+  }
+
+  /// 自恢复：当空列表长期停留在 loading/refreshing 时，重置状态并强制重试
+  Future<void> recoverIfStuckLoading() async {
+    final state = loadState.value;
+    final isPotentiallyStuck = (state == LoadState.loading || state == LoadState.refreshing) &&
+        meetups.isEmpty &&
+        _lastListLoadAttemptAt != null &&
+        DateTime.now().difference(_lastListLoadAttemptAt!) > const Duration(seconds: 25);
+
+    if (!isPotentiallyStuck || _isRecoveringFromStuckLoad) {
+      return;
+    }
+
+    _isRecoveringFromStuckLoad = true;
+    try {
+      log('⚠️ Meetup list seems stuck in ${state.name}, starting self-recovery...');
+
+      // 清理可能残留的状态，避免基类互斥锁导致后续请求被跳过。
+      isLoading.value = false;
+      isRefreshing.value = false;
+      loadState.value = LoadState.error;
+      errorMessage.value = 'Meetup loading stalled, retrying automatically...';
+
+      await initialLoad(forceRefresh: true);
+    } finally {
+      _isRecoveringFromStuckLoad = false;
     }
   }
 
@@ -332,12 +372,17 @@ class MeetupStateController extends PaginatedRefreshableController {
   @override
   Future<PaginatedResult> loadPageData(int page, int pageSize) async {
     log('🔄 加载活动列表: 城市=${currentCityId.value}, 状态=${currentStatus.value}, 页码=$page');
+    _lastListLoadAttemptAt = DateTime.now();
 
     final loadedMeetups = await _getMeetupsUseCase.execute(
       status: currentStatus.value,
       cityId: currentCityId.value.isEmpty ? null : currentCityId.value,
       page: page,
       pageSize: pageSize,
+        )
+        .timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => throw TimeoutException('Meetup list request timed out after 20 seconds'),
     );
 
     log('✅ 成功加载 ${loadedMeetups.length} 个活动');
@@ -382,9 +427,14 @@ class MeetupStateController extends PaginatedRefreshableController {
           log('🔄 用户已登录，刷新活动列表...');
           refresh();
         } else {
-          log('👋 用户已退出，清空活动数据');
-          meetups.clear();
+          log('👋 用户已退出，清除 RSVP 状态（保留公开活动数据）');
+          // 只清除用户相关的 RSVP 状态，不清空公开的活动列表
+          // 活动数据是公开的，未登录用户也可以查看
           rsvpedMeetupIds.clear();
+          // 刷新列表以更新 isJoined 状态
+          if (meetups.isNotEmpty) {
+            refresh();
+          }
         }
       });
     } catch (e) {
@@ -393,9 +443,10 @@ class MeetupStateController extends PaginatedRefreshableController {
   }
 
   /// 设置数据变更监听器
+  /// 注意：基类已通过 entityType='meetup_list' 监听列表级别的事件（invalidated/updated → refresh）
+  /// 这里只监听单个 meetup 实体事件，避免重复处理
   void _setupDataChangeListeners() {
     DataEventBus.instance.on('meetup', _handleDataChanged);
-    DataEventBus.instance.on('meetup_list', _handleDataChanged);
   }
 
   /// 处理数据变更事件
@@ -405,9 +456,14 @@ class MeetupStateController extends PaginatedRefreshableController {
 
     switch (event.changeType) {
       case DataChangeType.created:
-        // 创建事件：本地 createMeetup 已经直接插入列表，无需再刷新
-        // SignalR 推送也已经处理，这里只做日志记录
-        log('📝 Meetup 创建事件，列表已更新');
+        // 创建事件：通过 EventBus 统一触发列表更新，确保所有列表页可自动看到最新活动。
+        // 如果本地已存在该活动则跳过，避免不必要刷新。
+        if (event.entityId != null && meetups.any((m) => m.id == event.entityId)) {
+          log('📝 Meetup 创建事件: ${event.entityId} 已在列表中，跳过刷新');
+          break;
+        }
+        log('📝 Meetup 创建事件，触发列表刷新');
+        refresh();
         break;
       case DataChangeType.invalidated:
         // 缓存失效，需要刷新整个列表
@@ -469,16 +525,17 @@ class MeetupStateController extends PaginatedRefreshableController {
   }
 
   /// 检查登录状态
-  bool _requireLogin({String action = '此操作'}) {
+  bool _requireLogin({String action = 'this'}) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     try {
       final authController = Get.find<AuthStateController>();
       if (!authController.isAuthenticated.value) {
-        AppToast.warning('请先登录后再$action');
+        AppToast.warning(l10n.pleaseLoginBeforeAction(action));
         return false;
       }
       return true;
     } catch (e) {
-      AppToast.error('无法检查登录状态');
+      AppToast.error(l10n.loginCheckFailed);
       return false;
     }
   }
@@ -571,9 +628,10 @@ class MeetupStateController extends PaginatedRefreshableController {
     List<String>? tags,
   }) async {
     if (!_requireLogin(action: '创建活动')) return null;
+    final l10n = AppLocalizations.of(Get.context!)!;
 
     try {
-      isLoading.value = true;
+      // 注意：不设置 isLoading，避免影响首页列表的加载状态显示
       errorMessage.value = '';
 
       log('🎨 创建活动: $title');
@@ -614,15 +672,13 @@ class MeetupStateController extends PaginatedRefreshableController {
         changeType: DataChangeType.created,
       ));
 
-      AppToast.success('活动创建成功!');
+      AppToast.success(l10n.meetupCreatedSuccess);
       return newMeetup;
     } catch (e) {
       errorMessage.value = '创建活动失败: $e';
       log('❌ 创建活动失败: $e');
-      AppToast.error('创建活动失败: ${_extractErrorMessage(e)}');
+      AppToast.error(l10n.meetupCreateFailed(_extractErrorMessage(e)));
       return null;
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -645,9 +701,10 @@ class MeetupStateController extends PaginatedRefreshableController {
     double? longitude,
   }) async {
     if (!_requireLogin(action: '更新活动')) return null;
+    final l10n = AppLocalizations.of(Get.context!)!;
 
     try {
-      isLoading.value = true;
+      // 注意：不设置 isLoading，避免影响首页列表的加载状态显示
       errorMessage.value = '';
 
       log('✏️ 更新活动: $meetupId');
@@ -685,21 +742,20 @@ class MeetupStateController extends PaginatedRefreshableController {
       ));
 
       log('✅ 活动更新成功');
-      AppToast.success('活动更新成功!');
+      AppToast.success(l10n.meetupUpdatedSuccess);
       return updatedMeetup;
     } catch (e) {
       errorMessage.value = '更新活动失败: $e';
       log('❌ 更新活动失败: $e');
-      AppToast.error('更新活动失败: ${_extractErrorMessage(e)}');
+      AppToast.error(l10n.meetupUpdateFailed(_extractErrorMessage(e)));
       return null;
-    } finally {
-      isLoading.value = false;
     }
   }
 
   /// RSVP 参加活动
   Future<bool> rsvpToMeetup(String meetupId) async {
     if (!_requireLogin(action: '报名活动')) return false;
+    final l10n = AppLocalizations.of(Get.context!)!;
 
     try {
       log('📝 RSVP 活动: $meetupId');
@@ -747,11 +803,11 @@ class MeetupStateController extends PaginatedRefreshableController {
       ));
 
       log('✅ RSVP 成功');
-      AppToast.success('报名成功!');
+      AppToast.success(l10n.rsvpSuccess);
       return result;
     } catch (e) {
       log('❌ RSVP 失败: $e');
-      AppToast.error('报名失败: ${_extractErrorMessage(e)}');
+      AppToast.error(l10n.rsvpFailed(_extractErrorMessage(e)));
       return false;
     }
   }
@@ -759,6 +815,7 @@ class MeetupStateController extends PaginatedRefreshableController {
   /// 取消 RSVP
   Future<bool> cancelRsvp(String meetupId) async {
     if (!_requireLogin(action: '取消报名')) return false;
+    final l10n = AppLocalizations.of(Get.context!)!;
 
     try {
       log('🚫 取消 RSVP: $meetupId');
@@ -807,11 +864,11 @@ class MeetupStateController extends PaginatedRefreshableController {
       ));
 
       log('✅ 取消 RSVP 成功');
-      AppToast.success('已取消报名');
+      AppToast.success(l10n.rsvpCancelledSuccess);
       return result;
     } catch (e) {
       log('❌ 取消 RSVP 失败: $e');
-      AppToast.error('取消报名失败: ${_extractErrorMessage(e)}');
+      AppToast.error(l10n.rsvpCancelFailed(_extractErrorMessage(e)));
       return false;
     }
   }
@@ -819,6 +876,7 @@ class MeetupStateController extends PaginatedRefreshableController {
   /// 取消活动
   Future<bool> cancelMeetup(String meetupId) async {
     if (!_requireLogin(action: '取消活动')) return false;
+    final l10n = AppLocalizations.of(Get.context!)!;
 
     try {
       log('🚫 取消活动: $meetupId');
@@ -861,11 +919,11 @@ class MeetupStateController extends PaginatedRefreshableController {
       ));
 
       log('✅ 活动取消成功');
-      AppToast.success('活动已取消');
+      AppToast.success(l10n.meetupCancelledSuccess);
       return true;
     } catch (e) {
       log('❌ 取消活动失败: $e');
-      AppToast.error('取消活动失败: ${_extractErrorMessage(e)}');
+      AppToast.error(l10n.meetupCancelFailed(_extractErrorMessage(e)));
       return false;
     }
   }
@@ -908,7 +966,7 @@ class MeetupStateController extends PaginatedRefreshableController {
     String? message,
   }) async {
     try {
-      isLoading.value = true;
+      // 注意：不设置 isLoading，避免影响首页列表的加载状态显示
       log('📨 发送聚会邀请: meetupId=$meetupId, inviteeId=$inviteeId');
 
       final result = await _meetupRepository.inviteToMeetup(
@@ -918,15 +976,13 @@ class MeetupStateController extends PaginatedRefreshableController {
       );
 
       log('✅ 邀请发送成功: invitationId=${result.id}');
-      AppToast.success('邀请已发送');
+      AppToast.success(AppLocalizations.of(Get.context!)!.inviteSentSuccess);
       return true;
     } catch (e) {
       String errorMsg = _extractErrorMessage(e);
       log('❌ 邀请发送异常: $errorMsg');
       AppToast.error(errorMsg);
       return false;
-    } finally {
-      isLoading.value = false;
     }
   }
 }

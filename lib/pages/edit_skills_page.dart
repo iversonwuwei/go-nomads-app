@@ -1,7 +1,10 @@
 import 'package:go_nomads_app/controllers/edit_skills_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// 技能编辑页面
 class EditSkillsPage extends StatelessWidget {
@@ -21,20 +24,21 @@ class EditSkillsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('编辑技能'),
+        title: Text(l10n.editSkillsTitle),
       ),
       body: Obx(() => controller.loading.value
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppSceneLoading(scene: AppLoadingScene.tags, fullScreen: true)
           : Column(
               children: [
                 // 已选技能显示
                 Obx(() => controller.selectedSkills.isNotEmpty
                     ? Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         color: Colors.blue.shade50,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,24 +46,24 @@ class EditSkillsPage extends StatelessWidget {
                             Row(
                               children: [
                                 const Icon(FontAwesomeIcons.circleCheck, color: Colors.blue),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8.w),
                                 Obx(() => Text(
                                   '已选择 ${controller.selectedSkills.length} 项技能',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: 16.sp,
                                   ),
                                 )),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12.h),
                             Obx(() => Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                              spacing: 8.w,
+                              runSpacing: 8.w,
                               children: controller.selectedSkills.map((skill) {
                                 return Chip(
                                   label: Text(skill),
-                                  deleteIcon: const Icon(FontAwesomeIcons.xmark, size: 18),
+                                  deleteIcon: Icon(FontAwesomeIcons.xmark, size: 18.r),
                                   onDeleted: () => controller.toggleSkill(skill),
                                   backgroundColor: Colors.blue.shade100,
                                 );
@@ -72,25 +76,25 @@ class EditSkillsPage extends StatelessWidget {
 
                 // 自定义技能输入
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   child: Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: controller.customSkillController,
-                          decoration: const InputDecoration(
-                            labelText: '添加自定义技能',
+                          decoration: InputDecoration(
+                            labelText: l10n.editSkillsAddCustomSkill,
                             border: OutlineInputBorder(),
-                            prefixIcon: Icon(FontAwesomeIcons.circlePlus),
-                            hintText: '输入技能名称',
+                            prefixIcon: const Icon(FontAwesomeIcons.circlePlus),
+                            hintText: l10n.enterSkillName,
                           ),
                           onSubmitted: (_) => controller.addCustomSkill(),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       ElevatedButton(
                         onPressed: controller.addCustomSkill,
-                        child: const Text('添加'),
+                        child: Text(l10n.add),
                       ),
                     ],
                   ),
@@ -100,15 +104,15 @@ class EditSkillsPage extends StatelessWidget {
 
                 // 分类选择
                 Container(
-                  height: 50,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  height: 50.h,
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: ['全部', ...controller.categorizedSkills.keys].map((category) {
                       return Obx(() {
                         final isSelected = controller.selectedCategory.value == category;
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 4.w),
                           child: ChoiceChip(
                             label: Text(category),
                             selected: isSelected,
@@ -125,10 +129,10 @@ class EditSkillsPage extends StatelessWidget {
                 // 技能列表
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     child: Obx(() => Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 8.w,
+                      runSpacing: 8.w,
                       children: controller.getFilteredSkills().map((skill) {
                         return Obx(() {
                           final isSelected = controller.selectedSkills.contains(skill);

@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
@@ -6,10 +10,6 @@ import 'package:go_nomads_app/pages/meetup_list/widgets/meetup_filter_drawer.dar
 import 'package:go_nomads_app/pages/meetup_list/widgets/meetup_list_view.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// Meetup 列表页面 - 符合 GetX 标准
 class MeetupListPage extends GetView<MeetupListController> {
@@ -26,14 +26,16 @@ class MeetupListPage extends GetView<MeetupListController> {
         controller: controller.tabController,
         children: MeetupListTab.values.map((tab) => MeetupListView(tab: tab)).toList(),
       ),
+      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
   /// 构建 AppBar
   PreferredSizeWidget _buildAppBar(BuildContext context, AppLocalizations l10n) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       elevation: 0,
+      scrolledUnderElevation: 0,
       leading: const AppBackButton(),
       title: Text(
         l10n.meetups,
@@ -50,45 +52,50 @@ class MeetupListPage extends GetView<MeetupListController> {
           maintainState: true,
           child: _FilterButton(),
         ),
-        // 创建按钮
-        _CreateButton(),
         SizedBox(width: 8.w),
       ],
       bottom: _buildTabBar(context, l10n),
     );
   }
 
-  /// 构建 TabBar
+  /// 构建胶囊形态的 TabBar
   PreferredSizeWidget _buildTabBar(BuildContext context, AppLocalizations l10n) {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(48),
+      preferredSize: Size.fromHeight(60.h),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            bottom: BorderSide(color: Color(0x11000000), width: 1),
-          ),
+        height: 44.h,
+        margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: Colors.grey.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(22.r),
         ),
         child: TabBar(
           controller: controller.tabController,
-          isScrollable: false,
-          labelColor: const Color(0xFFFF4458),
-          unselectedLabelColor: Colors.grey[600],
-          labelStyle: const TextStyle(
+          isScrollable: false, // 允许滚动或者铺满
+          labelColor: Colors.white,
+          unselectedLabelColor: AppColors.textSecondary,
+          labelStyle: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 13,
+            fontSize: 13.sp,
           ),
-          unselectedLabelStyle: const TextStyle(
+          unselectedLabelStyle: TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: 13,
+            fontSize: 13.sp,
           ),
-          indicatorSize: TabBarIndicatorSize.label,
-          indicator: const UnderlineTabIndicator(
-            borderSide: BorderSide(color: Color(0xFFFF4458), width: 2.5),
-            insets: EdgeInsets.symmetric(horizontal: 8),
+          indicatorSize: TabBarIndicatorSize.tab,
+          dividerColor: Colors.transparent, // 移除底部的默认长横线
+          indicator: BoxDecoration(
+            color: const Color(0xFFFF4458), // Highlight Theme Color
+            borderRadius: BorderRadius.circular(22.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF4458).withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+          labelPadding: EdgeInsets.zero,
           tabs: [
             Tab(text: l10n.allMeetups),
             Tab(text: l10n.joined),
@@ -96,6 +103,32 @@ class MeetupListPage extends GetView<MeetupListController> {
             const Tab(text: '已取消'),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 构建悬浮创建按钮 FAB
+  Widget _buildFloatingActionButton() {
+    return FloatingActionButton(
+      onPressed: () async {
+        await NavigationUtil.toWithCallback<bool>(
+          page: () => const CreateMeetupPage(),
+          onResult: (result) {
+            if (result.needsRefresh) {
+              controller.refreshCurrentTab();
+            }
+          },
+        );
+      },
+      backgroundColor: const Color(0xFFFF4458),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.r), // 方圆角设计
+      ),
+      child: Icon(
+        FontAwesomeIcons.plus,
+        color: Colors.white,
+        size: 20.sp,
       ),
     );
   }
@@ -113,17 +146,17 @@ class _FilterButton extends GetView<MeetupListController> {
               icon: Icon(
                 FontAwesomeIcons.sliders,
                 color: controller.hasActiveFilters ? const Color(0xFFFF4458) : AppColors.textSecondary,
-                size: 24.sp,
+                size: 20.sp,
               ),
               onPressed: () => _showFilterDrawer(context),
             ),
             if (controller.hasActiveFilters)
               Positioned(
-                right: 8,
-                top: 8,
+                right: 8.w,
+                top: 8.h,
                 child: Container(
-                  width: 8,
-                  height: 8,
+                  width: 8.w,
+                  height: 8.h,
                   decoration: const BoxDecoration(
                     color: Color(0xFFFF4458),
                     shape: BoxShape.circle,
@@ -140,30 +173,6 @@ class _FilterButton extends GetView<MeetupListController> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const MeetupFilterDrawer(),
-    );
-  }
-}
-
-/// 创建按钮组件
-class _CreateButton extends GetView<MeetupListController> {
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        FontAwesomeIcons.circlePlus,
-        color: const Color(0xFFFF4458),
-        size: 24.sp,
-      ),
-      onPressed: () async {
-        await NavigationUtil.toWithCallback<bool>(
-          page: () => const CreateMeetupPage(),
-          onResult: (result) {
-            if (result.needsRefresh) {
-              controller.refreshCurrentTab();
-            }
-          },
-        );
-      },
     );
   }
 }

@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/add_innovation_page_controller.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -8,44 +11,49 @@ import 'package:go_nomads_app/pages/add_innovation/add_innovation_market_section
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_problem_solution_section.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_progress_section.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_team_section.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Add Innovation Project Page
 /// 添加创意项目页面（支持编辑模式）
-class AddInnovationPage extends StatelessWidget {
+class AddInnovationPage extends StatefulWidget {
   /// 编辑模式下传入的项目数据，null 表示创建新项目
   final InnovationProject? project;
 
   const AddInnovationPage({super.key, this.project});
 
-  /// 是否为编辑模式
-  bool get isEditMode => project != null;
+  @override
+  State<AddInnovationPage> createState() => _AddInnovationPageState();
+}
 
-  String get _controllerTag => 'add_innovation_${project?.id ?? 'new'}_${DateTime.now().millisecondsSinceEpoch}';
+class _AddInnovationPageState extends State<AddInnovationPage> {
+  /// 是否为编辑模式
+  bool get isEditMode => widget.project != null;
+
+  /// tag 在 State 创建时固定，后续 rebuild 不会改变
+  late final String _controllerTag =
+      'add_innovation_${widget.project?.id ?? 'new'}_${DateTime.now().millisecondsSinceEpoch}';
+
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 中注册控制器，确保只注册一次
+    Get.put(AddInnovationPageController(project: widget.project), tag: _controllerTag);
+  }
+
+  @override
+  void dispose() {
+    _cleanupController(_controllerTag);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final tag = _controllerTag;
     final l10n = AppLocalizations.of(context)!;
 
-    // 注册控制器
-    Get.put(AddInnovationPageController(project: project), tag: tag);
-
-    return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          // 延迟清理，确保页面完全销毁后再删除 controller
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _cleanupController(tag);
-          });
-        }
-      },
-      child: Scaffold(
-        appBar: _buildAppBar(context, l10n, tag),
-        body: _buildBody(context, l10n, tag),
-      ),
+    return Scaffold(
+      appBar: _buildAppBar(context, l10n, tag),
+      body: _buildBody(context, l10n, tag),
     );
   }
 
@@ -65,8 +73,8 @@ class AddInnovationPage extends StatelessWidget {
       actions: [
         Obx(() => controller.isSubmitting.value
             ? Container(
-                padding: const EdgeInsets.all(16),
-                child: const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                padding: EdgeInsets.all(16.w),
+                child: SizedBox(width: 20.w, height: 20.h, child: CircularProgressIndicator(strokeWidth: 2)),
               )
             : IconButton(
                 icon: const Icon(FontAwesomeIcons.check),
@@ -84,7 +92,7 @@ class AddInnovationPage extends StatelessWidget {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.h),
       child: Form(
         key: controller.formKey,
         child: Column(
@@ -92,45 +100,45 @@ class AddInnovationPage extends StatelessWidget {
           children: [
             // 封面图片区域
             AddInnovationImageSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 基本信息
             _buildSectionTitle(l10n.basicInformation, FontAwesomeIcons.circleInfo),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationBasicInfoSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 问题与解决方案
             _buildSectionTitle(l10n.problemAndSolution, FontAwesomeIcons.lightbulb),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationProblemSolutionSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 市场定位
             _buildSectionTitle(l10n.marketPositioning, FontAwesomeIcons.bullseye),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationMarketSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 竞争与商业
             _buildSectionTitle(l10n.competitionAndBusiness, FontAwesomeIcons.chartLine),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationBusinessSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 进展与需求
             _buildSectionTitle(l10n.progressAndNeeds, FontAwesomeIcons.flagCheckered),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AddInnovationProgressSection(controllerTag: tag),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 团队成员
             AddInnovationTeamSection(controllerTag: tag),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
 
             // 提交按钮
             _buildSubmitButton(context, l10n, tag),
-            const SizedBox(height: 40),
+            SizedBox(height: 40.h),
           ],
         ),
       ),
@@ -141,18 +149,18 @@ class AddInnovationPage extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: const Color(0xFF8B5CF6).withAlpha(25),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
-          child: Icon(icon, size: 16, color: const Color(0xFF8B5CF6)),
+          child: Icon(icon, size: 16.r, color: const Color(0xFF8B5CF6)),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
             letterSpacing: -0.3,
           ),
@@ -171,27 +179,27 @@ class AddInnovationPage extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF8B5CF6),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
           elevation: 0,
         ),
         child: controller.isSubmitting.value
-            ? const Row(
+            ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-                  SizedBox(width: 12),
-                  Text('提交中...', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 20.w, height: 20.h, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                  SizedBox(width: 12.w),
+                      Text(l10n.submitting, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                 ],
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(isEditMode ? FontAwesomeIcons.floppyDisk : FontAwesomeIcons.paperPlane, size: 18),
-                  const SizedBox(width: 8),
+                  Icon(isEditMode ? FontAwesomeIcons.floppyDisk : FontAwesomeIcons.paperPlane, size: 18.r),
+                  SizedBox(width: 8.w),
                   Text(
                     isEditMode ? l10n.save : l10n.submit,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),

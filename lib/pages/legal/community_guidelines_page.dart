@@ -3,6 +3,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 社区准则页面
 class CommunityGuidelinesPage extends StatelessWidget {
@@ -22,10 +23,10 @@ class CommunityGuidelinesPage extends StatelessWidget {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             _SectionTitle('1. 尊重与友善'),
             _SectionBody('请尊重他人观点与文化差异，避免人身攻击、歧视、骚扰或仇恨言论。'),
             _SectionTitle('2. 真实与可信'),
@@ -42,7 +43,7 @@ class CommunityGuidelinesPage extends StatelessWidget {
             _SectionBody('如发现违规内容，请使用举报功能。平台将依据准则进行处理。'),
             _SectionTitle('8. 准则更新'),
             _SectionBody('我们可能不定期更新社区准则，更新后继续使用视为同意。'),
-            SizedBox(height: 24),
+            SizedBox(height: 24.h),
             CopyrightWidget(),
           ],
         ),
@@ -59,11 +60,11 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 6),
+      padding: EdgeInsets.only(top: 8.h, bottom: 6.h),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
@@ -80,11 +81,11 @@ class _SectionBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 14,
+        style: TextStyle(
+          fontSize: 14.sp,
           color: AppColors.textSecondary,
           height: 1.5,
         ),

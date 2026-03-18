@@ -34,7 +34,7 @@ abstract class IAiRepository {
   /// - [currency]: 货币单位 (可选)
   /// - [selectedAttractions]: 指定景点 (可选)
   ///
-  /// 返回: Result<TravelPlan>
+  /// 返回: `Result<TravelPlan>`
   ///
   /// 超时: 3分钟 (AI生成时间)
   Future<Result<TravelPlan>> generateTravelPlan({
@@ -89,7 +89,7 @@ abstract class IAiRepository {
   /// 参数:
   /// - [planId]: 计划ID
   ///
-  /// 返回: Result<TravelPlan>
+  /// 返回: `Result<TravelPlan>`
   ///
   /// 注意: 计划24小时后过期
   Future<Result<TravelPlan>> getTravelPlanById(String planId);
@@ -100,7 +100,7 @@ abstract class IAiRepository {
   /// - [page]: 页码，默认1
   /// - [pageSize]: 每页数量，默认20
   ///
-  /// 返回: Result<List<TravelPlanSummary>>
+  /// 返回: `Result<List<TravelPlanSummary>>`
   Future<Result<List<TravelPlanSummary>>> getUserTravelPlans({
     int page = 1,
     int pageSize = 20,
@@ -111,7 +111,7 @@ abstract class IAiRepository {
   /// 参数:
   /// - [planId]: 计划ID
   ///
-  /// 返回: Result<TravelPlan>
+  /// 返回: `Result<TravelPlan>`
   Future<Result<TravelPlan>> getTravelPlanDetail(String planId);
 
   // ==================== 数字游民指南 ====================
@@ -121,9 +121,8 @@ abstract class IAiRepository {
   /// 参数:
   /// - [cityId]: 城市ID
   ///
-  /// 返回: Result<DigitalNomadGuide?> - 如果没有数据则返回null
-  Future<Result<DigitalNomadGuide?>> getDigitalNomadGuideFromBackend(
-      String cityId);
+  /// 返回: `Result<DigitalNomadGuide?>` - 如果没有数据则返回null
+  Future<Result<DigitalNomadGuide?>> getDigitalNomadGuideFromBackend(String cityId);
 
   /// 生成数字游民指南 (流式方式)
   ///
@@ -156,7 +155,7 @@ abstract class IAiRepository {
   /// 参数:
   /// - [cityId]: 源城市ID
   ///
-  /// 返回: Result<List<NearbyCityDto>> - 附近城市列表
+  /// 返回: `Result<List<NearbyCityDto>>` - 附近城市列表
   Future<Result<List<NearbyCityDto>>> getNearbyCitiesFromBackend(String cityId);
 
   /// 生成附近城市信息 (流式方式)

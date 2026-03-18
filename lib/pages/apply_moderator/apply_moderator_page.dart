@@ -1,8 +1,10 @@
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/apply_moderator/apply_moderator_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 申请成为版主页面 - GetView 重构版
 class ApplyModeratorPage extends GetView<ApplyModeratorController> {
@@ -10,16 +12,17 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('申请成为版主'),
+        title: Text(l10n.moderatorCardApplyModerator),
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Form(
           key: controller.formKey,
           child: Column(
@@ -27,15 +30,15 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
             children: [
               // 城市信息卡片
               _buildCityCard(),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               // 版主职责说明
               _buildResponsibilitiesCard(),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
 
               // 申请原因输入
-              _buildReasonInput(),
-              const SizedBox(height: 32),
+              _buildReasonInput(l10n),
+              SizedBox(height: 32.h),
 
               // 提交按钮
               _buildSubmitButton(),
@@ -49,14 +52,14 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
   Widget _buildCityCard() {
     final city = controller.city;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -64,10 +67,10 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
       child: Row(
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 60.w,
+            height: 60.h,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               image: city.imageUrl != null
                   ? DecorationImage(
                       image: NetworkImage(city.imageUrl!),
@@ -80,28 +83,28 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
                 ? Icon(
                     FontAwesomeIcons.city,
                     color: AppColors.accent,
-                    size: 24,
+                    size: 24.r,
                   )
                 : null,
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   city.name,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   city.country ?? '',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     color: AppColors.textSecondary,
                   ),
                 ),
@@ -115,14 +118,14 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
 
   Widget _buildResponsibilitiesCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -135,20 +138,20 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
               Icon(
                 FontAwesomeIcons.userShield,
                 color: AppColors.accent,
-                size: 20,
+                size: 20.r,
               ),
-              const SizedBox(width: 12),
-              const Text(
+              SizedBox(width: 12.w),
+              Text(
                 '版主职责',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           _buildResponsibilityItem('审核和管理用户提交的内容'),
           _buildResponsibilityItem('维护城市信息的准确性和时效性'),
           _buildResponsibilityItem('回答社区成员的问题'),
@@ -161,25 +164,25 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
 
   Widget _buildResponsibilityItem(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 6,
-            height: 6,
-            margin: const EdgeInsets.only(top: 6),
+            width: 6.w,
+            height: 6.h,
+            margin: EdgeInsets.only(top: 6.h),
             decoration: BoxDecoration(
               color: AppColors.accent,
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                fontSize: 14,
+              style: TextStyle(
+                fontSize: 14.sp,
                 color: AppColors.textSecondary,
                 height: 1.5,
               ),
@@ -190,40 +193,40 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
     );
   }
 
-  Widget _buildReasonInput() {
+  Widget _buildReasonInput(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           '申请原因 *',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 16.sp,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         TextFormField(
           controller: controller.reasonController,
           maxLines: 6,
           maxLength: 500,
           decoration: InputDecoration(
-            hintText: '请说明您申请成为版主的原因，以及您能为社区带来什么...',
-            hintStyle: const TextStyle(
+            hintText: l10n.applyModeratorReasonHint,
+            hintStyle: TextStyle(
               color: AppColors.textTertiary,
-              fontSize: 14,
+              fontSize: 14.sp,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: AppColors.borderLight),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: AppColors.accent, width: 2),
             ),
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.all(16),
+            contentPadding: EdgeInsets.all(16.w),
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
@@ -242,29 +245,29 @@ class ApplyModeratorPage extends GetView<ApplyModeratorController> {
   Widget _buildSubmitButton() {
     return Obx(() => SizedBox(
           width: double.infinity,
-          height: 50,
+          height: 50.h,
           child: ElevatedButton(
             onPressed: controller.isSubmitting.value ? null : controller.submit,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.accent,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
             ),
             child: controller.isSubmitting.value
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
+                ? SizedBox(
+                    width: 20.w,
+                    height: 20.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: Colors.white,
                     ),
                   )
-                : const Text(
+                : Text(
                     '提交申请',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

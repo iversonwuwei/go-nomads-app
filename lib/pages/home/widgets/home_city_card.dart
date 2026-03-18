@@ -1,6 +1,9 @@
 import 'dart:developer';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -10,9 +13,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/safe_network_image.dart';
 
 /// 城市卡片组件（网格视图）
 class HomeCityCard extends StatelessWidget {
@@ -35,12 +36,12 @@ class HomeCityCard extends StatelessWidget {
       onTap: () => _navigateToDetail(context, l10n),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           border: Border.all(color: AppColors.borderLight, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
+              blurRadius: 8.r,
               offset: const Offset(0, 2),
             ),
           ],
@@ -50,7 +51,7 @@ class HomeCityCard extends StatelessWidget {
             // 背景图片
             _buildBackgroundImage(),
             // 内容层
-            _buildContent(isMobile),
+            _buildContent(isMobile, l10n: l10n),
           ],
         ),
       ),
@@ -77,7 +78,7 @@ class HomeCityCard extends StatelessWidget {
           cityId: city.id,
           cityName: city.name,
           cityImages: city.landscapeImageUrls ?? [],
-          cityImage: city.imageUrl?.toString() ?? '',
+          cityImage: city.displayImageUrl,
           overallScore: (city.overallScore as num?)?.toDouble() ?? 0.0,
           reviewCount: (city.reviewCount as num?)?.toInt() ?? 0,
         ),
@@ -90,18 +91,15 @@ class HomeCityCard extends StatelessWidget {
 
   Widget _buildBackgroundImage() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          CachedNetworkImage(
+          SafeNetworkImage(
             imageUrl: city.displayImageUrl,
             fit: BoxFit.cover,
-            // 限制缓存尺寸，避免解码原始大图
-            memCacheWidth: 900,
-            memCacheHeight: 900,
-            placeholder: (_, __) => Container(color: Colors.grey[200]),
-            errorWidget: (_, __, ___) => Container(
+            placeholder: Container(color: Colors.grey[200]),
+            errorWidget: Container(
               color: Colors.grey[300],
               child: const Icon(FontAwesomeIcons.image, color: Colors.white70),
             ),
@@ -123,28 +121,28 @@ class HomeCityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(bool isMobile) {
+  Widget _buildContent(bool isMobile, {required AppLocalizations l10n}) {
     return Stack(
       children: [
         // 顶部信息
         _buildTopRow(isMobile),
         // 底部城市信息
-        _buildBottomInfo(isMobile),
+        _buildBottomInfo(isMobile, l10n: l10n),
       ],
     );
   }
 
   Widget _buildTopRow(bool isMobile) {
     return Positioned(
-      top: 8,
-      left: 8,
-      right: 8,
+      top: 8.h,
+      left: 8.w,
+      right: 8.w,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // 版主状态徽章
           _buildModeratorBadge(isMobile),
-          const SizedBox(width: 3),
+          SizedBox(width: 3.w),
           // 右侧按钮组
           _buildTopRightButtons(isMobile),
         ],
@@ -153,6 +151,7 @@ class HomeCityCard extends StatelessWidget {
   }
 
   Widget _buildModeratorBadge(bool isMobile) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Flexible(
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -163,7 +162,7 @@ class HomeCityCard extends StatelessWidget {
           color: city.moderatorId != null
               ? const Color(0xFF10B981).withValues(alpha: 0.9)
               : Colors.orange.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(4.r),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -174,12 +173,16 @@ class HomeCityCard extends StatelessWidget {
               size: isMobile ? 8 : 10,
             ),
             SizedBox(width: isMobile ? 2 : 4),
-            Text(
-              city.moderatorId != null ? '已指定版主' : '待指定版主',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 8 : 10,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                city.moderatorId != null ? l10n.moderatorAssigned : l10n.moderatorPending,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isMobile ? 8 : 10,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],
@@ -192,12 +195,14 @@ class HomeCityCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 刷新图片按钮（仅管理员可见）
+        // 刷新图片按钮（管理员或城市版主可见）
         Obx(() {
           final authController = Get.find<AuthStateController>();
           final user = authController.currentUser.value;
           final isAdmin = user?.role.toLowerCase() == 'admin';
-          if (!isAdmin) return const SizedBox.shrink();
+          final isCityModerator =
+              city.isCurrentUserModerator || (city.moderatorId != null && city.moderatorId == user?.id);
+          if (!isAdmin && !isCityModerator) return const SizedBox.shrink();
 
           return Row(
             mainAxisSize: MainAxisSize.min,
@@ -219,12 +224,16 @@ class HomeCityCard extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(4.r),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('📡', style: TextStyle(fontSize: isMobile ? 7 : 10)),
+              Icon(
+                FontAwesomeIcons.wifi,
+                color: Colors.white,
+                size: isMobile ? 7 : 10,
+              ),
               SizedBox(width: isMobile ? 1 : 3),
               Text(
                 city.displayInternetScore.toStringAsFixed(1),
@@ -241,7 +250,7 @@ class HomeCityCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomInfo(bool isMobile) {
+  Widget _buildBottomInfo(bool isMobile, {required AppLocalizations l10n}) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -257,9 +266,9 @@ class HomeCityCard extends StatelessWidget {
               Colors.black.withValues(alpha: 0.7),
             ],
           ),
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(8),
-            bottomRight: Radius.circular(8),
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(8.r),
+            bottomRight: Radius.circular(8.r),
           ),
         ),
         child: Column(
@@ -308,7 +317,7 @@ class HomeCityCard extends StatelessWidget {
                 ),
                 SizedBox(width: isMobile ? 3 : 4),
                 Text(
-                  '综合得分',
+                  l10n.overallScore,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: isMobile ? 11 : 12,
@@ -367,7 +376,7 @@ class HomeCityCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -400,6 +409,8 @@ class _GenerateImageButton extends StatelessWidget {
     required this.isMobile,
   });
 
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
+
   Future<void> _generateImages() async {
     final cityController = Get.find<CityStateController>();
 
@@ -407,20 +418,33 @@ class _GenerateImageButton extends StatelessWidget {
 
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
-      AppToast.warning('Please login to generate images', title: 'Login Required');
+      AppToast.warning(_l10n.pleaseLogin, title: _l10n.loginRequired);
       Get.toNamed(AppRoutes.login);
       return;
     }
 
     final user = authController.currentUser.value;
-    if (user?.role.toLowerCase() != 'admin') {
-      AppToast.warning('Only administrators can generate images', title: 'Permission Denied');
+    final isAdmin = user?.role.toLowerCase() == 'admin';
+
+    // 检查是否为该城市的版主
+    bool isCityModerator = false;
+    try {
+      final city = cityController.cities.firstWhereOrNull((c) => c.id == cityId) ??
+          cityController.recommendedCities.firstWhereOrNull((c) => c.id == cityId) ??
+          cityController.popularCities.firstWhereOrNull((c) => c.id == cityId);
+      if (city != null) {
+        isCityModerator = city.isCurrentUserModerator || (city.moderatorId != null && city.moderatorId == user?.id);
+      }
+    } catch (_) {}
+
+    if (!isAdmin && !isCityModerator) {
+      AppToast.warning(_l10n.dataServicePermissionDenied, title: _l10n.dataServicePermissionDenied);
       return;
     }
 
     AppToast.info(
-      'AI image generation task created for $cityName.\nYou will be notified when complete.',
-      title: 'Task Created',
+      _l10n.dataServiceImageTaskCreated(cityName),
+      title: _l10n.dataServiceTaskCreated,
     );
 
     final result = await cityController.generateCityImages(cityId);
@@ -432,7 +456,7 @@ class _GenerateImageButton extends StatelessWidget {
         log('🖼️ Image generation task created: taskId=$taskId');
       },
       onFailure: (exception) {
-        AppToast.error(exception.message, title: 'Task Creation Failed');
+        AppToast.error(exception.message, title: _l10n.dataServiceTaskCreationFailed);
       },
     );
   }
@@ -450,13 +474,13 @@ class _GenerateImageButton extends StatelessWidget {
           padding: EdgeInsets.all(isMobile ? 4 : 6),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(4.r),
           ),
           child: isGenerating
               ? SizedBox(
                   width: isMobile ? 12 : 16,
                   height: isMobile ? 12 : 16,
-                  child: const CircularProgressIndicator(
+                  child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),

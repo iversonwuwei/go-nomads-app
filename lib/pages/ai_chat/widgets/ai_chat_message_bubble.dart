@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 消息气泡
 class AiChatMessageBubble extends StatelessWidget {
@@ -47,24 +49,24 @@ class _UserMessageBubble extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.78,
         ),
-        margin: const EdgeInsets.only(left: 48, right: 8, bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        margin: EdgeInsets.only(left: 48.w, right: 8.w, bottom: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: AppColors.cityPrimary,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: AppColors.cityPrimary.withValues(alpha: 0.18),
-              blurRadius: 8,
+              blurRadius: 8.r,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Text(
           message.content.isNotEmpty ? message.content : '…',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 15,
+            fontSize: 15.sp,
             height: 1.5,
           ),
         ),
@@ -93,11 +95,11 @@ class _AiMessageBubble extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.88,
         ),
-        margin: const EdgeInsets.only(left: 8, right: 24, bottom: 8),
-        padding: const EdgeInsets.all(12),
+        margin: EdgeInsets.only(left: 8.w, right: 24.w, bottom: 8.h),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: message.isError ? const Color(0xFFFFB4B4) : AppColors.border,
             width: 0.5,
@@ -159,59 +161,59 @@ class _AiMarkdownContent extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final baseStyle = textTheme.bodyMedium?.copyWith(
       color: isError ? const Color(0xFFB42318) : AppColors.textPrimary,
-      fontSize: 15,
+      fontSize: 15.sp,
       height: 1.55,
     );
 
     return MarkdownStyleSheet(
       // 段落样式
       p: baseStyle,
-      pPadding: const EdgeInsets.only(bottom: 10),
+      pPadding: EdgeInsets.only(bottom: 10.h),
 
       // 标题样式 - 手机端稍小
       h1: baseStyle?.copyWith(
         fontWeight: FontWeight.w700,
-        fontSize: 18,
+        fontSize: 18.sp,
         height: 1.3,
       ),
-      h1Padding: const EdgeInsets.only(top: 6, bottom: 8),
+      h1Padding: EdgeInsets.only(top: 6.h, bottom: 8.h),
       h2: baseStyle?.copyWith(
         fontWeight: FontWeight.w700,
-        fontSize: 16,
+        fontSize: 16.sp,
         height: 1.3,
       ),
-      h2Padding: const EdgeInsets.only(top: 6, bottom: 6),
+      h2Padding: EdgeInsets.only(top: 6.h, bottom: 6.h),
       h3: baseStyle?.copyWith(
         fontWeight: FontWeight.w600,
-        fontSize: 15,
+        fontSize: 15.sp,
         height: 1.3,
       ),
-      h3Padding: const EdgeInsets.only(top: 4, bottom: 4),
+      h3Padding: EdgeInsets.only(top: 4.h, bottom: 4.h),
 
       // 加粗和斜体
       strong: baseStyle?.copyWith(fontWeight: FontWeight.w700),
       em: baseStyle?.copyWith(fontStyle: FontStyle.italic),
 
       // 行内代码 - 手机端优化
-      code: const TextStyle(
+      code: TextStyle(
         fontFamily: 'monospace',
-        fontSize: 13,
+        fontSize: 13.sp,
         color: Color(0xFFE11D48),
         backgroundColor: Color(0xFFF1F5F9),
       ),
-      codeblockPadding: const EdgeInsets.all(10),
+      codeblockPadding: EdgeInsets.all(10.w),
       codeblockDecoration: BoxDecoration(
         color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
 
       // 引用块 - 手机端更紧凑
       blockquote: baseStyle?.copyWith(
         color: AppColors.textSecondary,
         fontStyle: FontStyle.italic,
-        fontSize: 14,
+        fontSize: 14.sp,
       ),
-      blockquotePadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      blockquotePadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
       blockquoteDecoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         border: Border(
@@ -224,7 +226,7 @@ class _AiMarkdownContent extends StatelessWidget {
 
       // 列表样式 - 手机端缩进更小
       listBullet: baseStyle?.copyWith(color: AppColors.cityPrimary),
-      listBulletPadding: const EdgeInsets.only(right: 6),
+      listBulletPadding: EdgeInsets.only(right: 6.w),
       listIndent: 16,
 
       // 分割线
@@ -236,9 +238,9 @@ class _AiMarkdownContent extends StatelessWidget {
 
       // 表格 - 手机端更紧凑
       tableBorder: TableBorder.all(color: AppColors.border, width: 0.5),
-      tableHead: baseStyle?.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
-      tableBody: baseStyle?.copyWith(fontSize: 13),
-      tableCellsPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      tableHead: baseStyle?.copyWith(fontWeight: FontWeight.w600, fontSize: 13.sp),
+      tableBody: baseStyle?.copyWith(fontSize: 13.sp),
+      tableCellsPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
 
       // 链接
       a: baseStyle?.copyWith(
@@ -294,10 +296,10 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
     final lineCount = lines.length;
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
+      margin: EdgeInsets.symmetric(vertical: 6.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -315,7 +317,7 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: const BoxDecoration(
         color: Color(0xFF334155),
       ),
@@ -328,9 +330,9 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
               child: Text(
                 widget.language,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF94A3B8),
-                  fontSize: 11,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -345,24 +347,24 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
               child: GestureDetector(
                 onTap: _copyCode,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: _copied ? const Color(0xFF10B981) : Colors.transparent,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         _copied ? Icons.check_rounded : Icons.copy_rounded,
-                        size: 12,
+                        size: 12.r,
                         color: _copied ? Colors.white : const Color(0xFF94A3B8),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Text(
                         _copied ? '已复制' : '复制',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           color: _copied ? Colors.white : const Color(0xFF94A3B8),
                         ),
                       ),
@@ -379,26 +381,26 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
 
   Widget _buildCodeContent(List<String> lines, int lineCount) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 300),
+      constraints: BoxConstraints(maxHeight: 300.h),
       child: SingleChildScrollView(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(10.w),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 行号
               if (lineCount > 1)
                 Padding(
-                  padding: const EdgeInsets.only(right: 10),
+                  padding: EdgeInsets.only(right: 10.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: List.generate(lineCount, (index) {
                       return Text(
                         '${index + 1}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Color(0xFF64748B),
                           height: 1.5,
                         ),
@@ -409,9 +411,9 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
               // 代码内容
               SelectableText(
                 widget.code.trim(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'monospace',
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   color: Color(0xFFE2E8F0),
                   height: 1.5,
                 ),
@@ -424,9 +426,10 @@ class _MobileCodeBlockState extends State<_MobileCodeBlock> {
   }
 
   void _copyCode() {
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: widget.code.trim()));
     setState(() => _copied = true);
-    AppToast.success('代码已复制');
+    AppToast.success(l10n.aiChatCodeCopied);
 
     // 2秒后重置状态
     Future.delayed(const Duration(seconds: 2), () {
@@ -470,17 +473,17 @@ class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderState
       builder: (context, child) {
         final value = (_controller.value * 3).floor();
         return SizedBox(
-          width: 30,
-          height: 10,
+          width: 30.w,
+          height: 10.h,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
             children: List.generate(3, (index) {
               final active = index <= value % 3;
               return Container(
-                width: 6,
-                height: 6,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
+                width: 6.w,
+                height: 6.h,
+                margin: EdgeInsets.symmetric(horizontal: 2.w),
                 decoration: BoxDecoration(
                   color: active ? AppColors.textSecondary : AppColors.textSecondary.withValues(alpha: 0.3),
                   shape: BoxShape.circle,

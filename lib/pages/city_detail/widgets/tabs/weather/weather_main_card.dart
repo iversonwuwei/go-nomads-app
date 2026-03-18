@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/weather/domain/entities/weather.dart';
 import 'weather_utils.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 主天气卡片 - 显示当前温度、天气描述、城市名等
 class WeatherMainCard extends StatelessWidget {
@@ -31,31 +32,31 @@ class WeatherMainCard extends StatelessWidget {
     );
 
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(28.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF4458).withValues(alpha: 0.4),
-            blurRadius: 24,
+            blurRadius: 24.r,
             offset: const Offset(0, 12),
-            spreadRadius: 4,
+            spreadRadius: 4.r,
           ),
         ],
       ),
       child: Column(
         children: [
           _buildMainInfo(description),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           _buildDivider(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           _buildMiniInfoRow(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           _buildUpdateTime(timezone, updatedAt),
         ],
       ),
@@ -77,39 +78,39 @@ class WeatherMainCard extends StatelessWidget {
                 children: [
                   Text(
                     weather.temperature.toStringAsFixed(0),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 72,
+                      fontSize: 72.sp,
                       fontWeight: FontWeight.bold,
                       height: 0.95,
                       letterSpacing: -2,
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8),
+                  Padding(
+                    padding: EdgeInsets.only(top: 8.h),
                     child: Text(
                       '°C',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 32,
+                        fontSize: 32.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               // 天气描述
               Text(
                 description,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
+                  letterSpacing: 0.3.sp,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               // 城市名称
               if (cityName.isNotEmpty)
                 Row(
@@ -117,14 +118,14 @@ class WeatherMainCard extends StatelessWidget {
                     Icon(
                       FontAwesomeIcons.locationDot,
                       color: Colors.white.withValues(alpha: 0.8),
-                      size: 16,
+                      size: 16.r,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4.w),
                     Text(
                       cityName,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 15,
+                        fontSize: 15.sp,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -135,10 +136,10 @@ class WeatherMainCard extends StatelessWidget {
         ),
         // 天气图标
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
           ),
           child: FaIcon(
             WeatherUtils.getWeatherIcon(
@@ -146,7 +147,7 @@ class WeatherMainCard extends StatelessWidget {
               isNight: weather.weatherIcon.endsWith('n'),
             ),
             color: Colors.white,
-            size: 64,
+            size: 64.r,
           ),
         ),
       ],
@@ -155,7 +156,7 @@ class WeatherMainCard extends StatelessWidget {
 
   Widget _buildDivider() {
     return Container(
-      height: 1,
+      height: 1.h,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -178,8 +179,8 @@ class WeatherMainCard extends StatelessWidget {
           value: '${weather.feelsLike.toStringAsFixed(0)}°',
         ),
         Container(
-          width: 1,
-          height: 40,
+          width: 1.w,
+          height: 40.h,
           color: Colors.white.withValues(alpha: 0.3),
         ),
         _WeatherMiniInfo(
@@ -188,8 +189,8 @@ class WeatherMainCard extends StatelessWidget {
           value: '${weather.humidity}%',
         ),
         Container(
-          width: 1,
-          height: 40,
+          width: 1.w,
+          height: 40.h,
           color: Colors.white.withValues(alpha: 0.3),
         ),
         _WeatherMiniInfo(
@@ -206,7 +207,7 @@ class WeatherMainCard extends StatelessWidget {
       '$timezone • ${l10n.updated} $updatedAt',
       style: TextStyle(
         color: Colors.white.withValues(alpha: 0.7),
-        fontSize: 12,
+        fontSize: 12.sp,
         fontWeight: FontWeight.w500,
       ),
     );
@@ -232,23 +233,23 @@ class _WeatherMiniInfo extends StatelessWidget {
         Icon(
           icon,
           color: Colors.white.withValues(alpha: 0.9),
-          size: 24,
+          size: 24.r,
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: 2.h),
         Text(
           label,
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 11,
+            fontSize: 11.sp,
             fontWeight: FontWeight.w500,
           ),
         ),

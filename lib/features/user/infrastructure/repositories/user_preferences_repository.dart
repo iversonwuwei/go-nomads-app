@@ -1,10 +1,10 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user_preferences.dart';
 import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
-import 'package:dio/dio.dart';
 
 /// 用户偏好设置仓储实现
 class UserPreferencesRepository implements IUserPreferencesRepository {
@@ -104,6 +104,35 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       throw Exception('更新用户偏好设置失败');
     } catch (e) {
       log('❌ 更新用户偏好设置失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<UserPreferences> acceptPrivacyPolicy() async {
+    log('📋 接受隐私政策');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/users/me/accept-privacy-policy',
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final preferences = UserPreferences.fromJson(response.data['data'] as Map<String, dynamic>);
+        log('✅ 成功接受隐私政策');
+        return preferences;
+      }
+
+      throw Exception('接受隐私政策失败');
+    } catch (e) {
+      log('❌ 接受隐私政策失败: $e');
       rethrow;
     }
   }

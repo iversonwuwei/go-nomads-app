@@ -1,7 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -52,7 +54,7 @@ class ChatMoreOptionsController extends GetxController {
         await config.onImagePicked!(image);
       }
     } catch (e) {
-      AppToast.error('选择图片失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.selectImageFailed(e.toString()));
     }
   }
 
@@ -79,7 +81,7 @@ class ChatMoreOptionsController extends GetxController {
         }
       }
     } catch (e) {
-      AppToast.error('选择文件失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.selectFileFailed(e.toString()));
     }
   }
 }
@@ -108,24 +110,24 @@ class ChatMoreOptionsSheet extends GetView<ChatMoreOptionsController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // 顶部拖动条
               Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(bottom: 16.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE0E0E0),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               // 功能选项网格
@@ -133,33 +135,33 @@ class ChatMoreOptionsSheet extends GetView<ChatMoreOptionsController> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 4,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
+                mainAxisSpacing: 16.w,
+                crossAxisSpacing: 16.w,
                 childAspectRatio: 0.85,
                 children: [
                   _ChatMoreOptionItem(
                     icon: FontAwesomeIcons.image,
-                    label: '照片',
+                    label: AppLocalizations.of(context)!.photo,
                     color: const Color(0xFF10B981),
                     onTap: () => controller.pickImage(ImageSource.gallery),
                   ),
                   _ChatMoreOptionItem(
                     icon: FontAwesomeIcons.camera,
-                    label: '拍摄',
+                    label: AppLocalizations.of(context)!.camera,
                     color: const Color(0xFFFFAA00),
                     onTap: () => controller.pickImage(ImageSource.camera),
                   ),
                   if (config.showLocation)
                     _ChatMoreOptionItem(
                       icon: FontAwesomeIcons.locationDot,
-                      label: '位置',
+                      label: AppLocalizations.of(context)!.location,
                       color: const Color(0xFFEF4444),
                       onTap: () => controller.pickLocation(),
                     ),
                   if (config.showFile)
                     _ChatMoreOptionItem(
                       icon: FontAwesomeIcons.folder,
-                      label: '文件',
+                      label: AppLocalizations.of(context)!.file,
                       color: const Color(0xFF3B82F6),
                       onTap: () => controller.pickFile(),
                     ),
@@ -195,19 +197,19 @@ class _ChatMoreOptionItem extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 56.w,
+            height: 56.h,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 24.r),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: 12.sp,
               color: Color(0xFF666666),
             ),
           ),

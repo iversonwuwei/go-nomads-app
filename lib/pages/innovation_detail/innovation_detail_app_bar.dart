@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/admin_delete_button.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/report_button.dart';
+import 'package:go_nomads_app/widgets/report_dialog.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Innovation Detail App Bar Section
 /// 创意项目详情页 - AppBar 区域
@@ -40,21 +43,34 @@ class InnovationDetailAppBar extends StatelessWidget {
             // 编辑按钮 - 仅当 canEdit 为 true 时显示
             if (_c.project.canEdit)
               IconButton(
-                icon: const Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 20),
+                icon: Icon(FontAwesomeIcons.penToSquare, color: Colors.white, size: 20.r),
                 onPressed: onEdit,
                 tooltip: l10n.edit,
+              ),
+            // 举报按钮 - 非创建者且非管理员可见
+            if (!_c.project.canEdit && !_c.isAdmin.value)
+              SliverReportButton(
+                onPressed: () {
+                  ReportDialog.show(
+                    context: context,
+                    contentType: ReportContentType.innovationProject,
+                    targetId: _c.project.uuid ?? '',
+                    targetName: _c.project.projectName,
+                  );
+                },
+                tooltip: l10n.report,
               ),
           ],
           flexibleSpace: FlexibleSpaceBar(
             title: Text(
               _c.project.projectName,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 shadows: [
                   Shadow(
                     offset: Offset(0, 1),
-                    blurRadius: 3.0,
+                    blurRadius: 3.0.r,
                     color: Color.fromARGB(128, 0, 0, 0),
                   ),
                 ],
@@ -112,7 +128,7 @@ class InnovationDetailAppBar extends StatelessWidget {
       child: Center(
         child: Icon(
           FontAwesomeIcons.lightbulb,
-          size: 80,
+          size: 80.r,
           color: Colors.white.withValues(alpha: 0.3),
         ),
       ),

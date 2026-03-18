@@ -9,25 +9,37 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:intl/intl.dart';
 
 /// HotelListPage 控制器
 class HotelListPageController extends GetxController {
   final String? cityId;
   final String? cityName;
   final String? countryName;
+  final double? latitude;
+  final double? longitude;
 
   HotelListPageController({
     this.cityId,
     this.cityName,
     this.countryName,
+    this.latitude,
+    this.longitude,
   });
 
   final RxBool isLoading = false.obs;
   final RxList<Hotel> hotels = <Hotel>[].obs;
   final RxBool canManageHotels = false.obs;
+  final RxString externalDataStatus = 'not_requested'.obs;
+  final RxBool partialExternalData = false.obs;
+  final RxnString externalDataMessage = RxnString();
 
   // 搜索条件
   final RxString searchQuery = ''.obs;
+  final Rxn<DateTime> checkInDate = Rxn<DateTime>();
+  final RxInt stayNights = 1.obs;
+  final RxInt adultCount = 2.obs;
+  final RxInt roomCount = 1.obs;
 
   late final HotelRepository _hotelRepository;
   final TextEditingController searchController = TextEditingController();
@@ -36,6 +48,7 @@ class HotelListPageController extends GetxController {
   void onInit() {
     super.onInit();
     _hotelRepository = HotelRepository(HttpService());
+    checkInDate.value = DateTime.now().add(const Duration(days: 7));
     // 异步加载数据,不阻塞页面显示
     Future.microtask(() {
       loadHotels();
@@ -70,36 +83,34 @@ class HotelListPageController extends GetxController {
 
       List<Hotel> loadedHotels = [];
 
-      // 如果有城市ID，加载该城市的酒店
-      if (cityId != null) {
-        log('🏨 正在加载城市 ID $cityId 的酒店...');
-        final result = await _hotelRepository.getHotelsByCity(cityId!);
+      final result = await _hotelRepository.getHotelsForDiscovery(
+        cityId: cityId,
+        cityName: cityName,
+        countryName: countryName,
+        latitude: latitude,
+        longitude: longitude,
+        checkInDate: checkInDate.value,
+        stayNights: stayNights.value,
+        adultCount: adultCount.value,
+        roomCount: roomCount.value,
+        search: searchQuery.value,
+      );
 
-        result.fold(
-          onSuccess: (data) {
-            loadedHotels = data;
-            log('🏨 找到 ${loadedHotels.length} 个酒店');
-          },
-          onFailure: (exception) {
-            // 酒店服务暂未实现，静默处理错误，显示空状态
-            log('⚠️ 酒店服务暂不可用: ${exception.message}');
-          },
-        );
-      } else {
-        // 加载所有酒店
-        final result = await _hotelRepository.getHotels();
-
-        result.fold(
-          onSuccess: (data) {
-            loadedHotels = data;
-            log('🏨 找到 ${loadedHotels.length} 个酒店');
-          },
-          onFailure: (exception) {
-            // 酒店服务暂未实现，静默处理错误，显示空状态
-            log('⚠️ 酒店服务暂不可用: ${exception.message}');
-          },
-        );
-      }
+      result.fold(
+        onSuccess: (data) {
+          loadedHotels = data;
+          externalDataStatus.value = _hotelRepository.lastExternalDataStatus;
+          partialExternalData.value = _hotelRepository.lastPartialExternalData;
+          externalDataMessage.value = _hotelRepository.lastExternalDataMessage;
+          log('🏨 找到 ${loadedHotels.length} 个酒店');
+        },
+        onFailure: (exception) {
+          externalDataStatus.value = 'unavailable';
+          partialExternalData.value = false;
+          externalDataMessage.value = null;
+          log('⚠️ 酒店服务暂不可用: ${exception.message}');
+        },
+      );
 
       // 如果有搜索查询，过滤结果
       if (searchQuery.value.isNotEmpty) {
@@ -136,6 +147,65 @@ class HotelListPageController extends GetxController {
     searchController.clear();
     searchQuery.value = '';
     loadHotels();
+  }
+
+  Future<void> updateCheckInDate(DateTime? value) async {
+    if (value == null) {
+      return;
+    }
+
+    checkInDate.value = DateTime(value.year, value.month, value.day);
+    await loadHotels();
+  }
+
+  Future<void> updateStayNights(int value) async {
+    stayNights.value = value;
+    await loadHotels();
+  }
+
+  Future<void> updateAdultCount(int value) async {
+    adultCount.value = value;
+    await loadHotels();
+  }
+
+  Future<void> updateRoomCount(int value) async {
+    roomCount.value = value;
+    await loadHotels();
+  }
+
+  String get checkInLabel {
+    final value = checkInDate.value;
+    if (value == null) {
+      return 'Check-in';
+    }
+
+    return DateFormat('MM/dd').format(value);
+  }
+
+  String get occupancyLabel {
+    return '${adultCount.value} adults · ${roomCount.value} rooms';
+  }
+
+  bool get shouldShowExternalStatusBanner {
+    return externalDataStatus.value == 'disabled' ||
+        externalDataStatus.value == 'unavailable' ||
+        partialExternalData.value;
+  }
+
+  String get externalStatusBannerText {
+    final message = externalDataMessage.value?.trim();
+    if (message != null && message.isNotEmpty) {
+      return message;
+    }
+
+    switch (externalDataStatus.value) {
+      case 'disabled':
+        return 'Third-party hotel inventory is not enabled yet. Showing community listings only.';
+      case 'unavailable':
+        return 'Third-party hotel inventory is temporarily unavailable. Showing community listings only.';
+      default:
+        return 'Showing community hotel listings only.';
+    }
   }
 
   /// 导航到添加酒店页面

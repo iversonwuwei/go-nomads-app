@@ -48,7 +48,7 @@ class HotelEmptyState extends StatelessWidget {
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w300,
                     color: Colors.grey[800],
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.5.sp,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -59,7 +59,7 @@ class HotelEmptyState extends StatelessWidget {
                     fontSize: 15.sp,
                     color: Colors.grey[500],
                     fontWeight: FontWeight.w400,
-                    letterSpacing: 0.2,
+                    letterSpacing: 0.2.sp,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -67,7 +67,7 @@ class HotelEmptyState extends StatelessWidget {
                 // 添加按钮 - 所有用户都可以看到，点击时会检查权限
                 InkWell(
                   onTap: controller.navigateToAddHotel,
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(30.r),
                   child: Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: 32.w,
@@ -78,7 +78,7 @@ class HotelEmptyState extends StatelessWidget {
                         color: const Color(0xFFFF4458).withValues(alpha: 0.3),
                         width: 1.5,
                       ),
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(30.r),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -95,7 +95,7 @@ class HotelEmptyState extends StatelessWidget {
                             fontSize: 15.sp,
                             color: Colors.grey[700],
                             fontWeight: FontWeight.w500,
-                            letterSpacing: 0.3,
+                            letterSpacing: 0.3.sp,
                           ),
                         ),
                       ],

@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
 import 'package:go_nomads_app/features/innovation_project/presentation/controllers/innovation_project_state_controller.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 创意项目列表页面控制器
 class InnovationListPageController extends GetxController with WidgetsBindingObserver {
@@ -91,11 +91,20 @@ class InnovationListPageController extends GetxController with WidgetsBindingObs
     }
   }
 
+  // 上次恢复时间，避免频繁刷新
+  DateTime? _lastResumeRefreshTime;
+  static const _minResumeInterval = Duration(seconds: 30);
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // 从后台恢复时刷新数据
+    // 从后台恢复时刷新数据（最小间隔 30 秒避免频繁刷新）
     if (state == AppLifecycleState.resumed) {
-      loadProjects(forceRefresh: true);
+      final now = DateTime.now();
+      if (_lastResumeRefreshTime == null ||
+          now.difference(_lastResumeRefreshTime!) >= _minResumeInterval) {
+        _lastResumeRefreshTime = now;
+        loadProjects(forceRefresh: true);
+      }
     }
   }
 
@@ -105,7 +114,7 @@ class InnovationListPageController extends GetxController with WidgetsBindingObs
       stateController = Get.find<InnovationProjectStateController>();
       controllerInitialized.value = true;
     } catch (e) {
-      print('❌ InnovationProjectStateController 未注册: $e');
+      log('❌ InnovationProjectStateController 未注册: $e');
       controllerInitialized.value = false;
     }
   }
@@ -113,14 +122,14 @@ class InnovationListPageController extends GetxController with WidgetsBindingObs
   /// 加载项目列表
   Future<void> loadProjects({bool forceRefresh = false}) async {
     if (controllerInitialized.value && stateController != null) {
-      print('📱 开始加载项目列表...');
+      log('📱 开始加载项目列表...');
       await stateController!.getProjects(forceRefresh: forceRefresh);
-      print('📱 加载完成，项目数量: ${stateController!.projects.length}');
+      log('📱 加载完成，项目数量: ${stateController!.projects.length}');
       if (stateController!.errorMessage.value != null) {
-        print('❌ 加载错误: ${stateController!.errorMessage.value}');
+        log('❌ 加载错误: ${stateController!.errorMessage.value}');
       }
     } else {
-      print('❌ Controller 未初始化，无法加载数据');
+      log('❌ Controller 未初始化，无法加载数据');
     }
   }
 

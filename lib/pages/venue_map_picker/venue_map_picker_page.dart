@@ -8,6 +8,7 @@ import 'package:go_nomads_app/pages/venue_map_picker/venue_list_section.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 场地地图选择器页面
 class VenueMapPickerPage extends StatelessWidget {
@@ -49,9 +50,9 @@ class VenueMapPickerPage extends StatelessWidget {
           leading: const AppBackButton(color: AppColors.backButtonDark),
           title: Text(
             l10n.selectVenue,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.black,
-              fontSize: 18,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -60,9 +61,9 @@ class VenueMapPickerPage extends StatelessWidget {
               onPressed: () => _confirmSelection(context, l10n),
               child: Text(
                 l10n.confirm,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFFFF4458),
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -91,9 +92,9 @@ class VenueMapPickerPage extends StatelessWidget {
               ),
               // 搜索结果浮层
               Positioned(
-                top: 56, // 搜索框高度 + padding
-                left: 16,
-                right: 16,
+                top: 56.h, // 搜索框高度 + padding
+                left: 16.w,
+                right: 16.w,
                 child: AddressSearchSection(controllerTag: _tag, showInputOnly: false, showResultsOnly: true),
               ),
             ],

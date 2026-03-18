@@ -1,20 +1,21 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel_review.dart';
 import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_repository.dart';
 import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_review_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_hotel_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/utils/map_app_launcher.dart';
@@ -70,6 +71,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   /// 检查当前用户是否有权限编辑酒店
   /// 只有酒店创建者或管理员可以编辑
   bool _canEditHotel() {
+    if (_hotel.isBookingHotel) {
+      return false;
+    }
+
     final authController = Get.find<AuthStateController>();
     final currentUser = authController.currentUser.value;
     final currentUserId = currentUser?.id;
@@ -134,7 +139,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   _buildContactSection(),
                   // 评论区域
                   _buildReviewsSection(),
-                  const SizedBox(height: 100), // 底部间距
+                  SizedBox(height: 100.h), // 底部间距
                 ],
               ),
             ),
@@ -178,26 +183,26 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 },
               );
             },
-            size: 18,
+            size: 18.r,
           ),
         // 图片计数器
         if (images.length > 1)
           Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
+            margin: EdgeInsets.only(right: 16.w),
+            padding: EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 6.h,
             ),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
             ),
             child: Text(
               '${_currentImageIndex + 1}/${images.length}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
-                fontSize: 12,
+                fontSize: 12.sp,
               ),
             ),
           ),
@@ -224,11 +229,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: Colors.grey[300],
-                          child: const Center(child: CircularProgressIndicator()),
+                          child: const AppLoadingWidget(fullScreen: false),
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: Colors.grey[300],
-                          child: const Icon(Icons.hotel, size: 64, color: Colors.grey),
+                          child: Icon(Icons.hotel, size: 64.r, color: Colors.grey),
                         ),
                       );
                     },
@@ -239,7 +244,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     left: 0,
                     right: 0,
                     child: Container(
-                      height: 80,
+                      height: 80.h,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
@@ -255,19 +260,19 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   // 图片指示器
                   if (images.length > 1)
                     Positioned(
-                      bottom: 16,
+                      bottom: 16.h,
                       left: 0,
                       right: 0,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(images.length, (index) {
                           return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            margin: EdgeInsets.symmetric(horizontal: 3.w),
                             width: index == _currentImageIndex ? 24 : 8,
-                            height: 8,
+                            height: 8.h,
                             decoration: BoxDecoration(
                               color: index == _currentImageIndex ? Colors.white : Colors.white.withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(4.r),
                             ),
                           );
                         }),
@@ -277,7 +282,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               )
             : Container(
                 color: Colors.grey[200],
-                child: const Icon(Icons.hotel, size: 64, color: Colors.grey),
+                child: Icon(Icons.hotel, size: 64.r, color: Colors.grey),
               ),
       ),
     );
@@ -286,7 +291,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   /// 基本信息区域：名称、评分、地址、分类标签
   Widget _buildBasicInfoSection() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -297,22 +302,70 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: hotel.isBookingHotel ? const Color(0xFFF4F8FF) : const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(
+                color: hotel.isBookingHotel ? const Color(0xFFD6E8FF) : const Color(0xFFFED7AA),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  hotel.isBookingHotel ? Icons.public : Icons.people_alt_outlined,
+                  size: 18.r,
+                  color: hotel.isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hotel.sourceLabel,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w800,
+                          color: hotel.isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        hotel.isBookingHotel
+                            ? 'Live inventory and pricing provided by Booking.com.'
+                            : 'This listing was contributed by the Go Nomads community.',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          height: 1.35,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8.h),
           // 评分和星级
           Row(
             children: [
               if (hotel.starRating != null) ...[
                 ...List.generate(
                   hotel.starRating!,
-                  (index) => const Icon(Icons.star, color: Colors.amber, size: 18),
+                  (index) => Icon(Icons.star, color: Colors.amber, size: 18.r),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
               ],
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                 ),
                 child: Text(
                   hotel.rating.toStringAsFixed(1),
@@ -322,20 +375,20 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 _getRatingText(hotel.rating),
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           // 地址
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.location_on, size: 18, color: Colors.grey[600]),
-              const SizedBox(width: 4),
+              Icon(Icons.location_on, size: 18.r, color: Colors.grey[600]),
+              SizedBox(width: 4.w),
               Expanded(
                 child: Text(
                   hotel.address,
@@ -344,16 +397,49 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           // 分类标签
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 8.w,
+            runSpacing: 8.w,
             children: [
+              _buildSourceTag(hotel),
               _buildTag(hotel.category, Icons.hotel),
-              if (hotel.nomadScore >= 70) _buildTag('数字游民友好', Icons.laptop_mac, isHighlight: true),
-              if (hotel.hasCoworkingSpace) _buildTag('配套共享空间', Icons.business),
+              if (hotel.nomadScore >= 70)
+                _buildTag(AppLocalizations.of(context)!.nomadFriendly, Icons.laptop_mac, isHighlight: true),
+              if (hotel.hasCoworkingSpace) _buildTag(AppLocalizations.of(context)!.coworkingSpace, Icons.business),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSourceTag(Hotel hotel) {
+    final isBookingHotel = hotel.isBookingHotel;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: isBookingHotel ? const Color(0xFFE8F3FF) : const Color(0xFFFFF0E0),
+        borderRadius: BorderRadius.circular(999.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isBookingHotel ? Icons.public : Icons.people_alt_outlined,
+            size: 14.r,
+            color: isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            hotel.sourceLabel,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
+              color: isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+            ),
           ),
         ],
       ),
@@ -363,10 +449,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   /// 构建标签
   Widget _buildTag(String text, IconData icon, {bool isHighlight = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: isHighlight ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : Colors.grey[100],
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: isHighlight ? Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)) : null,
       ),
       child: Row(
@@ -374,14 +460,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         children: [
           Icon(
             icon,
-            size: 14,
+            size: 14.r,
             color: isHighlight ? Theme.of(context).colorScheme.primary : Colors.grey[600],
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Text(
             text,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: isHighlight ? Theme.of(context).colorScheme.primary : Colors.grey[700],
             ),
           ),
@@ -392,21 +478,23 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 根据评分获取文字描述
   String _getRatingText(double rating) {
-    if (rating >= 4.5) return '极好';
-    if (rating >= 4.0) return '很好';
-    if (rating >= 3.5) return '不错';
-    if (rating >= 3.0) return '一般';
-    return '较差';
+    final l10n = AppLocalizations.of(context)!;
+    if (rating >= 4.5) return l10n.ratingExcellent;
+    if (rating >= 4.0) return l10n.ratingVeryGood;
+    if (rating >= 3.5) return l10n.ratingGood;
+    if (rating >= 3.0) return l10n.ratingAverage;
+    return l10n.ratingPoor;
   }
 
   /// 价格区域
   Widget _buildPricingSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
         ),
@@ -415,26 +503,26 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '价格',
+            l10n.priceLabel,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
               Expanded(
                 child: _buildPriceItem(
-                  '每晚',
+                  l10n.perNightLabel,
                   '${hotel.currency} ${hotel.pricePerNight.toStringAsFixed(0)}',
                   Icons.nights_stay,
                 ),
               ),
               if (hotel.hasLongStayDiscount && hotel.longStayDiscountPercent != null) ...[
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: _buildPriceItem(
-                    '长住优惠',
+                    l10n.longStayDiscount,
                     '-${hotel.longStayDiscountPercent!.toStringAsFixed(0)}%',
                     Icons.discount,
                   ),
@@ -451,16 +539,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   Widget _buildPriceItem(String label, String price, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
-        const SizedBox(width: 8),
+        Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20.r),
+        SizedBox(width: 8.w),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+            Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
             Text(
               price,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -473,55 +561,66 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 数字游民特性区域
   Widget _buildNomadFeaturesSection() {
+    final l10n = AppLocalizations.of(context)!;
     final hasAnyFeature = hotel.hasWifi || hotel.wifiSpeed != null || hotel.hasWorkDesk || hotel.hasCoworkingSpace;
 
     if (!hasAnyFeature) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '数字游民特性',
+            l10n.nomadFeatures,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              if (hotel.hasWifi)
-                _buildFeatureCard(
-                  icon: Icons.wifi,
-                  title: 'WiFi',
-                  subtitle: hotel.wifiSpeed != null ? '${hotel.wifiSpeed} Mbps' : '有',
-                  color: Colors.blue,
-                ),
-              if (hotel.hasWorkDesk)
-                _buildFeatureCard(
-                  icon: Icons.desk,
-                  title: '工作桌',
-                  subtitle: '有',
-                  color: Colors.green,
-                ),
-              if (hotel.hasCoworkingSpace)
-                _buildFeatureCard(
-                  icon: Icons.business,
-                  title: '共享空间',
-                  subtitle: '配套',
-                  color: Colors.orange,
-                ),
-              if (hotel.hasAirConditioning)
-                _buildFeatureCard(
-                  icon: Icons.ac_unit,
-                  title: '空调',
-                  subtitle: '有',
-                  color: Colors.cyan,
-                ),
-            ],
+          SizedBox(height: 12.h),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final spacing = 12.w;
+              final cardWidth = (constraints.maxWidth - spacing) / 2;
+              return Wrap(
+                spacing: spacing,
+                runSpacing: 12.w,
+                children: [
+                  if (hotel.hasWifi)
+                    _buildFeatureCard(
+                      icon: Icons.wifi,
+                      title: 'WiFi',
+                      subtitle: hotel.wifiSpeed != null ? '${hotel.wifiSpeed} Mbps' : l10n.available,
+                      color: Colors.blue,
+                      cardWidth: cardWidth,
+                    ),
+                  if (hotel.hasWorkDesk)
+                    _buildFeatureCard(
+                      icon: Icons.desk,
+                      title: l10n.workDesk,
+                      subtitle: l10n.available,
+                      color: Colors.green,
+                      cardWidth: cardWidth,
+                    ),
+                  if (hotel.hasCoworkingSpace)
+                    _buildFeatureCard(
+                      icon: Icons.business,
+                      title: l10n.coworkingSpace,
+                      subtitle: l10n.coworkingSpaceIncluded,
+                      color: Colors.orange,
+                      cardWidth: cardWidth,
+                    ),
+                  if (hotel.hasAirConditioning)
+                    _buildFeatureCard(
+                      icon: Icons.ac_unit,
+                      title: l10n.airConditioning,
+                      subtitle: l10n.available,
+                      color: Colors.cyan,
+                      cardWidth: cardWidth,
+                    ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -534,37 +633,38 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     required String title,
     required String subtitle,
     required Color color,
+    required double cardWidth,
   }) {
     return Container(
-      width: (MediaQuery.of(context).size.width - 56) / 2,
-      padding: const EdgeInsets.all(12),
+      width: cardWidth,
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 20.r),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                 ),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                     color: color,
                   ),
@@ -579,43 +679,44 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 设施区域
   Widget _buildAmenitiesSection() {
+    final l10n = AppLocalizations.of(context)!;
     final amenities = hotel.amenities;
     if (amenities.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '设施服务',
+            l10n.facilities,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 8.w,
+            runSpacing: 8.w,
             children: amenities.map((amenity) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       _getAmenityIcon(amenity),
-                      size: 16,
+                      size: 16.r,
                       color: Colors.grey[700],
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6.w),
                     Text(
                       amenity,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                      style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
                     ),
                   ],
                 ),
@@ -647,39 +748,40 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 联系方式区域
   Widget _buildContactSection() {
+    final l10n = AppLocalizations.of(context)!;
     final hasContact = hotel.phone != null || hotel.email != null || hotel.website != null;
     if (!hasContact) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '联系方式',
+            l10n.contactInfo,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           if (hotel.phone != null)
             _buildContactItem(
               icon: Icons.phone,
-              label: '电话',
+              label: l10n.phone,
               value: hotel.phone!,
               onTap: () => _launchUrl('tel:${hotel.phone}'),
             ),
           if (hotel.email != null)
             _buildContactItem(
               icon: Icons.email,
-              label: '邮箱',
+              label: l10n.emailLabel,
               value: hotel.email!,
               onTap: () => _launchUrl('mailto:${hotel.email}'),
             ),
           if (hotel.website != null)
             _buildContactItem(
               icon: Icons.language,
-              label: '网站',
+              label: l10n.website,
               value: hotel.website!,
               onTap: () => _launchUrl(hotel.website!),
             ),
@@ -697,36 +799,36 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: 8.h),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
                 icon,
-                size: 20,
+                size: 20.r,
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     label,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                   ),
                   Text(
                     value,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
@@ -750,14 +852,15 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 底部导航栏
   Widget _buildBottomBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
         ],
@@ -774,36 +877,36 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: _showRoomTypesModal,
-                      icon: const Icon(Icons.bed, size: 20),
-                      label: Text('房型 (${hotel.roomTypes.length})'),
+                      icon: Icon(Icons.bed, size: 20.r),
+                      label: Text(l10n.roomTypes(hotel.roomTypes.length.toString())),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.secondary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                     ),
                   ),
-                if (hotel.roomTypes.isNotEmpty) const SizedBox(width: 12),
+                if (hotel.roomTypes.isNotEmpty) SizedBox(width: 12.w),
                 // 写评论按钮
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _showWriteReviewDialog,
-                    icon: const Icon(Icons.rate_review, size: 20),
-                    label: const Text('写评论'),
+                    icon: Icon(Icons.rate_review, size: 20.r),
+                    label: Text(l10n.writeReview),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             // 第二行：路线导航和访问网站
             Row(
               children: [
@@ -812,29 +915,29 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   child: ElevatedButton.icon(
                     onPressed: _onNavigationPressed,
                     icon: const Icon(Icons.directions),
-                    label: const Text('路线导航'),
+                    label: Text(l10n.directions),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
                   ),
                 ),
                 // 访问网站按钮
                 if (hotel.website != null) ...[
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => _launchUrl(hotel.website!),
                       icon: const Icon(Icons.language),
-                      label: const Text('访问网站'),
+                      label: Text(l10n.visitWebsite),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                     ),
@@ -859,30 +962,30 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
           ),
           child: Column(
             children: [
               // 拖动条
               Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.symmetric(vertical: 12.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               // 标题
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '房型列表',
+                      AppLocalizations.of(context)!.roomTypeList,
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -900,7 +1003,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   itemCount: hotel.roomTypes.length,
                   itemBuilder: (context, index) {
                     final roomType = hotel.roomTypes[index];
@@ -918,38 +1021,38 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   /// 房型卡片
   Widget _buildRoomTypeCard(RoomType roomType) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 房型图片
             if (roomType.images.isNotEmpty)
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
                 child: CachedNetworkImage(
                   imageUrl: roomType.images.first,
-                  height: 150,
+                  height: 150.h,
                   width: double.infinity,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    height: 150,
+                    height: 150.h,
                     color: Colors.grey[200],
-                    child: const Center(child: CircularProgressIndicator()),
+                    child: const AppLoadingWidget(fullScreen: false),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    height: 150,
+                    height: 150.h,
                     color: Colors.grey[200],
-                    child: const Icon(Icons.image, size: 48, color: Colors.grey),
+                    child: Icon(Icons.image, size: 48.r, color: Colors.grey),
                   ),
                 ),
               ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             // 房型名称和状态
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -965,19 +1068,19 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 ),
                 if (!roomType.isAvailable)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Colors.red,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
-                    child: const Text(
-                      '已满',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    child: Text(
+                      AppLocalizations.of(context)!.soldOut,
+                      style: TextStyle(color: Colors.white, fontSize: 12.sp),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             // 房型描述
             if (roomType.description.isNotEmpty)
               Text(
@@ -989,28 +1092,29 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             // 房型信息
             Wrap(
-              spacing: 12,
-              runSpacing: 8,
+              spacing: 12.w,
+              runSpacing: 8.w,
               children: [
                 _buildRoomInfoChip(Icons.bed, roomType.bedType),
-                _buildRoomInfoChip(Icons.people, '最多${roomType.maxOccupancy}人'),
+                _buildRoomInfoChip(
+                    Icons.people, AppLocalizations.of(context)!.maxOccupancy(roomType.maxOccupancy.toString())),
                 if (roomType.size > 0) _buildRoomInfoChip(Icons.square_foot, '${roomType.size.toInt()}㎡'),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             // 价格
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // 设施标签
                 Wrap(
-                  spacing: 4,
+                  spacing: 4.w,
                   children: roomType.amenities.take(3).map((amenity) {
                     return Chip(
-                      label: Text(amenity, style: const TextStyle(fontSize: 10)),
+                      label: Text(amenity, style: TextStyle(fontSize: 10.sp)),
                       padding: EdgeInsets.zero,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       visualDensity: VisualDensity.compact,
@@ -1030,7 +1134,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       ),
                     ),
                     Text(
-                      '/晚',
+                      AppLocalizations.of(context)!.perNight,
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: Colors.grey[600],
@@ -1049,16 +1153,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   /// 房型信息标签
   Widget _buildRoomInfoChip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.grey[700]),
-          const SizedBox(width: 4),
+          Icon(icon, size: 14.r, color: Colors.grey[700]),
+          SizedBox(width: 4.w),
           Text(
             label,
             style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
@@ -1070,10 +1174,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 显示写评论对话框
   void _showWriteReviewDialog() {
+    final l10n = AppLocalizations.of(context)!;
     // 检查用户是否已登录
     final authController = Get.find<AuthStateController>();
     if (!authController.isAuthenticated.value) {
-      AppToast.info('请先登录后再发表评论');
+      AppToast.info(l10n.pleaseLoginToReview);
       return;
     }
 
@@ -1092,11 +1197,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
             ),
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1105,21 +1210,21 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   // 拖动条
                   Center(
                     child: Container(
-                      width: 40,
-                      height: 4,
+                      width: 40.w,
+                      height: 4.h,
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(2.r),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   // 标题
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '写评论',
+                        l10n.writeReview,
                         style: TextStyle(
                           fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
@@ -1131,16 +1236,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   // 评分
                   Text(
-                    '评分',
+                    l10n.rating,
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(5, (index) {
@@ -1149,17 +1254,17 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           setModalState(() => rating = index + 1.0);
                         },
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 4.w),
                           child: Icon(
                             index < rating ? Icons.star : Icons.star_border,
                             color: Colors.amber,
-                            size: 40,
+                            size: 40.r,
                           ),
                         ),
                       );
                     }),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Center(
                     child: Text(
                       _getReviewRatingText(rating),
@@ -1169,32 +1274,32 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   // 标题输入
                   TextField(
                     controller: titleController,
                     decoration: InputDecoration(
-                      labelText: '标题（选填）',
-                      hintText: '给您的评论起个标题',
+                      labelText: l10n.reviewTitleOptional,
+                      hintText: l10n.reviewTitleHint,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   // 内容输入
                   TextField(
                     controller: contentController,
                     maxLines: 4,
                     decoration: InputDecoration(
-                      labelText: '评论内容',
-                      hintText: '分享您的入住体验...',
+                      labelText: l10n.reviewContent,
+                      hintText: l10n.reviewContentHint,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   // 提交按钮
                   SizedBox(
                     width: double.infinity,
@@ -1203,11 +1308,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ? null
                           : () async {
                               if (rating == 0) {
-                                AppToast.info('请选择评分');
+                                AppToast.info(l10n.selectRating);
                                 return;
                               }
                               if (contentController.text.trim().isEmpty) {
-                                AppToast.info('请输入评论内容');
+                                AppToast.info(l10n.enterReviewContent);
                                 return;
                               }
 
@@ -1219,7 +1324,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                                 content: contentController.text.trim(),
                                 onSuccess: () {
                                   Navigator.pop(context);
-                                  AppToast.success('评论发表成功！');
+                                  AppToast.success(l10n.reviewSubmitSuccess);
                                   // 标记数据已变更并重新加载酒店详情
                                   _hasDataChanged = true;
                                   _reloadHotelDetail();
@@ -1233,24 +1338,24 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
                       ),
                       child: isSubmitting
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
+                          ? SizedBox(
+                              height: 20.h,
+                              width: 20.w,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Text('提交评论'),
+                          : Text(l10n.submitReview),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                 ],
               ),
             ),
@@ -1292,27 +1397,28 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         },
         onFailure: (exception) {
           log('❌ 评论创建失败: ${exception.message}');
-          String errorMessage = '评论发表失败';
+          String errorMessage = AppLocalizations.of(Get.context!)!.reviewSubmitFailed;
           if (exception.message.contains('已经评论过')) {
-            errorMessage = '您已经评论过这家酒店了';
+            errorMessage = AppLocalizations.of(Get.context!)!.alreadyReviewed;
           }
           onError(errorMessage);
         },
       );
     } catch (e) {
       log('❌ 评论创建异常: $e');
-      onError('评论发表失败，请稍后重试');
+      onError(AppLocalizations.of(Get.context!)!.reviewSubmitFailedRetry);
     }
   }
 
   /// 获取评论评分文字
   String _getReviewRatingText(double rating) {
-    if (rating == 0) return '点击星星评分';
-    if (rating == 1) return '很差';
-    if (rating == 2) return '较差';
-    if (rating == 3) return '一般';
-    if (rating == 4) return '很好';
-    return '非常好';
+    final l10n = AppLocalizations.of(context)!;
+    if (rating == 0) return l10n.tapToRate;
+    if (rating == 1) return l10n.ratingVeryPoor;
+    if (rating == 2) return l10n.ratingFair;
+    if (rating == 3) return l10n.ratingNice;
+    if (rating == 4) return l10n.ratingGreat;
+    return l10n.ratingExcellentReview;
   }
 
   /// 加载评论列表
@@ -1368,16 +1474,17 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 房型区域
   Widget _buildRoomTypesSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -1393,11 +1500,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   Icon(
                     Icons.bed,
                     color: Theme.of(context).colorScheme.primary,
-                    size: 24,
+                    size: 24.r,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
-                    '房型',
+                    l10n.roomTypeList,
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -1407,11 +1514,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
               TextButton(
                 onPressed: _showRoomTypesModal,
-                child: Text('查看全部 (${hotel.roomTypes.length})'),
+                child: Text(l10n.viewAllCount(hotel.roomTypes.length.toString())),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           // 显示前2个房型简介
           ...hotel.roomTypes.take(2).map((roomType) => _buildRoomTypeSummary(roomType)),
         ],
@@ -1421,44 +1528,45 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 房型简介卡片
   Widget _buildRoomTypeSummary(RoomType roomType) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         children: [
           // 房型图片
           ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(6.r),
             child: roomType.images.isNotEmpty
                 ? CachedNetworkImage(
                     imageUrl: roomType.images.first,
-                    width: 60,
-                    height: 60,
+                    width: 60.w,
+                    height: 60.h,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(
-                      width: 60,
-                      height: 60,
+                      width: 60.w,
+                      height: 60.h,
                       color: Colors.grey[200],
                     ),
                     errorWidget: (context, url, error) => Container(
-                      width: 60,
-                      height: 60,
+                      width: 60.w,
+                      height: 60.h,
                       color: Colors.grey[200],
                       child: const Icon(Icons.bed, color: Colors.grey),
                     ),
                   )
                 : Container(
-                    width: 60,
-                    height: 60,
+                    width: 60.w,
+                    height: 60.h,
                     color: Colors.grey[200],
                     child: const Icon(Icons.bed, color: Colors.grey),
                   ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           // 房型信息
           Expanded(
             child: Column(
@@ -1471,9 +1579,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
-                  '${roomType.bedType} · 最多${roomType.maxOccupancy}人',
+                  '${roomType.bedType} · ${l10n.maxOccupancy(roomType.maxOccupancy.toString())}',
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.grey[600],
@@ -1495,7 +1603,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 ),
               ),
               Text(
-                '/晚',
+                l10n.perNight,
                 style: TextStyle(
                   fontSize: 10.sp,
                   color: Colors.grey[600],
@@ -1510,16 +1618,17 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 评论区域
   Widget _buildReviewsSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -1535,11 +1644,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   Icon(
                     Icons.rate_review,
                     color: Theme.of(context).colorScheme.primary,
-                    size: 24,
+                    size: 24.r,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
-                    '用户评论',
+                    l10n.userReviews,
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
@@ -1549,15 +1658,15 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
               // 评分显示
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: _getRatingColor(hotel.rating),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.star, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
+                    Icon(Icons.star, color: Colors.white, size: 16.r),
+                    SizedBox(width: 4.w),
                     Text(
                       hotel.rating.toStringAsFixed(1),
                       style: const TextStyle(
@@ -1570,18 +1679,18 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           // 评论统计
           Row(
             children: [
               Text(
-                '${hotel.reviewCount} 条评论',
+                l10n.reviewCount(hotel.reviewCount.toString()),
                 style: TextStyle(
                   fontSize: 14.sp,
                   color: Colors.grey[600],
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16.w),
               Text(
                 _getRatingDescription(hotel.rating),
                 style: TextStyle(
@@ -1592,26 +1701,26 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           // 暂无评论提示或评论列表
           if (hotel.reviewCount == 0)
             Center(
               child: Column(
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey[300]),
-                  const SizedBox(height: 8),
+                  Icon(Icons.chat_bubble_outline, size: 48.r, color: Colors.grey[300]),
+                  SizedBox(height: 8.h),
                   Text(
-                    '暂无评论',
+                    l10n.noReviews,
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: Colors.grey[500],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   TextButton.icon(
                     onPressed: _showWriteReviewDialog,
-                    icon: const Icon(Icons.edit, size: 16),
-                    label: const Text('成为第一个评论的人'),
+                    icon: Icon(Icons.edit, size: 16.r),
+                    label: Text(l10n.beFirstReviewer),
                   ),
                 ],
               ),
@@ -1625,23 +1734,21 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: _showWriteReviewDialog,
-                    icon: const Icon(Icons.edit, size: 16),
-                    label: const Text('写评论'),
+                    icon: Icon(Icons.edit, size: 16.r),
+                    label: Text(l10n.writeReview),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 // 评论列表
                 if (_isLoadingReviews && _reviews.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: CircularProgressIndicator(),
-                    ),
+                  Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: const Center(child: AppLoadingWidget(fullScreen: false)),
                   )
                 else if (_reviews.isEmpty)
                   Center(
                     child: Text(
-                      '暂无评论',
+                      l10n.noReviews,
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: Colors.grey[500],
@@ -1655,18 +1762,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       // 加载更多按钮
                       if (_hasMoreReviews)
                         Padding(
-                          padding: const EdgeInsets.only(top: 8),
+                          padding: EdgeInsets.only(top: 8.h),
                           child: _isLoadingReviews
-                              ? const Center(
-                                  child: SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
-                                )
+                              ? const Center(child: AppLoadingWidget(fullScreen: false))
                               : TextButton(
                                   onPressed: _loadReviews,
-                                  child: const Text('加载更多评论'),
+                                  child: Text(l10n.loadMoreReviews),
                                 ),
                         ),
                     ],
@@ -1680,12 +1781,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 构建单个评论项
   Widget _buildReviewItem(HotelReview review) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
@@ -1709,7 +1811,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       )
                     : null,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               // 用户名和时间
               Expanded(
                 child: Column(
@@ -1725,10 +1827,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           ),
                         ),
                         if (review.isVerified) ...[
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4.w),
                           Icon(
                             Icons.verified,
-                            size: 14,
+                            size: 14.r,
                             color: Colors.blue[400],
                           ),
                         ],
@@ -1746,22 +1848,22 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
               // 评分
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: _getRatingColor(review.rating.toDouble()),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.star, color: Colors.white, size: 14),
-                    const SizedBox(width: 2),
+                    Icon(Icons.star, color: Colors.white, size: 14.r),
+                    SizedBox(width: 2.w),
                     Text(
                       review.rating.toString(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ],
@@ -1769,7 +1871,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           // 评论标题
           if (review.title != null && review.title!.isNotEmpty) ...[
             Text(
@@ -1779,7 +1881,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
           ],
           // 评论内容
           Text(
@@ -1792,35 +1894,35 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           ),
           // 评论图片
           if (review.photoUrls.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             SizedBox(
-              height: 80,
+              height: 80.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: review.photoUrls.length,
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: EdgeInsets.only(right: 8.w),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                       child: CachedNetworkImage(
                         imageUrl: review.photoUrls[index],
-                        width: 80,
-                        height: 80,
+                        width: 80.w,
+                        height: 80.h,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: Colors.grey[200],
-                          child: const Center(
+                          child: Center(
                             child: SizedBox(
-                              width: 20,
-                              height: 20,
+                              width: 20.w,
+                              height: 20.h,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: Colors.grey[200],
-                          child: const Icon(Icons.broken_image, size: 24),
+                          child: Icon(Icons.broken_image, size: 24.r),
                         ),
                       ),
                     ),
@@ -1831,13 +1933,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           ],
           // 有用数
           if (review.helpfulCount > 0) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Row(
               children: [
-                Icon(Icons.thumb_up_alt_outlined, size: 14, color: Colors.grey[500]),
-                const SizedBox(width: 4),
+                Icon(Icons.thumb_up_alt_outlined, size: 14.r, color: Colors.grey[500]),
+                SizedBox(width: 4.w),
                 Text(
-                  '${review.helpfulCount} 人觉得有用',
+                  l10n.helpfulCount(review.helpfulCount.toString()),
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.grey[500],
@@ -1853,20 +1955,21 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 格式化评论日期
   String _formatReviewDate(DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
-        return '${difference.inMinutes} 分钟前';
+        return l10n.minutesAgo(difference.inMinutes.toString());
       }
-      return '${difference.inHours} 小时前';
+      return l10n.hoursAgo(difference.inHours.toString());
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} 天前';
+      return l10n.daysAgo(difference.inDays.toString());
     } else if (difference.inDays < 30) {
-      return '${(difference.inDays / 7).floor()} 周前';
+      return l10n.weeksAgo((difference.inDays / 7).floor().toString());
     } else if (difference.inDays < 365) {
-      return '${(difference.inDays / 30).floor()} 个月前';
+      return l10n.monthsAgo((difference.inDays / 30).floor().toString());
     } else {
       return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
     }
@@ -1883,11 +1986,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 获取评分描述
   String _getRatingDescription(double rating) {
-    if (rating >= 4.5) return '优秀';
-    if (rating >= 4.0) return '很好';
-    if (rating >= 3.0) return '良好';
-    if (rating >= 2.0) return '一般';
-    return '较差';
+    final l10n = AppLocalizations.of(context)!;
+    if (rating >= 4.5) return l10n.ratingDescExcellent;
+    if (rating >= 4.0) return l10n.ratingDescVeryGood;
+    if (rating >= 3.0) return l10n.ratingDescGood;
+    if (rating >= 2.0) return l10n.ratingDescAverage;
+    return l10n.ratingDescPoor;
   }
 
   /// 点击导航按钮

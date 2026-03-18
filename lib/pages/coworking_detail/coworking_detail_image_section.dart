@@ -1,4 +1,5 @@
 import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
 import 'package:go_nomads_app/pages/coworking_reviews_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
@@ -6,6 +7,7 @@ import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CoworkingDetailImageSection extends StatelessWidget {
   final String controllerTag;
@@ -36,7 +38,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey[300],
-                          child: const Icon(FontAwesomeIcons.building, size: 100),
+                          child: Icon(FontAwesomeIcons.building, size: 100.r),
                         );
                       },
                     );
@@ -48,7 +50,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: Colors.grey[300],
-                      child: const Icon(FontAwesomeIcons.building, size: 100),
+                      child: Icon(FontAwesomeIcons.building, size: 100.r),
                     );
                   },
                 ),
@@ -79,7 +81,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
           // 图片指示器 - 显示在上方
           if (hasMultipleImages)
             Positioned(
-              top: 100,
+              top: 100.h,
               left: 0,
               right: 0,
               child: Obx(() => Row(
@@ -87,9 +89,9 @@ class CoworkingDetailImageSection extends StatelessWidget {
                     children: List.generate(
                       allImages.length,
                       (index) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 8,
-                        height: 8,
+                        margin: EdgeInsets.symmetric(horizontal: 4.w),
+                        width: 8.w,
+                        height: 8.h,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _c.currentImageIndex.value == index ? Colors.white : Colors.white.withAlpha(128),
@@ -114,9 +116,9 @@ class CoworkingDetailImageSection extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.5),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
           ),
         ),
         child: Column(
@@ -138,10 +140,10 @@ class CoworkingDetailImageSection extends StatelessWidget {
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: Colors.amber.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
                         color: Colors.amber.withValues(alpha: 0.5),
                       ),
@@ -149,39 +151,39 @@ class CoworkingDetailImageSection extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(FontAwesomeIcons.star, size: 14, color: Colors.amber),
-                        const SizedBox(width: 6),
+                        Icon(FontAwesomeIcons.star, size: 14.r, color: Colors.amber),
+                        SizedBox(width: 6.w),
                         Text(
                           space.spaceInfo.rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Text(
                           '(${space.spaceInfo.reviewCount})',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: Colors.white.withValues(alpha: 0.8),
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Icon(
                           FontAwesomeIcons.chevronRight,
-                          size: 10,
+                          size: 10.r,
                           color: Colors.white.withValues(alpha: 0.7),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 // 验证徽章
                 CoworkingVerificationBadge(
                   space: space,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                   darkTheme: true,
                   onVerified: (updatedSpace) => _c.updateSpace(updatedSpace),
                 ),
@@ -196,7 +198,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
                     ),
                   // 删除按钮
                   if (isAdmin) ...[
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     _ActionButton(
                       icon: FontAwesomeIcons.trash,
                       color: Colors.red,
@@ -206,7 +208,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             // 第二行：信息指标
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -219,7 +221,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
                   ),
                   // 月租价格
                   if (space.pricing.monthlyRate != null) ...[
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     _HeroPill(
                       icon: FontAwesomeIcons.dollarSign,
                       value: '${space.pricing.monthlyRate!.toStringAsFixed(0)}/mo',
@@ -227,7 +229,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
                   ],
                   // 24/7 开放
                   if (space.amenities.has24HourAccess) ...[
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     const _HeroPill(
                       icon: FontAwesomeIcons.clock,
                       value: '24/7',
@@ -236,7 +238,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
                   ],
                   // 更新时间
                   if (space.lastUpdated != null) ...[
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     _HeroPill(
                       icon: FontAwesomeIcons.arrowsRotate,
                       value: _c.formatDate(space.lastUpdated!),
@@ -264,21 +266,22 @@ class CoworkingDetailImageSection extends StatelessWidget {
   }
 
   Future<void> _showDeleteConfirmation(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('删除确认'),
-          content: Text('确定要删除 "${_c.space.value.name}" 吗？此操作不可撤销。'),
+          title: Text(l10n.coworkingDetailDeleteConfirmTitle),
+          content: Text(l10n.coworkingDetailDeleteConfirmMessage(_c.space.value.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
+              child: Text(l10n.delete),
             ),
           ],
         );
@@ -310,17 +313,17 @@ class _ActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
           color: buttonColor.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
           border: Border.all(
             color: buttonColor.withValues(alpha: 0.4),
           ),
         ),
         child: Icon(
           icon,
-          size: 16,
+          size: 16.r,
           color: buttonColor,
         ),
       ),
@@ -346,10 +349,10 @@ class _HeroPill extends StatelessWidget {
     final hasCustomColor = color != null;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.2),
         ),
@@ -359,14 +362,14 @@ class _HeroPill extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 12,
+            size: 12.r,
             color: hasCustomColor ? pillColor : Colors.white.withValues(alpha: 0.9),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Text(
             value,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
               color: hasCustomColor ? pillColor : Colors.white,
             ),
@@ -391,18 +394,18 @@ class CoworkingDetailImageCounterBadge extends StatelessWidget {
 
       final allImages = _c.allImages;
       return Container(
-        margin: const EdgeInsets.only(right: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        margin: EdgeInsets.only(right: 16.w),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
         decoration: BoxDecoration(
           color: Colors.black.withAlpha(128),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
         ),
         child: Obx(() => Text(
               '${_c.currentImageIndex.value + 1}/${allImages.length}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
-                fontSize: 12,
+                fontSize: 12.sp,
               ),
             )),
       );

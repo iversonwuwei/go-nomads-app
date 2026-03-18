@@ -1,13 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/features/city_list/widgets/widgets.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/global_map_page.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 城市列表页面 - 使用 GetView 符合 GetX 标准
 class CityListPage extends GetView<CityListController> {
@@ -45,10 +47,10 @@ class CityListPage extends GetView<CityListController> {
       actions: [
         // 全球地图按钮
         IconButton(
-          icon: const FaIcon(
+          icon: FaIcon(
             FontAwesomeIcons.mapLocationDot,
             color: AppColors.textPrimary,
-            size: 20,
+            size: 20.r,
           ),
           onPressed: () {
             Get.to(() => const GlobalMapPage());
@@ -58,7 +60,7 @@ class CityListPage extends GetView<CityListController> {
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(
-          height: 1,
+          height: 1.h,
           color: AppColors.borderLight,
         ),
       ),
@@ -67,35 +69,46 @@ class CityListPage extends GetView<CityListController> {
 
   Widget _buildBody(bool isMobile) {
     return Obx(() {
-      // 加载中状态
-      if (controller.isLoading.value) {
-        return const CityListSkeleton();
-      }
+      final showTabsInitialLoading = controller.isLoadingTabs.value && controller.regionTabs.isEmpty;
 
-      // 错误状态
-      if (controller.errorMessage.value != null) {
-        return const CityListErrorState();
-      }
-
-      return Column(
+      final content = Column(
         children: [
-          // 筛选栏
+          // 搜索栏 + 区域 Tab 栏
           CityFilterBar(isMobile: isMobile),
-          // 城市列表
+          // 城市网格列表区域
           Expanded(
-            child: controller.cities.isEmpty ? const CityListEmptyState() : _CityListContent(isMobile: isMobile),
+            child: Obx(() {
+              final showCitiesInitialLoading = controller.isLoading.value && controller.cities.isEmpty;
+              final cityContent = controller.errorMessage.value != null && controller.cities.isEmpty
+                  ? const CityListErrorState()
+                  : controller.cities.isEmpty
+                      ? const CityListEmptyState()
+                      : _CityGridContent(isMobile: isMobile);
+
+              return AppLoadingSwitcher(
+                isLoading: showCitiesInitialLoading,
+                loading: const CityListSkeleton(),
+                child: cityContent,
+              );
+            }),
           ),
         ],
+      );
+
+      return AppLoadingSwitcher(
+        isLoading: showTabsInitialLoading,
+        loading: const CityListSkeleton(),
+        child: content,
       );
     });
   }
 }
 
-/// 城市列表内容组件
-class _CityListContent extends GetView<CityListController> {
+/// 城市网格列表内容组件 - 2列网格布局
+class _CityGridContent extends GetView<CityListController> {
   final bool isMobile;
 
-  const _CityListContent({required this.isMobile});
+  const _CityGridContent({required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
@@ -105,26 +118,42 @@ class _CityListContent extends GetView<CityListController> {
       return RefreshIndicator(
         onRefresh: () => controller.loadCities(refresh: true),
         color: const Color(0xFFFF4458),
-        child: ListView.builder(
+        child: CustomScrollView(
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(
-            isMobile ? 16 : 20,
-            isMobile ? 16 : 20,
-            isMobile ? 16 : 20,
-            100, // 底部留白给导航栏
-          ),
-          itemCount: cityList.length + (controller.hasMore.value ? 1 : 0),
-          itemBuilder: (context, index) {
-            // 加载指示器
-            if (index == cityList.length) {
-              return const CityListLoadingIndicator();
-            }
-
-            final city = cityList[index];
-            // 使用 cityId 构建 CityCard，确保响应式更新
-            return CityCard(cityId: city.id, isMobile: isMobile);
-          },
+          slivers: [
+            // 城市网格
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                isMobile ? 12 : 20,
+                isMobile ? 12 : 20,
+                isMobile ? 12 : 20,
+                0,
+              ),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isMobile ? 2 : 3,
+                  crossAxisSpacing: isMobile ? 10 : 16,
+                  mainAxisSpacing: isMobile ? 10 : 16,
+                  childAspectRatio: 0.68,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final city = cityList[index];
+                    return CityCard(cityId: city.id, isMobile: isMobile);
+                  },
+                  childCount: cityList.length,
+                ),
+              ),
+            ),
+            // 加载更多指示器 - 全宽居中显示
+            if (controller.hasMore.value)
+              const SliverToBoxAdapter(
+                child: CityListLoadingIndicator(),
+              ),
+            // 底部留白
+            SliverPadding(padding: EdgeInsets.only(bottom: 100.h)),
+          ],
         ),
       );
     });

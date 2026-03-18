@@ -1,36 +1,36 @@
-import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 /// 景点选择部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const TravelPlanAttractionsSection({super.key, required this.controllerTag});
+  const TravelPlanAttractionsSection({super.key});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // 安全检查
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(title: '想去的景点', icon: FontAwesomeIcons.city),
-        const SizedBox(height: 8),
+        _SectionTitle(title: l10n.attractions, icon: FontAwesomeIcons.city),
+        SizedBox(height: 8.h),
         Text(
           '选择您在${controller.cityName}想要游览的景点类型',
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
         ),
-        const SizedBox(height: 12),
-        _AttractionsWrap(controllerTag: controllerTag),
+        SizedBox(height: 12.h),
+        const _AttractionsWrap(),
       ],
     );
   }
@@ -38,28 +38,25 @@ class TravelPlanAttractionsSection extends GetView<CreateTravelPlanPageControlle
 
 /// 景点选项网格
 class _AttractionsWrap extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _AttractionsWrap({required this.controllerTag});
+  const _AttractionsWrap();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 8.w,
+      runSpacing: 8.w,
       children: controller.cityAttractions.map((attraction) {
         return _AttractionChip(
           label: attraction['name'] as String,
           id: attraction['id'] as String,
           icon: attraction['icon'] as IconData,
-          controllerTag: controllerTag,
         );
       }).toList(),
     );
@@ -71,21 +68,19 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
   final String label;
   final String id;
   final IconData icon;
-  final String controllerTag;
 
   const _AttractionChip({
     required this.label,
     required this.id,
     required this.icon,
-    required this.controllerTag,
   });
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -95,7 +90,7 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
       return GestureDetector(
         onTap: () => controller.toggleAttraction(id),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
@@ -105,7 +100,7 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
                   )
                 : null,
             color: isSelected ? null : Colors.grey[50],
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
@@ -114,7 +109,7 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
                 ? [
                     BoxShadow(
                       color: const Color(0xFFFF4458).withValues(alpha: 0.2),
-                      blurRadius: 6,
+                      blurRadius: 6.r,
                       offset: const Offset(0, 2),
                     ),
                   ]
@@ -123,13 +118,13 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: isSelected ? Colors.white : const Color(0xFFFF4458)),
-              const SizedBox(width: 6),
+              Icon(icon, size: 16.r, color: isSelected ? Colors.white : const Color(0xFFFF4458)),
+              SizedBox(width: 6.w),
               Text(
                 label,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -143,19 +138,17 @@ class _AttractionChip extends GetView<CreateTravelPlanPageController> {
 
 /// 旅行风格部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanStyleSection extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const TravelPlanStyleSection({super.key, required this.controllerTag});
+  const TravelPlanStyleSection({super.key});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     // 安全检查
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -163,8 +156,8 @@ class TravelPlanStyleSection extends GetView<CreateTravelPlanPageController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(title: l10n.travelStyle, icon: FontAwesomeIcons.paintbrush),
-        const SizedBox(height: 12),
-        _StyleChipsWrap(controllerTag: controllerTag),
+        SizedBox(height: 12.h),
+        const _StyleChipsWrap(),
       ],
     );
   }
@@ -172,36 +165,30 @@ class TravelPlanStyleSection extends GetView<CreateTravelPlanPageController> {
 
 /// 旅行风格选项网格
 class _StyleChipsWrap extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _StyleChipsWrap({required this.controllerTag});
+  const _StyleChipsWrap();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 8.w,
+      runSpacing: 8.w,
       children: [
-        _StyleChip(
-            label: l10n.culture, value: 'culture', icon: FontAwesomeIcons.landmark, controllerTag: controllerTag),
-        _StyleChip(
-            label: l10n.adventure, value: 'adventure', icon: FontAwesomeIcons.mountain, controllerTag: controllerTag),
-        _StyleChip(
-            label: l10n.relaxation, value: 'relaxation', icon: FontAwesomeIcons.spa, controllerTag: controllerTag),
+        _StyleChip(label: l10n.culture, value: 'culture', icon: FontAwesomeIcons.landmark),
+        _StyleChip(label: l10n.adventure, value: 'adventure', icon: FontAwesomeIcons.mountain),
+        _StyleChip(label: l10n.relaxation, value: 'relaxation', icon: FontAwesomeIcons.spa),
         _StyleChip(
             label: l10n.nightlife,
             value: 'nightlife',
-            icon: FontAwesomeIcons.champagneGlasses,
-            controllerTag: controllerTag),
+          icon: FontAwesomeIcons.champagneGlasses),
       ],
     );
   }
@@ -212,21 +199,19 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
   final String label;
   final String value;
   final IconData icon;
-  final String controllerTag;
 
   const _StyleChip({
     required this.label,
     required this.value,
     required this.icon,
-    required this.controllerTag,
   });
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -236,7 +221,7 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
       return GestureDetector(
         onTap: () => controller.setTravelStyle(value),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
@@ -246,7 +231,7 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
                   )
                 : null,
             color: isSelected ? null : Colors.grey[100],
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
@@ -255,13 +240,13 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: isSelected ? Colors.white : Colors.black54),
-              const SizedBox(width: 6),
+              Icon(icon, size: 16.r, color: isSelected ? Colors.white : Colors.black54),
+              SizedBox(width: 6.w),
               Text(
                 label,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -275,19 +260,17 @@ class _StyleChip extends GetView<CreateTravelPlanPageController> {
 
 /// 兴趣爱好部分 - 符合 GetX 标准的 GetView 实现
 class TravelPlanInterestsSection extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const TravelPlanInterestsSection({super.key, required this.controllerTag});
+  const TravelPlanInterestsSection({super.key});
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     // 安全检查
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -295,8 +278,8 @@ class TravelPlanInterestsSection extends GetView<CreateTravelPlanPageController>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionTitle(title: l10n.interests, icon: FontAwesomeIcons.heart),
-        const SizedBox(height: 12),
-        _InterestsWrap(controllerTag: controllerTag),
+        SizedBox(height: 12.h),
+        const _InterestsWrap(),
       ],
     );
   }
@@ -304,33 +287,31 @@ class TravelPlanInterestsSection extends GetView<CreateTravelPlanPageController>
 
 /// 兴趣选项网格
 class _InterestsWrap extends GetView<CreateTravelPlanPageController> {
-  final String controllerTag;
-
-  const _InterestsWrap({required this.controllerTag});
+  const _InterestsWrap();
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 8.w,
+      runSpacing: 8.w,
       children: [
-        _InterestChip(label: l10n.photography, controllerTag: controllerTag),
-        _InterestChip(label: l10n.history, controllerTag: controllerTag),
-        _InterestChip(label: 'Art', controllerTag: controllerTag),
-        _InterestChip(label: l10n.nature, controllerTag: controllerTag),
-        _InterestChip(label: 'Beach', controllerTag: controllerTag),
-        _InterestChip(label: 'Temples', controllerTag: controllerTag),
-        _InterestChip(label: 'Markets', controllerTag: controllerTag),
-        _InterestChip(label: 'Coffee', controllerTag: controllerTag),
+        _InterestChip(label: l10n.photography),
+        _InterestChip(label: l10n.history),
+        _InterestChip(label: 'Art'),
+        _InterestChip(label: l10n.nature),
+        _InterestChip(label: 'Beach'),
+        _InterestChip(label: 'Temples'),
+        _InterestChip(label: 'Markets'),
+        _InterestChip(label: 'Coffee'),
       ],
     );
   }
@@ -339,19 +320,17 @@ class _InterestsWrap extends GetView<CreateTravelPlanPageController> {
 /// 兴趣选项芯片
 class _InterestChip extends GetView<CreateTravelPlanPageController> {
   final String label;
-  final String controllerTag;
 
   const _InterestChip({
     required this.label,
-    required this.controllerTag,
   });
 
   @override
-  String? get tag => controllerTag;
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+    if (!Get.isRegistered<CreateTravelPlanPageController>(tag: tag)) {
       return const SizedBox.shrink();
     }
 
@@ -361,7 +340,7 @@ class _InterestChip extends GetView<CreateTravelPlanPageController> {
       return GestureDetector(
         onTap: () => controller.toggleInterest(label),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
           decoration: BoxDecoration(
             gradient: isSelected
                 ? const LinearGradient(
@@ -371,7 +350,7 @@ class _InterestChip extends GetView<CreateTravelPlanPageController> {
                   )
                 : null,
             color: isSelected ? null : Colors.grey[100],
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(18.r),
             border: Border.all(
               color: isSelected ? const Color(0xFFFF4458) : Colors.grey.shade300,
               width: isSelected ? 2 : 1,
@@ -381,7 +360,7 @@ class _InterestChip extends GetView<CreateTravelPlanPageController> {
             label,
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.black87,
-              fontSize: 13,
+              fontSize: 13.sp,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -402,12 +381,12 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFFFF4458)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20.r, color: const Color(0xFFFF4458)),
+        SizedBox(width: 8.w),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),

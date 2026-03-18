@@ -1,10 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 活动邀请响应对话框
 class EventInvitationDialog extends StatelessWidget {
@@ -27,84 +29,84 @@ class EventInvitationDialog extends StatelessWidget {
 
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // 图标
             Container(
-              width: 64,
-              height: 64,
+              width: 64.w,
+              height: 64.h,
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 FontAwesomeIcons.calendarDays,
                 color: Color(0xFF10B981),
-                size: 32,
+                size: 32.r,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 标题
             Text(
               l10n.eventInvitation,
-              style: const TextStyle(
-                fontSize: 20,
+              style: TextStyle(
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // 消息
             Text(
               '$inviterName ${l10n.inviteYouToJoin}',
-              style: const TextStyle(
-                fontSize: 14,
+              style: TextStyle(
+                fontSize: 14.sp,
                 color: Color(0xFF6b7280),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // 活动信息
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     eventTitle,
-                    style: const TextStyle(
-                      fontSize: 15,
+                    style: TextStyle(
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF1a1a1a),
                     ),
                   ),
                   if (eventTime.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           FontAwesomeIcons.clock,
-                          size: 14,
+                          size: 14.r,
                           color: Color(0xFF6b7280),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Text(
                           eventTime,
-                          style: const TextStyle(
-                            fontSize: 13,
+                          style: TextStyle(
+                            fontSize: 13.sp,
                             color: Color(0xFF6b7280),
                           ),
                         ),
@@ -114,7 +116,7 @@ class EventInvitationDialog extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 操作按钮
             Row(
@@ -123,10 +125,10 @@ class EventInvitationDialog extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => _handleResponse(context, invitationId, false),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       side: const BorderSide(color: Color(0xFFE5E7EB)),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
                     child: Text(
@@ -138,17 +140,17 @@ class EventInvitationDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _handleResponse(context, invitationId, true),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
                     child: Text(
@@ -174,10 +176,7 @@ class EventInvitationDialog extends StatelessWidget {
     final notificationController = Get.find<NotificationStateController>();
 
     // 显示加载指示器
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
+    AppLoadingDialog.showSimple();
 
     final success = await notificationController.respondToEventInvitation(
       notificationId: notification.id,
@@ -186,7 +185,7 @@ class EventInvitationDialog extends StatelessWidget {
     );
 
     // 关闭加载指示器
-    Get.back();
+    AppLoadingDialog.hide();
 
     if (success) {
       AppToast.success(accepted ? '已接受邀请' : '已拒绝邀请');
@@ -218,75 +217,75 @@ class ModeratorTransferDialog extends StatelessWidget {
 
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // 图标
             Container(
-              width: 64,
-              height: 64,
+              width: 64.w,
+              height: 64.h,
               decoration: BoxDecoration(
                 color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 FontAwesomeIcons.userGear,
                 color: Color(0xFF9C27B0),
-                size: 32,
+                size: 32.r,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 标题
             Text(
               l10n.moderatorTransfer,
-              style: const TextStyle(
-                fontSize: 20,
+              style: TextStyle(
+                fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1a1a1a),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // 消息
             Text(
               notification.message,
-              style: const TextStyle(
-                fontSize: 14,
+              style: TextStyle(
+                fontSize: 14.sp,
                 color: Color(0xFF6b7280),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // 城市信息
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         FontAwesomeIcons.city,
-                        size: 14,
+                        size: 14.r,
                         color: Color(0xFF6b7280),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
                           cityName,
-                          style: const TextStyle(
-                            fontSize: 15,
+                          style: TextStyle(
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF1a1a1a),
                           ),
@@ -294,19 +293,19 @@ class ModeratorTransferDialog extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         FontAwesomeIcons.user,
-                        size: 14,
+                        size: 14.r,
                         color: Color(0xFF6b7280),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Text(
                         '${l10n.from}: $currentModeratorName',
-                        style: const TextStyle(
-                          fontSize: 13,
+                        style: TextStyle(
+                          fontSize: 13.sp,
                           color: Color(0xFF6b7280),
                         ),
                       ),
@@ -315,7 +314,7 @@ class ModeratorTransferDialog extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 操作按钮
             Row(
@@ -324,10 +323,10 @@ class ModeratorTransferDialog extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => _handleResponse(context, transferId, false),
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       side: const BorderSide(color: Color(0xFFE5E7EB)),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
                     child: Text(
@@ -339,17 +338,17 @@ class ModeratorTransferDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _handleResponse(context, transferId, true),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF9C27B0),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
                     child: Text(
@@ -375,10 +374,7 @@ class ModeratorTransferDialog extends StatelessWidget {
     final notificationController = Get.find<NotificationStateController>();
 
     // 显示加载指示器
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
+    AppLoadingDialog.showSimple();
 
     final success = await notificationController.respondToModeratorTransfer(
       notificationId: notification.id,
@@ -387,7 +383,7 @@ class ModeratorTransferDialog extends StatelessWidget {
     );
 
     // 关闭加载指示器
-    Get.back();
+    AppLoadingDialog.hide();
 
     if (success) {
       AppToast.success(accepted ? '已接受版主转让' : '已拒绝版主转让');

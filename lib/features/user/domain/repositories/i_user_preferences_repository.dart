@@ -15,4 +15,7 @@ abstract class IUserPreferencesRepository {
     String? temperatureUnit,
     String? language,
   });
+
+  /// 接受隐私政策
+  Future<UserPreferences> acceptPrivacyPolicy();
 }

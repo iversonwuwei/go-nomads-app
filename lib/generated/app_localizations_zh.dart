@@ -42,7 +42,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get register => '注册';
 
   @override
-  String get email => '邮箱';
+  String get email => '邮件';
 
   @override
   String get invalidEmailFormat => '邮箱格式不正确';
@@ -78,7 +78,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cancel => '取消';
 
   @override
-  String get confirm => '确认';
+  String get confirm => '确定';
 
   @override
   String get delete => '删除';
@@ -384,6 +384,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get language => '语言';
 
   @override
+  String get languageOptionChinese => '中文';
+
+  @override
+  String get languageOptionEnglish => '英文';
+
+  @override
   String get theme => '主题';
 
   @override
@@ -465,6 +471,1011 @@ class AppLocalizationsZh extends AppLocalizations {
   String get interests => '兴趣爱好';
 
   @override
+  String get selectSkills => '选择技能';
+
+  @override
+  String get selectInterests => '选择您的兴趣(最多5个)';
+
+  @override
+  String get searchSkillsHint => '搜索技能...';
+
+  @override
+  String get searchInterestsHint => '搜索兴趣...';
+
+  @override
+  String get noSkills => '暂无技能';
+
+  @override
+  String get noMatchingSkills => '未找到匹配的技能';
+
+  @override
+  String get noInterests => '暂无兴趣';
+
+  @override
+  String get noMatchingInterests => '未找到匹配的兴趣';
+
+  @override
+  String get failedToLoadSkillsList => '无法加载技能列表';
+
+  @override
+  String get failedToLoadInterestsList => '无法加载兴趣列表';
+
+  @override
+  String get itemUnit => '项';
+
+  @override
+  String yearsAgo(int count) {
+    return '$count年前';
+  }
+
+  @override
+  String get profileNotificationPermissionTitle => '需要通知权限';
+
+  @override
+  String get profileNotificationPermissionMessage =>
+      '请在系统设置中开启通知权限，以便接收重要消息提醒。';
+
+  @override
+  String get profileGoToSettings => '去设置';
+
+  @override
+  String get profileRolesManagement => '🔐 管理员权限管理';
+
+  @override
+  String profileSelectedUsers(int count) {
+    return '已选择 $count 人';
+  }
+
+  @override
+  String get profileRolesNotLoadedWarning =>
+      '⚠️ 角色数据未加载，批量操作功能受限\n请确认后端 /api/v1/roles 接口已正确配置';
+
+  @override
+  String get profileSetAsAdmin => '设为管理员';
+
+  @override
+  String get profileSetAsNormalUser => '设为普通用户';
+
+  @override
+  String get profileToggleSelectAll => '全选/取消全选';
+
+  @override
+  String get profileNoUsers => '暂无用户';
+
+  @override
+  String profileJoinedAt(String time) {
+    return '加入于 $time';
+  }
+
+  @override
+  String get profileRoleAdmin => '管理员';
+
+  @override
+  String get profileRoleModerator => '版主';
+
+  @override
+  String get profileRoleUser => '用户';
+
+  @override
+  String get profileSelectUsersFirst => '请先选择要设置的用户';
+
+  @override
+  String profileBatchSetAdminSuccess(int count) {
+    return '已成功将 $count 个用户设为管理员';
+  }
+
+  @override
+  String get profileBatchSetAdminFailed => '批量设置管理员失败';
+
+  @override
+  String profileBatchSetUserSuccess(int count) {
+    return '已成功将 $count 个用户设为普通用户';
+  }
+
+  @override
+  String get profileBatchSetUserFailed => '批量设置用户失败';
+
+  @override
+  String profileAddedCount(int count) {
+    return '添加 $count 个';
+  }
+
+  @override
+  String profileRemovedCount(int count) {
+    return '移除 $count 个';
+  }
+
+  @override
+  String get profileSupabaseNotConfigured => 'Supabase 未配置，请联系管理员';
+
+  @override
+  String profileAvatarUploadFailed(String error) {
+    return '头像上传失败: $error';
+  }
+
+  @override
+  String manageCityRatingsTitle(String cityName) {
+    return '$cityName - 评分数据';
+  }
+
+  @override
+  String get manageCityRatingsAddItem => '添加评分项';
+
+  @override
+  String get manageCityRatingsNameZh => '评分项名称（中文）';
+
+  @override
+  String get manageCityRatingsNameZhHint => '例如：美食';
+
+  @override
+  String get manageCityRatingsNameEn => '评分项名称（英文）';
+
+  @override
+  String get manageCityRatingsNameEnHint => '例如：Food';
+
+  @override
+  String get manageCityRatingsDescriptionOptional => '描述（可选）';
+
+  @override
+  String get manageCityRatingsDescriptionHint => '简短描述';
+
+  @override
+  String get manageCityRatingsIcon => '图标';
+
+  @override
+  String get manageCityRatingsIconStar => '星星';
+
+  @override
+  String get manageCityRatingsIconRestaurant => '餐厅';
+
+  @override
+  String get manageCityRatingsIconNetwork => '网络';
+
+  @override
+  String get manageCityRatingsIconSafety => '安全';
+
+  @override
+  String get manageCityRatingsIconTransport => '交通';
+
+  @override
+  String get manageCityRatingsIconHealthcare => '医疗';
+
+  @override
+  String get manageCityRatingsIconWeather => '天气';
+
+  @override
+  String get manageCityRatingsIconCost => '成本';
+
+  @override
+  String get manageCityRatingsIconPeople => '人群';
+
+  @override
+  String get manageCityRatingsIconLanguage => '语言';
+
+  @override
+  String get manageCityRatingsDeleteItem => '删除评分项';
+
+  @override
+  String manageCityRatingsDeleteConfirm(String name) {
+    return '确定要删除“$name”吗？';
+  }
+
+  @override
+  String manageCityRatingsSubtitle(String nameEn, String average, int count) {
+    return '$nameEn • 评分: $average ($count人)';
+  }
+
+  @override
+  String get defaultStatus => '默认';
+
+  @override
+  String get manageCityRatingsEmptyTitle => '暂无评分项';
+
+  @override
+  String get manageCityRatingsEmptyHint => '点击右上角加号，添加第一个评分项';
+
+  @override
+  String get editBasicInfoTitle => '编辑基本信息';
+
+  @override
+  String get editBasicInfoGender => '性别';
+
+  @override
+  String get editBasicInfoGenderMale => '男';
+
+  @override
+  String get editBasicInfoGenderFemale => '女';
+
+  @override
+  String get editBasicInfoGenderPreferNotToSay => '不愿透露';
+
+  @override
+  String get editBasicInfoCurrentCity => '当前城市';
+
+  @override
+  String get editBasicInfoCityHint => '例如: Bangkok';
+
+  @override
+  String get editBasicInfoCurrentCountry => '当前国家';
+
+  @override
+  String get editBasicInfoCountryHint => '例如: Thailand';
+
+  @override
+  String get editBasicInfoOccupation => '职业';
+
+  @override
+  String get editBasicInfoOccupationHint => '例如: Software Engineer';
+
+  @override
+  String get editBasicInfoCompany => '公司';
+
+  @override
+  String get editBasicInfoCompanyHint => '例如: Google';
+
+  @override
+  String get editBasicInfoWebsite => '个人网站';
+
+  @override
+  String get editBasicInfoWebsiteHint => 'https://yourwebsite.com';
+
+  @override
+  String get modularProfileTitle => '用户资料';
+
+  @override
+  String get modularProfileNameUnset => '未设置姓名';
+
+  @override
+  String get modularProfileOccupationUnset => '未设置职业';
+
+  @override
+  String get modularProfileStatsTitle => 'Nomad 统计';
+
+  @override
+  String get modularProfileStatCountries => '国家';
+
+  @override
+  String get modularProfileStatCities => '城市';
+
+  @override
+  String get modularProfileStatDays => '旅行天数';
+
+  @override
+  String get modularProfileStatMeetups => 'Meetup';
+
+  @override
+  String get modularProfileStatTrips => '行程';
+
+  @override
+  String get modularProfileStatReviews => '评论';
+
+  @override
+  String get modularProfileModuleBasicInfo => '基本信息';
+
+  @override
+  String modularProfileBasicInfoSummary(String name, String occupation) {
+    return '$name · $occupation';
+  }
+
+  @override
+  String get modularProfileTapToEditBasicInfo => '点击编辑基本信息';
+
+  @override
+  String get modularProfileModuleSkills => '技能标签';
+
+  @override
+  String get modularProfileTapToAddSkills => '点击添加技能标签';
+
+  @override
+  String modularProfileSkillsSummary(int count, String names) {
+    return '$count 项技能: $names';
+  }
+
+  @override
+  String get modularProfileModuleInterests => '兴趣爱好';
+
+  @override
+  String get modularProfileTapToAddInterests => '点击添加兴趣爱好';
+
+  @override
+  String modularProfileInterestsSummary(int count, String names) {
+    return '$count 项兴趣: $names';
+  }
+
+  @override
+  String get modularProfileModuleSocialLinks => '社交链接';
+
+  @override
+  String get modularProfileTapToAddSocialLinks => '点击添加社交平台链接';
+
+  @override
+  String modularProfileSocialLinksCount(int count) {
+    return '已添加 $count 个平台';
+  }
+
+  @override
+  String get modularProfileModuleTravelPlans => '旅行计划';
+
+  @override
+  String get modularProfileNoTravelPlans => '暂无旅行计划';
+
+  @override
+  String modularProfileTravelPlansCount(int count) {
+    return '$count 个计划';
+  }
+
+  @override
+  String get modularProfileTravelPlansComingSoon => '旅行计划功能开发中';
+
+  @override
+  String get modularProfileModuleBadges => '成就徽章';
+
+  @override
+  String get modularProfileNoBadges => '暂无徽章';
+
+  @override
+  String modularProfileBadgesCount(int count) {
+    return '已获得 $count 个徽章';
+  }
+
+  @override
+  String get modularProfileBadgesComingSoon => '徽章功能开发中';
+
+  @override
+  String get modularProfileModuleHistory => '旅行历史';
+
+  @override
+  String get modularProfileNoHistory => '暂无旅行记录';
+
+  @override
+  String modularProfileHistoryCount(int count) {
+    return '$count 条记录';
+  }
+
+  @override
+  String get modularProfileHistoryComingSoon => '旅行历史功能开发中';
+
+  @override
+  String get uploading => '上传中...';
+
+  @override
+  String get confirmDelete => '确认删除';
+
+  @override
+  String get addHotelRoomTypesTitle => '房型管理';
+
+  @override
+  String get addHotelAddRoomType => '添加房型';
+
+  @override
+  String get addHotelEditRoomType => '编辑房型';
+
+  @override
+  String get addHotelRoomTypesHint => '添加不同的房型及价格（可选）';
+
+  @override
+  String get addHotelNoRoomTypes => '暂无房型';
+
+  @override
+  String get addHotelTapToAddRoomType => '点击上方按钮添加房型';
+
+  @override
+  String get addHotelUnnamedRoomType => '未命名房型';
+
+  @override
+  String addHotelPricePerNightChip(String currency, Object price) {
+    return '$currency $price/晚';
+  }
+
+  @override
+  String addHotelMaxOccupancyChip(Object count) {
+    return '最多$count人';
+  }
+
+  @override
+  String addHotelAvailableRoomsChip(Object count) {
+    return '$count间';
+  }
+
+  @override
+  String get addHotelRoomTypeName => '房型名称';
+
+  @override
+  String get addHotelRoomTypeNameHint => '例如：标准双人间';
+
+  @override
+  String get addHotelRoomTypeDescription => '房型描述';
+
+  @override
+  String get addHotelRoomTypeDescriptionHint => '房间设施、特色等';
+
+  @override
+  String get addHotelRoomSize => '面积(㎡)';
+
+  @override
+  String get addHotelMaxOccupancy => '最大入住';
+
+  @override
+  String get addHotelBedType => '床型';
+
+  @override
+  String get addHotelAvailableRooms => '可用房间数';
+
+  @override
+  String get addHotelBedTypeSingle => 'Single';
+
+  @override
+  String get addHotelBedTypeDouble => 'Double';
+
+  @override
+  String get addHotelBedTypeQueen => 'Queen';
+
+  @override
+  String get addHotelBedTypeKing => 'King';
+
+  @override
+  String get addHotelBedTypeTwin => 'Twin';
+
+  @override
+  String get addHotelBedTypeBunk => 'Bunk';
+
+  @override
+  String get addHotelEnterRoomTypeName => '请输入房型名称';
+
+  @override
+  String get addHotelEnterPricePerNight => '请输入每晚价格';
+
+  @override
+  String get addHotelRoomTypeUpdated => '房型已更新';
+
+  @override
+  String get addHotelRoomTypeAdded => '房型已添加';
+
+  @override
+  String addHotelDeleteRoomTypeConfirm(String name) {
+    return '确定要删除房型 \"$name\" 吗？';
+  }
+
+  @override
+  String get addHotelRoomTypeDeleted => '房型已删除';
+
+  @override
+  String get editSocialLinksUrl => '链接地址';
+
+  @override
+  String editSocialLinksExample(String pattern) {
+    return '示例: $pattern';
+  }
+
+  @override
+  String get editSocialLinksTapToAdd => '点击添加';
+
+  @override
+  String editSocialLinksAddedCount(int count, int total) {
+    return '已添加 $count / $total 个平台';
+  }
+
+  @override
+  String get directChatJustNow => '刚刚';
+
+  @override
+  String directChatMinutesAgo(int count) {
+    return '$count分钟前';
+  }
+
+  @override
+  String directChatHoursAgo(int count) {
+    return '$count小时前';
+  }
+
+  @override
+  String directChatDaysAgo(int count) {
+    return '$count天前';
+  }
+
+  @override
+  String directChatPickLocationFailed(String error) {
+    return '选择位置失败: $error';
+  }
+
+  @override
+  String directChatSendFileFailed(String error) {
+    return '发送文件失败: $error';
+  }
+
+  @override
+  String get directChatVoiceFileMissing => '语音文件不存在';
+
+  @override
+  String get directChatVoiceMessageText => '语音消息';
+
+  @override
+  String directChatSendVoiceFailed(String error) {
+    return '发送语音失败: $error';
+  }
+
+  @override
+  String get directChatVoiceMessageUnavailable => '语音消息不可用';
+
+  @override
+  String get directChatFileFallback => '文件';
+
+  @override
+  String get directChatChooseMapNavigation => '选择地图导航';
+
+  @override
+  String get directChatMapApple => 'Apple 地图';
+
+  @override
+  String get directChatMapGoogle => 'Google 地图';
+
+  @override
+  String get directChatMapAmap => '高德地图';
+
+  @override
+  String get directChatMapBaidu => '百度地图';
+
+  @override
+  String get directChatMapTencent => '腾讯地图';
+
+  @override
+  String directChatMapNotInstalled(String mapName) {
+    return '未安装$mapName';
+  }
+
+  @override
+  String get directChatImageLoadFailed => '图片加载失败';
+
+  @override
+  String get directChatSaveComingSoon => '保存功能即将推出';
+
+  @override
+  String get directChatShareComingSoon => '分享功能即将推出';
+
+  @override
+  String get tencentImConnectFailedRetry => '连接失败，请重试';
+
+  @override
+  String get tencentImImportUserFailed => '用户导入失败，消息可能无法送达';
+
+  @override
+  String get tencentImNoMessages => '暂无消息';
+
+  @override
+  String get tencentImFileFallback => '文件';
+
+  @override
+  String get tencentImMessageFallback => '[消息]';
+
+  @override
+  String get tencentImImageFallback => '[图片]';
+
+  @override
+  String get tencentImLoadFailed => '加载失败';
+
+  @override
+  String get tencentImOpenFile => '打开文件';
+
+  @override
+  String get cityChatCreateRoomComingSoon => '创建聊天室功能即将推出';
+
+  @override
+  String get cityChatSaySomething => '说点什么...';
+
+  @override
+  String get cityChatViewMembers => '查看成员';
+
+  @override
+  String get cityChatSearchRecords => '搜索聊天记录';
+
+  @override
+  String get cityChatDoNotDisturb => '消息免打扰';
+
+  @override
+  String get cityChatDoNotDisturbEnabled => '已开启消息免打扰';
+
+  @override
+  String get cityChatExitRoom => '退出聊天室';
+
+  @override
+  String get cityChatLocatedMessage => '已定位到消息';
+
+  @override
+  String get cityChatMessageOutOfRange => '消息不在当前加载范围内，请加载更多历史消息';
+
+  @override
+  String get cityChatSearchMessageContent => '搜索消息内容...';
+
+  @override
+  String get dataServiceLoginToAccessFeature => '请先登录再使用此功能';
+
+  @override
+  String get dataServiceInvalidSession => '会话无效，请重新登录。';
+
+  @override
+  String get dataServiceAuthenticationError => '认证错误';
+
+  @override
+  String get dataServiceSessionExpiredMessage => '您的会话已过期，请重新登录。';
+
+  @override
+  String get dataServiceSessionExpiredTitle => '会话已过期';
+
+  @override
+  String dataServiceFoundCities(int count) {
+    return '找到 $count 个城市';
+  }
+
+  @override
+  String get dataServiceSearchFailed => '搜索失败';
+
+  @override
+  String get dataServiceSearchCitiesHint => '搜索城市...（支持中英文搜索）';
+
+  @override
+  String get dataServiceClearSearch => '清除搜索';
+
+  @override
+  String get dataServiceAlreadyJoinedMeetup => '您已经加入了这个活动';
+
+  @override
+  String get dataServiceNotJoinedMeetup => '您尚未加入这个活动';
+
+  @override
+  String get dataServiceLeaveMeetupFailed => '退出活动失败';
+
+  @override
+  String get dataServiceJoinMeetupFailed => '加入活动失败';
+
+  @override
+  String get dataServiceOperationFailed => '操作失败';
+
+  @override
+  String get dataServiceLoginToGenerateImages => '请先登录后再生成图片';
+
+  @override
+  String get dataServiceOnlyAdminOrModeratorCanGenerate => '仅管理员或城市版主可生成图片';
+
+  @override
+  String dataServiceImageTaskCreated(String cityName) {
+    return '$cityName 的 AI 图片生成任务已创建。\n完成后将通知您。';
+  }
+
+  @override
+  String get dataServicePermissionDenied => '权限不足';
+
+  @override
+  String get dataServiceTaskCreated => '任务已创建';
+
+  @override
+  String get dataServiceTaskCreationFailed => '任务创建失败';
+
+  @override
+  String get loginTipsTitle => '提示';
+
+  @override
+  String get loginPhoneRequired => '请输入手机号';
+
+  @override
+  String get loginPhoneInvalid => '请输入正确的手机号';
+
+  @override
+  String get loginSmsCodeSent => '验证码已发送';
+
+  @override
+  String get loginSendFailed => '发送失败';
+
+  @override
+  String get loginSendSmsFailed => '发送验证码失败';
+
+  @override
+  String get loginSuccessfulTitle => '登录成功';
+
+  @override
+  String get loginFailedTitle => '登录失败';
+
+  @override
+  String get loginInvalidEmailOrPassword => '邮箱或密码错误';
+
+  @override
+  String get loginUnknownErrorRetry => '发生错误，请重试。';
+
+  @override
+  String get loginWelcomeBack => '欢迎回来！';
+
+  @override
+  String get loginFailedRetry => '登录失败，请重试';
+
+  @override
+  String get loginSmsCodeInvalidOrExpired => '验证码无效或已过期';
+
+  @override
+  String loginSocialFailed(String platformName) {
+    return '$platformName 登录失败，请稍后重试';
+  }
+
+  @override
+  String loginSocialLoading(String platformName) {
+    return '正在$platformName登录...';
+  }
+
+  @override
+  String get loginPleaseWait => '请稍候';
+
+  @override
+  String get addInnovationImageSourceLocal => '本地图片';
+
+  @override
+  String get addInnovationImageSourceAiGenerated => 'AI 生成';
+
+  @override
+  String get addInnovationAiGenerating => 'AI 正在创作中...';
+
+  @override
+  String get addInnovationSupportAlbumOrAi => '支持相册选择或 AI 生成';
+
+  @override
+  String get addInnovationSelectCoverImage => '选择封面图片';
+
+  @override
+  String get addInnovationAddAttractiveCover => '为你的项目添加一张吸引眼球的封面';
+
+  @override
+  String get addInnovationAlbum => '相册';
+
+  @override
+  String get addInnovationPickFromLocal => '从本地选择';
+
+  @override
+  String get addInnovationAiGenerate => 'AI 生成';
+
+  @override
+  String get addInnovationAiCreative => '智能创作';
+
+  @override
+  String get addInnovationMembershipUnavailable => '会员服务不可用，请稍后再试';
+
+  @override
+  String get addInnovationAiImageGeneration => 'AI 图片生成';
+
+  @override
+  String get addInnovationMemberExclusive => '会员专属功能';
+
+  @override
+  String get addInnovationUpgradeMembershipUnlock => '升级会员解锁';
+
+  @override
+  String get addInnovationMaybeLater => '稍后再说';
+
+  @override
+  String get addInnovationAiGenerateCover => 'AI 生成封面';
+
+  @override
+  String get addInnovationDescribeCoverHint => '请描述您想要的封面图片...';
+
+  @override
+  String get addInnovationQuickTemplates => '快速模板：';
+
+  @override
+  String get addInnovationGenerating => '生成中...';
+
+  @override
+  String get generate => '生成';
+
+  @override
+  String get addInnovationAiBadge => 'AI';
+
+  @override
+  String get cityPhotoPickFromGalleryMulti => '从相册选择 (可多选)';
+
+  @override
+  String get cityPhotoCaptureAndUpload => '拍照上传';
+
+  @override
+  String cityPhotoUploadTitle(String cityName) {
+    return '上传照片 · $cityName';
+  }
+
+  @override
+  String cityPhotoShareExperience(String cityName) {
+    return '为数字游民社区分享你在 $cityName 的真实体验';
+  }
+
+  @override
+  String get cityPhotoTitleOrPlace => '标题 / 地点';
+
+  @override
+  String get cityPhotoTitleExample => '例：北戴河海边日出';
+
+  @override
+  String get cityPhotoTitleRequired => '请填写一个标题或地点描述';
+
+  @override
+  String get cityPhotoLocationOptional => '位置信息 (可选)';
+
+  @override
+  String get cityPhotoLocationHint => '街道、地标或更多定位线索';
+
+  @override
+  String get cityPhotoLocateOnMap => '在地图上定位';
+
+  @override
+  String get cityPhotoDescriptionOptional => '描述 (可选)';
+
+  @override
+  String get cityPhotoDescriptionHint => '简单介绍照片内容、拍摄时间等';
+
+  @override
+  String cityPhotoSelectedCount(int count, int maxCount) {
+    return '已选择 $count / $maxCount';
+  }
+
+  @override
+  String get cityPhotoAddPhoto => '添加照片';
+
+  @override
+  String get cityPhotoUploading => '正在上传...';
+
+  @override
+  String get cityPhotoEmptyHint => '还没有照片，点击上方\"添加照片\"按钮上传';
+
+  @override
+  String get cityPhotoSubmitting => '提交中...';
+
+  @override
+  String get cityPhotoSubmitDescription =>
+      '提交后后端会通过高德地图自动补齐坐标，成功后你将回到城市详情页，照片会在刷新后展示。';
+
+  @override
+  String get currencyOptionUsd => 'USD (\$)';
+
+  @override
+  String get currencyOptionEur => 'EUR (€)';
+
+  @override
+  String get currencyOptionGbp => 'GBP (£)';
+
+  @override
+  String get currencyOptionCny => 'CNY (¥)';
+
+  @override
+  String get currencyOptionJpy => 'JPY (¥)';
+
+  @override
+  String get currencyOptionThb => 'THB (฿)';
+
+  @override
+  String get currencyOptionVnd => 'VND (₫)';
+
+  @override
+  String get currencyOptionIdr => 'IDR (Rp)';
+
+  @override
+  String get currencyOptionMyr => 'MYR (RM)';
+
+  @override
+  String get currencyOptionSgd => 'SGD (S\$)';
+
+  @override
+  String get homeMeetupChatButton => '聊天';
+
+  @override
+  String get moderatorCardTitle => '城市版主';
+
+  @override
+  String get moderatorCardCertified => '已认证';
+
+  @override
+  String get moderatorCardTransferModerator => '转让版主';
+
+  @override
+  String get moderatorCardApplyModerator => '申请成为版主';
+
+  @override
+  String get moderatorCardUnclaimed => '待认领';
+
+  @override
+  String get moderatorCardLookingForModerator =>
+      '这座城市正在寻找版主！如果你熟悉这里，可以申请成为版主，帮助其他数字游民了解这座城市。';
+
+  @override
+  String get moderatorCardAssignModerator => '分配版主';
+
+  @override
+  String get moderatorCardNeedUpgradeMembership => '需要升级会员';
+
+  @override
+  String get moderatorCardUpgradeContent =>
+      '申请成为城市版主需要 Pro 会员或更高等级。\n\n升级到 Pro 会员后，您将获得：\n• 申请成为城市版主的资格\n• 更多 AI 使用次数\n• 专属会员徽章\n• 更多高级功能';
+
+  @override
+  String get moderatorCardUpgradeNow => '立即升级';
+
+  @override
+  String assignModeratorLoadCandidatesFailed(String error) {
+    return '加载版主候选人失败: $error';
+  }
+
+  @override
+  String get assignModeratorSelectAtLeastOneUser => '请至少选择一个用户';
+
+  @override
+  String get assignModeratorUnknownError => '未知错误';
+
+  @override
+  String assignModeratorUserError(String userId, String error) {
+    return '用户 $userId: $error';
+  }
+
+  @override
+  String assignModeratorSuccessCount(int count) {
+    return '成功指定 $count 个版主！';
+  }
+
+  @override
+  String assignModeratorFailCount(int count) {
+    return '$count 个用户指定失败，请查看日志';
+  }
+
+  @override
+  String assignModeratorAllFailed(String reason) {
+    return '所有用户指定失败: $reason';
+  }
+
+  @override
+  String get assignModeratorConfirmTitle => '确认指定版主';
+
+  @override
+  String assignModeratorConfirmMessage(int count) {
+    return '确定要将 $count 个用户指定为版主吗？\n\n这些用户将自动获得版主角色和相应权限。';
+  }
+
+  @override
+  String get skillCategoryProgramming => '编程开发';
+
+  @override
+  String get skillCategoryDesign => '设计创意';
+
+  @override
+  String get skillCategoryMarketing => '营销商务';
+
+  @override
+  String get skillCategoryLanguages => '语言能力';
+
+  @override
+  String get skillCategoryData => '数据分析';
+
+  @override
+  String get skillCategoryManagement => '项目管理';
+
+  @override
+  String get skillCategoryOther => '其他技能';
+
+  @override
+  String get interestCategorySports => '运动健身';
+
+  @override
+  String get interestCategoryArts => '艺术文化';
+
+  @override
+  String get interestCategoryFood => '美食烹饪';
+
+  @override
+  String get interestCategoryTravel => '旅行探险';
+
+  @override
+  String get interestCategoryTechnology => '科技数码';
+
+  @override
+  String get interestCategoryReading => '阅读学习';
+
+  @override
+  String get interestCategoryMusic => '音乐娱乐';
+
+  @override
+  String get interestCategorySocial => '社交公益';
+
+  @override
   String get travelHistory => '旅行历史';
 
   @override
@@ -501,7 +1512,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logoutConfirmMessage => '确定要退出登录吗？';
 
   @override
-  String get loggedOut => '已退出';
+  String get loggedOut => '已退出登录';
 
   @override
   String get loggedOutSuccess => '您已成功退出登录';
@@ -627,7 +1638,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterBy => '筛选';
 
   @override
-  String get allCategories => '所有分类';
+  String get allCategories => '全部';
 
   @override
   String get searchHint => '搜索...';
@@ -696,7 +1707,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reviews => '评论';
 
   @override
-  String get writeReview => '写评价';
+  String get writeReview => '写评论';
 
   @override
   String get yourRating => '您的评分';
@@ -835,7 +1846,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get expensive => '昂贵';
 
   @override
-  String get facilities => '设施';
+  String get facilities => '设施服务';
 
   @override
   String get wifi => 'WiFi';
@@ -982,7 +1993,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chooseFromGallery => '从相册选择';
 
   @override
-  String get camera => '相机';
+  String get camera => '拍摄';
 
   @override
   String get gallery => '相册';
@@ -1019,6 +2030,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get messages => '消息';
+
+  @override
+  String get conversationListLoadingTitle => '正在加载好友列表';
+
+  @override
+  String get conversationListLoadingSubtitle => '正在加载会话...';
 
   @override
   String get inbox => '收件箱';
@@ -1141,7 +2158,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bySigningUp => '注册即表示您同意我们的';
 
   @override
-  String get and => '和';
+  String get and => ' 和 ';
 
   @override
   String get required => '*';
@@ -1696,7 +2713,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get overallScore => '综合评分';
 
   @override
-  String get userReviews => '用户评价';
+  String get userReviews => '用户评论';
 
   @override
   String get writeAReview => '撰写评价';
@@ -1942,7 +2959,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gym => '健身房';
 
   @override
-  String get coworkingSpace => '共享办公空间';
+  String get coworkingSpace => '配套共享空间';
 
   @override
   String get otherExpenses => '其他费用';
@@ -2038,18 +3055,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aqiHazardous => '严重污染';
 
   @override
-  String daysAgo(int count) {
+  String daysAgo(String count) {
     return '$count天前';
   }
 
   @override
-  String weeksAgo(int count) {
+  String weeksAgo(String count) {
     return '$count周前';
   }
 
   @override
-  String monthsAgo(int count) {
-    return '$count月前';
+  String monthsAgo(String count) {
+    return '$count个月前';
   }
 
   @override
@@ -2144,9 +3161,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get foodie => '美食';
-
-  @override
-  String get selectInterests => '选择您的兴趣(最多5个)';
 
   @override
   String get hiking => '徒步';
@@ -2481,7 +3495,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reviewTitle => '评价标题';
 
   @override
-  String get reviewTitleHint => '例如:数字游民的理想之地!';
+  String get reviewTitleHint => '给您的评论起个标题';
 
   @override
   String get yourReview => '您的评论';
@@ -2508,7 +3522,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get beRespectful => '• 尊重他人';
 
   @override
-  String get submitReview => '提交评价';
+  String get submitReview => '提交评论';
 
   @override
   String get pleaseProvideRating => '请提供评分';
@@ -3484,13 +4498,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get document => '文档';
 
   @override
-  String minutesAgo(int minutes) {
-    return '$minutes分钟前';
+  String minutesAgo(String count) {
+    return '$count分钟前';
   }
 
   @override
-  String hoursAgo(int hours) {
-    return '$hours小时前';
+  String hoursAgo(String count) {
+    return '$count小时前';
   }
 
   @override
@@ -3747,6 +4761,44 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noInterestsAddedYet => '还没有添加兴趣';
 
   @override
+  String get profileNomadJourney => '游民旅程';
+
+  @override
+  String get profileStartNomadJourney => '开启你的数字游民旅程！';
+
+  @override
+  String get profileActiveMeetups => '活跃 Meetup';
+
+  @override
+  String get profileMembershipActive => '有效';
+
+  @override
+  String get profileMembershipExpired => '会员已过期';
+
+  @override
+  String get profileUnlimitedAi => 'AI 不限量';
+
+  @override
+  String profileAiUsageLeft(int remaining, int total) {
+    return 'AI：剩余 $remaining/$total';
+  }
+
+  @override
+  String get profileCurrentlyHere => '当前在这里';
+
+  @override
+  String get profileRecentTrip => '最近旅程';
+
+  @override
+  String get profileDayUnit => '天';
+
+  @override
+  String get profileDayUnitPlural => '天';
+
+  @override
+  String get profileTravelPlansEmptySubtitle => '从城市详情页生成 AI 旅行计划';
+
+  @override
   String get enterInterest => '输入兴趣';
 
   @override
@@ -3815,7 +4867,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String upgradeTo(String planName, String price) {
-    return '升级到 $planName - \$$price/年';
+    return '升级到 $planName - ¥$price';
   }
 
   @override
@@ -3831,10 +4883,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wechatDescription => '使用微信支付';
 
   @override
-  String get alipayPayment => '支付宝';
+  String get qqLogin => 'QQ登录';
 
   @override
-  String get alipayDescription => '使用支付宝支付';
+  String get qqDescription => '使用 QQ 账号登录';
 
   @override
   String get securePayment => '安全支付';
@@ -3861,6 +4913,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get perYear => '/年';
 
   @override
+  String get billingMonthly => '月付';
+
+  @override
+  String get billingYearly => '年付';
+
+  @override
+  String saveAmount(String amount) {
+    return '省 ¥$amount';
+  }
+
+  @override
   String get alreadyHavePlan => '您已拥有此计划或更高级别的计划';
 
   @override
@@ -3870,7 +4933,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get creatingWechatOrder => '正在创建微信支付订单...';
 
   @override
-  String get creatingAlipayOrder => '正在创建支付宝订单...';
+  String get qqAuthInProgress => '正在进行 QQ 授权...';
 
   @override
   String priceForPlan(String price, String planName) {
@@ -3897,10 +4960,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get failedToCreateOrder => '创建支付订单失败';
 
   @override
-  String get wechatNotInstalled => '请安装微信以使用微信支付';
+  String get wechatNotInstalled => '请先安装微信客户端';
 
   @override
-  String get alipayNotInstalled => '请安装支付宝以使用支付宝支付';
+  String get qqNotInstalled => '请先安装 QQ 客户端';
 
   @override
   String get paymentSuccessful => '支付成功！';
@@ -3909,7 +4972,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wechatPayFailed => '微信支付失败';
 
   @override
-  String get alipayPayFailed => '支付宝支付失败';
+  String get qqLoginFailed => 'QQ 登录失败';
 
   @override
   String wechatPayError(String error) {
@@ -3917,8 +4980,8 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String alipayError(String error) {
-    return '支付宝错误：$error';
+  String qqError(String error) {
+    return 'QQ 错误：$error';
   }
 
   @override
@@ -4062,19 +5125,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pricePerNightHint => '例如：50';
 
   @override
-  String get longStayDiscount => '长住折扣';
+  String get longStayDiscount => '长住优惠';
 
   @override
   String get longStayDiscountHint => '周/月住折扣百分比';
 
   @override
-  String get nomadFeatures => '游民友好设施';
+  String get nomadFeatures => '数字游民特性';
 
   @override
   String get nomadFeaturesSubtitle => '对远程工作者重要的设施';
 
   @override
-  String get workDesk => '工作台';
+  String get workDesk => '工作桌';
 
   @override
   String get hasCoworkingSpace => '有共享办公空间';
@@ -4158,4 +5221,1496 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get decline => '拒绝';
+
+  @override
+  String get privacyPolicyIntro =>
+      '欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：';
+
+  @override
+  String get privacyDataCollection => '数据收集';
+
+  @override
+  String get privacyDataCollectionDesc =>
+      '我们会收集您的行为数据（如浏览记录、搜索偏好、功能使用频率等），以便优化产品体验和个性化推荐。';
+
+  @override
+  String get privacyLocationData => '位置信息';
+
+  @override
+  String get privacyLocationDataDesc =>
+      '我们会收集您的位置数据，用于提供城市推荐、附近的共享办公空间和活动信息、以及旅行足迹记录等功能。';
+
+  @override
+  String get privacyPersonalData => '个人信息';
+
+  @override
+  String get privacyPersonalDataDesc =>
+      '我们会收集您的基本个人信息（如昵称、头像、联系方式等），用于账号管理和社交功能。';
+
+  @override
+  String get privacyDataProtection => '数据保护';
+
+  @override
+  String get privacyDataProtectionDesc =>
+      '我们承诺采用行业标准的安全措施保护您的个人数据，不会将您的数据出售给第三方。您可以随时在“设置”中管理您的隐私偏好。';
+
+  @override
+  String get privacyPolicyNote => '如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的隐私政策。';
+
+  @override
+  String get agreeAndContinue => '同意并继续';
+
+  @override
+  String get disagreeAndExit => '不同意并退出';
+
+  @override
+  String get viewFullTerms => '查看完整的';
+
+  @override
+  String get thirdPartyServices => '第三方服务';
+
+  @override
+  String get thirdPartyServicesDesc =>
+      '为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• QQ 互联SDK — QQ 登录和分享\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。';
+
+  @override
+  String get permissionUsage => '权限使用说明';
+
+  @override
+  String get permissionUsageDesc =>
+      '本应用使用以下权限：\n• 位置权限 — 城市推荐、附近活动、旅行足迹\n• 日历权限 — 将活动添加到日历\n• 通知权限 — 消息提醒和活动通知\n所有权限均在使用对应功能时才会申请，您可随时在系统设置中管理。';
+
+  @override
+  String get privacyDeclineTitle => '温馨提示';
+
+  @override
+  String get privacyDeclineMessage =>
+      '如果您不同意隐私政策，将无法使用本应用的相关功能。\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。\n\n您确定不同意吗？';
+
+  @override
+  String get reconsider => '再想想';
+
+  @override
+  String get confirmExit => '确认退出';
+
+  @override
+  String get reportSubmitted => '举报已提交';
+
+  @override
+  String get reportSubmittedDesc => '感谢您的反馈，我们将尽快处理。';
+
+  @override
+  String get reportReasonSpam => '垃圾信息/广告';
+
+  @override
+  String get reportReasonHarassment => '骚扰/欺凌';
+
+  @override
+  String get reportReasonInappropriate => '不当内容';
+
+  @override
+  String get reportReasonFraud => '欺诈/虚假信息';
+
+  @override
+  String get reportReasonViolence => '暴力/危险行为';
+
+  @override
+  String get reportReasonOther => '其他原因';
+
+  @override
+  String get reportUser => '举报用户';
+
+  @override
+  String get reportContent => '举报内容';
+
+  @override
+  String get reportFailed => '举报提交失败';
+
+  @override
+  String get reportFailedDesc => '网络异常，请稍后重试。';
+
+  @override
+  String get helpAndSupport => '帮助与客服';
+
+  @override
+  String get helpAndSupportDesc => '如有任何问题或建议，请随时联系我们';
+
+  @override
+  String get customerServiceEmail => '客服邮箱';
+
+  @override
+  String get customerServiceEmailDesc => '我们将在 1-2 个工作日内回复您的邮件';
+
+  @override
+  String get emailCopied => '邮箱地址已复制';
+
+  @override
+  String get sendEmail => '发送邮件';
+
+  @override
+  String get commonQuestions => '常见问题';
+
+  @override
+  String get faqPayment => '付费相关问题';
+
+  @override
+  String get faqPaymentAnswer =>
+      '如您在付费过程中遇到问题，如支付失败、订单异常等，请通过客服邮箱联系我们，并附上您的订单信息，我们会尽快为您处理。';
+
+  @override
+  String get faqAccount => '账号相关问题';
+
+  @override
+  String get faqAccountAnswer =>
+      '如遇到账号登录、密码找回、账号注销等问题，请通过客服邮箱联系我们，并提供您的注册信息以便核实。';
+
+  @override
+  String get faqFeedback => '功能建议与反馈';
+
+  @override
+  String get faqFeedbackAnswer => '我们非常重视用户的意见与建议，如您有任何产品改进建议，欢迎通过客服邮箱告诉我们。';
+
+  @override
+  String get serviceHours => '服务时间';
+
+  @override
+  String get serviceHoursDesc => '工作日 9:00 - 18:00（北京时间）';
+
+  @override
+  String get aiChatServiceUnavailable => 'AI 服务暂时不可用，请稍后重试';
+
+  @override
+  String get aiChatResponseError => 'AI 返回错误';
+
+  @override
+  String get aiChatFailed => 'AI Chat 失败';
+
+  @override
+  String get aiChatDefaultConversationTitle => 'Nomads AI 助手';
+
+  @override
+  String get aiChatSystemPrompt => '你是 Go Nomads 的 AI 助手，请为数字游民提供简洁且可执行的旅行建议。';
+
+  @override
+  String get aiChatCreateConversationFailed => '暂时无法创建 AI 对话';
+
+  @override
+  String get aiChatLoadHistoryFailed => '加载历史对话失败';
+
+  @override
+  String get aiChatSwitchBlockedWhileStreaming => '正在生成回复，请稍后再切换对话';
+
+  @override
+  String get aiChatSwitchConversationFailed => '切换对话失败，请稍后重试';
+
+  @override
+  String get aiChatThinking => 'AI 正在思考...';
+
+  @override
+  String get aiChatRequestTimeout => '请求超时，请稍后重试';
+
+  @override
+  String get aiChatReplyUnavailable => '暂时无法获取 AI 回复，请稍后重试';
+
+  @override
+  String get aiChatSendFailed => 'AI Chat 发送失败';
+
+  @override
+  String get aiChatNoReplyYet => '暂时未收到 AI 回复，请稍后重试';
+
+  @override
+  String get aiChatUntitledConversation => '未命名对话';
+
+  @override
+  String get manageReviewsDeleteConfirmTitle => '确认删除';
+
+  @override
+  String get manageReviewsDeleteConfirmMessage => '确定要删除这条评论吗？此操作可以恢复。';
+
+  @override
+  String manageReviewsPageTitle(Object cityName) {
+    return '$cityName - 评论管理';
+  }
+
+  @override
+  String get manageReviewsNoData => '暂无评论数据';
+
+  @override
+  String get manageReviewsAddFirstReview => '添加第一条评论';
+
+  @override
+  String manageReviewsLoadedAll(int count) {
+    return '已加载全部 $count 条评论';
+  }
+
+  @override
+  String get travelPlanUnableToLoad => '无法加载旅行计划';
+
+  @override
+  String travelPlanLoadFailedWithError(Object error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String travelPlanGenerateErrorWithError(Object error) {
+    return '错误: $error';
+  }
+
+  @override
+  String get travelPlanGeneratedSuccess => '旅行计划生成成功！';
+
+  @override
+  String travelPlanGenerateFailedWithError(Object error) {
+    return '生成失败: $error';
+  }
+
+  @override
+  String get travelPlanNotReadyWarning => '计划还未生成完成';
+
+  @override
+  String get aiChatCodeCopied => '代码已复制';
+
+  @override
+  String get aiChatCodeCopiedToClipboard => '代码已复制到剪贴板';
+
+  @override
+  String get aiChatInputHint => '问路、问签证、生成行程，都可以直接开聊…';
+
+  @override
+  String get aiChatEmptyHint => '还没有对话，向 AI 提问试试';
+
+  @override
+  String get aiChatStartConversation => '开始对话';
+
+  @override
+  String prosConsAddPageTitle(Object cityName) {
+    return '$cityName - 添加乐趣';
+  }
+
+  @override
+  String get prosConsAddProsHint => '分享这个城市的优点...';
+
+  @override
+  String get prosConsAddConsHint => '分享这个城市的挑战...';
+
+  @override
+  String manageProsConsPageTitle(Object cityName) {
+    return '$cityName - 优缺点管理';
+  }
+
+  @override
+  String get cityDetailGeneratingNearbyCitiesTitle => 'AI 正在生成附近城市';
+
+  @override
+  String get cityDetailNearbyCitiesGeneratedSuccess => '附近城市生成成功!';
+
+  @override
+  String get guideTabAiGenerate => 'AI 生成';
+
+  @override
+  String get guideTabAiGenerateGuide => 'AI 生成指南';
+
+  @override
+  String get registerCodeSentToEmail => '验证码已发送到邮箱，请查收';
+
+  @override
+  String get registerSendCodeFailedRetry => '发送验证码失败，请稍后重试';
+
+  @override
+  String get registerFailedTitle => '注册失败';
+
+  @override
+  String get registerFailedCheckInput => '注册失败,请检查输入信息';
+
+  @override
+  String get registerFailedProcessError => '注册过程中发生错误，请稍后重试';
+
+  @override
+  String get conversationDeleteTitle => '删除会话';
+
+  @override
+  String get conversationDeleteMessage => '确定要删除这个会话吗？聊天记录将被清除。';
+
+  @override
+  String get coworkingDetailUserComments => '用户评论';
+
+  @override
+  String get coworkingDetailPostComment => '发表评论';
+
+  @override
+  String get coworkingDetailViewMoreComments => '查看更多评论';
+
+  @override
+  String get coworkingDetailNoComments => '暂无评论';
+
+  @override
+  String get coworkingDetailBeFirstCommenter => '成为第一个发表评论的人';
+
+  @override
+  String get editSkillsTitle => '编辑技能';
+
+  @override
+  String get editSkillsAddCustomSkill => '添加自定义技能';
+
+  @override
+  String get editInterestsTitle => '编辑兴趣';
+
+  @override
+  String get editInterestsAddCustomInterest => '添加自定义兴趣';
+
+  @override
+  String get prosConsNoProsTitle => '还没有优点';
+
+  @override
+  String get prosConsNoProsSubtitle => '分享你在这座城市的美好体验';
+
+  @override
+  String get prosConsAddPros => '添加优点';
+
+  @override
+  String get prosConsNoConsTitle => '还没有挑战';
+
+  @override
+  String get prosConsNoConsSubtitle => '分享你遇到的困难和需要改进的地方';
+
+  @override
+  String get prosConsAddCons => '添加挑战';
+
+  @override
+  String get profilePleaseLoginToView => '请先登录以查看你的资料';
+
+  @override
+  String get profilePleaseLoginAgain => '请重新登录';
+
+  @override
+  String get profileLogoutSuccessMessage => '你已成功退出登录';
+
+  @override
+  String get profileLogoutSuccessTitle => '退出成功';
+
+  @override
+  String get profileLogoutErrorMessage => '退出登录时发生错误';
+
+  @override
+  String get coworkingDetailDeleteConfirmTitle => '删除确认';
+
+  @override
+  String coworkingDetailDeleteConfirmMessage(Object name) {
+    return '确定要删除 \"$name\" 吗？此操作不可撤销。';
+  }
+
+  @override
+  String get loginPhoneAction => '点击登录/注册';
+
+  @override
+  String get amapGlobalMapOnlyMobile => '地图仅支持 iOS 和 Android 平台';
+
+  @override
+  String get amapGlobalTitle => '全球游民';
+
+  @override
+  String get amapGlobalByRegion => '按地区';
+
+  @override
+  String get neighborhoodsDiscoverNearbyHint => '发现 100 公里内的 4 个相邻城市';
+
+  @override
+  String get neighborhoodsGenerateNearbyCities => 'AI 生成附近城市';
+
+  @override
+  String get neighborhoodsLoadedFromBackend => '☁️ 从后端加载';
+
+  @override
+  String get aiChatHistoryTooltip => '历史对话';
+
+  @override
+  String get aiChatLoadingHistoryTitle => '加载历史对话...';
+
+  @override
+  String get aiChatNoHistoryStartNew => '暂无历史对话，直接开始新对话吧';
+
+  @override
+  String get aiChatHistoryTitle => '历史对话';
+
+  @override
+  String manageCostPageTitle(Object cityName) {
+    return '$cityName - 费用管理';
+  }
+
+  @override
+  String get manageCostNoData => '暂无费用数据';
+
+  @override
+  String get manageCostAddFirst => '添加第一条费用';
+
+  @override
+  String get skillsInterestsTitle => '选择技能与兴趣';
+
+  @override
+  String get skillsInterestsSelected => '已选择';
+
+  @override
+  String skillsInterestsSummary(int skillsCount, int interestsCount) {
+    return '技能 $skillsCount/10  ·  兴趣 $interestsCount/15';
+  }
+
+  @override
+  String roomTypePreviewToast(Object name) {
+    return '房型: $name';
+  }
+
+  @override
+  String roomTypeBookingToast(Object name) {
+    return '预订 $name';
+  }
+
+  @override
+  String get applyModeratorSubmitSuccess => '申请已提交，请等待管理员审核';
+
+  @override
+  String get applyModeratorReasonHint => '请说明您申请成为版主的原因，以及您能为社区带来什么...';
+
+  @override
+  String addCoworkingImageCount(int count, int max) {
+    return '$count/$max';
+  }
+
+  @override
+  String addCoworkingMaxImages(int max) {
+    return '最多上传 $max 张图片';
+  }
+
+  @override
+  String get loginFacebookComingSoon => 'Facebook 登录即将推出';
+
+  @override
+  String assignModeratorPageTitle(Object cityName) {
+    return '$cityName - 指定版主';
+  }
+
+  @override
+  String get homeAiCopilotTitle => 'AI 智能助手';
+
+  @override
+  String get homeAiCopilotBeta => '测试版';
+
+  @override
+  String get homeAiCopilotDescription => '智能问路 · 行程规划 · 旅行攻略';
+
+  @override
+  String get moderatorAssigned => '已指定版主';
+
+  @override
+  String get moderatorPending => '待指定版主';
+
+  @override
+  String get searchResultsFor => '搜索结果：';
+
+  @override
+  String citiesFoundCount(int count) {
+    return '找到 $count 个城市';
+  }
+
+  @override
+  String get tryDifferentKeyword => '请尝试使用其他关键词搜索';
+
+  @override
+  String get startExploringCities => '添加第一个城市，开始探索之旅';
+
+  @override
+  String get meetupLoadFailed => '活动加载失败';
+
+  @override
+  String get meetupLoadFailedDescription => '请检查网络连接后重试';
+
+  @override
+  String get noMeetupsDescription => '成为第一个创建活动的人\n与同城数字游民一起社交吧';
+
+  @override
+  String get imageLoadFailed => '图片加载失败';
+
+  @override
+  String get meetupStatusCancelled => '已取消';
+
+  @override
+  String get meetupEventCancelled => '活动已取消';
+
+  @override
+  String get meetupStatusEnded => '已结束';
+
+  @override
+  String get meetupEventEnded => '活动已结束';
+
+  @override
+  String get leave => '退出';
+
+  @override
+  String pleaseLoginBeforeAction(String action) {
+    return '请先登录后再$action';
+  }
+
+  @override
+  String get loginCheckFailed => '无法检查登录状态';
+
+  @override
+  String get meetupUpdatedSuccess => '活动更新成功！';
+
+  @override
+  String meetupCreateFailed(String error) {
+    return '创建活动失败：$error';
+  }
+
+  @override
+  String meetupUpdateFailed(String error) {
+    return '更新活动失败：$error';
+  }
+
+  @override
+  String get rsvpSuccess => '报名成功！';
+
+  @override
+  String rsvpFailed(String error) {
+    return '报名失败：$error';
+  }
+
+  @override
+  String get rsvpCancelledSuccess => '已取消报名';
+
+  @override
+  String rsvpCancelFailed(String error) {
+    return '取消报名失败：$error';
+  }
+
+  @override
+  String get meetupCancelledSuccess => '活动已取消';
+
+  @override
+  String meetupCancelFailed(String error) {
+    return '取消活动失败：$error';
+  }
+
+  @override
+  String get inviteSentSuccess => '邀请已发送';
+
+  @override
+  String spotsLeftCount(int count) {
+    return '剩余 $count';
+  }
+
+  @override
+  String get emailLogin => '邮箱登录';
+
+  @override
+  String get phoneLogin => '手机登录';
+
+  @override
+  String get clickToLoginOrRegister => '点击登录/注册';
+
+  @override
+  String get wechat => '微信';
+
+  @override
+  String get letsGo => 'Let\'s Go';
+
+  @override
+  String get joinNomadsCount => '加入 38,000+ 游牧者';
+
+  @override
+  String get livingAndWorkingWorldwide => '在全球各地生活和工作';
+
+  @override
+  String get meetupsPerYear => '363 场聚会/年';
+
+  @override
+  String get messagesCount => '15k+ 消息';
+
+  @override
+  String get citiesCount => '100+ 城市';
+
+  @override
+  String get verificationCodeRequired => '请输入验证码';
+
+  @override
+  String get verificationCodeLength => '验证码必须为6位';
+
+  @override
+  String get sendFailed => '发送失败';
+
+  @override
+  String get sampleDataPreview => '示例数据预览';
+
+  @override
+  String get sampleDataPreviewDescription => '您当前查看的是示例用户资料。登录后可查看您的真实个人信息。';
+
+  @override
+  String get goToLogin => '去登录';
+
+  @override
+  String get userCancelledAuth => '用户取消授权';
+
+  @override
+  String get wechatNotDetected => '未检测到微信';
+
+  @override
+  String get qqNotDetected => '未检测到 QQ';
+
+  @override
+  String socialLoginFailed(String error) {
+    return '社交登录失败: $error';
+  }
+
+  @override
+  String get userProfileUpdated => '用户资料已更新';
+
+  @override
+  String get allNotifications => '全部';
+
+  @override
+  String get unread => '未读';
+
+  @override
+  String get read => '已读';
+
+  @override
+  String get markAllAsRead => '全部标记为已读';
+
+  @override
+  String get noNotifications => '暂无通知';
+
+  @override
+  String get noReadNotifications => '暂无已读通知';
+
+  @override
+  String get noUnreadNotifications => '暂无未读通知';
+
+  @override
+  String get cancelled => '已取消';
+
+  @override
+  String get cancelMeetup => '取消活动';
+
+  @override
+  String get eventCancelled => '活动已取消';
+
+  @override
+  String get eventEnded => '活动已结束';
+
+  @override
+  String get cancelledTab => '已取消';
+
+  @override
+  String get joinMeetupsHint => '参加一些活动来认识新朋友吧！';
+
+  @override
+  String get noPastMeetupsHint => '还没有参加过任何活动';
+
+  @override
+  String get noCancelledMeetups => '暂无已取消的活动';
+
+  @override
+  String get cancelledMeetupHistory => '这里会显示你取消参与的活动记录';
+
+  @override
+  String get noUpcomingMeetupsHint => '目前没有即将举行的活动';
+
+  @override
+  String attendeesSpotsInfo(String current, String max, String remaining) {
+    return '$current/$max 参与者 · 剩余 $remaining 个名额';
+  }
+
+  @override
+  String nomadMeetupShare(String title) {
+    return '$title - 数字游民聚会';
+  }
+
+  @override
+  String shareTime(String time) {
+    return '📅 时间: $time';
+  }
+
+  @override
+  String shareVenue(String venue) {
+    return '📍 地点: $venue';
+  }
+
+  @override
+  String shareOrganizer(String name) {
+    return '👥 组织者: $name';
+  }
+
+  @override
+  String get chatRoom => '聊天室';
+
+  @override
+  String get connecting => '正在连接';
+
+  @override
+  String get noChatRooms => '暂无聊天室';
+
+  @override
+  String onlineCount(String count) {
+    return '$count 人在线';
+  }
+
+  @override
+  String get startChatting => '开始聊天吧';
+
+  @override
+  String replyTo(String name) {
+    return '回复 $name';
+  }
+
+  @override
+  String groupMembers(String count) {
+    return '群成员 ($count)';
+  }
+
+  @override
+  String get noMembers => '暂无成员';
+
+  @override
+  String get owner => '群主';
+
+  @override
+  String get admin => '管理员';
+
+  @override
+  String get uploadFailed => '上传失败';
+
+  @override
+  String get storageServiceError => '存储服务错误';
+
+  @override
+  String get pleaseReLogin => '请重新登录';
+
+  @override
+  String get pleaseRestartApp => '请重启应用';
+
+  @override
+  String get uploadFailedRetry => '上传失败，请重试';
+
+  @override
+  String get weekDaySun => '周日';
+
+  @override
+  String get weekDayMon => '周一';
+
+  @override
+  String get weekDayTue => '周二';
+
+  @override
+  String get weekDayWed => '周三';
+
+  @override
+  String get weekDayThu => '周四';
+
+  @override
+  String get weekDayFri => '周五';
+
+  @override
+  String get weekDaySat => '周六';
+
+  @override
+  String get unknownFile => '未知文件';
+
+  @override
+  String get searchButton => '搜索';
+
+  @override
+  String searchFoundMessages(String count, String keyword) {
+    return '找到 $count 条包含\"$keyword\"的消息';
+  }
+
+  @override
+  String get searching => '搜索中...';
+
+  @override
+  String get searchChatHistory => '输入关键词搜索聊天记录';
+
+  @override
+  String searchNotFound(String keyword) {
+    return '未找到包含\"$keyword\"的消息';
+  }
+
+  @override
+  String get tryOtherKeywords => '试试其他关键词？';
+
+  @override
+  String get loadMoreResults => '加载更多结果';
+
+  @override
+  String get resetZoom => '重置缩放';
+
+  @override
+  String get cannotLoadImage => '无法加载图片';
+
+  @override
+  String joinChatRoomFailed(String error) {
+    return '加入聊天室失败: $error';
+  }
+
+  @override
+  String joinDirectChatFailed(String error) {
+    return '加入私聊失败: $error';
+  }
+
+  @override
+  String createDirectChatFailed(String error) {
+    return '创建私聊失败: $error';
+  }
+
+  @override
+  String directChatInitFailed(String error) {
+    return '私聊初始化失败: $error';
+  }
+
+  @override
+  String leaveChatRoomFailed(String error) {
+    return '离开聊天室失败: $error';
+  }
+
+  @override
+  String loadMessagesFailed(String error) {
+    return '加载消息失败: $error';
+  }
+
+  @override
+  String sendMessageFailed(String error) {
+    return '发送消息失败: $error';
+  }
+
+  @override
+  String get messageDeleted => '消息已删除';
+
+  @override
+  String deleteMessageFailed(String error) {
+    return '删除消息失败: $error';
+  }
+
+  @override
+  String get loadFailedTitle => '加载失败';
+
+  @override
+  String get addedToFavorites => '已添加到收藏';
+
+  @override
+  String get removedFromFavorites => '已取消收藏';
+
+  @override
+  String get successTitle => '成功';
+
+  @override
+  String get operationFailed => '操作失败';
+
+  @override
+  String deleteFailed(String error) {
+    return '删除失败: $error';
+  }
+
+  @override
+  String loadRatingFailed(String error) {
+    return '加载评分信息失败: $error';
+  }
+
+  @override
+  String get submitRatingFailed => '提交评分失败';
+
+  @override
+  String get ratingItemCreated => '评分项创建成功';
+
+  @override
+  String createRatingItemFailed(String error) {
+    return '创建评分项失败: $error';
+  }
+
+  @override
+  String get ratingItemDeleted => '评分项删除成功';
+
+  @override
+  String deleteRatingItemFailed(String error) {
+    return '删除评分项失败: $error';
+  }
+
+  @override
+  String get imageGenFailed => '图片生成失败';
+
+  @override
+  String get imageGenComplete => '图片生成完成';
+
+  @override
+  String cityImageUpdated(String city) {
+    return '$city 的图片已更新';
+  }
+
+  @override
+  String get imageGenTimeout => '图片生成超时，请稍后刷新页面查看';
+
+  @override
+  String get genTimeout => '生成超时';
+
+  @override
+  String get removeSkillFailed => '移除技能失败';
+
+  @override
+  String get removeInterestFailed => '移除兴趣失败';
+
+  @override
+  String get partialDataLoadFailed => '部分数据加载失败';
+
+  @override
+  String loadAnswersFailed(String error) {
+    return '加载答案失败: $error';
+  }
+
+  @override
+  String operationFailedWithError(String error) {
+    return '操作失败: $error';
+  }
+
+  @override
+  String deleteEntity(String entity) {
+    return '删除$entity';
+  }
+
+  @override
+  String confirmDeleteMessage(String entity) {
+    return '确定要删除这个$entity吗？此操作不可撤销。';
+  }
+
+  @override
+  String entityDeleted(String entity) {
+    return '$entity已删除';
+  }
+
+  @override
+  String deleteFailedWithError(String error) {
+    return '删除失败: $error';
+  }
+
+  @override
+  String selectImageFailed(String error) {
+    return '选择图片失败: $error';
+  }
+
+  @override
+  String selectFileFailed(String error) {
+    return '选择文件失败: $error';
+  }
+
+  @override
+  String get allowMicPermission => '请允许录音权限';
+
+  @override
+  String recordingFailed(String error) {
+    return '录音失败: $error';
+  }
+
+  @override
+  String get talkTooShort => '说话时间太短';
+
+  @override
+  String get recordingCancelled => '已取消';
+
+  @override
+  String get holdToTalk => '按住 说话';
+
+  @override
+  String get releaseToCancel => '松开取消';
+
+  @override
+  String get cancelRecording => '取消';
+
+  @override
+  String get holdButtonToRecord => '按住下方按钮开始录音';
+
+  @override
+  String get releaseToCancelSend => '松开手指，取消发送';
+
+  @override
+  String get swipeUpToCancel => '上滑取消';
+
+  @override
+  String get recording => '正在录音...';
+
+  @override
+  String get interestLevelTitle => '喜爱程度';
+
+  @override
+  String get interestLevelCasual => '一般';
+
+  @override
+  String get interestLevelLike => '喜欢';
+
+  @override
+  String get interestLevelPassionate => '热爱';
+
+  @override
+  String get searchInterests => '搜索兴趣爱好...';
+
+  @override
+  String get selected => '已选择';
+
+  @override
+  String get categoryFitness => '运动健身';
+
+  @override
+  String get categoryArtCulture => '艺术文化';
+
+  @override
+  String get categoryCooking => '美食烹饪';
+
+  @override
+  String get categoryTravel => '旅行探险';
+
+  @override
+  String get categoryTech => '科技数码';
+
+  @override
+  String get categoryReading => '阅读学习';
+
+  @override
+  String get categoryMusic => '音乐娱乐';
+
+  @override
+  String get categorySocial => '社交公益';
+
+  @override
+  String maxInterestsReached(String count) {
+    return '最多只能选择 $count 个兴趣';
+  }
+
+  @override
+  String get cannotLoadInterests => '无法加载兴趣列表，请稍后重试';
+
+  @override
+  String get proficiencyTitle => '熟练度';
+
+  @override
+  String get experienceYears => '经验年限';
+
+  @override
+  String get lessThanOneYear => '少于1年';
+
+  @override
+  String yearsCount(String count) {
+    return '$count年';
+  }
+
+  @override
+  String get beginner => '初学者';
+
+  @override
+  String get intermediate => '中级';
+
+  @override
+  String get advanced => '高级';
+
+  @override
+  String get expert => '专家';
+
+  @override
+  String get searchSkills => '搜索技能...';
+
+  @override
+  String get categoryProgramming => '编程开发';
+
+  @override
+  String get categoryDesign => '设计创意';
+
+  @override
+  String get categoryMarketing => '营销商务';
+
+  @override
+  String get categoryLanguage => '语言能力';
+
+  @override
+  String get categoryDataAnalysis => '数据分析';
+
+  @override
+  String get categoryProjectMgmt => '项目管理';
+
+  @override
+  String get categoryOther => '其他技能';
+
+  @override
+  String maxSkillsReached(String count) {
+    return '最多只能选择 $count 个技能';
+  }
+
+  @override
+  String get shareToWechat => '分享到微信';
+
+  @override
+  String get shareToQQ => '分享到QQ';
+
+  @override
+  String get shareTo => '分享到';
+
+  @override
+  String get qqFriends => 'QQ好友';
+
+  @override
+  String get qqZone => 'QQ空间';
+
+  @override
+  String get wechatFriends => '微信好友';
+
+  @override
+  String get moments => '朋友圈';
+
+  @override
+  String get copyLink => '复制链接';
+
+  @override
+  String get systemShare => '系统分享';
+
+  @override
+  String get weibo => '微博';
+
+  @override
+  String get wechatNotInstalledSystemShare => '微信未安装，已使用系统分享';
+
+  @override
+  String get linkCopied => '链接已复制';
+
+  @override
+  String get cannotOpenShareLink => '无法打开分享链接';
+
+  @override
+  String shareFailedWithError(String error) {
+    return '分享失败: $error';
+  }
+
+  @override
+  String get confirmApprove => '确认通过';
+
+  @override
+  String confirmApproveMessage(String name) {
+    return '确定要通过$name的版主申请吗？';
+  }
+
+  @override
+  String get rejectApplication => '拒绝申请';
+
+  @override
+  String confirmRejectMessage(String name) {
+    return '确定要拒绝$name的版主申请吗？';
+  }
+
+  @override
+  String get rejectReasonOptional => '拒绝原因（可选）';
+
+  @override
+  String get enterRejectReason => '请输入拒绝原因...';
+
+  @override
+  String get confirmReject => '确认拒绝';
+
+  @override
+  String get confirmRevoke => '确认撤销';
+
+  @override
+  String confirmRevokeMessage(String name) {
+    return '确定要撤销$name的版主资格吗？';
+  }
+
+  @override
+  String get moderatorRevoked => '已撤销版主资格';
+
+  @override
+  String revokeFailed(String error) {
+    return '撤销失败: $error';
+  }
+
+  @override
+  String get applicationApproved => '已通过申请';
+
+  @override
+  String get applicationRejected => '已拒绝申请';
+
+  @override
+  String get moderatorApplicationDetail => '版主申请详情';
+
+  @override
+  String get applicationNotExists => '申请不存在';
+
+  @override
+  String applicationTime(String time) {
+    return '申请时间: $time';
+  }
+
+  @override
+  String processTime(String time) {
+    return '处理时间: $time';
+  }
+
+  @override
+  String get applicantInfo => '申请人信息';
+
+  @override
+  String get unknownUser => '未知用户';
+
+  @override
+  String get applicationCity => '申请管理的城市';
+
+  @override
+  String get unknownCity => '未知城市';
+
+  @override
+  String get applicationReason => '申请理由';
+
+  @override
+  String get noReasonProvided => '未填写申请理由';
+
+  @override
+  String get rejectReason => '拒绝原因';
+
+  @override
+  String get reject => '拒绝';
+
+  @override
+  String get approve => '通过';
+
+  @override
+  String get revokeModeratorStatus => '撤销版主资格';
+
+  @override
+  String get visitedPlaces => '访问过的地方';
+
+  @override
+  String placesCount(String count) {
+    return '$count 个地方';
+  }
+
+  @override
+  String highlightsCount(String count) {
+    return '$count 个亮点';
+  }
+
+  @override
+  String get noDateInfo => '无日期信息';
+
+  @override
+  String get present => '至今';
+
+  @override
+  String get noVisitedPlacesYet => '暂无访问记录';
+
+  @override
+  String get visitedPlacesHint => '停留超过40分钟的地方会显示在这里';
+
+  @override
+  String get unknownPlace => '未知地点';
+
+  @override
+  String get arrival => '到达';
+
+  @override
+  String get departure => '离开';
+
+  @override
+  String get mapViewComingSoon => '地图视图即将上线';
+
+  @override
+  String get nomadFriendly => '数字游民友好';
+
+  @override
+  String get ratingExcellent => '极好';
+
+  @override
+  String get ratingVeryGood => '很好';
+
+  @override
+  String get ratingGood => '不错';
+
+  @override
+  String get ratingAverage => '一般';
+
+  @override
+  String get ratingPoor => '较差';
+
+  @override
+  String get priceLabel => '价格';
+
+  @override
+  String get perNight => '/晚';
+
+  @override
+  String get available => '有';
+
+  @override
+  String get coworkingSpaceIncluded => '配套';
+
+  @override
+  String get emailLabel => '邮箱';
+
+  @override
+  String roomTypes(String count) {
+    return '房型 ($count)';
+  }
+
+  @override
+  String get roomTypeList => '房型列表';
+
+  @override
+  String get soldOut => '已满';
+
+  @override
+  String maxOccupancy(String count) {
+    return '最多$count人';
+  }
+
+  @override
+  String get pleaseLoginToReview => '请先登录后再发表评论';
+
+  @override
+  String get reviewTitleOptional => '标题（选填）';
+
+  @override
+  String get reviewContent => '评论内容';
+
+  @override
+  String get reviewContentHint => '分享您的入住体验...';
+
+  @override
+  String get selectRating => '请选择评分';
+
+  @override
+  String get enterReviewContent => '请输入评论内容';
+
+  @override
+  String get reviewSubmitSuccess => '评论发表成功！';
+
+  @override
+  String get reviewSubmitFailed => '评论发表失败';
+
+  @override
+  String get alreadyReviewed => '您已经评论过这家酒店了';
+
+  @override
+  String get reviewSubmitFailedRetry => '评论发表失败，请稍后重试';
+
+  @override
+  String get tapToRate => '点击星星评分';
+
+  @override
+  String get ratingVeryPoor => '很差';
+
+  @override
+  String get ratingFair => '较差';
+
+  @override
+  String get ratingNice => '一般';
+
+  @override
+  String get ratingGreat => '很好';
+
+  @override
+  String get ratingExcellentReview => '非常好';
+
+  @override
+  String viewAllCount(String count) {
+    return '查看全部 ($count)';
+  }
+
+  @override
+  String reviewCount(String count) {
+    return '$count 条评论';
+  }
+
+  @override
+  String get noReviews => '暂无评论';
+
+  @override
+  String get beFirstReviewer => '成为第一个评论的人';
+
+  @override
+  String get loadMoreReviews => '加载更多评论';
+
+  @override
+  String helpfulCount(String count) {
+    return '$count 人觉得有用';
+  }
+
+  @override
+  String get userNotLoggedIn => '用户未登录';
+
+  @override
+  String get userInfoUpdated => '用户信息已更新';
+
+  @override
+  String get errorTitle => '错误';
+
+  @override
+  String get unauthorizedTitle => '未授权';
+
+  @override
+  String get networkErrorTitle => '网络错误';
+
+  @override
+  String get serverErrorTitle => '服务器错误';
+
+  @override
+  String get validationFailedTitle => '验证失败';
+
+  @override
+  String get unknownErrorTitle => '未知错误';
+
+  @override
+  String removeSkillFailedWithError(String error) {
+    return '移除技能失败: $error';
+  }
+
+  @override
+  String removeInterestFailedWithError(String error) {
+    return '移除兴趣失败: $error';
+  }
+
+  @override
+  String searchError(String error) {
+    return '搜索出错: $error';
+  }
+
+  @override
+  String loadMoreSearchError(String error) {
+    return '加载更多搜索结果出错: $error';
+  }
+
+  @override
+  String generateImageFailed(String error) {
+    return '生成图片失败: $error';
+  }
+
+  @override
+  String get imageGenFailedDefault => '图片生成失败';
+
+  @override
+  String get moderatorStatusPending => '待审核';
+
+  @override
+  String get moderatorStatusApproved => '已通过';
+
+  @override
+  String get moderatorStatusRejected => '已拒绝';
+
+  @override
+  String get revokePermissionWarning => '此操作将移除该用户在此城市的所有版主权限。';
+
+  @override
+  String get perNightLabel => '每晚';
+
+  @override
+  String get ratingDescExcellent => '优秀';
+
+  @override
+  String get ratingDescVeryGood => '很好';
+
+  @override
+  String get ratingDescGood => '良好';
+
+  @override
+  String get ratingDescAverage => '一般';
+
+  @override
+  String get ratingDescPoor => '较差';
 }

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 
-/// 首页 AI Chat 入口卡片
-/// 采用简洁的渐变块，不破坏现有排版
+/// 首页 AI 双入口模块
+/// 用整条分段按钮承载 AI 智能助手与 AI 旅行规划师
 class HomeAiEntryCard extends StatelessWidget {
   final bool isMobile;
 
@@ -13,149 +15,155 @@ class HomeAiEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 16 : 24,
-        vertical: isMobile ? 16 : 20,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0F172A),
-            Color(0xFF1E293B),
-            Color(0xFF0EA5E9),
-          ],
-          stops: [0.0, 0.55, 1.0],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0EA5E9).withValues(alpha: 0.22),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: isMobile ? 48 : 56,
-            height: isMobile ? 48 : 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-            ),
-            child: const Center(
-              child: FaIcon(
-                FontAwesomeIcons.wandMagicSparkles,
-                color: Colors.white,
-                size: 22,
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        'Nomads AI Copilot',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-                      ),
-                      child: const Text(
-                        'Beta',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          letterSpacing: 0.3,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '向 AI 问路、做攻略或生成行程，一键直达对话。',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.82),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    _buildChip(label: '即时流式回复'),
-                    _buildChip(label: '旅行计划助手'),
-                  ],
-                ),
-              ],
-            ),
+            child: _buildAssistantAction(context, l10n, isChinese),
           ),
-          const SizedBox(width: 12),
-          ElevatedButton.icon(
-            onPressed: () => Get.toNamed(AppRoutes.aiChat),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.cityPrimary,
-              elevation: 0,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 14 : 18,
-                vertical: isMobile ? 10 : 12,
-              ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            icon: const FaIcon(FontAwesomeIcons.arrowRight, size: 14),
-            label: const Text(
-              '开始对话',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: _buildPlannerAction(context, isChinese),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChip({required String label}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
+  Widget _buildAssistantAction(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isChinese,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => Get.toNamed(AppRoutes.aiChat),
+        borderRadius: BorderRadius.circular(10.r),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.r),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF0F172A),
+                Color(0xFF1E293B),
+                Color(0xFF0EA5E9),
+              ],
+              stops: [0.0, 0.58, 1.0],
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 8.h),
+            child: Row(
+              children: [
+                FaIcon(
+                  FontAwesomeIcons.wandMagicSparkles,
+                  color: Colors.white,
+                  size: 13.r,
+                ),
+                SizedBox(width: 7.w),
+                Expanded(
+                  child: Text(
+                    isChinese ? 'AI 助手' : l10n.homeAiCopilotTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: isMobile ? 12.sp : 12.5.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 4.w),
+                FaIcon(
+                  FontAwesomeIcons.arrowRight,
+                  color: Colors.white.withValues(alpha: 0.82),
+                  size: 10.r,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPlannerAction(BuildContext context, bool isChinese) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openTravelPlanner(context),
+        borderRadius: BorderRadius.circular(10.r),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.r),
+            color: const Color(0xFFFFFFFF),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 8.h),
+            child: Row(
+              children: [
+                FaIcon(
+                  FontAwesomeIcons.route,
+                  color: const Color(0xFFBE123C),
+                  size: 13.r,
+                ),
+                SizedBox(width: 7.w),
+                Expanded(
+                  child: Text(
+                    isChinese ? 'AI 规划师' : 'AI Planner',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: const Color(0xFF111827),
+                      fontWeight: FontWeight.w800,
+                      fontSize: isMobile ? 12.sp : 12.5.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 4.w),
+                FaIcon(
+                  FontAwesomeIcons.arrowRight,
+                  color: const Color(0xFFBE123C),
+                  size: 10.r,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openTravelPlanner(BuildContext context) async {
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+
+    try {
+      final check = await AiQuotaService().checkQuota();
+      if (!check.canUse) {
+        AiQuotaService().showQuotaExhaustedDialog(
+          check,
+          isChinese ? 'AI 旅行规划师' : 'AI Travel Planner',
+        );
+        return;
+      }
+    } catch (_) {
+      // 配额检查失败时允许继续进入，实际生成时再兜底。
+    }
+
+    Get.toNamed(
+      AppRoutes.createTravelPlan,
+      arguments: const {
+        'cityId': '',
+        'cityName': '',
+      },
     );
   }
 }

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 2.0.3+21
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -66,14 +66,17 @@ dependencies:
   timeago: ^3.7.0
   share_plus: ^10.1.2
   app_links: ^6.3.3
+  web_socket_channel: ^3.0.3
   
   # 分享相关
   screenshot: ^3.0.0  # Widget 转图片
   
   # 社交登录相关
   fluwx: ^5.7.5  # 微信 SDK
-  tobias: ^3.0.0  # 支付宝 SDK
-  tencent_kit: ^6.0.3  # QQ SDK
+  tencent_kit: ^6.2.0  # QQ 登录 SDK (腾讯开放平台)
+  google_sign_in: ^6.2.2  # Google 登录
+  sign_in_with_apple: ^6.1.4  # Apple 登录
+  in_app_purchase: ^3.2.3
   
   # 系统设置
   app_settings: ^5.1.1  # 打开系统设置页面
@@ -82,8 +85,11 @@ dependencies:
   record: ^6.0.0  # 语音录制
   audioplayers: ^6.1.0  # 语音播放
   
+  # 腾讯云IM SDK
+  tencent_cloud_chat_sdk: ^8.5.6864  # 腾讯云即时通信IM
+  crypto: ^3.0.3  # UserSig生成所需加密库
+  
   # UI 增强
-  shimmer: ^3.0.0  # 骨架屏加载效果
   flutter_markdown: ^0.7.4+3  # Markdown 渲染
   flutter_highlighter: ^0.1.1  # 代码语法高亮
 
@@ -170,10 +176,8 @@ flutter_launcher_icons:
     generate: true
     image_path: "assets/icon/app_icon.png"
 
-# 支付宝 tobias 配置
-tobias:
-  url_scheme: "alipay2021006115624759"
-
-# QQ tencent_kit 配置
+# tencent_kit (QQ SDK) 配置
 tencent_kit:
   app_id: "102822014"
+  universal_link: https://go-nomads.com/universal_link/gonomads/qq_conn/102822014/
+

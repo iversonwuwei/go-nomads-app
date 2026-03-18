@@ -33,4 +33,18 @@ abstract class IPaymentRepository {
     int? durationDays,
     double? depositAmount,
   });
+
+  /// 确认微信支付结果（App SDK 回调后调用）
+  Future<PaymentResult> confirmWeChatPayment({
+    required String orderId,
+  });
+
+  /// 完成 Apple IAP 购买并同步服务端会员状态
+  Future<PaymentResult> completeAppleIapPurchase({
+    required String productId,
+    required String transactionId,
+    String? originalTransactionId,
+    String? verificationData,
+    bool isRestore = false,
+  });
 }

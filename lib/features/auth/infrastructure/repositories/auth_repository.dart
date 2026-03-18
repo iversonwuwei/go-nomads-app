@@ -127,6 +127,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     required String name,
     required String email,
     required String password,
+    required String verificationCode,
     String? phone,
   }) async {
     return execute(() async {
@@ -136,6 +137,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
           'name': name,
           'email': email,
           'password': password,
+          'verificationCode': verificationCode,
           if (phone != null && phone.isNotEmpty) 'phone': phone,
         },
       );
@@ -323,16 +325,18 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     String? code,
     String? accessToken,
     String? openId,
+    String? nickname,
   }) async {
     return execute(() async {
       // 构建请求数据
       final requestData = <String, dynamic>{
-        'provider': provider.name, // wechat, alipay, qq, apple, google
+        'provider': provider.name, // wechat, qq, apple, google
       };
 
       if (code != null) requestData['code'] = code;
       if (accessToken != null) requestData['accessToken'] = accessToken;
       if (openId != null) requestData['openId'] = openId;
+      if (nickname != null) requestData['nickname'] = nickname;
 
       final response = await _httpService.post(
         ApiConfig.socialLoginEndpoint,
@@ -376,7 +380,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   }
 
   /// 保存 Token 到 SQLite 数据库
-  /// 
+  ///
   /// 用于 app 重启后恢复登录状态
   Future<void> _saveTokenToDatabase(AuthToken token, AuthUser user) async {
     try {

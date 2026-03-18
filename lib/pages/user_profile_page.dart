@@ -1,13 +1,16 @@
+import 'package:flutter/material.dart' hide Badge;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/user_profile_page_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart' hide Badge;
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 用户个人资料页面
 class UserProfilePage extends StatelessWidget {
@@ -35,38 +38,41 @@ class UserProfilePage extends StatelessWidget {
       body: SafeArea(
         child: Obx(() {
           final chatUser = controller.chatTargetUser;
-
-          if (controller.shouldBlockForRemoteProfile) {
-            return const UserProfileSkeleton();
-          }
-
           final remoteError = controller.remoteProfileError.value;
+
+          Widget content;
           if (remoteError != null) {
-            return _buildRemoteErrorState(isMobile, controller, remoteError);
+            content = _buildRemoteErrorState(isMobile, controller, remoteError);
+          } else {
+            content = ListView(
+              padding: EdgeInsets.fromLTRB(
+                isMobile ? 16 : 24,
+                isMobile ? 24 : 32,
+                isMobile ? 16 : 24,
+                100,
+              ),
+              children: [
+                _buildUserInfoCard(isMobile, chatUser, controller),
+                SizedBox(height: 24.h),
+                _buildStatsSection(isMobile, controller),
+                SizedBox(height: 24.h),
+                _buildBadgesSection(isMobile, controller),
+                if (_travelHistoryEnabled) ...[
+                  SizedBox(height: 24.h),
+                  _buildTravelHistorySection(isMobile, controller),
+                ],
+                SizedBox(height: 24.h),
+                _buildSkillsSection(isMobile, controller),
+                SizedBox(height: 24.h),
+                _buildInterestsSection(isMobile, controller),
+              ],
+            );
           }
 
-          return ListView(
-            padding: EdgeInsets.fromLTRB(
-              isMobile ? 16 : 24,
-              isMobile ? 24 : 32,
-              isMobile ? 16 : 24,
-              100,
-            ),
-            children: [
-              _buildUserInfoCard(isMobile, chatUser, controller),
-              const SizedBox(height: 24),
-              _buildStatsSection(isMobile, controller),
-              const SizedBox(height: 24),
-              _buildBadgesSection(isMobile, controller),
-              if (_travelHistoryEnabled) ...[
-                const SizedBox(height: 24),
-                _buildTravelHistorySection(isMobile, controller),
-              ],
-              const SizedBox(height: 24),
-              _buildSkillsSection(isMobile, controller),
-              const SizedBox(height: 24),
-              _buildInterestsSection(isMobile, controller),
-            ],
+          return AppLoadingSwitcher(
+            isLoading: controller.shouldBlockForRemoteProfile,
+            loading: const UserProfileSkeleton(),
+            child: content,
           );
         }),
       ),
@@ -93,6 +99,7 @@ class UserProfilePage extends StatelessWidget {
   }
 
   Widget _buildRemoteErrorState(bool isMobile, UserProfilePageController controller, String message) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(isMobile ? 24 : 48),
@@ -101,12 +108,12 @@ class UserProfilePage extends StatelessWidget {
           padding: EdgeInsets.all(isMobile ? 20 : 32),
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(color: AppColors.border),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 16,
+                blurRadius: 16.r,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -114,8 +121,8 @@ class UserProfilePage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(FontAwesomeIcons.circleExclamation, color: Colors.redAccent, size: 56),
-              const SizedBox(height: 16),
+              Icon(FontAwesomeIcons.circleExclamation, color: Colors.redAccent, size: 56.r),
+              SizedBox(height: 16.h),
               Text(
                 message,
                 textAlign: TextAlign.center,
@@ -125,13 +132,13 @@ class UserProfilePage extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               ElevatedButton.icon(
                 onPressed: controller.requestedUserId == null
                     ? null
                     : () => controller.fetchUserProfile(controller.requestedUserId!),
                 icon: const Icon(FontAwesomeIcons.arrowsRotate),
-                label: const Text('重新加载'),
+                label: Text(l10n.retry),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
@@ -140,13 +147,13 @@ class UserProfilePage extends StatelessWidget {
                     vertical: isMobile ? 12 : 14,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                 ),
               ),
               TextButton(
                 onPressed: () => Get.back(),
-                child: const Text('返回上一页'),
+                child: Text(l10n.back),
               ),
             ],
           ),
@@ -160,12 +167,12 @@ class UserProfilePage extends StatelessWidget {
       padding: EdgeInsets.all(isMobile ? 20 : 32),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: AppColors.borderLight),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 18,
+            blurRadius: 18.r,
             offset: const Offset(0, 10),
           ),
         ],
@@ -192,7 +199,7 @@ class UserProfilePage extends StatelessWidget {
               ),
             );
           }),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Obx(() {
             final info = controller.userInfo;
             return Text(
@@ -203,14 +210,14 @@ class UserProfilePage extends StatelessWidget {
               ),
             );
           }),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Obx(() {
             final info = controller.userInfo;
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: AppColors.background,
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(30.r),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -220,7 +227,7 @@ class UserProfilePage extends StatelessWidget {
                     color: AppColors.accent,
                     size: isMobile ? 14 : 16,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
                     'Member since ${info['memberSince'] ?? '--'}',
                     style: TextStyle(
@@ -242,7 +249,7 @@ class UserProfilePage extends StatelessWidget {
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: isMobile ? 14 : 18),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
                 elevation: 0,
               ),
@@ -266,12 +273,12 @@ class UserProfilePage extends StatelessWidget {
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 6),
           ),
         ],
@@ -327,12 +334,10 @@ class UserProfilePage extends StatelessWidget {
         padding: EdgeInsets.all(isMobile ? 16 : 20),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 
@@ -342,12 +347,12 @@ class UserProfilePage extends StatelessWidget {
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 14,
+            blurRadius: 14.r,
             offset: const Offset(0, 8),
           ),
         ],
@@ -358,7 +363,7 @@ class UserProfilePage extends StatelessWidget {
           Row(
             children: [
               Icon(FontAwesomeIcons.trophy, color: AppColors.accent, size: isMobile ? 24 : 28),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 'Achievements & Badges',
                 style: TextStyle(
@@ -379,7 +384,7 @@ class UserProfilePage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.background,
                 border: Border.all(color: AppColors.borderLight),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -389,7 +394,7 @@ class UserProfilePage extends StatelessWidget {
                     size: isMobile ? 48 : 64,
                     color: AppColors.accent,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     'No badges earned yet',
                     style: TextStyle(
@@ -398,7 +403,7 @@ class UserProfilePage extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     'Start exploring and attending events to earn badges!',
                     textAlign: TextAlign.center,
@@ -416,8 +421,8 @@ class UserProfilePage extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: isMobile ? 3 : 5,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+                crossAxisSpacing: 12.w,
+                mainAxisSpacing: 12.w,
                 childAspectRatio: 1,
               ),
               itemCount: badges.length,
@@ -435,7 +440,7 @@ class UserProfilePage extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
@@ -445,9 +450,9 @@ class UserProfilePage extends StatelessWidget {
             badge.icon,
             style: TextStyle(fontSize: isMobile ? 32 : 40),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: Text(
               badge.name,
               textAlign: TextAlign.center,
@@ -473,12 +478,10 @@ class UserProfilePage extends StatelessWidget {
         padding: EdgeInsets.all(isMobile ? 16 : 20),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 
@@ -489,12 +492,12 @@ class UserProfilePage extends StatelessWidget {
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 14,
+            blurRadius: 14.r,
             offset: const Offset(0, 8),
           ),
         ],
@@ -508,7 +511,7 @@ class UserProfilePage extends StatelessWidget {
               Row(
                 children: [
                   Icon(FontAwesomeIcons.earthAmericas, color: AppColors.accent, size: isMobile ? 24 : 28),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Text(
                     'Travel Stats',
                     style: TextStyle(
@@ -526,7 +529,7 @@ class UserProfilePage extends StatelessWidget {
             padding: EdgeInsets.all(isMobile ? 12 : 16),
             decoration: BoxDecoration(
               color: AppColors.accent.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(14.r),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -564,7 +567,7 @@ class UserProfilePage extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             _buildLatestTravelCard(latestTravel, isMobile, controller),
           ] else
             Center(
@@ -577,7 +580,7 @@ class UserProfilePage extends StatelessWidget {
                       size: isMobile ? 40 : 48,
                       color: AppColors.iconSecondary,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     Text(
                       'No travel history yet',
                       style: TextStyle(
@@ -604,7 +607,7 @@ class UserProfilePage extends StatelessWidget {
     return Column(
       children: [
         Icon(icon, size: isMobile ? 16 : 18, color: AppColors.accent),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         Text(
           value,
           style: TextStyle(
@@ -613,7 +616,7 @@ class UserProfilePage extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: 2.h),
         Text(
           label,
           style: TextStyle(
@@ -628,8 +631,8 @@ class UserProfilePage extends StatelessWidget {
 
   Widget _buildStatDivider() {
     return Container(
-      height: 40,
-      width: 1,
+      height: 40.h,
+      width: 1.w,
       color: AppColors.border,
     );
   }
@@ -641,7 +644,7 @@ class UserProfilePage extends StatelessWidget {
         padding: EdgeInsets.all(isMobile ? 14 : 18),
         decoration: BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
           border: Border.all(color: AppColors.borderLight),
         ),
         child: Row(
@@ -651,7 +654,7 @@ class UserProfilePage extends StatelessWidget {
               height: isMobile ? 54 : 64,
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(color: AppColors.border),
               ),
               child: Center(
@@ -661,7 +664,7 @@ class UserProfilePage extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -674,7 +677,7 @@ class UserProfilePage extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     travel.country,
                     style: TextStyle(
@@ -682,7 +685,7 @@ class UserProfilePage extends StatelessWidget {
                       fontSize: isMobile ? 13 : 15,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Row(
                     children: [
                       Icon(
@@ -690,7 +693,7 @@ class UserProfilePage extends StatelessWidget {
                         size: isMobile ? 12 : 14,
                         color: travel.isOngoing ? Colors.green : AppColors.accent,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6.w),
                       Text(
                         travel.isOngoing
                             ? 'Currently here'
@@ -724,7 +727,7 @@ class UserProfilePage extends StatelessWidget {
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
           color: color.withValues(alpha: 0.2),
         ),
@@ -741,7 +744,7 @@ class UserProfilePage extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             label,
             style: TextStyle(
@@ -762,12 +765,10 @@ class UserProfilePage extends StatelessWidget {
         padding: EdgeInsets.all(isMobile ? 16 : 20),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 
@@ -777,7 +778,7 @@ class UserProfilePage extends StatelessWidget {
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -807,15 +808,15 @@ class UserProfilePage extends StatelessWidget {
             )
           else
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 8.w,
+              runSpacing: 8.w,
               children: skills.map((skill) {
                 return Chip(
                   label: Text(skill.name),
                   backgroundColor: AppColors.accent.withValues(alpha: 0.12),
-                  labelStyle: const TextStyle(
+                  labelStyle: TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                   side: BorderSide(
                     color: AppColors.accent.withValues(alpha: 0.25),
@@ -836,12 +837,10 @@ class UserProfilePage extends StatelessWidget {
         padding: EdgeInsets.all(isMobile ? 16 : 20),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: AppColors.borderLight),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 
@@ -851,7 +850,7 @@ class UserProfilePage extends StatelessWidget {
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -881,15 +880,15 @@ class UserProfilePage extends StatelessWidget {
             )
           else
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 8.w,
+              runSpacing: 8.w,
               children: interests.map((interest) {
                 return Chip(
                   label: Text(interest.name),
                   backgroundColor: AppColors.containerBlueGrey.withValues(alpha: 0.15),
-                  labelStyle: const TextStyle(
+                  labelStyle: TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                   side: BorderSide(
                     color: AppColors.containerBlueGrey.withValues(alpha: 0.3),

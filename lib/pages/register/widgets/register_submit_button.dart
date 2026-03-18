@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 注册提交按钮
 class RegisterSubmitButton extends GetView<RegisterController> {
@@ -24,7 +25,7 @@ class RegisterSubmitButton extends GetView<RegisterController> {
           style: ElevatedButton.styleFrom(
             backgroundColor: RegisterConstants.primaryColor,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(RegisterConstants.buttonBorderRadius),
             ),
@@ -32,9 +33,9 @@ class RegisterSubmitButton extends GetView<RegisterController> {
             disabledBackgroundColor: Colors.grey.shade400,
           ),
           child: controller.isRegistering.value
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
+              ? SizedBox(
+                  height: 20.h,
+                  width: 20.w,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -42,7 +43,7 @@ class RegisterSubmitButton extends GetView<RegisterController> {
                 )
               : Text(
                   l10n.joinNomads,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
                 ),
         ));
   }

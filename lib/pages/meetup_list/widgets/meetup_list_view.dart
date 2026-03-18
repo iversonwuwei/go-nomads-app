@@ -9,6 +9,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/meetup_list/meetup_list_controller.dart';
 import 'package:go_nomads_app/pages/meetup_list/widgets/meetup_list_card.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// Meetup 列表视图组件
@@ -25,15 +26,11 @@ class MeetupListView extends GetView<MeetupListController> {
       final isLoading = controller.tabLoading[tab]!.value;
       final meetups = controller.tabMeetups[tab]!;
       final isRefreshing = controller.isRefreshing.value;
+      final showInitialLoading = isLoading && meetups.isEmpty && !isRefreshing;
 
-      // 首次加载时显示骨架屏
-      if (isLoading && meetups.isEmpty && !isRefreshing) {
-        return const MeetupListSkeleton();
-      }
-
-      // 空状态
+      Widget content;
       if (meetups.isEmpty) {
-        return RefreshIndicator(
+        content = RefreshIndicator(
           color: const Color(0xFFFF4458),
           onRefresh: controller.refreshCurrentTab,
           child: LayoutBuilder(
@@ -48,37 +45,40 @@ class MeetupListView extends GetView<MeetupListController> {
             },
           ),
         );
+      } else {
+        content = RefreshIndicator(
+          color: const Color(0xFFFF4458),
+          onRefresh: controller.refreshCurrentTab,
+          child: Column(
+            children: [
+              _buildToolbar(context, l10n, meetups),
+              Expanded(
+                child: ListView.builder(
+                  controller: controller.tabScrollControllers[tab],
+                  padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 100),
+                  itemCount: meetups.length + (isLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == meetups.length) {
+                      return _buildLoadingIndicator();
+                    }
+                    return MeetupListCard(
+                      meetup: meetups[index],
+                      currentTabIndex: tab.index,
+                      onTap: () => _onMeetupTap(meetups[index]),
+                      onToggleJoin: () => _onToggleJoin(meetups[index]),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
       }
 
-      // 列表
-      return RefreshIndicator(
-        color: const Color(0xFFFF4458),
-        onRefresh: controller.refreshCurrentTab,
-        child: Column(
-          children: [
-            // 工具栏
-            _buildToolbar(context, l10n, meetups),
-            // Meetups 列表
-            Expanded(
-              child: ListView.builder(
-                controller: controller.tabScrollControllers[tab],
-                padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 100),
-                itemCount: meetups.length + (isLoading ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == meetups.length) {
-                    return _buildLoadingIndicator();
-                  }
-                  return MeetupListCard(
-                    meetup: meetups[index],
-                    currentTabIndex: tab.index,
-                    onTap: () => _onMeetupTap(meetups[index]),
-                    onToggleJoin: () => _onToggleJoin(meetups[index]),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+      return AppLoadingSwitcher(
+        isLoading: showInitialLoading,
+        loading: const MeetupListSkeleton(),
+        child: content,
       );
     });
   }
@@ -205,12 +205,7 @@ class MeetupListView extends GetView<MeetupListController> {
   Widget _buildLoadingIndicator() {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 16.h),
-      child: Center(
-        child: CircularProgressIndicator(
-          color: const Color(0xFFFF4458),
-          strokeWidth: 2.w,
-        ),
-      ),
+      child: const Center(child: AppLoadingWidget(fullScreen: false)),
     );
   }
 

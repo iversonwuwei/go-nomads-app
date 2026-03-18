@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 
 /// 社区亮点展示
@@ -8,8 +10,9 @@ class LoginCommunityHighlight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(LoginConstants.cardBorderRadius),
@@ -20,47 +23,47 @@ class LoginCommunityHighlight extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: LoginConstants.primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: const Icon(
+                child: Icon(
                   FontAwesomeIcons.userGroup,
                   color: LoginConstants.primaryColor,
-                  size: 24,
+                  size: 24.r,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Join 38,000+ nomads',
+                    Text(
+                      l10n.joinNomadsCount,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                     ),
                     Text(
-                      'Living and working around the world',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      l10n.livingAndWorkingWorldwide,
+                      style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade600),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const Row(
+          SizedBox(height: 16.h),
+          Row(
             children: [
-              _FeatureBadge(emoji: '🍹', text: '363 meetups/year'),
-              SizedBox(width: 8),
-              _FeatureBadge(emoji: '💬', text: '15k+ messages'),
-              SizedBox(width: 8),
-              _FeatureBadge(emoji: '🌍', text: '100+ cities'),
+              _FeatureBadge(emoji: '🍹', text: l10n.meetupsPerYear),
+              SizedBox(width: 8.w),
+              _FeatureBadge(emoji: '💬', text: l10n.messagesCount),
+              SizedBox(width: 8.w),
+              _FeatureBadge(emoji: '🌍', text: l10n.citiesCount),
             ],
           ),
         ],
@@ -80,19 +83,19 @@ class _FeatureBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 20)),
-            const SizedBox(height: 4),
+            Text(emoji, style: TextStyle(fontSize: 20.sp)),
+            SizedBox(height: 4.h),
             SizedBox(
-              height: 30,
+              height: 30.h,
               child: Center(
                 child: Text(
                   text,
@@ -100,7 +103,7 @@ class _FeatureBadge extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: Colors.grey.shade700,
                     fontWeight: FontWeight.w500,
                   ),

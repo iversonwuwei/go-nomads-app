@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 
 /// 社交链接部分组件
 class SocialLinksWidget extends StatelessWidget {
@@ -21,18 +23,13 @@ class SocialLinksWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1a1a1a),
-          ),
+        ProfileSectionHeader(
+          title: title,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 12.w,
+          runSpacing: 12.w,
           children: links.entries
               .map((entry) => _SocialLinkButton(
                     platform: entry.key,
@@ -63,23 +60,23 @@ class _SocialLinkButton extends StatelessWidget {
       onTap: () {
         // TODO: 实现打开链接功能
       },
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(width: 8),
+            Icon(icon, size: 20.r, color: color),
+            SizedBox(width: 8.w),
             Text(
               platform.toUpperCase(),
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
                 color: color,
               ),

@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 异步任务进度对话框
 ///
@@ -26,22 +27,22 @@ class AsyncTaskProgressDialog extends StatelessWidget {
       canPop: false, // 禁止返回键关闭
       child: Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(24.0.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // 标题
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 进度指示器
               Obx(() {
@@ -50,14 +51,14 @@ class AsyncTaskProgressDialog extends StatelessWidget {
                   children: [
                     // 圆形进度指示器
                     SizedBox(
-                      width: 80,
-                      height: 80,
+                      width: 80.w,
+                      height: 80.h,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           CircularProgressIndicator(
                             value: progressValue,
-                            strokeWidth: 8,
+                            strokeWidth: 8.w,
                             backgroundColor: Colors.grey[200],
                             valueColor: AlwaysStoppedAnimation<Color>(
                               _getProgressColor(progress.value),
@@ -65,15 +66,15 @@ class AsyncTaskProgressDialog extends StatelessWidget {
                           ),
                           Text(
                             '${progress.value}%',
-                            style: const TextStyle(
-                              fontSize: 18,
+                            style: TextStyle(
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // 线性进度条
                     LinearProgressIndicator(
@@ -87,19 +88,19 @@ class AsyncTaskProgressDialog extends StatelessWidget {
                 );
               }),
 
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 进度消息
               Obx(() => Text(
                     message.value.isEmpty ? '处理中...' : message.value,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: Colors.grey[600],
                     ),
                   )),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
 
               // 取消按钮
               if (onCancel != null)

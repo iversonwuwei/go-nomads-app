@@ -199,6 +199,7 @@ class InnovationProjectDto {
       createdAt: createdAt,
       updatedAt: updatedAt,
       userId: creatorId.hashCode,
+      creatorUuid: creatorId, // 保留创建者的原始 UUID
       userName: creatorName,
       userAvatar: creatorAvatar,
       imageUrl: imageUrl,
@@ -310,6 +311,7 @@ class InnovationListItemDto {
       createdAt: createdAt,
       updatedAt: null,
       userId: creatorId.hashCode,
+      creatorUuid: creatorId, // 保留创建者的原始 UUID
       userName: creatorName,
       userAvatar: creatorAvatar,
       imageUrl: imageUrl,

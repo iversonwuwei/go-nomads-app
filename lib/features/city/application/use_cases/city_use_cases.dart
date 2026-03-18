@@ -265,15 +265,19 @@ class ToggleCityFavoriteUseCase
       );
     }
 
-    // 检查当前收藏状态
-    final isFavoritedResult = await _repository.isCityFavorited(params.cityId);
-
-    // 如果检查失败,直接返回错误
-    if (isFavoritedResult is Failure<bool>) {
-      return Failure(isFavoritedResult.exception);
+    // 优先使用调用方传入的已知状态，避免额外 HTTP 请求
+    bool isFavorited;
+    if (params.currentIsFavorited != null) {
+      isFavorited = params.currentIsFavorited!;
+    } else {
+      // 兜底：调用方未传入状态时查询后端
+      final isFavoritedResult =
+          await _repository.isCityFavorited(params.cityId);
+      if (isFavoritedResult is Failure<bool>) {
+        return Failure(isFavoritedResult.exception);
+      }
+      isFavorited = (isFavoritedResult as Success<bool>).data;
     }
-
-    final isFavorited = (isFavoritedResult as Success<bool>).data;
 
     // 根据当前状态执行相应操作
     if (isFavorited) {
@@ -298,7 +302,13 @@ class ToggleCityFavoriteUseCase
 class ToggleCityFavoriteParams extends UseCaseParams {
   final String cityId;
 
-  const ToggleCityFavoriteParams({required this.cityId});
+  /// 调用方已知的当前收藏状态，传入后可跳过一次 HTTP 查询
+  final bool? currentIsFavorited;
+
+  const ToggleCityFavoriteParams({
+    required this.cityId,
+    this.currentIsFavorited,
+  });
 }
 
 // ============================================================================

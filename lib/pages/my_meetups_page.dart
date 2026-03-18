@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
@@ -8,6 +9,7 @@ import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/m
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
@@ -62,7 +64,7 @@ class MyMeetupsPage extends StatelessWidget {
         leading: const AppBackButton(color: AppColors.backButtonLight),
         actions: [
           IconButton(
-            icon: const Icon(FontAwesomeIcons.plus, color: Colors.white, size: 20),
+            icon: Icon(FontAwesomeIcons.plus, color: Colors.white, size: 20.r),
             onPressed: () async {
               // 使用接口自动处理刷新
               await NavigationUtil.toNamedAndRefresh<Meetup>(
@@ -74,46 +76,46 @@ class MyMeetupsPage extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const MyMeetupsSkeleton();
-        }
-
+        Widget content;
         if (controller.errorMessage.value.isNotEmpty) {
-          return _buildErrorState(isMobile, controller);
+          content = _buildErrorState(isMobile, controller, l10n);
+        } else if (controller.meetups.isEmpty) {
+          content = _buildEmptyState(isMobile, l10n, controller);
+        } else {
+          final showFooter = controller.showFooter;
+          content = RefreshIndicator(
+            onRefresh: controller.refreshAll,
+            color: Colors.orange,
+            child: ListView.builder(
+              controller: controller.scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(isMobile ? 16 : 24),
+              itemCount: controller.meetups.length + (showFooter ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index >= controller.meetups.length) {
+                  return _buildLoadingFooter();
+                }
+
+                final meetup = controller.meetups[index];
+                return _buildMeetupCard(meetup, isMobile, l10n, controller);
+              },
+            ),
+          );
         }
 
-        if (controller.meetups.isEmpty) {
-          return _buildEmptyState(isMobile, l10n, controller);
-        }
-
-        final showFooter = controller.showFooter;
-
-        return RefreshIndicator(
-          onRefresh: controller.refreshAll,
-          color: Colors.orange,
-          child: ListView.builder(
-            controller: controller.scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.all(isMobile ? 16 : 24),
-            itemCount: controller.meetups.length + (showFooter ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index >= controller.meetups.length) {
-                return _buildLoadingFooter();
-              }
-
-              final meetup = controller.meetups[index];
-              return _buildMeetupCard(meetup, isMobile, l10n, controller);
-            },
-          ),
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading.value,
+          loading: const MyMeetupsSkeleton(),
+          child: content,
         );
       }),
     );
   }
 
-  Widget _buildErrorState(bool isMobile, MyMeetupsPageController controller) {
+  Widget _buildErrorState(bool isMobile, MyMeetupsPageController controller, AppLocalizations l10n) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -122,7 +124,7 @@ class MyMeetupsPage extends StatelessWidget {
               size: isMobile ? 60 : 80,
               color: Colors.red.withValues(alpha: 0.6),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Text(
               'Failed to load meetups',
               style: TextStyle(
@@ -131,7 +133,7 @@ class MyMeetupsPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Obx(() => Text(
                   controller.errorMessage.value,
                   textAlign: TextAlign.center,
@@ -140,14 +142,14 @@ class MyMeetupsPage extends StatelessWidget {
                     fontSize: isMobile ? 14 : 16,
                   ),
                 )),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             ElevatedButton(
               onPressed: controller.refreshAll,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -158,7 +160,7 @@ class MyMeetupsPage extends StatelessWidget {
   Widget _buildEmptyState(bool isMobile, AppLocalizations l10n, MyMeetupsPageController controller) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -167,7 +169,7 @@ class MyMeetupsPage extends StatelessWidget {
               size: isMobile ? 80 : 120,
               color: Colors.white.withValues(alpha: 0.3),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             Text(
               l10n.noMeetups,
               style: TextStyle(
@@ -176,7 +178,7 @@ class MyMeetupsPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Text(
               l10n.createFirstMeetup,
               textAlign: TextAlign.center,
@@ -185,7 +187,7 @@ class MyMeetupsPage extends StatelessWidget {
                 fontSize: isMobile ? 14 : 16,
               ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
             ElevatedButton.icon(
               onPressed: () async {
                 // 使用接口自动处理刷新
@@ -194,7 +196,7 @@ class MyMeetupsPage extends StatelessWidget {
                   refresher: controller,
                 );
               },
-              icon: const Icon(FontAwesomeIcons.plus, size: 16),
+              icon: Icon(FontAwesomeIcons.plus, size: 16.r),
               label: Text(
                 l10n.createMeetup,
                 style: TextStyle(
@@ -210,7 +212,7 @@ class MyMeetupsPage extends StatelessWidget {
                   vertical: isMobile ? 16 : 20,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
             ),
@@ -226,10 +228,10 @@ class MyMeetupsPage extends StatelessWidget {
     final imageUrl = meetup.images.isNotEmpty ? meetup.images.first : null;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1a1a1a),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
         ),
@@ -243,16 +245,16 @@ class MyMeetupsPage extends StatelessWidget {
             binding: MeetupDetailBinding(),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           child: Column(
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                     child: imageUrl != null && imageUrl.isNotEmpty
                         ? Image.network(
                             imageUrl,
@@ -265,7 +267,7 @@ class MyMeetupsPage extends StatelessWidget {
                           )
                         : _buildPlaceholderImage(isMobile),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,35 +287,35 @@ class MyMeetupsPage extends StatelessWidget {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8.w,
+                                vertical: 4.h,
                               ),
                               decoration: BoxDecoration(
                                 color: statusColor.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(4.r),
                                 border: Border.all(color: statusColor),
                               ),
                               child: Text(
                                 controller.getStatusText(meetup.status, l10n),
                                 style: TextStyle(
                                   color: statusColor,
-                                  fontSize: 10,
+                                  fontSize: 10.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Row(
                           children: [
                             Icon(
                               FontAwesomeIcons.calendar,
                               color: Colors.white.withValues(alpha: 0.6),
-                              size: 12,
+                              size: 12.r,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6.w),
                             Expanded(
                               child: Text(
                                 dateFormat.format(meetup.schedule.startTime),
@@ -325,15 +327,15 @@ class MyMeetupsPage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Row(
                           children: [
                             Icon(
                               FontAwesomeIcons.locationDot,
                               color: Colors.white.withValues(alpha: 0.6),
-                              size: 12,
+                              size: 12.r,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6.w),
                             Expanded(
                               child: Text(
                                 meetup.venue.fullInfo,
@@ -347,15 +349,15 @@ class MyMeetupsPage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               FontAwesomeIcons.users,
                               color: Colors.orange,
-                              size: 12,
+                              size: 12.r,
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: 6.w),
                             Text(
                               '${meetup.capacity.currentAttendees}/${meetup.capacity.maxAttendees} ${l10n.attendees}',
                               style: TextStyle(
@@ -371,7 +373,7 @@ class MyMeetupsPage extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               _buildActionButtons(meetup, l10n, controller),
             ],
           ),
@@ -385,10 +387,10 @@ class MyMeetupsPage extends StatelessWidget {
       width: isMobile ? 80 : 120,
       height: isMobile ? 80 : 120,
       color: Colors.white.withValues(alpha: 0.1),
-      child: const Icon(
+      child: Icon(
         FontAwesomeIcons.calendarDay,
         color: Colors.white54,
-        size: 32,
+        size: 32.r,
       ),
     );
   }
@@ -418,7 +420,7 @@ class MyMeetupsPage extends StatelessWidget {
             onPressed: () => _openChat(meetup, l10n),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         Expanded(
           child: _buildPrimaryButton(
             label: l10n.leaveMeetup,
@@ -442,7 +444,7 @@ class MyMeetupsPage extends StatelessWidget {
         foregroundColor: Colors.white,
         minimumSize: const Size(double.infinity, 44),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
       ),
       child: Text(label),
@@ -461,27 +463,18 @@ class MyMeetupsPage extends StatelessWidget {
         side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
         minimumSize: const Size(double.infinity, 44),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
       ),
-      icon: Icon(icon, size: 16),
+      icon: Icon(icon, size: 16.r),
       label: Text(label),
     );
   }
 
   Widget _buildLoadingFooter() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      child: const Center(child: AppLoadingWidget(fullScreen: false)),
     );
   }
 

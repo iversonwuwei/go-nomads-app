@@ -1,11 +1,12 @@
 import 'dart:developer';
 
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
-import 'package:go_nomads_app/pages/create_travel_plan/create_travel_plan_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_planner_access_service.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// AI 旅行计划浮动按钮
 class AiTravelPlanFab extends StatelessWidget {
@@ -20,26 +21,29 @@ class AiTravelPlanFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+    final fabLabel = isEnglish ? 'AI Plan' : 'AI Travel Plan';
+
     return Material(
       elevation: 6,
       shadowColor: AppColors.cityPrimary.withValues(alpha: 0.4),
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(28.r),
       child: InkWell(
         onTap: () => _onTap(context),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(28.r),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [AppColors.cityPrimary, Color(0xFFFF6B7A)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(28.r),
             boxShadow: [
               BoxShadow(
                 color: AppColors.cityPrimary.withValues(alpha: 0.3),
-                blurRadius: 8,
+                blurRadius: 8.r,
                 offset: const Offset(0, 3),
               ),
             ],
@@ -48,32 +52,34 @@ class AiTravelPlanFab extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: EdgeInsets.all(6.w),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.25),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   FontAwesomeIcons.wandMagicSparkles,
                   color: Colors.white,
-                  size: 16,
+                  size: 16.r,
                 ),
               ),
-              const SizedBox(width: 10),
-              const Text(
-                'AI Travel Plan',
+              SizedBox(width: 10.w),
+              Text(
+                fabLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 0.3,
+                  letterSpacing: 0.3.sp,
                 ),
               ),
-              const SizedBox(width: 4),
-              const Icon(
+              SizedBox(width: 4.w),
+              Icon(
                 FontAwesomeIcons.arrowRight,
                 color: Colors.white,
-                size: 16,
+                size: 16.r,
               ),
             ],
           ),
@@ -83,83 +89,25 @@ class AiTravelPlanFab extends StatelessWidget {
   }
 
   void _onTap(BuildContext context) async {
-    // 在进入创建页面前先检查配额是否足够（只检查不扣减）
     try {
-      final check = await AiQuotaService().checkQuota();
+      final allowed = await AiPlannerAccessService().ensureAccess(
+        featureName: 'AI 旅行规划师',
+      );
 
-      if (!check.canUse) {
-        // 显示配额用尽提示对话框
-        _showQuotaExhaustedDialog(context, check);
+      if (!allowed) {
         return;
       }
     } catch (e) {
-      log('⚠️ AI 配额检查异常: $e');
-      // 出错时继续，让后续实际调用时再检查
+      log('⚠️ AI 旅行规划师会员检查异常: $e');
     }
 
     // 跳转到创建旅行计划页面
-    Get.to(() => CreateTravelPlanPage(
-          cityId: cityId,
-          cityName: cityName,
-        ));
-  }
-
-  /// 显示配额用尽对话框
-  void _showQuotaExhaustedDialog(BuildContext context, dynamic check) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange[700]),
-            const SizedBox(width: 8),
-            const Text('AI 配额已用完'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '您本月的 AI 使用次数已达上限 (${check.used}/${check.limit})。',
-              style: const TextStyle(fontSize: 15),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                check.upgradeMessage ?? '升级会员获得更多 AI 使用次数',
-                style: TextStyle(
-                  color: Colors.blue[700],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('稍后再说'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Get.toNamed('/membership-plans');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.cityPrimary,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('升级会员'),
-          ),
-        ],
-      ),
+    Get.toNamed(
+      AppRoutes.createTravelPlan,
+      arguments: {
+        'cityId': cityId,
+        'cityName': cityName,
+      },
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
-import 'package:go_nomads_app/pages/direct_chat_page.dart';
+import 'package:go_nomads_app/pages/tencent_im_direct_chat_page.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_app_bar.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_bottom_bar.dart';
 import 'package:go_nomads_app/pages/innovation_detail/innovation_detail_creator_section.dart';
@@ -14,6 +14,7 @@ import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Innovation Project Detail Page
 /// 创意项目详情页面 - 使用小组件组合模式
@@ -101,7 +102,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFF8B5CF6),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 2. 要解决的问题
       InnovationDetailSection(
@@ -111,7 +112,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFFEF4444),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 3. 解决方案
       InnovationDetailSection(
@@ -121,7 +122,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFF10B981),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 4. 目标用户
       InnovationDetailSection(
@@ -131,7 +132,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFF3B82F6),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 5. 产品形态
       InnovationDetailSection(
@@ -141,7 +142,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFFF59E0B),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 6. 核心功能
       InnovationDetailListSection(
@@ -151,7 +152,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFF8B5CF6),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 7. 竞争优势
       InnovationDetailSection(
@@ -161,7 +162,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFF6366F1),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 8. 商业模式
       InnovationDetailSection(
@@ -171,7 +172,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFF10B981),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 9. 市场潜力
       InnovationDetailSection(
@@ -181,7 +182,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFF3B82F6),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 10. 当前进展
       InnovationDetailSection(
@@ -191,7 +192,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFFF59E0B),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 11. 团队介绍
       InnovationDetailTeamSection(
@@ -201,7 +202,7 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFF8B5CF6),
       ),
 
-      const SizedBox(height: 24),
+      SizedBox(height: 24.h),
 
       // 12. 所需支持
       InnovationDetailSection(
@@ -211,15 +212,15 @@ class InnovationDetailPage extends StatelessWidget {
         color: const Color(0xFFEF4444),
       ),
 
-      const SizedBox(height: 32),
+      SizedBox(height: 32.h),
 
       // Footer - Creator Info
       InnovationDetailCreatorSection(controllerTag: _controllerTag),
 
-      const SizedBox(height: 32),
+      SizedBox(height: 32.h),
 
       // 底部留白,为底部栏留出空间
-      const SizedBox(height: 80),
+      SizedBox(height: 80.h),
     ];
   }
 
@@ -246,7 +247,7 @@ class InnovationDetailPage extends StatelessWidget {
 
   /// 联系创建者
   void _contactCreator(InnovationDetailPageController controller) {
-    Get.to(() => DirectChatPage(user: controller.creatorUser));
+    Get.to(() => TencentIMDirectChatPage(user: controller.creatorUser));
   }
 
   void _cleanupController() {

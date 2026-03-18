@@ -48,7 +48,7 @@ class BottomSubmitBar extends StatelessWidget {
                   ? SizedBox(
                       height: 20.h,
                       width: 20.w,
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),

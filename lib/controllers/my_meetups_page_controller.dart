@@ -9,6 +9,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 /// MyMeetupsPage 控制器
 ///
 /// 实现 [IRefreshableList] 接口，与 NavigationUtil 自动集成
+/// 所有过滤（joined+created, 去重, 仅 upcoming/ongoing）由服务端完成
 class MyMeetupsPageController extends GetxController implements IRefreshableList<Meetup> {
   final IMeetupRepository _meetupRepository = Get.find();
 
@@ -17,13 +18,11 @@ class MyMeetupsPageController extends GetxController implements IRefreshableList
   final RxString errorMessage = ''.obs;
   final RxBool isLoadingMore = false.obs;
 
-  final List<Meetup> _createdMeetups = [];
-  final List<Meetup> _joinedMeetups = [];
   late final ScrollController scrollController;
 
-  int _joinedPage = 1;
+  int _currentPage = 1;
   final int _pageSize = 20;
-  bool _hasMoreJoined = true;
+  bool _hasMore = true;
 
   // ==================== IRefreshableList 实现 ====================
 
@@ -35,34 +34,22 @@ class MyMeetupsPageController extends GetxController implements IRefreshableList
 
   @override
   void addItem(Meetup item) {
-    // 添加到头部并重新合并排序
-    _createdMeetups.insert(0, item);
-    _mergeMeetups();
+    // 新建活动后插入头部
+    meetups.insert(0, item);
   }
 
   @override
   void updateItem(Meetup item) {
-    // 更新创建的活动列表
-    final createdIdx = _createdMeetups.indexWhere((m) => m.id == item.id);
-    if (createdIdx != -1) {
-      _createdMeetups[createdIdx] = item;
+    final idx = meetups.indexWhere((m) => m.id == item.id);
+    if (idx != -1) {
+      meetups[idx] = item;
     }
-    // 更新参与的活动列表
-    final joinedIdx = _joinedMeetups.indexWhere((m) => m.id == item.id);
-    if (joinedIdx != -1) {
-      _joinedMeetups[joinedIdx] = item;
-    }
-    _mergeMeetups();
   }
 
   @override
   void removeItemById(String id) {
-    _createdMeetups.removeWhere((m) => m.id == id);
-    _joinedMeetups.removeWhere((m) => m.id == id);
     meetups.removeWhere((m) => m.id == id);
   }
-
-  // ==================== 生命周期 ====================
 
   // ==================== 生命周期 ====================
 
@@ -88,31 +75,23 @@ class MyMeetupsPageController extends GetxController implements IRefreshableList
 
   Future<void> refreshAll() async {
     errorMessage.value = '';
-    _joinedPage = 1;
-    _hasMoreJoined = true;
-    _createdMeetups.clear();
-    _joinedMeetups.clear();
+    _currentPage = 1;
+    _hasMore = true;
 
     try {
-      final createdFuture = _meetupRepository.getMyCreatedMeetups();
-      final joinedFuture = _meetupRepository.getJoinedMeetups(
-        page: _joinedPage,
+      // 服务端已完成过滤：joined + created 合并去重，仅返回 upcoming/ongoing
+      final result = await _meetupRepository.getJoinedMeetups(
+        page: _currentPage,
         pageSize: _pageSize,
       );
 
-      final created = await createdFuture;
-      final joined = await joinedFuture;
-
-      _createdMeetups.addAll(created);
-      _joinedMeetups.addAll(joined);
-
-      if (joined.length < _pageSize) {
-        _hasMoreJoined = false;
+      if (result.length < _pageSize) {
+        _hasMore = false;
       } else {
-        _joinedPage += 1;
+        _currentPage += 1;
       }
 
-      _mergeMeetups();
+      meetups.assignAll(result);
     } catch (e) {
       errorMessage.value = e.toString();
     }
@@ -122,34 +101,32 @@ class MyMeetupsPageController extends GetxController implements IRefreshableList
     if (!scrollController.hasClients || isLoading.value) return;
     final position = scrollController.position;
     if (position.pixels >= position.maxScrollExtent - 200) {
-      _loadMoreJoined();
+      _loadMore();
     }
   }
 
-  Future<void> _loadMoreJoined() async {
-    if (isLoadingMore.value || !_hasMoreJoined) return;
+  Future<void> _loadMore() async {
+    if (isLoadingMore.value || !_hasMore) return;
     isLoadingMore.value = true;
 
     try {
       final nextPageMeetups = await _meetupRepository.getJoinedMeetups(
-        page: _joinedPage,
+        page: _currentPage,
         pageSize: _pageSize,
       );
 
       if (nextPageMeetups.isEmpty) {
-        _hasMoreJoined = false;
+        _hasMore = false;
         return;
       }
 
-      _joinedMeetups.addAll(nextPageMeetups);
+      meetups.addAll(nextPageMeetups);
 
       if (nextPageMeetups.length < _pageSize) {
-        _hasMoreJoined = false;
+        _hasMore = false;
       } else {
-        _joinedPage += 1;
+        _currentPage += 1;
       }
-
-      _mergeMeetups();
     } catch (_) {
       // 加载失败静默处理
     } finally {
@@ -157,18 +134,7 @@ class MyMeetupsPageController extends GetxController implements IRefreshableList
     }
   }
 
-  void _mergeMeetups() {
-    final Map<String, Meetup> map = {};
-    for (final meetup in [..._createdMeetups, ..._joinedMeetups]) {
-      map[meetup.id] = meetup;
-    }
-
-    final merged = map.values.toList()..sort((a, b) => a.schedule.startTime.compareTo(b.schedule.startTime));
-
-    meetups.assignAll(merged);
-  }
-
-  bool get showFooter => isLoadingMore.value && _hasMoreJoined;
+  bool get showFooter => isLoadingMore.value && _hasMore;
 
   Future<void> cancelMeetup(String meetupId, AppLocalizations l10n) async {
     try {

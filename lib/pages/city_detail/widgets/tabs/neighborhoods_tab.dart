@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 import '../../../../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../../../../features/city/infrastructure/models/city_detail_dto.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../widgets/app_loading_widget.dart';
 import '../../../../widgets/safe_network_image.dart';
 import '../../city_detail_controller.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Neighborhoods Tab - GetView 实现
 ///
@@ -98,24 +101,25 @@ class _LoadingState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Text(
-            controller.isGeneratingNearbyCities ? '🤖 AI 正在生成附近城市...' : '📍 正在加载附近城市...',
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
+          AppLoadingWidget(
+            fullScreen: false,
+            title: controller.isGeneratingNearbyCities ? 'AI 正在生成附近城市' : '正在加载附近城市',
+            subtitle: controller.isGeneratingNearbyCities ? 'Generating nearby cities...' : 'Loading nearby cities...',
+            icon: Icons.map_rounded,
+            accentColor: const Color(0xFFFF4458),
           ),
           if (controller.isGeneratingNearbyCities) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Obx(() => Text(
                   controller.nearbyCitiesGenerationMessage,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 )),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Obx(() => Text(
                   '${controller.nearbyCitiesGenerationProgress}%',
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFFF4458),
                   ),
@@ -141,28 +145,29 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               FontAwesomeIcons.mapLocationDot,
-              size: 60,
+              size: 60.r,
               color: Colors.grey,
             ),
-            const SizedBox(height: 12),
-            const Text(
-              '暂无附近城市',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
+            SizedBox(height: 12.h),
             Text(
-              '发现 100 公里内的 4 个相邻城市',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              l10n.noNearbyCities,
+              style: TextStyle(fontSize: 16.sp, color: Colors.grey),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 8.h),
+            Text(
+              l10n.neighborhoodsDiscoverNearbyHint,
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 16.h),
             ElevatedButton.icon(
               onPressed: isGenerating
                   ? null
@@ -171,15 +176,15 @@ class _EmptyState extends StatelessWidget {
                       onGeneratePressed();
                     },
               icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
-              label: const Text('AI 生成附近城市'),
+              label: Text(l10n.neighborhoodsGenerateNearbyCities),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF4458),
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: Colors.grey[300],
                 disabledForegroundColor: Colors.grey[500],
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(24.r),
                 ),
               ),
             ),
@@ -212,10 +217,10 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
     return RefreshIndicator(
       onRefresh: () => aiController.loadNearbyCities(cityId: controller.cityId),
       child: ListView(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+        padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 96.h),
         children: [
           _buildActionBar(aiController),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           ...cities.map((city) => _NearbyCityCard(city: city)),
         ],
       ),
@@ -223,25 +228,26 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
   }
 
   Widget _buildActionBar(AiStateController aiController) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.green.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
         children: [
           Icon(
             FontAwesomeIcons.cloudArrowUp,
             color: Colors.green,
-            size: 20,
+            size: 20.r,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(
-              '☁️ 从后端加载',
+              l10n.neighborhoodsLoadedFromBackend,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 color: Colors.green[800],
               ),
             ),
@@ -252,15 +258,15 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
                     onPressed: aiController.isGeneratingNearbyCities || aiController.isLoadingNearbyCities
                         ? null
                         : () => aiController.loadNearbyCities(cityId: controller.cityId),
-                    icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
-                    label: const Text('刷新'),
+                    icon: Icon(FontAwesomeIcons.arrowsRotate, size: 18.r),
+                    label: Text(l10n.refresh),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFFFF4458),
                       disabledForegroundColor: Colors.grey[400],
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                     ),
                   )),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               Obx(() => TextButton.icon(
                     onPressed: aiController.isGeneratingNearbyCities || aiController.isLoadingNearbyCities
                         ? null
@@ -268,12 +274,12 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
                             if (!await onCheckPermission()) return;
                             onGeneratePressed();
                           },
-                    icon: const Icon(FontAwesomeIcons.wandMagicSparkles, size: 18),
-                    label: const Text('AI 生成'),
+                    icon: Icon(FontAwesomeIcons.wandMagicSparkles, size: 18.r),
+                    label: Text(l10n.guideTabAiGenerate),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFFFF4458),
                       disabledForegroundColor: Colors.grey[400],
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                     ),
                   )),
             ],
@@ -293,14 +299,14 @@ class _NearbyCityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: InkWell(
         onTap: () => _navigateToCityDetail(),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -327,16 +333,16 @@ class _NearbyCityCard extends StatelessWidget {
 
   Widget _buildCityImage() {
     return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
       child: city.imageUrl != null && city.imageUrl!.isNotEmpty
           ? SafeNetworkImage(
               imageUrl: city.imageUrl!,
-              height: 140,
+              height: 140.h,
               width: double.infinity,
               fit: BoxFit.cover,
             )
           : Container(
-              height: 140,
+              height: 140.h,
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -348,12 +354,12 @@ class _NearbyCityCard extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(FontAwesomeIcons.city, size: 40, color: Colors.grey[400]),
-                  const SizedBox(height: 8),
+                  Icon(FontAwesomeIcons.city, size: 40.r, color: Colors.grey[400]),
+                  SizedBox(height: 8.h),
                   Text(
                     city.name,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: Colors.grey[500],
                       fontWeight: FontWeight.w500,
                     ),
@@ -366,12 +372,12 @@ class _NearbyCityCard extends StatelessWidget {
 
   Widget _buildCityInfo() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildCityHeader(),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           _buildTravelTime(),
           if (city.highlights.isNotEmpty) _buildHighlights(),
           if (city.nomadFeatures != null) _buildNomadFeatures(),
@@ -389,12 +395,12 @@ class _NearbyCityCard extends StatelessWidget {
             children: [
               Text(
                 city.name,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 city.country,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -406,20 +412,20 @@ class _NearbyCityCard extends StatelessWidget {
 
   Widget _buildDistanceBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(_getTransportIcon(city.transportation), size: 14, color: const Color(0xFFFF4458)),
-          const SizedBox(width: 6),
+          Icon(_getTransportIcon(city.transportation), size: 14.r, color: const Color(0xFFFF4458)),
+          SizedBox(width: 6.w),
           Text(
             '${city.distance.toStringAsFixed(0)} km',
-            style: const TextStyle(
-              fontSize: 13,
+            style: TextStyle(
+              fontSize: 13.sp,
               fontWeight: FontWeight.bold,
               color: Color(0xFFFF4458),
             ),
@@ -432,11 +438,11 @@ class _NearbyCityCard extends StatelessWidget {
   Widget _buildTravelTime() {
     return Row(
       children: [
-        const Icon(FontAwesomeIcons.clock, size: 14, color: Colors.grey),
-        const SizedBox(width: 6),
+        Icon(FontAwesomeIcons.clock, size: 14.r, color: Colors.grey),
+        SizedBox(width: 6.w),
         Text(
           _formatTravelTime(city.travelTimeMinutes),
-          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
         ),
       ],
     );
@@ -444,20 +450,20 @@ class _NearbyCityCard extends StatelessWidget {
 
   Widget _buildHighlights() {
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: EdgeInsets.only(top: 12.h),
       child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
+        spacing: 8.w,
+        runSpacing: 8.w,
         children: city.highlights.take(3).map((highlight) {
           return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
               color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
               highlight,
-              style: TextStyle(fontSize: 12, color: Colors.blue[700]),
+              style: TextStyle(fontSize: 12.sp, color: Colors.blue[700]),
             ),
           );
         }).toList(),
@@ -468,24 +474,24 @@ class _NearbyCityCard extends StatelessWidget {
   Widget _buildNomadFeatures() {
     final features = city.nomadFeatures!;
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: EdgeInsets.only(top: 12.h),
       child: Row(
         children: [
           if (features.internetSpeedMbps != null) ...[
-            const Icon(FontAwesomeIcons.wifi, size: 12, color: Colors.green),
-            const SizedBox(width: 4),
+            Icon(FontAwesomeIcons.wifi, size: 12.r, color: Colors.green),
+            SizedBox(width: 4.w),
             Text(
               '${features.internetSpeedMbps} Mbps',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
           ],
           if (features.monthlyCostUsd != null) ...[
-            const Icon(FontAwesomeIcons.dollarSign, size: 12, color: Colors.orange),
-            const SizedBox(width: 4),
+            Icon(FontAwesomeIcons.dollarSign, size: 12.r, color: Colors.orange),
+            SizedBox(width: 4.w),
             Text(
               '\$${features.monthlyCostUsd!.toStringAsFixed(0)}/mo',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
             ),
           ],
         ],

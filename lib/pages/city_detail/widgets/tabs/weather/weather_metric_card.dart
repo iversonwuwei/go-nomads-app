@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 天气指标卡片 - 显示单个天气指标（如湿度、风速等）
 class WeatherMetricCard extends StatelessWidget {
@@ -21,14 +22,14 @@ class WeatherMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, 4),
           ),
         ],
@@ -36,31 +37,31 @@ class WeatherMetricCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: iconColor ?? const Color(0xFFFF4458), size: 20),
-          const SizedBox(height: 12),
+          Icon(icon, color: iconColor ?? const Color(0xFFFF4458), size: 20.r),
+          SizedBox(height: 12.h),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: 18.sp,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             label,
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 13,
+              fontSize: 13.sp,
             ),
           ),
           if (subtitle != null && subtitle!.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Text(
               subtitle!,
               style: TextStyle(
                 color: Colors.grey[500],
-                fontSize: 12,
+                fontSize: 12.sp,
               ),
             ),
           ],

@@ -136,7 +136,7 @@ class FormSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: const Color(0xFFFF4458),
-                width: 2.w,
+                width: 2,
               ),
             ),
           ),
@@ -205,7 +205,7 @@ class FormSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: const Color(0xFFFF4458),
-                width: 2.w,
+                width: 2,
               ),
             ),
           ),

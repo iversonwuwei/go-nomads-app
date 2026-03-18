@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
-/// 安全的 Shimmer 包装器
-/// 使用 StatefulWidget 来确保在组件销毁时正确停止动画
-class SafeShimmer extends StatefulWidget {
+/// Compatibility wrapper kept for existing call sites.
+/// Skeleton/shimmer animation is intentionally disabled.
+class SafeShimmer extends StatelessWidget {
   final Widget child;
   final Color? baseColor;
   final Color? highlightColor;
@@ -16,33 +17,10 @@ class SafeShimmer extends StatefulWidget {
   });
 
   @override
-  State<SafeShimmer> createState() => _SafeShimmerState();
+  Widget build(BuildContext context) => child;
 }
 
-class _SafeShimmerState extends State<SafeShimmer> {
-  bool _mounted = true;
-
-  @override
-  void dispose() {
-    _mounted = false;
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_mounted) return const SizedBox.shrink();
-
-    return RepaintBoundary(
-      child: Shimmer.fromColors(
-        baseColor: widget.baseColor ?? Colors.grey[300]!,
-        highlightColor: widget.highlightColor ?? Colors.grey[100]!,
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-/// 基础骨架屏组件（使用 shimmer 包）
+/// 基础骨架屏组件（已迁移到统一加载组件）
 /// 所有页面特定的骨架屏都应继承此类
 abstract class BaseSkeleton extends StatefulWidget {
   const BaseSkeleton({super.key});
@@ -60,26 +38,7 @@ abstract class BaseSkeletonState<T extends BaseSkeleton> extends State<T> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final mediaQuery = MediaQuery.of(context);
-        final availableHeight = constraints.hasBoundedHeight && constraints.maxHeight.isFinite
-            ? constraints.maxHeight
-            : mediaQuery.size.height - mediaQuery.padding.vertical;
-        final viewportHeight = availableHeight > 0 ? availableHeight : mediaQuery.size.height;
-
-        // Keep skeletons as tall as the current viewport so the shimmer always covers the full page.
-        return SizedBox(
-          height: viewportHeight,
-          width: double.infinity,
-          child: SafeShimmer(
-            baseColor: shimmerBaseColor,
-            highlightColor: shimmerHighlightColor,
-            child: buildSkeleton(context),
-          ),
-        );
-      },
-    );
+    return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
   }
 
   /// 子类需要实现此方法来构建特定的骨架屏布局
@@ -108,15 +67,15 @@ class SkeletonCard extends StatelessWidget {
     return Container(
       height: height,
       width: width,
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? EdgeInsets.all(16.w),
       margin: margin,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],

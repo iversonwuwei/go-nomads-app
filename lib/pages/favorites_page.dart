@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/user/presentation/controllers/user_state_
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 import 'city_detail/city_detail.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 收藏夹页面 - 管理收藏的城市
 class FavoritesPage extends StatefulWidget {
@@ -123,9 +125,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Colors.orange),
-            )
+          ? const AppSceneLoading(scene: AppLoadingScene.cityList, fullScreen: true)
           : Obx(() {
               final cities = _sortedCities;
               if (cities.isEmpty) {
@@ -156,9 +156,9 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
           Icon(
             icon,
             color: isSelected ? Colors.orange : Colors.white70,
-            size: 20,
+            size: 20.r,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Text(
             label,
             style: TextStyle(
@@ -168,7 +168,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
           ),
           if (isSelected) ...[
             const Spacer(),
-            const Icon(FontAwesomeIcons.check, color: Colors.orange, size: 20),
+            Icon(FontAwesomeIcons.check, color: Colors.orange, size: 20.r),
           ],
         ],
       ),
@@ -181,7 +181,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
         final l10n = AppLocalizations.of(context)!;
         return Center(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -190,7 +190,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                   size: isMobile ? 80 : 120,
                   color: Colors.white.withValues(alpha: 0.3),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 Text(
                   l10n.noFavorites,
                   style: TextStyle(
@@ -199,7 +199,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   l10n.exploreCities,
                   textAlign: TextAlign.center,
@@ -208,7 +208,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                     fontSize: isMobile ? 14 : 16,
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
                 ElevatedButton(
                   onPressed: () => Get.toNamed(AppRoutes.dataService),
                   style: ElevatedButton.styleFrom(
@@ -219,7 +219,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                       vertical: isMobile ? 16 : 20,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
                   child: Text(
@@ -243,23 +243,23 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
     final imageUrl = city.portraitImageUrl ?? city.imageUrl ?? '';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1a1a1a),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: InkWell(
         onTap: () => _navigateToCityDetail(city),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 顶部：图片 + 基本信息
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -267,7 +267,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                   Stack(
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                         child: imageUrl.isNotEmpty
                             ? Image.network(
                                 imageUrl,
@@ -283,24 +283,24 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                       // 综合评分角标
                       if (city.overallScore != null)
                         Positioned(
-                          top: 6,
-                          left: 6,
+                          top: 6.h,
+                          left: 6.w,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(4.r),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(FontAwesomeIcons.solidStar, color: Color(0xFFFBBF24), size: 10),
-                                const SizedBox(width: 3),
+                                Icon(FontAwesomeIcons.solidStar, color: Color(0xFFFBBF24), size: 10.r),
+                                SizedBox(width: 3.w),
                                 Text(
                                   city.overallScore!.toStringAsFixed(1),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 11,
+                                    fontSize: 11.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -311,7 +311,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                     ],
                   ),
 
-                  const SizedBox(width: 14),
+                  SizedBox(width: 14.w),
 
                   // 城市基本信息
                   Expanded(
@@ -330,7 +330,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                           overflow: TextOverflow.ellipsis,
                         ),
 
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
 
                         // 国家 + 版主状态
                         Row(
@@ -347,19 +347,19 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8.w),
                             ],
                             // 版主状态徽章
                             _buildModeratorBadge(city, isMobile),
                           ],
                         ),
 
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10.h),
 
                         // 核心指标行
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
+                          spacing: 8.w,
+                          runSpacing: 6.w,
                           children: [
                             // 月均花费
                             if (city.averageCost != null && city.averageCost! > 0)
@@ -393,7 +393,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
 
                   // 收藏按钮
                   IconButton(
-                    icon: const Icon(FontAwesomeIcons.solidHeart, color: Colors.red, size: 20),
+                    icon: Icon(FontAwesomeIcons.solidHeart, color: Colors.red, size: 20.r),
                     onPressed: () => _unfavoriteCity(city, l10n),
                     tooltip: l10n.removeFromFavorites,
                   ),
@@ -414,7 +414,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                     Colors.blue,
                     isMobile,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _buildBottomStat(
                     FontAwesomeIcons.userGroup,
                     '${city.meetupCount ?? 0}',
@@ -422,7 +422,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                     Colors.purple,
                     isMobile,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   _buildBottomStat(
                     FontAwesomeIcons.comment,
                     '${city.reviewCount ?? 0}',
@@ -433,10 +433,10 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                   const Spacer(),
                   // 进入详情按钮（居右）
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12, vertical: 6.h),
                     decoration: BoxDecoration(
                       color: Colors.orange.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
                     ),
                     child: Row(
@@ -450,7 +450,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Icon(FontAwesomeIcons.arrowRight, color: Colors.orange, size: isMobile ? 10 : 12),
                       ],
                     ),
@@ -474,7 +474,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
       ),
       decoration: BoxDecoration(
         color: hasModerator ? const Color(0xFF10B981).withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
         border: Border.all(
           color: hasModerator ? const Color(0xFF10B981) : Colors.orange,
           width: 0.5,
@@ -511,7 +511,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(4.r),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -541,13 +541,13 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: isMobile ? 12 : 14),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Text(
             value,
             style: TextStyle(
@@ -566,10 +566,10 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
       width: isMobile ? 100 : 140,
       height: isMobile ? 100 : 140,
       color: Colors.white.withValues(alpha: 0.1),
-      child: const Icon(
+      child: Icon(
         FontAwesomeIcons.city,
         color: Colors.white54,
-        size: 40,
+        size: 40.r,
       ),
     );
   }

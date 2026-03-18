@@ -1,9 +1,11 @@
-import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
-import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
-import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
+import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
 
 /// 会员卡片组件
 ///
@@ -14,9 +16,11 @@ class MembershipCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     // 检查会员控制器是否已注册，如果没有则显示默认卡片
     if (!Get.isRegistered<MembershipStateController>()) {
-      return _buildDefaultCard();
+      return _buildDefaultCard(l10n);
     }
 
     final membershipController = Get.find<MembershipStateController>();
@@ -27,6 +31,7 @@ class MembershipCardWidget extends StatelessWidget {
       final isActive = membershipController.isActive;
 
       return _buildMembershipCard(
+        l10n: l10n,
         level: level,
         membership: membership,
         isActive: isActive,
@@ -37,8 +42,9 @@ class MembershipCardWidget extends StatelessWidget {
   }
 
   /// 构建默认卡片（Free 会员）
-  Widget _buildDefaultCard() {
+  Widget _buildDefaultCard(AppLocalizations l10n) {
     return _buildMembershipCard(
+      l10n: l10n,
       level: MembershipLevel.free,
       membership: null,
       isActive: false,
@@ -49,6 +55,7 @@ class MembershipCardWidget extends StatelessWidget {
 
   /// 构建会员卡片
   Widget _buildMembershipCard({
+    required AppLocalizations l10n,
     required MembershipLevel level,
     required dynamic membership,
     required bool isActive,
@@ -58,7 +65,7 @@ class MembershipCardWidget extends StatelessWidget {
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.membershipPlan),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -68,11 +75,11 @@ class MembershipCardWidget extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: Color(level.colorValue).withValues(alpha: 0.3),
-              blurRadius: 12,
+              blurRadius: 12.r,
               offset: const Offset(0, 4),
             ),
           ],
@@ -81,17 +88,17 @@ class MembershipCardWidget extends StatelessWidget {
           children: [
             // 会员图标
             Container(
-              width: 50,
-              height: 50,
+              width: 50.w,
+              height: 50.h,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Center(
-                child: Text(level.icon, style: const TextStyle(fontSize: 28)),
+                child: Text(level.icon, style: TextStyle(fontSize: 28.sp)),
               ),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14.w),
             // 会员信息
             Expanded(
               child: Column(
@@ -101,28 +108,28 @@ class MembershipCardWidget extends StatelessWidget {
                     children: [
                       Text(
                         level.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 18,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       if (isActive) ...[
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 2.h,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
-                          child: const Text(
-                            'ACTIVE',
+                          child: Text(
+                            l10n.profileMembershipActive,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 10,
+                              fontSize: 10.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -130,36 +137,36 @@ class MembershipCardWidget extends StatelessWidget {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     level == MembershipLevel.free
-                        ? 'Upgrade to unlock more features'
+                        ? l10n.upgradeToUnlock
                         : isActive
-                            ? '$remainingDays days remaining'
-                            : 'Membership expired',
+                            ? l10n.daysRemaining(remainingDays)
+                            : l10n.profileMembershipExpired,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 13,
+                      fontSize: 13.sp,
                     ),
                   ),
                   // AI 使用次数（所有用户都显示）
                   if (membership != null) ...[
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6.h),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           FontAwesomeIcons.wandMagicSparkles,
-                          size: 12,
+                          size: 12.r,
                           color: Colors.white70,
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6.w),
                         Text(
                           level == MembershipLevel.premium
-                              ? 'Unlimited AI'
-                              : 'AI: $aiUsageRemaining/${level.aiUsageLimit} left',
-                          style: const TextStyle(
+                              ? l10n.profileUnlimitedAi
+                              : l10n.profileAiUsageLeft(aiUsageRemaining, level.aiUsageLimit),
+                          style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ],
@@ -169,10 +176,10 @@ class MembershipCardWidget extends StatelessWidget {
               ),
             ),
             // 箭头
-            const Icon(
+            Icon(
               FontAwesomeIcons.chevronRight,
               color: Colors.white70,
-              size: 16,
+              size: 16.r,
             ),
           ],
         ),

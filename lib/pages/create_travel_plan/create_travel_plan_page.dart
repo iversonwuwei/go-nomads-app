@@ -1,40 +1,36 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 import '../travel_plan/travel_plan_page.dart';
 import 'widgets/widgets.dart';
 
 /// 创建旅行计划页面 - 使用 GetX + 组件化架构重构
-class CreateTravelPlanPage extends StatelessWidget {
-  final String cityId;
-  final String cityName;
+class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
+  static const String controllerTag = CreateTravelPlanPageController.controllerTag;
+  final bool embeddedInBottomNav;
 
-  const CreateTravelPlanPage({super.key, required this.cityId, required this.cityName});
+  const CreateTravelPlanPage({super.key, this.embeddedInBottomNav = false});
+
+  @override
+  String? get tag => controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    // 生成唯一 tag 避免多页面冲突
-    final uniqueTag = 'create_travel_plan_${cityId}_${DateTime.now().millisecondsSinceEpoch}';
-
-    // 注册 controller
-    Get.put(
-      CreateTravelPlanPageController(cityId: cityId, cityName: cityName),
-      tag: uniqueTag,
-    );
-
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
-          // 延迟删除控制器，等待当前帧渲染完成
+          // 延迟删除控制器，等待当前帧渲染完成。
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (Get.isRegistered<CreateTravelPlanPageController>(tag: uniqueTag)) {
-              Get.delete<CreateTravelPlanPageController>(tag: uniqueTag);
+            if (Get.isRegistered<CreateTravelPlanPageController>(tag: controllerTag)) {
+              Get.delete<CreateTravelPlanPageController>(tag: controllerTag);
             }
           });
         }
@@ -46,19 +42,19 @@ class CreateTravelPlanPage extends StatelessWidget {
           child: Column(
             children: [
               // Header Card
-              _HeaderCard(cityName: cityName),
+              _HeaderCard(controllerTag: controllerTag),
 
               // Form Section
               Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                padding: const EdgeInsets.all(20),
+                margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
+                      blurRadius: 10.r,
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -66,45 +62,66 @@ class CreateTravelPlanPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Departure Location
-                    TravelPlanDepartureSection(controllerTag: uniqueTag),
+                    // Destination
+                    TravelPlanDestinationSection(controllerTag: controllerTag),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
+
+                    // Departure Location
+                    TravelPlanDepartureSection(controllerTag: controllerTag),
+
+                    SizedBox(height: 28.h),
 
                     // Departure Date
-                    TravelPlanDateSection(controllerTag: uniqueTag),
+                    TravelPlanDateSection(controllerTag: controllerTag),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Trip Duration
-                    TravelPlanDurationSection(controllerTag: uniqueTag),
+                    const TravelPlanDurationSection(),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Budget Level
-                    TravelPlanBudgetSection(controllerTag: uniqueTag),
+                    const TravelPlanBudgetSection(),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
+
+                    // OpenClaw Research Layer
+                    TravelPlanOpenClawSection(
+                      onStrategyTap: (planningMode) => _launchTravelPlanFromCreatePage(
+                        context,
+                        controller,
+                        overridePlanningMode: planningMode,
+                      ),
+                    ),
+
+                    SizedBox(height: 28.h),
 
                     // Attractions
-                    TravelPlanAttractionsSection(controllerTag: uniqueTag),
+                    const TravelPlanAttractionsSection(),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Travel Style
-                    TravelPlanStyleSection(controllerTag: uniqueTag),
+                    const TravelPlanStyleSection(),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Interests
-                    TravelPlanInterestsSection(controllerTag: uniqueTag),
+                    const TravelPlanInterestsSection(),
+
+                    if (embeddedInBottomNav) ...[
+                      SizedBox(height: 28.h),
+                      const _GeneratePlanButton(),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
         ),
-        bottomNavigationBar: _BottomBar(controllerTag: uniqueTag),
+        bottomNavigationBar: embeddedInBottomNav ? null : const _BottomBar(),
       ),
     );
   }
@@ -112,45 +129,50 @@ class CreateTravelPlanPage extends StatelessWidget {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: AppColors.background,
       elevation: 0,
-      leading: const AppBackButton(color: AppColors.backButtonDark),
+      leading: embeddedInBottomNav ? null : const AppBackButton(color: AppColors.backButtonDark),
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
               color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
-            child: const Icon(
+            child: Icon(
               FontAwesomeIcons.wandMagicSparkles,
               color: Color(0xFFFF4458),
-              size: 20,
+              size: 20.r,
             ),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.aiTravelPlanner,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+          SizedBox(width: 12.w),
+          Obx(
+            () => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.aiTravelPlanner,
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
-              ),
-              Text(
-                l10n.planYourTrip(cityName),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.normal,
+                Text(
+                  controller.cityName.isNotEmpty ? l10n.planYourTrip(controller.cityName) : l10n.selectDestination,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          SizedBox(width: 10.w),
+          const _MembershipExclusiveBadge(),
         ],
       ),
     );
@@ -158,28 +180,29 @@ class CreateTravelPlanPage extends StatelessWidget {
 }
 
 class _HeaderCard extends StatelessWidget {
-  final String cityName;
+  final String controllerTag;
 
-  const _HeaderCard({required this.cityName});
+  const _HeaderCard({required this.controllerTag});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final controller = Get.find<CreateTravelPlanPageController>(tag: controllerTag);
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
@@ -189,25 +212,122 @@ class _HeaderCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(FontAwesomeIcons.wandMagicSparkles, color: Colors.white, size: 24),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.wandMagicSparkles, color: Colors.white, size: 24.r),
+              SizedBox(width: 8.w),
               Text(
                 l10n.aiPoweredPlanning,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
+          Obx(
+            () => Text(
+              controller.cityName.isNotEmpty
+                  ? '已为你预填 ${controller.cityName}，你也可以在下方重新选择目的地后再生成 AI 行程。'
+                  : '请先选择旅行目的地，再设定偏好并决定是否启用 OpenClaw 研究增强。',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                height: 1.4,
+              ),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 18.r),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    '会员专享：AI 旅行规划师仅对有效会员开放。',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 14.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _StepBadge(label: '1 偏好输入'),
+              _StepBadge(label: '2 OpenClaw 研究'),
+              _StepBadge(label: '3 AI 成稿'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepBadge extends StatelessWidget {
+  final String label;
+
+  const _StepBadge({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _MembershipExclusiveBadge extends StatelessWidget {
+  const _MembershipExclusiveBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF4458).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.workspace_premium_rounded, color: const Color(0xFFFF4458), size: 14.r),
+          SizedBox(width: 4.w),
           Text(
-            l10n.tellPreferences(cityName),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              height: 1.4,
+            '会员专享',
+            style: TextStyle(
+              color: const Color(0xFFFF4458),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -216,75 +336,105 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
-class _BottomBar extends StatelessWidget {
-  final String controllerTag;
+class _BottomBar extends GetView<CreateTravelPlanPageController> {
+  const _BottomBar();
 
-  const _BottomBar({required this.controllerTag});
-
-  CreateTravelPlanPageController? get _controller {
-    try {
-      return Get.find<CreateTravelPlanPageController>(tag: controllerTag);
-    } catch (e) {
-      return null;
-    }
-  }
+  @override
+  String? get tag => CreateTravelPlanPageController.controllerTag;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
-        child: ElevatedButton(
-          onPressed: () => _generatePlan(),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF4458),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 0,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(FontAwesomeIcons.wandMagicSparkles, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                l10n.generatePlan,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.3),
-              ),
-            ],
-          ),
+        child: const _GeneratePlanButton(),
+      ),
+    );
+  }
+}
+
+class _GeneratePlanButton extends GetView<CreateTravelPlanPageController> {
+  const _GeneratePlanButton();
+
+  @override
+  String? get tag => CreateTravelPlanPageController.controllerTag;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Obx(
+      () => ElevatedButton(
+        onPressed: () => _generatePlan(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFFF4458),
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          minimumSize: Size(double.infinity, 0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(FontAwesomeIcons.wandMagicSparkles, size: 20.r),
+            SizedBox(width: 8.w),
+            Text(
+              controller.planningMode.value == 'research' ? '开始 OpenClaw 研究规划' : l10n.generatePlan,
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, letterSpacing: 0.3.sp),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  void _generatePlan() {
-    final controller = _controller;
-    if (controller == null) return;
-
-    Get.to(
-      () => TravelPlanPage(
-        cityId: controller.cityId,
-        cityName: controller.cityName,
-        duration: controller.duration.value,
-        budget: controller.getFinalBudget(),
-        travelStyle: controller.travelStyle.value,
-        interests: controller.getAllInterests(),
-        departureLocation: controller.departureLocation.value,
-        departureDate: controller.departureDate.value,
-      ),
+  void _generatePlan(BuildContext context) {
+    _launchTravelPlanFromCreatePage(
+      context,
+      controller,
     );
   }
+}
+
+void _launchTravelPlanFromCreatePage(
+  BuildContext context,
+  CreateTravelPlanPageController controller, {
+  String? overridePlanningMode,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+
+  if (!controller.hasSelectedDestination) {
+    AppToast.warning(
+      l10n.selectDestination,
+      title: l10n.destination,
+    );
+    return;
+  }
+
+  if (overridePlanningMode != null && overridePlanningMode.isNotEmpty) {
+    controller.setPlanningMode(overridePlanningMode);
+  }
+
+  Get.to(
+    () => TravelPlanPage(
+      cityId: controller.cityId,
+      cityName: controller.cityName,
+      duration: controller.duration.value,
+      budget: controller.getFinalBudget(),
+      travelStyle: controller.travelStyle.value,
+      interests: controller.getAllInterests(),
+      departureLocation: controller.departureLocation.value,
+      departureDate: controller.departureDate.value,
+    ),
+  );
 }

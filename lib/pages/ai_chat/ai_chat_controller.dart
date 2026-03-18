@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
@@ -41,6 +42,8 @@ class AiChatController extends GetxController {
   String? _currentRequestId;
   String? _pendingEmptyConversationId;
 
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
+
   @override
   void onInit() {
     super.onInit();
@@ -62,25 +65,17 @@ class AiChatController extends GetxController {
       isInitializing.value = true;
       hasInitError.value = false;
       initErrorMessage.value = '';
-      await loadConversationList();
-      if (historyConversations.isEmpty) {
-        conversation.value = null;
-        messages.clear();
-        return;
-      }
-      await _startNewConversation();
-      await loadHistory();
+
+      // 初始化为空状态，不预加载历史对话
+      // 用户可以直接开始新对话，或点击历史图标查看历史
+      conversation.value = null;
+      messages.clear();
     } catch (e, stack) {
       log('❌ 初始化 AI Chat 失败: $e\n$stack');
       hasInitError.value = true;
-      initErrorMessage.value = 'AI 服务暂时不可用，请稍后重试';
-      // 不显示 Toast，让 UI 显示错误状态
+      initErrorMessage.value = _l10n.aiChatServiceUnavailable;
     } finally {
       isInitializing.value = false;
-      // 初始化完成后，确保滚动到底部显示最新消息
-      if (messages.isNotEmpty) {
-        _scrollToBottom(delay: const Duration(milliseconds: 300), animate: false);
-      }
     }
   }
 
@@ -129,13 +124,13 @@ class AiChatController extends GetxController {
       _replaceStreamingMessage(
         AiMessage(
           role: 'assistant',
-          content: chunk.error ?? 'AI 返回错误',
+          content: chunk.error ?? _l10n.aiChatResponseError,
           isError: true,
           createdAt: DateTime.now(),
         ),
       );
       _finalizeStreaming();
-      AppToast.error(chunk.error ?? 'AI Chat 失败');
+      AppToast.error(chunk.error ?? _l10n.aiChatFailed);
       return;
     }
 
@@ -159,24 +154,15 @@ class AiChatController extends GetxController {
     }
   }
 
-  Future<void> _startNewConversation() async {
-    final conv = await _createNewConversation();
-    if (conv == null) {
-      throw Exception('无法初始化 AI 对话');
-    }
-    conversation.value = conv;
-    messages.clear();
-  }
-
   Future<AiConversation?> _createNewConversation() async {
     try {
       return await _aiChatService.createConversation(
-        title: 'Nomads AI Copilot',
-        systemPrompt: 'You are the Go Nomads AI copilot. Provide concise, actionable travel help for digital nomads.',
+        title: _l10n.aiChatDefaultConversationTitle,
+        systemPrompt: _l10n.aiChatSystemPrompt,
       );
     } catch (e, stack) {
       log('❌ 创建 AI 对话失败: $e\n$stack');
-      AppToast.error('暂时无法创建 AI 对话');
+      AppToast.error(_l10n.aiChatCreateConversationFailed);
       return null;
     }
   }
@@ -221,13 +207,13 @@ class AiChatController extends GetxController {
       _scrollToBottom(delay: const Duration(milliseconds: 100), animate: false);
     } catch (e, stack) {
       log('⚠️ 加载历史消息失败: $e\n$stack');
-      AppToast.error('加载历史对话失败');
+      AppToast.error(_l10n.aiChatLoadHistoryFailed);
     }
   }
 
   Future<void> selectConversation(AiConversation target) async {
     if (isStreaming.value) {
-      AppToast.warning('正在生成回复，请稍后再切换对话');
+      AppToast.warning(_l10n.aiChatSwitchBlockedWhileStreaming);
       return;
     }
     if (conversation.value?.id == target.id) return;
@@ -241,7 +227,7 @@ class AiChatController extends GetxController {
       await loadHistory();
     } catch (e, stack) {
       log('⚠️ 切换对话失败: $e\n$stack');
-      AppToast.error('切换对话失败，请稍后重试');
+      AppToast.error(_l10n.aiChatSwitchConversationFailed);
     } finally {
       isInitializing.value = false;
     }
@@ -279,7 +265,7 @@ class AiChatController extends GetxController {
     );
 
     isStreaming.value = true;
-    streamingStatus.value = 'AI 正在思考...';
+    streamingStatus.value = _l10n.aiChatThinking;
 
     try {
       // 使用 SignalR 流式响应
@@ -303,7 +289,7 @@ class AiChatController extends GetxController {
           _replaceStreamingMessage(
             AiMessage(
               role: 'assistant',
-              content: '请求超时，请稍后重试',
+              content: _l10n.aiChatRequestTimeout,
               isError: true,
               createdAt: DateTime.now(),
             ),
@@ -317,12 +303,12 @@ class AiChatController extends GetxController {
       _replaceStreamingMessage(
         AiMessage(
           role: 'assistant',
-          content: '暂时无法获取 AI 回复，请稍后重试',
+          content: _l10n.aiChatReplyUnavailable,
           isError: true,
           createdAt: DateTime.now(),
         ),
       );
-      AppToast.error('AI Chat 发送失败');
+      AppToast.error(_l10n.aiChatSendFailed);
       _finalizeStreaming();
     }
   }
@@ -339,7 +325,7 @@ class AiChatController extends GetxController {
       if (current.content.isEmpty && !current.isError) {
         messages[_streamingIndex!] = AiMessage(
           role: current.role,
-          content: '暂时未收到 AI 回复，请稍后重试',
+          content: _l10n.aiChatNoReplyYet,
           isError: true,
           createdAt: current.createdAt,
         );
@@ -377,7 +363,7 @@ class AiChatController extends GetxController {
     if (override != null && override.isNotEmpty) {
       return override;
     }
-    return item.title.isNotEmpty ? item.title : '未命名对话';
+    return item.title.isNotEmpty ? item.title : _l10n.aiChatUntitledConversation;
   }
 
   void _trySetHistoryTitleFromFirstQuestion(String convId, String question) {
@@ -439,7 +425,7 @@ class AiChatController extends GetxController {
 
     final conv = await _createNewConversation();
     if (conv == null) {
-      AppToast.error('暂时无法创建 AI 对话');
+      AppToast.error(_l10n.aiChatCreateConversationFailed);
       return null;
     }
 

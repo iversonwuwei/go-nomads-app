@@ -128,6 +128,14 @@
   "selectAll": "全选",
   "deselectAll": "取消全选",
   "language": "语言",
+  "languageOptionChinese": "中文",
+  "@languageOptionChinese": {
+    "description": "语言选择项：中文"
+  },
+  "languageOptionEnglish": "英文",
+  "@languageOptionEnglish": {
+    "description": "语言选择项：英文"
+  },
   "theme": "主题",
   "darkMode": "深色模式",
   "lightMode": "浅色模式",
@@ -155,6 +163,645 @@
   "badges": "徽章",
   "skills": "技能",
   "interests": "兴趣",
+  "selectSkills": "选择技能",
+  "selectInterests": "选择兴趣",
+  "searchSkillsHint": "搜索技能...",
+  "searchInterestsHint": "搜索兴趣...",
+  "noSkills": "暂无技能",
+  "noMatchingSkills": "未找到匹配的技能",
+  "noInterests": "暂无兴趣",
+  "noMatchingInterests": "未找到匹配的兴趣",
+  "failedToLoadSkillsList": "无法加载技能列表",
+  "failedToLoadInterestsList": "无法加载兴趣列表",
+  "itemUnit": "项",
+  "yearsAgo": "{count}年前",
+  "@yearsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileNotificationPermissionTitle": "需要通知权限",
+  "profileNotificationPermissionMessage": "请在系统设置中开启通知权限，以便接收重要消息提醒。",
+  "profileGoToSettings": "去设置",
+  "profileRolesManagement": "🔐 管理员权限管理",
+  "profileSelectedUsers": "已选择 {count} 人",
+  "@profileSelectedUsers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileRolesNotLoadedWarning": "⚠️ 角色数据未加载，批量操作功能受限\n请确认后端 /api/v1/roles 接口已正确配置",
+  "profileSetAsAdmin": "设为管理员",
+  "profileSetAsNormalUser": "设为普通用户",
+  "profileToggleSelectAll": "全选/取消全选",
+  "profileNoUsers": "暂无用户",
+  "profileJoinedAt": "加入于 {time}",
+  "@profileJoinedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "profileRoleAdmin": "管理员",
+  "profileRoleModerator": "版主",
+  "profileRoleUser": "用户",
+  "profileSelectUsersFirst": "请先选择要设置的用户",
+  "profileBatchSetAdminSuccess": "已成功将 {count} 个用户设为管理员",
+  "@profileBatchSetAdminSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileBatchSetAdminFailed": "批量设置管理员失败",
+  "profileBatchSetUserSuccess": "已成功将 {count} 个用户设为普通用户",
+  "@profileBatchSetUserSuccess": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileBatchSetUserFailed": "批量设置用户失败",
+  "profileAddedCount": "添加 {count} 个",
+  "@profileAddedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileRemovedCount": "移除 {count} 个",
+  "@profileRemovedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileSupabaseNotConfigured": "Supabase 未配置，请联系管理员",
+  "profileAvatarUploadFailed": "头像上传失败: {error}",
+  "@profileAvatarUploadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "manageCityRatingsTitle": "{cityName} - 评分数据",
+  "@manageCityRatingsTitle": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
+  "manageCityRatingsAddItem": "添加评分项",
+  "manageCityRatingsNameZh": "评分项名称（中文）",
+  "manageCityRatingsNameZhHint": "例如：美食",
+  "manageCityRatingsNameEn": "评分项名称（英文）",
+  "manageCityRatingsNameEnHint": "例如：Food",
+  "manageCityRatingsDescriptionOptional": "描述（可选）",
+  "manageCityRatingsDescriptionHint": "简短描述",
+  "manageCityRatingsIcon": "图标",
+  "manageCityRatingsIconStar": "星星",
+  "manageCityRatingsIconRestaurant": "餐厅",
+  "manageCityRatingsIconNetwork": "网络",
+  "manageCityRatingsIconSafety": "安全",
+  "manageCityRatingsIconTransport": "交通",
+  "manageCityRatingsIconHealthcare": "医疗",
+  "manageCityRatingsIconWeather": "天气",
+  "manageCityRatingsIconCost": "成本",
+  "manageCityRatingsIconPeople": "人群",
+  "manageCityRatingsIconLanguage": "语言",
+  "manageCityRatingsDeleteItem": "删除评分项",
+  "manageCityRatingsDeleteConfirm": "确定要删除“{name}”吗？",
+  "@manageCityRatingsDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "manageCityRatingsSubtitle": "{nameEn} • 评分: {average} ({count}人)",
+  "@manageCityRatingsSubtitle": {
+    "placeholders": {
+      "nameEn": {
+        "type": "String"
+      },
+      "average": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "defaultStatus": "默认",
+  "manageCityRatingsEmptyTitle": "暂无评分项",
+  "manageCityRatingsEmptyHint": "点击右上角加号，添加第一个评分项",
+  "editBasicInfoTitle": "编辑基本信息",
+  "editBasicInfoGender": "性别",
+  "editBasicInfoGenderMale": "男",
+  "editBasicInfoGenderFemale": "女",
+  "editBasicInfoGenderPreferNotToSay": "不愿透露",
+  "editBasicInfoCurrentCity": "当前城市",
+  "editBasicInfoCityHint": "例如: Bangkok",
+  "editBasicInfoCurrentCountry": "当前国家",
+  "editBasicInfoCountryHint": "例如: Thailand",
+  "editBasicInfoOccupation": "职业",
+  "editBasicInfoOccupationHint": "例如: Software Engineer",
+  "editBasicInfoCompany": "公司",
+  "editBasicInfoCompanyHint": "例如: Google",
+  "editBasicInfoWebsite": "个人网站",
+  "editBasicInfoWebsiteHint": "https://yourwebsite.com",
+  "modularProfileTitle": "用户资料",
+  "modularProfileNameUnset": "未设置姓名",
+  "modularProfileOccupationUnset": "未设置职业",
+  "modularProfileStatsTitle": "Nomad 统计",
+  "modularProfileStatCountries": "国家",
+  "modularProfileStatCities": "城市",
+  "modularProfileStatDays": "旅行天数",
+  "modularProfileStatMeetups": "Meetup",
+  "modularProfileStatTrips": "行程",
+  "modularProfileStatReviews": "评论",
+  "modularProfileModuleBasicInfo": "基本信息",
+  "modularProfileBasicInfoSummary": "{name} · {occupation}",
+  "@modularProfileBasicInfoSummary": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "occupation": {
+        "type": "String"
+      }
+    }
+  },
+  "modularProfileTapToEditBasicInfo": "点击编辑基本信息",
+  "modularProfileModuleSkills": "技能标签",
+  "modularProfileTapToAddSkills": "点击添加技能标签",
+  "modularProfileSkillsSummary": "{count} 项技能: {names}",
+  "@modularProfileSkillsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "modularProfileModuleInterests": "兴趣爱好",
+  "modularProfileTapToAddInterests": "点击添加兴趣爱好",
+  "modularProfileInterestsSummary": "{count} 项兴趣: {names}",
+  "@modularProfileInterestsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "modularProfileModuleSocialLinks": "社交链接",
+  "modularProfileTapToAddSocialLinks": "点击添加社交平台链接",
+  "modularProfileSocialLinksCount": "已添加 {count} 个平台",
+  "@modularProfileSocialLinksCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "modularProfileModuleTravelPlans": "旅行计划",
+  "modularProfileNoTravelPlans": "暂无旅行计划",
+  "modularProfileTravelPlansCount": "{count} 个计划",
+  "@modularProfileTravelPlansCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "modularProfileTravelPlansComingSoon": "旅行计划功能开发中",
+  "modularProfileModuleBadges": "成就徽章",
+  "modularProfileNoBadges": "暂无徽章",
+  "modularProfileBadgesCount": "已获得 {count} 个徽章",
+  "@modularProfileBadgesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "modularProfileBadgesComingSoon": "徽章功能开发中",
+  "modularProfileModuleHistory": "旅行历史",
+  "modularProfileNoHistory": "暂无旅行记录",
+  "modularProfileHistoryCount": "{count} 条记录",
+  "@modularProfileHistoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "modularProfileHistoryComingSoon": "旅行历史功能开发中",
+  "uploading": "上传中...",
+  "confirmDelete": "确认删除",
+  "addHotelRoomTypesTitle": "房型管理",
+  "addHotelAddRoomType": "添加房型",
+  "addHotelEditRoomType": "编辑房型",
+  "addHotelRoomTypesHint": "添加不同的房型及价格（可选）",
+  "addHotelNoRoomTypes": "暂无房型",
+  "addHotelTapToAddRoomType": "点击上方按钮添加房型",
+  "addHotelUnnamedRoomType": "未命名房型",
+  "addHotelPricePerNightChip": "{currency} {price}/晚",
+  "@addHotelPricePerNightChip": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      },
+      "price": {
+        "type": "Object"
+      }
+    }
+  },
+  "addHotelMaxOccupancyChip": "最多{count}人",
+  "@addHotelMaxOccupancyChip": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "addHotelAvailableRoomsChip": "{count}间",
+  "@addHotelAvailableRoomsChip": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "addHotelRoomTypeName": "房型名称",
+  "addHotelRoomTypeNameHint": "例如：标准双人间",
+  "addHotelRoomTypeDescription": "房型描述",
+  "addHotelRoomTypeDescriptionHint": "房间设施、特色等",
+  "addHotelRoomSize": "面积(㎡)",
+  "addHotelMaxOccupancy": "最大入住",
+  "addHotelBedType": "床型",
+  "addHotelAvailableRooms": "可用房间数",
+  "addHotelBedTypeSingle": "Single",
+  "addHotelBedTypeDouble": "Double",
+  "addHotelBedTypeQueen": "Queen",
+  "addHotelBedTypeKing": "King",
+  "addHotelBedTypeTwin": "Twin",
+  "addHotelBedTypeBunk": "Bunk",
+  "addHotelEnterRoomTypeName": "请输入房型名称",
+  "addHotelEnterPricePerNight": "请输入每晚价格",
+  "addHotelRoomTypeUpdated": "房型已更新",
+  "addHotelRoomTypeAdded": "房型已添加",
+  "addHotelDeleteRoomTypeConfirm": "确定要删除房型 \"{name}\" 吗？",
+  "@addHotelDeleteRoomTypeConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addHotelRoomTypeDeleted": "房型已删除",
+  "editSocialLinksUrl": "链接地址",
+  "editSocialLinksExample": "示例: {pattern}",
+  "@editSocialLinksExample": {
+    "placeholders": {
+      "pattern": {
+        "type": "String"
+      }
+    }
+  },
+  "editSocialLinksTapToAdd": "点击添加",
+  "editSocialLinksAddedCount": "已添加 {count} / {total} 个平台",
+  "@editSocialLinksAddedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "directChatJustNow": "刚刚",
+  "directChatMinutesAgo": "{count}分钟前",
+  "@directChatMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "directChatHoursAgo": "{count}小时前",
+  "@directChatHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "directChatDaysAgo": "{count}天前",
+  "@directChatDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "directChatPickLocationFailed": "选择位置失败: {error}",
+  "@directChatPickLocationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "directChatSendFileFailed": "发送文件失败: {error}",
+  "@directChatSendFileFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "directChatVoiceFileMissing": "语音文件不存在",
+  "directChatVoiceMessageText": "语音消息",
+  "directChatSendVoiceFailed": "发送语音失败: {error}",
+  "@directChatSendVoiceFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "directChatVoiceMessageUnavailable": "语音消息不可用",
+  "directChatFileFallback": "文件",
+  "directChatChooseMapNavigation": "选择地图导航",
+  "directChatMapApple": "Apple 地图",
+  "directChatMapGoogle": "Google 地图",
+  "directChatMapAmap": "高德地图",
+  "directChatMapBaidu": "百度地图",
+  "directChatMapTencent": "腾讯地图",
+  "directChatMapNotInstalled": "未安装{mapName}",
+  "@directChatMapNotInstalled": {
+    "placeholders": {
+      "mapName": {
+        "type": "String"
+      }
+    }
+  },
+  "directChatImageLoadFailed": "图片加载失败",
+  "directChatSaveComingSoon": "保存功能即将推出",
+  "directChatShareComingSoon": "分享功能即将推出",
+  "tencentImConnectFailedRetry": "连接失败，请重试",
+  "tencentImImportUserFailed": "用户导入失败，消息可能无法送达",
+  "tencentImNoMessages": "暂无消息",
+  "tencentImFileFallback": "文件",
+  "tencentImMessageFallback": "[消息]",
+  "tencentImImageFallback": "[图片]",
+  "tencentImLoadFailed": "加载失败",
+  "tencentImOpenFile": "打开文件",
+  "cityChatCreateRoomComingSoon": "创建聊天室功能即将推出",
+  "cityChatSaySomething": "说点什么...",
+  "cityChatViewMembers": "查看成员",
+  "cityChatSearchRecords": "搜索聊天记录",
+  "cityChatDoNotDisturb": "消息免打扰",
+  "cityChatDoNotDisturbEnabled": "已开启消息免打扰",
+  "cityChatExitRoom": "退出聊天室",
+  "cityChatLocatedMessage": "已定位到消息",
+  "cityChatMessageOutOfRange": "消息不在当前加载范围内，请加载更多历史消息",
+  "cityChatSearchMessageContent": "搜索消息内容...",
+  "dataServiceLoginToAccessFeature": "请先登录再使用此功能",
+  "dataServiceInvalidSession": "会话无效，请重新登录。",
+  "dataServiceAuthenticationError": "认证错误",
+  "dataServiceSessionExpiredMessage": "您的会话已过期，请重新登录。",
+  "dataServiceSessionExpiredTitle": "会话已过期",
+  "dataServiceFoundCities": "找到 {count} 个城市",
+  "@dataServiceFoundCities": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataServiceSearchFailed": "搜索失败",
+  "dataServiceSearchCitiesHint": "搜索城市...（支持中英文搜索）",
+  "dataServiceClearSearch": "清除搜索",
+  "dataServiceAlreadyJoinedMeetup": "您已经加入了这个活动",
+  "dataServiceNotJoinedMeetup": "您尚未加入这个活动",
+  "dataServiceLeaveMeetupFailed": "退出活动失败",
+  "dataServiceJoinMeetupFailed": "加入活动失败",
+  "dataServiceOperationFailed": "操作失败",
+  "dataServiceLoginToGenerateImages": "请先登录后再生成图片",
+  "dataServiceOnlyAdminOrModeratorCanGenerate": "仅管理员或城市版主可生成图片",
+  "dataServiceImageTaskCreated": "{cityName} 的 AI 图片生成任务已创建。\n完成后将通知您。",
+  "@dataServiceImageTaskCreated": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
+  "dataServicePermissionDenied": "权限不足",
+  "dataServiceTaskCreated": "任务已创建",
+  "dataServiceTaskCreationFailed": "任务创建失败",
+  "loginTipsTitle": "提示",
+  "loginPhoneRequired": "请输入手机号",
+  "loginPhoneInvalid": "请输入正确的手机号",
+  "loginSmsCodeSent": "验证码已发送",
+  "loginSendFailed": "发送失败",
+  "loginSendSmsFailed": "发送验证码失败",
+  "loginSuccessfulTitle": "登录成功",
+  "loginFailedTitle": "登录失败",
+  "loginInvalidEmailOrPassword": "邮箱或密码错误",
+  "loginUnknownErrorRetry": "发生错误，请重试。",
+  "loginWelcomeBack": "欢迎回来！",
+  "loginFailedRetry": "登录失败，请重试",
+  "loginSmsCodeInvalidOrExpired": "验证码无效或已过期",
+  "loginSocialFailed": "{platformName} 登录失败，请稍后重试",
+  "@loginSocialFailed": {
+    "placeholders": {
+      "platformName": {
+        "type": "String"
+      }
+    }
+  },
+  "loginSocialLoading": "正在{platformName}登录...",
+  "@loginSocialLoading": {
+    "placeholders": {
+      "platformName": {
+        "type": "String"
+      }
+    }
+  },
+  "loginPleaseWait": "请稍候",
+  "addInnovationImageSourceLocal": "本地图片",
+  "addInnovationImageSourceAiGenerated": "AI 生成",
+  "addInnovationAiGenerating": "AI 正在创作中...",
+  "addInnovationSupportAlbumOrAi": "支持相册选择或 AI 生成",
+  "addInnovationSelectCoverImage": "选择封面图片",
+  "addInnovationAddAttractiveCover": "为你的项目添加一张吸引眼球的封面",
+  "addInnovationAlbum": "相册",
+  "addInnovationPickFromLocal": "从本地选择",
+  "addInnovationAiGenerate": "AI 生成",
+  "addInnovationAiCreative": "智能创作",
+  "addInnovationMembershipUnavailable": "会员服务不可用，请稍后再试",
+  "addInnovationAiImageGeneration": "AI 图片生成",
+  "addInnovationMemberExclusive": "会员专属功能",
+  "addInnovationUpgradeMembershipUnlock": "升级会员解锁",
+  "addInnovationMaybeLater": "稍后再说",
+  "addInnovationAiGenerateCover": "AI 生成封面",
+  "addInnovationDescribeCoverHint": "请描述您想要的封面图片...",
+  "addInnovationQuickTemplates": "快速模板：",
+  "addInnovationGenerating": "生成中...",
+  "generate": "生成",
+  "addInnovationAiBadge": "AI",
+  "cityPhotoPickFromGalleryMulti": "从相册选择 (可多选)",
+  "cityPhotoCaptureAndUpload": "拍照上传",
+  "cityPhotoUploadTitle": "上传照片 · {cityName}",
+  "@cityPhotoUploadTitle": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
+  "cityPhotoShareExperience": "为数字游民社区分享你在 {cityName} 的真实体验",
+  "@cityPhotoShareExperience": {
+    "placeholders": {
+      "cityName": {
+        "type": "String"
+      }
+    }
+  },
+  "cityPhotoTitleOrPlace": "标题 / 地点",
+  "cityPhotoTitleExample": "例：北戴河海边日出",
+  "cityPhotoTitleRequired": "请填写一个标题或地点描述",
+  "cityPhotoLocationOptional": "位置信息 (可选)",
+  "cityPhotoLocationHint": "街道、地标或更多定位线索",
+  "cityPhotoLocateOnMap": "在地图上定位",
+  "cityPhotoDescriptionOptional": "描述 (可选)",
+  "cityPhotoDescriptionHint": "简单介绍照片内容、拍摄时间等",
+  "cityPhotoSelectedCount": "已选择 {count} / {maxCount}",
+  "@cityPhotoSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "maxCount": {
+        "type": "int"
+      }
+    }
+  },
+  "cityPhotoAddPhoto": "添加照片",
+  "cityPhotoUploading": "正在上传...",
+  "cityPhotoEmptyHint": "还没有照片，点击上方\"添加照片\"按钮上传",
+  "cityPhotoSubmitting": "提交中...",
+  "cityPhotoSubmitDescription": "提交后后端会通过高德地图自动补齐坐标，成功后你将回到城市详情页，照片会在刷新后展示。",
+  "currencyOptionUsd": "USD ($)",
+  "currencyOptionEur": "EUR (€)",
+  "currencyOptionGbp": "GBP (£)",
+  "currencyOptionCny": "CNY (¥)",
+  "currencyOptionJpy": "JPY (¥)",
+  "currencyOptionThb": "THB (฿)",
+  "currencyOptionVnd": "VND (₫)",
+  "currencyOptionIdr": "IDR (Rp)",
+  "currencyOptionMyr": "MYR (RM)",
+  "currencyOptionSgd": "SGD (S$)",
+  "homeMeetupChatButton": "聊天",
+  "moderatorCardTitle": "城市版主",
+  "moderatorCardCertified": "已认证",
+  "moderatorCardTransferModerator": "转让版主",
+  "moderatorCardApplyModerator": "申请成为版主",
+  "moderatorCardUnclaimed": "待认领",
+  "moderatorCardLookingForModerator": "这座城市正在寻找版主！如果你熟悉这里，可以申请成为版主，帮助其他数字游民了解这座城市。",
+  "moderatorCardAssignModerator": "分配版主",
+  "moderatorCardNeedUpgradeMembership": "需要升级会员",
+  "moderatorCardUpgradeContent": "申请成为城市版主需要 Pro 会员或更高等级。\n\n升级到 Pro 会员后，您将获得：\n• 申请成为城市版主的资格\n• 更多 AI 使用次数\n• 专属会员徽章\n• 更多高级功能",
+  "moderatorCardUpgradeNow": "立即升级",
+  "assignModeratorLoadCandidatesFailed": "加载版主候选人失败: {error}",
+  "@assignModeratorLoadCandidatesFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "assignModeratorSelectAtLeastOneUser": "请至少选择一个用户",
+  "assignModeratorUnknownError": "未知错误",
+  "assignModeratorUserError": "用户 {userId}: {error}",
+  "@assignModeratorUserError": {
+    "placeholders": {
+      "userId": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "assignModeratorSuccessCount": "成功指定 {count} 个版主！",
+  "@assignModeratorSuccessCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "assignModeratorFailCount": "{count} 个用户指定失败，请查看日志",
+  "@assignModeratorFailCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "assignModeratorAllFailed": "所有用户指定失败: {reason}",
+  "@assignModeratorAllFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "assignModeratorConfirmTitle": "确认指定版主",
+  "assignModeratorConfirmMessage": "确定要将 {count} 个用户指定为版主吗？\n\n这些用户将自动获得版主角色和相应权限。",
+  "@assignModeratorConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "skillCategoryProgramming": "编程开发",
+  "skillCategoryDesign": "设计创意",
+  "skillCategoryMarketing": "营销商务",
+  "skillCategoryLanguages": "语言能力",
+  "skillCategoryData": "数据分析",
+  "skillCategoryManagement": "项目管理",
+  "skillCategoryOther": "其他技能",
+  "interestCategorySports": "运动健身",
+  "interestCategoryArts": "艺术文化",
+  "interestCategoryFood": "美食烹饪",
+  "interestCategoryTravel": "旅行探险",
+  "interestCategoryTechnology": "科技数码",
+  "interestCategoryReading": "阅读学习",
+  "interestCategoryMusic": "音乐娱乐",
+  "interestCategorySocial": "社交公益",
   "travelHistory": "旅行历史",
   "current": "当前",
   "connect": "联系方式",
@@ -382,6 +1029,8 @@
   "typeMessage": "输入消息...",
   "newMessage": "新消息",
   "messages": "消息",
+  "conversationListLoadingTitle": "正在加载好友列表",
+  "conversationListLoadingSubtitle": "正在加载会话...",
   "inbox": "收件箱",
   "sent": "已发送",
   "draft": "草稿",
@@ -1871,6 +2520,28 @@
   "tellUsAboutYourself": "介绍一下你自己...",
   "noSkillsAddedYet": "还没有添加技能",
   "noInterestsAddedYet": "还没有添加兴趣",
+  "profileNomadJourney": "游民旅程",
+  "profileStartNomadJourney": "开启你的数字游民旅程！",
+  "profileActiveMeetups": "活跃 Meetup",
+  "profileMembershipActive": "有效",
+  "profileMembershipExpired": "会员已过期",
+  "profileUnlimitedAi": "AI 不限量",
+  "profileAiUsageLeft": "AI：剩余 {remaining}/{total}",
+  "@profileAiUsageLeft": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileCurrentlyHere": "当前在这里",
+  "profileRecentTrip": "最近旅程",
+  "profileDayUnit": "天",
+  "profileDayUnitPlural": "天",
+  "profileTravelPlansEmptySubtitle": "从城市详情页生成 AI 旅行计划",
   "addSkill": "添加技能",
   "addInterest": "添加兴趣",
   "enterSkillName": "输入技能名称",
@@ -1917,7 +2588,7 @@
   },
   "upgradeToUnlock": "升级以解锁更多功能",
   "selectPaymentMethod": "选择支付方式",
-  "upgradeTo": "升级到 {planName} - ${price}/年",
+  "upgradeTo": "升级到 {planName} - ¥{price}",
   "@upgradeTo": {
     "placeholders": {
       "planName": {
@@ -1932,8 +2603,8 @@
   "paypalDescription": "快捷安全的国际支付",
   "wechatPayment": "微信支付",
   "wechatDescription": "使用微信支付",
-  "alipayPayment": "支付宝",
-  "alipayDescription": "使用支付宝支付",
+  "qqLogin": "QQ登录",
+  "qqDescription": "使用 QQ 账号登录",
   "securePayment": "安全支付",
   "allPaymentsSecure": "所有支付均安全处理，可随时取消。",
   "allPaymentsEncrypted": "所有支付均安全加密",
@@ -1943,10 +2614,20 @@
   "selectPlanLabel": "选择计划",
   "popular": "热门",
   "perYear": "/年",
+  "billingMonthly": "月付",
+  "billingYearly": "年付",
+  "saveAmount": "省 ¥{amount}",
+  "@saveAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "alreadyHavePlan": "您已拥有此计划或更高级别的计划",
   "creatingPaypalOrder": "正在创建 PayPal 订单...",
   "creatingWechatOrder": "正在创建微信支付订单...",
-  "creatingAlipayOrder": "正在创建支付宝订单...",
+  "qqAuthInProgress": "正在进行 QQ 授权...",
   "priceForPlan": "${price} - {planName}",
   "@priceForPlan": {
     "placeholders": {
@@ -1981,10 +2662,10 @@
   "openingPaypal": "正在打开 PayPal 支付...",
   "failedToCreateOrder": "创建支付订单失败",
   "wechatNotInstalled": "请安装微信以使用微信支付",
-  "alipayNotInstalled": "请安装支付宝以使用支付宝支付",
+  "qqNotInstalled": "请安装 QQ 以使用 QQ 登录",
   "paymentSuccessful": "支付成功！",
   "wechatPayFailed": "微信支付失败",
-  "alipayPayFailed": "支付宝支付失败",
+  "qqLoginFailed": "QQ 登录失败",
   "wechatPayError": "微信支付错误：{error}",
   "@wechatPayError": {
     "placeholders": {
@@ -1993,8 +2674,8 @@
       }
     }
   },
-  "alipayError": "支付宝错误：{error}",
-  "@alipayError": {
+  "qqError": "QQ 错误：{error}",
+  "@qqError": {
     "placeholders": {
       "error": {
         "type": "String"
@@ -2135,7 +2816,750 @@
   "moderatorTransfer": "版主转让",
   "accept": "接受",
   "decline": "拒绝",
-  "from": "来自"
+  "from": "来自",
+
+  "privacyPolicyIntro": "欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：",
+  "privacyDataCollection": "数据收集",
+  "privacyDataCollectionDesc": "我们会收集您的行为数据（如浏览记录、搜索偏好、功能使用频率等），以便优化产品体验和个性化推荐。",
+  "privacyLocationData": "位置信息",
+  "privacyLocationDataDesc": "我们会收集您的位置数据，用于提供城市推荐、附近的共享办公空间和活动信息、以及旅行足迹记录等功能。",
+  "privacyPersonalData": "个人信息",
+  "privacyPersonalDataDesc": "我们会收集您的基本个人信息（如昵称、头像、联系方式等），用于账号管理和社交功能。",
+  "privacyDataProtection": "数据保护",
+  "privacyDataProtectionDesc": "我们承诺采用行业标准的安全措施保护您的个人数据，不会将您的数据出售给第三方。您可以随时在\u201c设置\u201d中管理您的隐私偏好。",
+  "privacyPolicyNote": "如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的隐私政策。",
+  "agreeAndContinue": "同意并继续",
+  "disagreeAndExit": "不同意并退出",
+  "viewFullTerms": "查看完整的",
+  "and": " 和 ",
+  "thirdPartyServices": "第三方服务",
+  "thirdPartyServicesDesc": "为实现相关功能，本应用集成了以下第三方服务SDK：\n• 高德地图SDK — 地图显示和定位服务\n• 微信OpenSDK — 微信登录和分享\n• QQ 互联SDK — QQ 登录和分享\n• 腾讯云IM SDK — 即时通信服务\n• Google Location — 海外定位服务\n上述第三方SDK可能会按照其各自的隐私政策收集必要信息。",
+  "permissionUsage": "权限使用说明",
+  "permissionUsageDesc": "本应用使用以下权限：\n• 位置权限 — 城市推荐、附近活动、旅行足迹\n• 日历权限 — 将活动添加到日历\n• 通知权限 — 消息提醒和活动通知\n所有权限均在使用对应功能时才会申请，您可随时在系统设置中管理。",
+  "privacyDeclineTitle": "温馨提示",
+  "privacyDeclineMessage": "如果您不同意隐私政策，将无法使用本应用的相关功能。\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。\n\n您确定不同意吗？",
+  "reconsider": "再想想",
+  "confirmExit": "确认退出",
+  "reportSubmitted": "举报已提交",
+  "reportSubmittedDesc": "感谢您的反馈，我们将尽快处理。",
+  "reportReasonSpam": "垃圾信息/广告",
+  "reportReasonHarassment": "骚扰/欺凌",
+  "reportReasonInappropriate": "不当内容",
+  "reportReasonFraud": "欺诈/虚假信息",
+  "reportReasonViolence": "暴力/危险行为",
+  "reportReasonOther": "其他原因",
+  "reportUser": "举报用户",
+  "reportContent": "举报内容",
+  "reportFailed": "举报提交失败",
+  "reportFailedDesc": "网络异常，请稍后重试。",
+
+  "helpAndSupport": "帮助与客服",
+  "helpAndSupportDesc": "如有任何问题或建议，请随时联系我们",
+  "customerServiceEmail": "客服邮箱",
+  "customerServiceEmailDesc": "我们将在 1-2 个工作日内回复您的邮件",
+  "emailCopied": "邮箱地址已复制",
+  "sendEmail": "发送邮件",
+  "commonQuestions": "常见问题",
+  "faqPayment": "付费相关问题",
+  "faqPaymentAnswer": "如您在付费过程中遇到问题，如支付失败、订单异常等，请通过客服邮箱联系我们，并附上您的订单信息，我们会尽快为您处理。",
+  "faqAccount": "账号相关问题",
+  "faqAccountAnswer": "如遇到账号登录、密码找回、账号注销等问题，请通过客服邮箱联系我们，并提供您的注册信息以便核实。",
+  "faqFeedback": "功能建议与反馈",
+  "faqFeedbackAnswer": "我们非常重视用户的意见与建议，如您有任何产品改进建议，欢迎通过客服邮箱告诉我们。",
+  "serviceHours": "服务时间",
+  "serviceHoursDesc": "工作日 9:00 - 18:00（北京时间）",
+  "aiChatServiceUnavailable": "AI 服务暂时不可用，请稍后重试",
+  "aiChatResponseError": "AI 返回错误",
+  "aiChatFailed": "AI Chat 失败",
+  "aiChatDefaultConversationTitle": "Nomads AI 助手",
+  "aiChatSystemPrompt": "你是 Go Nomads 的 AI 助手，请为数字游民提供简洁且可执行的旅行建议。",
+  "aiChatCreateConversationFailed": "暂时无法创建 AI 对话",
+  "aiChatLoadHistoryFailed": "加载历史对话失败",
+  "aiChatSwitchBlockedWhileStreaming": "正在生成回复，请稍后再切换对话",
+  "aiChatSwitchConversationFailed": "切换对话失败，请稍后重试",
+  "aiChatThinking": "AI 正在思考...",
+  "aiChatRequestTimeout": "请求超时，请稍后重试",
+  "aiChatReplyUnavailable": "暂时无法获取 AI 回复，请稍后重试",
+  "aiChatSendFailed": "AI Chat 发送失败",
+  "aiChatNoReplyYet": "暂时未收到 AI 回复，请稍后重试",
+  "aiChatUntitledConversation": "未命名对话",
+  "manageReviewsDeleteConfirmTitle": "确认删除",
+  "manageReviewsDeleteConfirmMessage": "确定要删除这条评论吗？此操作可以恢复。",
+  "manageReviewsPageTitle": "{cityName} - 评论管理",
+  "@manageReviewsPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "manageReviewsNoData": "暂无评论数据",
+  "manageReviewsAddFirstReview": "添加第一条评论",
+  "manageReviewsLoadedAll": "已加载全部 {count} 条评论",
+  "@manageReviewsLoadedAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "travelPlanUnableToLoad": "无法加载旅行计划",
+  "travelPlanLoadFailedWithError": "加载失败: {error}",
+  "@travelPlanLoadFailedWithError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "travelPlanGenerateErrorWithError": "错误: {error}",
+  "@travelPlanGenerateErrorWithError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "travelPlanGeneratedSuccess": "旅行计划生成成功！",
+  "travelPlanGenerateFailedWithError": "生成失败: {error}",
+  "@travelPlanGenerateFailedWithError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "travelPlanNotReadyWarning": "计划还未生成完成",
+  "aiChatCodeCopied": "代码已复制",
+  "aiChatCodeCopiedToClipboard": "代码已复制到剪贴板",
+  "aiChatInputHint": "问路、问签证、生成行程，都可以直接开聊…",
+  "aiChatEmptyHint": "还没有对话，向 AI 提问试试",
+  "aiChatStartConversation": "开始对话",
+  "prosConsAddPageTitle": "{cityName} - 添加乐趣",
+  "@prosConsAddPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "prosConsAddProsHint": "分享这个城市的优点...",
+  "prosConsAddConsHint": "分享这个城市的挑战...",
+  "manageProsConsPageTitle": "{cityName} - 优缺点管理",
+  "@manageProsConsPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "cityDetailGeneratingNearbyCitiesTitle": "AI 正在生成附近城市",
+  "cityDetailNearbyCitiesGeneratedSuccess": "附近城市生成成功!",
+  "guideTabAiGenerate": "AI 生成",
+  "guideTabAiGenerateGuide": "AI 生成指南",
+  "registerCodeSentToEmail": "验证码已发送到邮箱，请查收",
+  "registerSendCodeFailedRetry": "发送验证码失败，请稍后重试",
+  "registerFailedTitle": "注册失败",
+  "registerFailedCheckInput": "注册失败,请检查输入信息",
+  "registerFailedProcessError": "注册过程中发生错误，请稍后重试",
+  "conversationDeleteTitle": "删除会话",
+  "conversationDeleteMessage": "确定要删除这个会话吗？聊天记录将被清除。",
+  "coworkingDetailUserComments": "用户评论",
+  "coworkingDetailPostComment": "发表评论",
+  "coworkingDetailViewMoreComments": "查看更多评论",
+  "coworkingDetailNoComments": "暂无评论",
+  "coworkingDetailBeFirstCommenter": "成为第一个发表评论的人",
+  "editSkillsTitle": "编辑技能",
+  "editSkillsAddCustomSkill": "添加自定义技能",
+  "editInterestsTitle": "编辑兴趣",
+  "editInterestsAddCustomInterest": "添加自定义兴趣",
+  "prosConsNoProsTitle": "还没有优点",
+  "prosConsNoProsSubtitle": "分享你在这座城市的美好体验",
+  "prosConsAddPros": "添加优点",
+  "prosConsNoConsTitle": "还没有挑战",
+  "prosConsNoConsSubtitle": "分享你遇到的困难和需要改进的地方",
+  "prosConsAddCons": "添加挑战",
+  "profilePleaseLoginToView": "请先登录以查看你的资料",
+  "profilePleaseLoginAgain": "请重新登录",
+  "profileLogoutSuccessMessage": "你已成功退出登录",
+  "profileLogoutSuccessTitle": "退出成功",
+  "profileLogoutErrorMessage": "退出登录时发生错误",
+  "coworkingDetailDeleteConfirmTitle": "删除确认",
+  "coworkingDetailDeleteConfirmMessage": "确定要删除 \"{name}\" 吗？此操作不可撤销。",
+  "@coworkingDetailDeleteConfirmMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "loginPhoneAction": "点击登录/注册",
+  "amapGlobalMapOnlyMobile": "地图仅支持 iOS 和 Android 平台",
+  "amapGlobalTitle": "全球游民",
+  "amapGlobalByRegion": "按地区",
+  "neighborhoodsDiscoverNearbyHint": "发现 100 公里内的 4 个相邻城市",
+  "neighborhoodsGenerateNearbyCities": "AI 生成附近城市",
+  "neighborhoodsLoadedFromBackend": "☁️ 从后端加载",
+  "aiChatHistoryTooltip": "历史对话",
+  "aiChatLoadingHistoryTitle": "加载历史对话...",
+  "aiChatNoHistoryStartNew": "暂无历史对话，直接开始新对话吧",
+  "aiChatHistoryTitle": "历史对话",
+  "manageCostPageTitle": "{cityName} - 费用管理",
+  "@manageCostPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "manageCostNoData": "暂无费用数据",
+  "manageCostAddFirst": "添加第一条费用",
+  "skillsInterestsTitle": "选择技能与兴趣",
+  "skillsInterestsSelected": "已选择",
+  "skillsInterestsSummary": "技能 {skillsCount}/10  ·  兴趣 {interestsCount}/15",
+  "@skillsInterestsSummary": {
+    "placeholders": {
+      "skillsCount": {
+        "type": "int"
+      },
+      "interestsCount": {
+        "type": "int"
+      }
+    }
+  },
+  "roomTypePreviewToast": "房型: {name}",
+  "@roomTypePreviewToast": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "roomTypeBookingToast": "预订 {name}",
+  "@roomTypeBookingToast": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "applyModeratorSubmitSuccess": "申请已提交，请等待管理员审核",
+  "applyModeratorReasonHint": "请说明您申请成为版主的原因，以及您能为社区带来什么...",
+  "addCoworkingImageCount": "{count}/{max}",
+  "@addCoworkingImageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "addCoworkingMaxImages": "最多上传 {max} 张图片",
+  "@addCoworkingMaxImages": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "loginFacebookComingSoon": "Facebook 登录即将推出",
+  "assignModeratorPageTitle": "{cityName} - 指定版主",
+  "@assignModeratorPageTitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+
+  "homeAiCopilotTitle": "AI 智能助手",
+  "homeAiCopilotBeta": "测试版",
+  "homeAiCopilotDescription": "智能问路 · 行程规划 · 旅行攻略",
+  "moderatorAssigned": "已指定版主",
+  "moderatorPending": "待指定版主",
+  "searchResultsFor": "搜索结果：",
+  "citiesFoundCount": "找到 {count} 个城市",
+  "@citiesFoundCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tryDifferentKeyword": "请尝试使用其他关键词搜索",
+  "startExploringCities": "添加第一个城市，开始探索之旅",
+  "meetupLoadFailed": "活动加载失败",
+  "meetupLoadFailedDescription": "请检查网络连接后重试",
+  "noMeetupsDescription": "成为第一个创建活动的人\n与同城数字游民一起社交吧",
+  "imageLoadFailed": "图片加载失败",
+  "meetupStatusCancelled": "已取消",
+  "meetupEventCancelled": "活动已取消",
+  "meetupStatusEnded": "已结束",
+  "meetupEventEnded": "活动已结束",
+  "leave": "退出",
+  "pleaseLoginBeforeAction": "请先登录后再{action}",
+  "@pleaseLoginBeforeAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "loginCheckFailed": "无法检查登录状态",
+  "meetupUpdatedSuccess": "活动更新成功！",
+  "meetupCreateFailed": "创建活动失败：{error}",
+  "@meetupCreateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "meetupUpdateFailed": "更新活动失败：{error}",
+  "@meetupUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rsvpSuccess": "报名成功！",
+  "rsvpFailed": "报名失败：{error}",
+  "@rsvpFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "rsvpCancelledSuccess": "已取消报名",
+  "rsvpCancelFailed": "取消报名失败：{error}",
+  "@rsvpCancelFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "meetupCancelledSuccess": "活动已取消",
+  "meetupCancelFailed": "取消活动失败：{error}",
+  "@meetupCancelFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteSentSuccess": "邀请已发送",
+  "spotsLeftCount": "剩余 {count}",
+  "@spotsLeftCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emailLogin": "邮箱登录",
+  "phoneLogin": "手机登录",
+  "clickToLoginOrRegister": "点击登录/注册",
+  "wechat": "微信",
+  "letsGo": "Let's Go",
+  "joinNomadsCount": "加入 38,000+ 游牧者",
+  "livingAndWorkingWorldwide": "在全球各地生活和工作",
+  "meetupsPerYear": "363 场聚会/年",
+  "messagesCount": "15k+ 消息",
+  "citiesCount": "100+ 城市",
+  "verificationCodeRequired": "请输入验证码",
+  "verificationCodeLength": "验证码必须为6位",
+  "sendFailed": "发送失败",
+  "sampleDataPreview": "示例数据预览",
+  "sampleDataPreviewDescription": "您当前查看的是示例用户资料。登录后可查看您的真实个人信息。",
+  "goToLogin": "去登录",
+  "userCancelledAuth": "用户取消授权",
+  "wechatNotInstalled": "请先安装微信客户端",
+  "wechatNotDetected": "未检测到微信",
+  "qqNotInstalled": "请先安装 QQ 客户端",
+  "qqNotDetected": "未检测到 QQ",
+  "socialLoginFailed": "社交登录失败: {error}",
+  "@socialLoginFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "loggedOut": "已退出登录",
+  "userProfileUpdated": "用户资料已更新",
+  "allNotifications": "全部",
+  "unread": "未读",
+  "read": "已读",
+  "markAllAsRead": "全部标记为已读",
+  "noNotifications": "暂无通知",
+  "noReadNotifications": "暂无已读通知",
+  "noUnreadNotifications": "暂无未读通知",
+  "cancelled": "已取消",
+  "ended": "已结束",
+  "cancelMeetup": "取消活动",
+  "eventCancelled": "活动已取消",
+  "eventEnded": "活动已结束",
+  "cancelledTab": "已取消",
+  "joinMeetupsHint": "参加一些活动来认识新朋友吧！",
+  "noPastMeetupsHint": "还没有参加过任何活动",
+  "noCancelledMeetups": "暂无已取消的活动",
+  "cancelledMeetupHistory": "这里会显示你取消参与的活动记录",
+  "noUpcomingMeetupsHint": "目前没有即将举行的活动",
+  "attendeesSpotsInfo": "{current}/{max} 参与者 · 剩余 {remaining} 个名额",
+  "@attendeesSpotsInfo": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "max": { "type": "String" },
+      "remaining": { "type": "String" }
+    }
+  },
+  "nomadMeetupShare": "{title} - 数字游民聚会",
+  "@nomadMeetupShare": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "shareTime": "📅 时间: {time}",
+  "@shareTime": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "shareVenue": "📍 地点: {venue}",
+  "@shareVenue": {
+    "placeholders": {
+      "venue": { "type": "String" }
+    }
+  },
+  "shareOrganizer": "👥 组织者: {name}",
+  "@shareOrganizer": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "chatRoom": "聊天室",
+  "connecting": "正在连接",
+  "noChatRooms": "暂无聊天室",
+  "onlineCount": "{count} 人在线",
+  "@onlineCount": { "placeholders": { "count": { "type": "String" } } },
+  "justNow": "刚刚",
+  "minutesAgo": "{count}分钟前",
+  "@minutesAgo": { "placeholders": { "count": { "type": "String" } } },
+  "hoursAgo": "{count}小时前",
+  "@hoursAgo": { "placeholders": { "count": { "type": "String" } } },
+  "daysAgo": "{count}天前",
+  "@daysAgo": { "placeholders": { "count": { "type": "String" } } },
+  "startChatting": "开始聊天吧",
+  "replyTo": "回复 {name}",
+  "@replyTo": { "placeholders": { "name": { "type": "String" } } },
+  "groupMembers": "群成员 ({count})",
+  "@groupMembers": { "placeholders": { "count": { "type": "String" } } },
+  "noMembers": "暂无成员",
+  "owner": "群主",
+  "admin": "管理员",
+  "online": "在线",
+  "uploadFailed": "上传失败",
+  "storageServiceError": "存储服务错误",
+  "pleaseReLogin": "请重新登录",
+  "pleaseRestartApp": "请重启应用",
+  "networkError": "网络错误",
+  "uploading": "上传中...",
+  "uploadFailedRetry": "上传失败，请重试",
+  "yesterday": "昨天",
+  "weekDaySun": "周日",
+  "weekDayMon": "周一",
+  "weekDayTue": "周二",
+  "weekDayWed": "周三",
+  "weekDayThu": "周四",
+  "weekDayFri": "周五",
+  "weekDaySat": "周六",
+  "unknownFile": "未知文件",
+  "location": "位置",
+  "searchButton": "搜索",
+  "searchFoundMessages": "找到 {count} 条包含\"{keyword}\"的消息",
+  "@searchFoundMessages": { "placeholders": { "count": { "type": "String" }, "keyword": { "type": "String" } } },
+  "searching": "搜索中...",
+  "searchChatHistory": "输入关键词搜索聊天记录",
+  "searchNotFound": "未找到包含\"{keyword}\"的消息",
+  "@searchNotFound": { "placeholders": { "keyword": { "type": "String" } } },
+  "tryOtherKeywords": "试试其他关键词？",
+  "loadMoreResults": "加载更多结果",
+  "resetZoom": "重置缩放",
+  "cannotLoadImage": "无法加载图片",
+
+  "joinChatRoomFailed": "加入聊天室失败: {error}",
+  "@joinChatRoomFailed": { "placeholders": { "error": { "type": "String" } } },
+  "joinDirectChatFailed": "加入私聊失败: {error}",
+  "@joinDirectChatFailed": { "placeholders": { "error": { "type": "String" } } },
+  "createDirectChatFailed": "创建私聊失败: {error}",
+  "@createDirectChatFailed": { "placeholders": { "error": { "type": "String" } } },
+  "directChatInitFailed": "私聊初始化失败: {error}",
+  "@directChatInitFailed": { "placeholders": { "error": { "type": "String" } } },
+  "leaveChatRoomFailed": "离开聊天室失败: {error}",
+  "@leaveChatRoomFailed": { "placeholders": { "error": { "type": "String" } } },
+  "loadMessagesFailed": "加载消息失败: {error}",
+  "@loadMessagesFailed": { "placeholders": { "error": { "type": "String" } } },
+  "sendMessageFailed": "发送消息失败: {error}",
+  "@sendMessageFailed": { "placeholders": { "error": { "type": "String" } } },
+  "messageDeleted": "消息已删除",
+  "deleteMessageFailed": "删除消息失败: {error}",
+  "@deleteMessageFailed": { "placeholders": { "error": { "type": "String" } } },
+
+  "loadFailedTitle": "加载失败",
+  "addedToFavorites": "已添加到收藏",
+  "removedFromFavorites": "已取消收藏",
+  "successTitle": "成功",
+  "operationFailed": "操作失败",
+  "deleteFailed": "删除失败: {error}",
+  "@deleteFailed": { "placeholders": { "error": { "type": "String" } } },
+  "loadRatingFailed": "加载评分信息失败: {error}",
+  "@loadRatingFailed": { "placeholders": { "error": { "type": "String" } } },
+  "submitRatingFailed": "提交评分失败",
+  "ratingItemCreated": "评分项创建成功",
+  "createRatingItemFailed": "创建评分项失败: {error}",
+  "@createRatingItemFailed": { "placeholders": { "error": { "type": "String" } } },
+  "ratingItemDeleted": "评分项删除成功",
+  "deleteRatingItemFailed": "删除评分项失败: {error}",
+  "@deleteRatingItemFailed": { "placeholders": { "error": { "type": "String" } } },
+  "imageGenFailed": "图片生成失败",
+  "imageGenComplete": "图片生成完成",
+  "cityImageUpdated": "{city} 的图片已更新",
+  "@cityImageUpdated": { "placeholders": { "city": { "type": "String" } } },
+  "imageGenTimeout": "图片生成超时，请稍后刷新页面查看",
+  "genTimeout": "生成超时",
+  "removeSkillFailed": "移除技能失败",
+  "removeInterestFailed": "移除兴趣失败",
+  "partialDataLoadFailed": "部分数据加载失败",
+  "loadAnswersFailed": "加载答案失败: {error}",
+  "@loadAnswersFailed": { "placeholders": { "error": { "type": "String" } } },
+  "operationFailedWithError": "操作失败: {error}",
+  "@operationFailedWithError": { "placeholders": { "error": { "type": "String" } } },
+
+  "deleteEntity": "删除{entity}",
+  "@deleteEntity": { "placeholders": { "entity": { "type": "String" } } },
+  "confirmDelete": "确认删除",
+  "confirmDeleteMessage": "确定要删除这个{entity}吗？此操作不可撤销。",
+  "@confirmDeleteMessage": { "placeholders": { "entity": { "type": "String" } } },
+  "cancel": "取消",
+  "delete": "删除",
+  "entityDeleted": "{entity}已删除",
+  "@entityDeleted": { "placeholders": { "entity": { "type": "String" } } },
+  "deleteFailedWithError": "删除失败: {error}",
+  "@deleteFailedWithError": { "placeholders": { "error": { "type": "String" } } },
+
+  "selectImageFailed": "选择图片失败: {error}",
+  "@selectImageFailed": { "placeholders": { "error": { "type": "String" } } },
+  "selectFileFailed": "选择文件失败: {error}",
+  "@selectFileFailed": { "placeholders": { "error": { "type": "String" } } },
+  "photo": "照片",
+  "camera": "拍摄",
+  "file": "文件",
+
+  "allowMicPermission": "请允许录音权限",
+  "recordingFailed": "录音失败: {error}",
+  "@recordingFailed": { "placeholders": { "error": { "type": "String" } } },
+  "talkTooShort": "说话时间太短",
+  "recordingCancelled": "已取消",
+  "holdToTalk": "按住 说话",
+  "releaseToCancel": "松开取消",
+  "cancelRecording": "取消",
+  "holdButtonToRecord": "按住下方按钮开始录音",
+  "releaseToCancelSend": "松开手指，取消发送",
+  "swipeUpToCancel": "上滑取消",
+  "recording": "正在录音...",
+
+  "interestLevelTitle": "喜爱程度",
+  "confirm": "确定",
+  "interestLevelCasual": "一般",
+  "interestLevelLike": "喜欢",
+  "interestLevelPassionate": "热爱",
+  "searchInterests": "搜索兴趣爱好...",
+  "allCategories": "全部",
+  "selected": "已选择",
+  "noInterests": "暂无兴趣",
+  "noMatchingInterests": "未找到匹配的兴趣",
+  "categoryFitness": "运动健身",
+  "categoryArtCulture": "艺术文化",
+  "categoryCooking": "美食烹饪",
+  "categoryTravel": "旅行探险",
+  "categoryTech": "科技数码",
+  "categoryReading": "阅读学习",
+  "categoryMusic": "音乐娱乐",
+  "categorySocial": "社交公益",
+  "maxInterestsReached": "最多只能选择 {count} 个兴趣",
+  "@maxInterestsReached": { "placeholders": { "count": { "type": "String" } } },
+  "cannotLoadInterests": "无法加载兴趣列表，请稍后重试",
+
+  "proficiencyTitle": "熟练度",
+  "experienceYears": "经验年限",
+  "lessThanOneYear": "少于1年",
+  "yearsCount": "{count}年",
+  "@yearsCount": { "placeholders": { "count": { "type": "String" } } },
+  "beginner": "初学者",
+  "intermediate": "中级",
+  "advanced": "高级",
+  "expert": "专家",
+  "searchSkills": "搜索技能...",
+  "noSkills": "暂无技能",
+  "noMatchingSkills": "未找到匹配的技能",
+  "categoryProgramming": "编程开发",
+  "categoryDesign": "设计创意",
+  "categoryMarketing": "营销商务",
+  "categoryLanguage": "语言能力",
+  "categoryDataAnalysis": "数据分析",
+  "categoryProjectMgmt": "项目管理",
+  "categoryOther": "其他技能",
+  "maxSkillsReached": "最多只能选择 {count} 个技能",
+  "@maxSkillsReached": { "placeholders": { "count": { "type": "String" } } },
+
+  "shareToWechat": "分享到微信",
+  "shareToQQ": "分享到QQ",
+  "shareTo": "分享到",
+  "qqFriends": "QQ好友",
+  "qqZone": "QQ空间",
+  "wechatFriends": "微信好友",
+  "moments": "朋友圈",
+  "copyLink": "复制链接",
+  "systemShare": "系统分享",
+  "email": "邮件",
+  "weibo": "微博",
+  "wechatNotInstalledSystemShare": "微信未安装，已使用系统分享",
+  "linkCopied": "链接已复制",
+  "cannotOpenShareLink": "无法打开分享链接",
+  "shareFailedWithError": "分享失败: {error}",
+  "@shareFailedWithError": { "placeholders": { "error": { "type": "String" } } },
+
+  "confirmApprove": "确认通过",
+  "confirmApproveMessage": "确定要通过{name}的版主申请吗？",
+  "@confirmApproveMessage": { "placeholders": { "name": { "type": "String" } } },
+  "rejectApplication": "拒绝申请",
+  "confirmRejectMessage": "确定要拒绝{name}的版主申请吗？",
+  "@confirmRejectMessage": { "placeholders": { "name": { "type": "String" } } },
+  "rejectReasonOptional": "拒绝原因（可选）",
+  "enterRejectReason": "请输入拒绝原因...",
+  "confirmReject": "确认拒绝",
+  "confirmRevoke": "确认撤销",
+  "confirmRevokeMessage": "确定要撤销{name}的版主资格吗？",
+  "@confirmRevokeMessage": { "placeholders": { "name": { "type": "String" } } },
+  "moderatorRevoked": "已撤销版主资格",
+  "revokeFailed": "撤销失败: {error}",
+  "@revokeFailed": { "placeholders": { "error": { "type": "String" } } },
+  "applicationApproved": "已通过申请",
+  "applicationRejected": "已拒绝申请",
+  "moderatorApplicationDetail": "版主申请详情",
+  "applicationNotExists": "申请不存在",
+  "applicationTime": "申请时间: {time}",
+  "@applicationTime": { "placeholders": { "time": { "type": "String" } } },
+  "processTime": "处理时间: {time}",
+  "@processTime": { "placeholders": { "time": { "type": "String" } } },
+  "applicantInfo": "申请人信息",
+  "unknownUser": "未知用户",
+  "applicationCity": "申请管理的城市",
+  "unknownCity": "未知城市",
+  "applicationReason": "申请理由",
+  "noReasonProvided": "未填写申请理由",
+  "rejectReason": "拒绝原因",
+  "reject": "拒绝",
+  "approve": "通过",
+  "revokeModeratorStatus": "撤销版主资格",
+
+  "visitedPlaces": "访问过的地方",
+  "placesCount": "{count} 个地方",
+  "@placesCount": { "placeholders": { "count": { "type": "String" } } },
+  "highlightsCount": "{count} 个亮点",
+  "@highlightsCount": { "placeholders": { "count": { "type": "String" } } },
+  "noDateInfo": "无日期信息",
+  "present": "至今",
+  "noVisitedPlacesYet": "暂无访问记录",
+  "visitedPlacesHint": "停留超过40分钟的地方会显示在这里",
+  "unknownPlace": "未知地点",
+  "duration": "时长",
+  "arrival": "到达",
+  "departure": "离开",
+  "address": "地址",
+  "notes": "备注",
+  "mapViewComingSoon": "地图视图即将上线",
+  "viewOnMap": "在地图上查看",
+  "addNotes": "添加备注",
+
+  "nomadFriendly": "数字游民友好",
+  "coworkingSpace": "配套共享空间",
+  "ratingExcellent": "极好",
+  "ratingVeryGood": "很好",
+  "ratingGood": "不错",
+  "ratingAverage": "一般",
+  "ratingPoor": "较差",
+  "priceLabel": "价格",
+  "perNight": "/晚",
+  "longStayDiscount": "长住优惠",
+  "nomadFeatures": "数字游民特性",
+  "workDesk": "工作桌",
+  "available": "有",
+  "coworkingSpaceIncluded": "配套",
+  "airConditioning": "空调",
+  "facilities": "设施服务",
+  "contactInfo": "联系方式",
+  "phone": "电话",
+  "emailLabel": "邮箱",
+  "website": "网站",
+  "roomTypes": "房型 ({count})",
+  "@roomTypes": { "placeholders": { "count": { "type": "String" } } },
+  "writeReview": "写评论",
+  "directions": "路线导航",
+  "visitWebsite": "访问网站",
+  "roomTypeList": "房型列表",
+  "soldOut": "已满",
+  "maxOccupancy": "最多{count}人",
+  "@maxOccupancy": { "placeholders": { "count": { "type": "String" } } },
+  "pleaseLoginToReview": "请先登录后再发表评论",
+  "rating": "评分",
+  "reviewTitleOptional": "标题（选填）",
+  "reviewTitleHint": "给您的评论起个标题",
+  "reviewContent": "评论内容",
+  "reviewContentHint": "分享您的入住体验...",
+  "selectRating": "请选择评分",
+  "enterReviewContent": "请输入评论内容",
+  "reviewSubmitSuccess": "评论发表成功！",
+  "submitReview": "提交评论",
+  "reviewSubmitFailed": "评论发表失败",
+  "alreadyReviewed": "您已经评论过这家酒店了",
+  "reviewSubmitFailedRetry": "评论发表失败，请稍后重试",
+  "tapToRate": "点击星星评分",
+  "ratingVeryPoor": "很差",
+  "ratingFair": "较差",
+  "ratingNice": "一般",
+  "ratingGreat": "很好",
+  "ratingExcellentReview": "非常好",
+  "viewAllCount": "查看全部 ({count})",
+  "@viewAllCount": { "placeholders": { "count": { "type": "String" } } },
+  "userReviews": "用户评论",
+  "reviewCount": "{count} 条评论",
+  "@reviewCount": { "placeholders": { "count": { "type": "String" } } },
+  "noReviews": "暂无评论",
+  "beFirstReviewer": "成为第一个评论的人",
+  "loadMoreReviews": "加载更多评论",
+  "helpfulCount": "{count} 人觉得有用",
+  "@helpfulCount": { "placeholders": { "count": { "type": "String" } } },
+  "weeksAgo": "{count}周前",
+  "@weeksAgo": { "placeholders": { "count": { "type": "String" } } },
+  "monthsAgo": "{count}个月前",
+  "@monthsAgo": { "placeholders": { "count": { "type": "String" } } },
+
+  "userNotLoggedIn": "用户未登录",
+  "userInfoUpdated": "用户信息已更新",
+  "errorTitle": "错误",
+  "unauthorizedTitle": "未授权",
+  "networkErrorTitle": "网络错误",
+  "serverErrorTitle": "服务器错误",
+  "validationFailedTitle": "验证失败",
+  "unknownErrorTitle": "未知错误",
+  "removeSkillFailedWithError": "移除技能失败: {error}",
+  "@removeSkillFailedWithError": { "placeholders": { "error": { "type": "String" } } },
+  "removeInterestFailedWithError": "移除兴趣失败: {error}",
+  "@removeInterestFailedWithError": { "placeholders": { "error": { "type": "String" } } },
+  "searchError": "搜索出错: {error}",
+  "@searchError": { "placeholders": { "error": { "type": "String" } } },
+  "loadMoreSearchError": "加载更多搜索结果出错: {error}",
+  "@loadMoreSearchError": { "placeholders": { "error": { "type": "String" } } },
+  "generateImageFailed": "生成图片失败: {error}",
+  "@generateImageFailed": { "placeholders": { "error": { "type": "String" } } },
+  "imageGenFailedDefault": "图片生成失败",
+
+  "moderatorStatusPending": "待审核",
+  "moderatorStatusApproved": "已通过",
+  "moderatorStatusRejected": "已拒绝",
+  "revokePermissionWarning": "此操作将移除该用户在此城市的所有版主权限。",
+
+  "perNightLabel": "每晚",
+  "ratingDescExcellent": "优秀",
+  "ratingDescVeryGood": "很好",
+  "ratingDescGood": "良好",
+  "ratingDescAverage": "一般",
+  "ratingDescPoor": "较差"
 }
 
 

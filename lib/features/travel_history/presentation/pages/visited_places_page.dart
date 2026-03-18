@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/entities/visited_place.dart';
@@ -22,45 +24,36 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       backgroundColor: theme.colorScheme.surfaceContainerLowest,
       appBar: _buildAppBar(theme),
       body: Obx(() {
-        if (controller.isLoading.value && controller.isCityLoading.value) {
-          return const ManageListSkeleton();
-        }
+        final showInitialLoading = controller.isLoading.value && controller.isCityLoading.value;
 
-        if (controller.error.value.isNotEmpty && controller.places.isEmpty) {
-          return _buildErrorView(context, theme);
-        }
+        final content = controller.error.value.isNotEmpty && controller.places.isEmpty
+            ? _buildErrorView(context, theme)
+            : RefreshIndicator(
+                onRefresh: controller.refresh,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _buildCityInfoCard(context, theme),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: 16.h),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildVisitedPlacesHeader(theme),
+                    ),
+                    _buildPlacesListSliver(context, theme),
+                    _buildLoadMoreIndicator(theme),
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: 24.h),
+                    ),
+                  ],
+                ),
+              );
 
-        return RefreshIndicator(
-          onRefresh: controller.refresh,
-          child: CustomScrollView(
-            slivers: [
-              // 城市信息卡片
-              SliverToBoxAdapter(
-                child: _buildCityInfoCard(context, theme),
-              ),
-
-              // 间距
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 16),
-              ),
-
-              // 访问地点列表卡片标题
-              SliverToBoxAdapter(
-                child: _buildVisitedPlacesHeader(theme),
-              ),
-
-              // 访问地点列表（无限滚动）
-              _buildPlacesListSliver(context, theme),
-
-              // 加载更多指示器
-              _buildLoadMoreIndicator(theme),
-
-              // 底部间距
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 24),
-              ),
-            ],
-          ),
+        return AppLoadingSwitcher(
+          isLoading: showInitialLoading,
+          loading: const ManageListSkeleton(),
+          child: content,
         );
       }),
     );
@@ -80,7 +73,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       title: Obx(() => Text(
             controller.tripTitle.value.isNotEmpty ? controller.tripTitle.value : 'Visited Places',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w600,
               color: theme.colorScheme.onSurface,
             ),
@@ -88,7 +81,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       actions: [
         if (controller.places.isNotEmpty)
           IconButton(
-            icon: Icon(FontAwesomeIcons.map, size: 18, color: theme.colorScheme.onSurface),
+            icon: Icon(FontAwesomeIcons.map, size: 18.r, color: theme.colorScheme.onSurface),
             onPressed: () {
               AppToast.info('Map view will be available soon');
             },
@@ -107,11 +100,11 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
         margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
               color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-              blurRadius: 16,
+              blurRadius: 16.r,
               offset: const Offset(0, 4),
             ),
           ],
@@ -121,9 +114,9 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
           children: [
             // 城市图片
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
               child: SizedBox(
-                height: 160,
+                height: 160.h,
                 width: double.infinity,
                 child: _buildCityImage(theme),
               ),
@@ -131,7 +124,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
 
             // 城市信息内容
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -139,20 +132,20 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
                   Text(
                     controller.tripTitle.value.isNotEmpty ? controller.tripTitle.value : 'Unknown City',
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.onSurface,
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
 
                   // 城市实时信息行（天气、评分、花费、Coworking）
                   if (citySummary != null || controller.isCityLoading.value) _buildCityMetrics(theme),
 
                   // 旅行日期和停留时长
                   if (controller.travelDate.value != null || controller.totalDurationDays.value > 0) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12.h),
                     _buildTravelDateInfo(theme),
                   ],
                 ],
@@ -176,7 +169,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
           child: Center(
             child: Icon(
               FontAwesomeIcons.city,
-              size: 48,
+              size: 48.r,
               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
             ),
           ),
@@ -186,7 +179,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
           child: Center(
             child: Icon(
               FontAwesomeIcons.city,
-              size: 48,
+              size: 48.r,
               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
             ),
           ),
@@ -208,7 +201,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       child: Center(
         child: Icon(
           FontAwesomeIcons.city,
-          size: 48,
+          size: 48.r,
           color: Colors.white.withValues(alpha: 0.3),
         ),
       ),
@@ -217,13 +210,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
 
   Widget _buildCityMetrics(ThemeData theme) {
     if (controller.isCityLoading.value && controller.citySummary.value == null) {
-      return const Center(
-        child: SizedBox(
-          height: 20,
-          width: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      );
+      return const Center(child: AppLoadingWidget(fullScreen: false));
     }
 
     final weather = controller.weather.value;
@@ -232,8 +219,8 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
     final coworkingCount = controller.coworkingSpaceCount.value;
 
     return Wrap(
-      spacing: 12,
-      runSpacing: 8,
+      spacing: 12.w,
+      runSpacing: 8.w,
       children: [
         // 温度
         if (weather != null)
@@ -290,20 +277,20 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
     required Color iconColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: iconColor),
-          const SizedBox(width: 6),
+          Icon(icon, size: 12.r, color: iconColor),
+          SizedBox(width: 6.w),
           Text(
             value,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w500,
               color: theme.colorScheme.onSurface,
             ),
@@ -319,39 +306,39 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
     final durationDays = controller.totalDurationDays.value;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
         children: [
           Icon(
             FontAwesomeIcons.calendar,
-            size: 14,
+            size: 14.r,
             color: theme.colorScheme.primary,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               _formatTravelDates(travelDate, lastVisitDate),
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 13.sp,
                 color: theme.colorScheme.onSurface,
               ),
             ),
           ),
           if (durationDays > 0)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Text(
                 '$durationDays days',
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -371,7 +358,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       }
 
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -382,21 +369,21 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
                 Text(
                   'Visited Places',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.onSurface,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
                     '${controller.totalCount.value} places',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.onPrimaryContainer,
                     ),
@@ -405,42 +392,42 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
               ],
             ),
 
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // 统计摘要
             Row(
               children: [
                 Icon(
                   FontAwesomeIcons.clock,
-                  size: 12,
+                  size: 12.r,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4.w),
                 Text(
                   controller.formattedTotalDuration,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Icon(
                   FontAwesomeIcons.solidStar,
-                  size: 12,
+                  size: 12.r,
                   color: const Color(0xFFF59E0B),
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4.w),
                 Text(
                   '${controller.highlightCount.value} highlights',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
           ],
         ),
       );
@@ -488,7 +475,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
       }
 
       return SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
@@ -515,17 +502,8 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
 
       return SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Center(
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
+          padding: EdgeInsets.all(16.w),
+          child: const Center(child: AppLoadingWidget(fullScreen: false)),
         ),
       );
     });
@@ -540,22 +518,22 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
         children: [
           Icon(
             FontAwesomeIcons.circleExclamation,
-            size: 64,
+            size: 64.r,
             color: theme.colorScheme.error.withValues(alpha: 0.6),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             controller.error.value,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.sp,
               color: theme.colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           ElevatedButton.icon(
             onPressed: controller.loadVisitedPlaces,
-            icon: const Icon(FontAwesomeIcons.arrowsRotate, size: 18),
+            icon: Icon(FontAwesomeIcons.arrowsRotate, size: 18.r),
             label: const Text('Retry'),
           ),
         ],
@@ -565,37 +543,37 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
 
   Widget _buildEmptyView(ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.all(32),
+      padding: EdgeInsets.all(32.w),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 100,
-            height: 100,
+            width: 100.w,
+            height: 100.h,
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
               shape: BoxShape.circle,
             ),
             child: Icon(
               FontAwesomeIcons.locationDot,
-              size: 40,
+              size: 40.r,
               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Text(
             'No visited places yet',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
               color: theme.colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             'Places where you stayed for more than 40 minutes will appear here',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 13.sp,
               color: theme.colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
@@ -607,15 +585,15 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
 
   Widget _buildPlaceCard(BuildContext context, ThemeData theme, VisitedPlace place, int index) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Container(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
               color: theme.colorScheme.shadow.withValues(alpha: 0.05),
-              blurRadius: 10,
+              blurRadius: 10.r,
               offset: const Offset(0, 2),
             ),
           ],
@@ -624,17 +602,17 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () => _showPlaceDetails(context, theme, place, index),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Row(
                 children: [
                   // 时间线指示器
                   Column(
                     children: [
                       Container(
-                        width: 12,
-                        height: 12,
+                        width: 12.w,
+                        height: 12.h,
                         decoration: BoxDecoration(
                           color: place.isHighlight ? const Color(0xFFF59E0B) : theme.colorScheme.primary,
                           shape: BoxShape.circle,
@@ -642,29 +620,29 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
                       ),
                       if (index < controller.places.length - 1)
                         Container(
-                          width: 2,
-                          height: 60,
+                          width: 2.w,
+                          height: 60.h,
                           color: theme.colorScheme.outlineVariant,
                         ),
                     ],
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
 
                   // 地点图标
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 48.w,
+                    height: 48.h,
                     decoration: BoxDecoration(
                       color: _getPlaceColor(place.iconType).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(
                       _getPlaceIcon(place.iconType),
                       color: _getPlaceColor(place.iconType),
-                      size: 20,
+                      size: 20.r,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
 
                   // 地点信息
                   Expanded(
@@ -677,7 +655,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
                               child: Text(
                                 place.placeName ?? 'Unknown Place',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   fontWeight: FontWeight.w600,
                                   color: theme.colorScheme.onSurface,
                                 ),
@@ -686,50 +664,50 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
                               ),
                             ),
                             if (place.isHighlight)
-                              const Icon(
+                              Icon(
                                 FontAwesomeIcons.solidStar,
-                                size: 14,
+                                size: 14.r,
                                 color: Color(0xFFF59E0B),
                               ),
                           ],
                         ),
                         if (place.placeType != null) ...[
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             _formatPlaceType(place.placeType!),
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Row(
                           children: [
                             Icon(
                               FontAwesomeIcons.clock,
-                              size: 12,
+                              size: 12.r,
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4.w),
                             Text(
                               _formatTimeRange(place.arrivalTime, place.departureTime),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 12.sp,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(4.r),
                               ),
                               child: Text(
                                 place.formattedDuration,
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 11.sp,
                                   fontWeight: FontWeight.w500,
                                   color: theme.colorScheme.onPrimaryContainer,
                                 ),
@@ -744,7 +722,7 @@ class VisitedPlacesPage extends GetView<VisitedPlacesController> {
                   // 箭头
                   Icon(
                     FontAwesomeIcons.chevronRight,
-                    size: 14,
+                    size: 14.r,
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ],
@@ -850,24 +828,24 @@ class _PlaceDetailsSheet extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // 拖拽手柄
           Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
+            margin: EdgeInsets.only(top: 12.h),
+            width: 40.w,
+            height: 4.h,
             decoration: BoxDecoration(
               color: theme.colorScheme.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.r),
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -878,7 +856,7 @@ class _PlaceDetailsSheet extends StatelessWidget {
                       child: Text(
                         place.placeName ?? 'Unknown Place',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 22.sp,
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onSurface,
                         ),
@@ -895,19 +873,19 @@ class _PlaceDetailsSheet extends StatelessWidget {
                 ),
 
                 if (place.placeType != null) ...[
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     place.placeType!.replaceAll('_', ' ').toUpperCase(),
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
                       color: theme.colorScheme.primary,
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.5.sp,
                     ),
                   ),
                 ],
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 时间信息
                 _buildInfoRow(
@@ -917,7 +895,7 @@ class _PlaceDetailsSheet extends StatelessWidget {
                   value: place.formattedDuration,
                 ),
 
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
                 _buildInfoRow(
                   theme,
@@ -926,7 +904,7 @@ class _PlaceDetailsSheet extends StatelessWidget {
                   value: DateFormat('MMM d, yyyy HH:mm').format(place.arrivalTime),
                 ),
 
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
                 _buildInfoRow(
                   theme,
@@ -936,7 +914,7 @@ class _PlaceDetailsSheet extends StatelessWidget {
                 ),
 
                 if (place.address != null) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   _buildInfoRow(
                     theme,
                     icon: FontAwesomeIcons.locationDot,
@@ -946,26 +924,26 @@ class _PlaceDetailsSheet extends StatelessWidget {
                 ],
 
                 if (place.notes != null && place.notes!.isNotEmpty) ...[
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     'Notes',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     place.notes!,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: theme.colorScheme.onSurface,
                     ),
                   ),
                 ],
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // 操作按钮
                 Row(
@@ -976,18 +954,18 @@ class _PlaceDetailsSheet extends StatelessWidget {
                           // TODO: 在地图中查看
                           AppToast.info('View on map will be available soon');
                         },
-                        icon: const Icon(FontAwesomeIcons.map, size: 16),
+                        icon: Icon(FontAwesomeIcons.map, size: 16.r),
                         label: const Text('View on Map'),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
                           // TODO: 添加备注
                           Navigator.pop(context);
                         },
-                        icon: const Icon(FontAwesomeIcons.pen, size: 16),
+                        icon: Icon(FontAwesomeIcons.pen, size: 16.r),
                         label: const Text('Add Notes'),
                       ),
                     ),
@@ -1015,10 +993,10 @@ class _PlaceDetailsSheet extends StatelessWidget {
       children: [
         Icon(
           icon,
-          size: 16,
+          size: 16.r,
           color: theme.colorScheme.onSurfaceVariant,
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1026,15 +1004,15 @@ class _PlaceDetailsSheet extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                   color: theme.colorScheme.onSurface,
                 ),

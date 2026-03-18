@@ -1,6 +1,8 @@
 /// Hotel Domain Entity - 酒店
 class Hotel {
   final String id;
+  final String source;
+  final String externalStatus;
   final String name;
   final String cityId;
   final String cityName;
@@ -51,6 +53,8 @@ class Hotel {
 
   Hotel({
     required this.id,
+    this.source = 'community',
+    this.externalStatus = 'internal',
     required this.name,
     required this.cityId,
     required this.cityName,
@@ -102,6 +106,11 @@ class Hotel {
   bool get isLuxury => category.toLowerCase() == 'luxury';
   bool get isBudget => category.toLowerCase() == 'budget';
   bool get isHostel => category.toLowerCase() == 'hostel';
+  bool get isBookingHotel => source.toLowerCase() == 'booking';
+  bool get isCommunityHotel => !isBookingHotel;
+  bool get hasExternalDataIssue => externalStatus.toLowerCase() == 'unavailable';
+
+  String get sourceLabel => isBookingHotel ? 'Booking.com' : 'Community';
 
   /// 是否适合数字游民
   bool get isNomadFriendly => hasWifi && (hasWorkDesk || hasCoworkingSpace);

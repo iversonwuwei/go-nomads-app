@@ -9,6 +9,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   geolocator_windows
   record_windows
   share_plus
+  tencent_cloud_chat_sdk
   url_launcher_windows
 )
 

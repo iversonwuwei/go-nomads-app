@@ -1,8 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Innovation List Header Section
 /// 创意项目列表 - 头部区域（创建按钮和标题）
@@ -24,12 +26,12 @@ class InnovationListHeader extends StatelessWidget {
         // Create Project Button
         _buildCreateButton(context, l10n),
 
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // Section Title
         _buildSectionTitle(l10n),
 
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
       ],
     );
   }
@@ -37,7 +39,7 @@ class InnovationListHeader extends StatelessWidget {
   Widget _buildCreateButton(BuildContext context, AppLocalizations l10n) {
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 56.h,
       child: ElevatedButton.icon(
         onPressed: () async {
           debugPrint('🚀 [InnovationListHeader] 打开添加页面...');
@@ -53,11 +55,11 @@ class InnovationListHeader extends StatelessWidget {
             },
           );
         },
-        icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
+        icon: Icon(FontAwesomeIcons.circlePlus, size: 24.r),
         label: Text(
           l10n.createMyInnovation,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -66,7 +68,7 @@ class InnovationListHeader extends StatelessWidget {
           foregroundColor: Colors.white,
           elevation: 2,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
         ),
       ),
@@ -76,16 +78,16 @@ class InnovationListHeader extends StatelessWidget {
   Widget _buildSectionTitle(AppLocalizations l10n) {
     return Row(
       children: [
-        const Icon(
+        Icon(
           FontAwesomeIcons.compass,
           color: Color(0xFF8B5CF6),
-          size: 24,
+          size: 24.r,
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Text(
           l10n.exploreInnovations,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 20.sp,
             fontWeight: FontWeight.bold,
             color: Colors.grey[800],
           ),
@@ -105,21 +107,21 @@ class InnovationListEmptyState extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          const SizedBox(height: 48),
-          Icon(FontAwesomeIcons.lightbulb, size: 64, color: Colors.grey[300]),
-          const SizedBox(height: 16),
+          SizedBox(height: 48.h),
+          Icon(FontAwesomeIcons.lightbulb, size: 64.r, color: Colors.grey[300]),
+          SizedBox(height: 16.h),
           Text(
             '暂无创意项目',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.sp,
               color: Colors.grey[500],
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             '成为第一个分享创意的人吧！',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 14.sp,
               color: Colors.grey[400],
             ),
           ),
@@ -143,20 +145,21 @@ class InnovationListErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FontAwesomeIcons.circleExclamation, size: 48, color: Colors.grey[400]),
-          const SizedBox(height: 16),
+          Icon(FontAwesomeIcons.circleExclamation, size: 48.r, color: Colors.grey[400]),
+          SizedBox(height: 16.h),
           Text(
             errorMessage,
             style: TextStyle(color: Colors.grey[600]),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           ElevatedButton(
             onPressed: onRetry,
-            child: const Text('重试'),
+            child: Text(l10n.retry),
           ),
         ],
       ),
@@ -180,22 +183,20 @@ class InnovationListLoadingIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!hasMore) {
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Center(
           child: Text(
             '已加载全部项目',
-            style: TextStyle(color: Colors.grey[500], fontSize: 14),
+            style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
           ),
         ),
       );
     }
 
     if (isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+      return Padding(
+        padding: EdgeInsets.all(16.w),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
       );
     }
 

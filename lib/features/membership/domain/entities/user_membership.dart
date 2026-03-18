@@ -1,5 +1,24 @@
 import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
 
+/// 计费周期枚举
+enum BillingCycle {
+  monthly,
+  yearly;
+
+  String get label => this == monthly ? '月度' : '年度';
+
+  static BillingCycle fromString(String? value) {
+    if (value == null) return BillingCycle.yearly;
+    switch (value.toLowerCase()) {
+      case 'monthly':
+        return BillingCycle.monthly;
+      case 'yearly':
+      default:
+        return BillingCycle.yearly;
+    }
+  }
+}
+
 /// 用户会员信息实体
 class UserMembership {
   /// 用户ID
@@ -7,6 +26,9 @@ class UserMembership {
 
   /// 会员等级
   final MembershipLevel level;
+
+  /// 计费周期
+  final BillingCycle billingCycle;
 
   /// 会员开始日期
   final DateTime? startDate;
@@ -32,6 +54,7 @@ class UserMembership {
   UserMembership({
     required this.userId,
     required this.level,
+    this.billingCycle = BillingCycle.yearly,
     this.startDate,
     this.expiryDate,
     this.autoRenew = false,
@@ -40,6 +63,12 @@ class UserMembership {
     this.moderatorDeposit,
     this.lastPaymentId,
   });
+
+  /// 是否为月付会员
+  bool get isMonthly => billingCycle == BillingCycle.monthly;
+
+  /// 是否为年付会员
+  bool get isYearly => billingCycle == BillingCycle.yearly;
 
   /// 是否为付费会员
   bool get isPaidMember => level != MembershipLevel.free;
@@ -92,6 +121,7 @@ class UserMembership {
     return UserMembership(
       userId: userId,
       level: MembershipLevel.free,
+      billingCycle: BillingCycle.yearly,
     );
   }
 
@@ -99,6 +129,7 @@ class UserMembership {
   UserMembership copyWith({
     String? userId,
     MembershipLevel? level,
+    BillingCycle? billingCycle,
     DateTime? startDate,
     DateTime? expiryDate,
     bool? autoRenew,
@@ -110,6 +141,7 @@ class UserMembership {
     return UserMembership(
       userId: userId ?? this.userId,
       level: level ?? this.level,
+      billingCycle: billingCycle ?? this.billingCycle,
       startDate: startDate ?? this.startDate,
       expiryDate: expiryDate ?? this.expiryDate,
       autoRenew: autoRenew ?? this.autoRenew,

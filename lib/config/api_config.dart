@@ -43,7 +43,7 @@ class ApiConfig {
   // ============================================================
   // 环境配置
   // ============================================================
-  static const bool kIsProduction = false;
+  static const bool kIsProduction = true;
 
   // ============================================================
   // 部署环境配置
@@ -134,7 +134,7 @@ class ApiConfig {
   }
 
   /// 生产环境基础 URL
-  static String get productionUrl => 'http://$productionHost';
+  static String get productionUrl => 'https://$productionHost';
 
   /// 开发环境基础 URL
   static String get developmentUrl => 'http://$developmentHost:$gatewayPort';
@@ -189,23 +189,21 @@ class ApiConfig {
   static const String authTokenKey = 'auth_token';
   static const String refreshTokenKey = 'refresh_token';
 
-  // 第三方平台配置
-  // 支付宝 AppId，用于唤起和鉴权
-  static const String alipayAppId = '2021006115624759';
-
-  // QQ 互联配置
-  static const String qqAppId = '102822014';
-  static const String qqAppKey = 'Ut68vSr2ye4FJ9j6';
-
   // ============================================================
   // Authentication Endpoints - /api/v1/auth
   // ============================================================
   static const String loginEndpoint = '/auth/login';
   static const String registerEndpoint = '/auth/register';
+  static const String registerSendCodeEndpoint = '/auth/register/send-code';
   static const String logoutEndpoint = '/auth/logout';
   static const String refreshTokenEndpoint = '/auth/refresh';
   static const String changePasswordEndpoint = '/auth/change-password';
+  static const String setPasswordEndpoint = '/auth/set-password';
+  static const String hasPasswordEndpoint = '/auth/has-password';
+  static const String checkEmailEndpoint = '/auth/check-email';
   static const String socialLoginEndpoint = '/auth/social-login';
+  static const String forgotPasswordSendCodeEndpoint = '/auth/forgot-password/send-code';
+  static const String forgotPasswordResetEndpoint = '/auth/forgot-password/reset';
 
   // ============================================================
   // User Endpoints - /api/v1/users
@@ -219,6 +217,11 @@ class ApiConfig {
   static const String userDeleteEndpoint = '/users/{id}';
   static const String userBatchEndpoint = '/users/batch';
   static String get userProfileEndpoint => userMeEndpoint;
+
+  // ============================================================
+  // Legal Endpoints - /api/v1/users/legal
+  // ============================================================
+  static const String legalPrivacyPolicyEndpoint = '/users/legal/privacy-policy';
 
   // 首页相关
   static const String homeDataEndpoint = '/home/data';
@@ -360,12 +363,20 @@ class ApiConfig {
   static const String notificationSendToAdminsEndpoint = '/notifications/admins';
 
   // ============================================================
+  // Report Endpoints - /api/v1/reports
+  // ============================================================
+  static const String reportsEndpoint = '/reports';
+  static const String reportDetailEndpoint = '/reports/{id}';
+  static const String reportMyEndpoint = '/reports/my';
+
+  // ============================================================
   // AI Chat Endpoints - /api/v1/ai
   // ============================================================
   static const String aiConversationsEndpoint = '/ai/conversations';
   static const String aiMessagesEndpoint = '/ai/conversations/{conversationId}/messages';
   static const String aiMessageStreamEndpoint = '/ai/conversations/{conversationId}/messages/stream';
   static const String aiMessageSignalRStreamEndpoint = '/ai/conversations/{conversationId}/messages/signalr-stream';
+  static const String aiOpenClawResearchEndpoint = '/ai/openclaw/research';
 
   // ============================================================
   // Travel History Endpoints - /api/v1/travel-history

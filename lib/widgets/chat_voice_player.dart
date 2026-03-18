@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 语音消息播放器
 ///
@@ -14,12 +15,16 @@ import 'package:path_provider/path_provider.dart';
 class VoicePlayerManager {
   static final VoicePlayerManager _instance = VoicePlayerManager._internal();
   factory VoicePlayerManager() => _instance;
-  VoicePlayerManager._internal();
+  VoicePlayerManager._internal() {
+    _setupPlayerListeners();
+  }
 
   final AudioPlayer _player = AudioPlayer();
   String? _currentPlayingUrl;
   final _playingUrlNotifier = ValueNotifier<String?>(null);
   final _loadingUrlNotifier = ValueNotifier<String?>(null);
+  StreamSubscription? _playerCompleteSubscription;
+  StreamSubscription? _playerStateSubscription;
 
   // 本地缓存目录
   Directory? _cacheDir;
@@ -30,8 +35,30 @@ class VoicePlayerManager {
   ValueNotifier<String?> get playingUrlNotifier => _playingUrlNotifier;
   ValueNotifier<String?> get loadingUrlNotifier => _loadingUrlNotifier;
 
-  bool isPlaying(String url) => _currentPlayingUrl == url;
+  bool isPlaying(String url) => _currentPlayingUrl == url && _playingUrlNotifier.value == url;
   bool isLoading(String url) => _loadingUrlNotifier.value == url;
+
+  /// 设置播放器监听
+  void _setupPlayerListeners() {
+    _playerCompleteSubscription?.cancel();
+    _playerStateSubscription?.cancel();
+
+    _playerCompleteSubscription = _player.onPlayerComplete.listen((_) {
+      debugPrint('🔊 语音播放完成');
+      _currentPlayingUrl = null;
+      _playingUrlNotifier.value = null;
+    });
+
+    _playerStateSubscription = _player.onPlayerStateChanged.listen((state) {
+      debugPrint('🔊 播放器状态变化: $state');
+      if (state == PlayerState.stopped || state == PlayerState.completed) {
+        if (_currentPlayingUrl != null) {
+          _currentPlayingUrl = null;
+          _playingUrlNotifier.value = null;
+        }
+      }
+    });
+  }
 
   /// 初始化缓存目录
   Future<void> _ensureCacheDir() async {
@@ -114,15 +141,11 @@ class VoicePlayerManager {
       _currentPlayingUrl = url;
       _playingUrlNotifier.value = url;
 
+      debugPrint('🔊 开始播放语音: $localPath');
       await _player.play(DeviceFileSource(localPath));
-
-      // 监听播放完成
-      _player.onPlayerComplete.listen((_) {
-        _currentPlayingUrl = null;
-        _playingUrlNotifier.value = null;
-      });
+      debugPrint('🔊 播放命令已发送');
     } catch (e) {
-      debugPrint('播放语音失败: $e');
+      debugPrint('❌ 播放语音失败: $e');
       _currentPlayingUrl = null;
       _playingUrlNotifier.value = null;
       _loadingUrlNotifier.value = null;
@@ -130,6 +153,7 @@ class VoicePlayerManager {
   }
 
   Future<void> stop() async {
+    debugPrint('🔊 停止播放');
     await _player.stop();
     _currentPlayingUrl = null;
     _playingUrlNotifier.value = null;
@@ -151,6 +175,8 @@ class VoicePlayerManager {
   }
 
   void dispose() {
+    _playerCompleteSubscription?.cancel();
+    _playerStateSubscription?.cancel();
     _player.dispose();
   }
 }
@@ -240,14 +266,14 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
       onTap: _togglePlay,
       child: Container(
         width: width,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(widget.isMe ? 16 : 4),
             topRight: Radius.circular(widget.isMe ? 4 : 16),
-            bottomLeft: const Radius.circular(16),
-            bottomRight: const Radius.circular(16),
+            bottomLeft: Radius.circular(16.r),
+            bottomRight: Radius.circular(16.r),
           ),
         ),
         child: Row(
@@ -258,29 +284,29 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
                   Text(
                     '${widget.duration}"',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: contentColor,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   // 波形
                   Expanded(child: _buildWaveform(iconColor, true)),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   // 播放图标
                   _buildPlayIcon(iconColor),
                 ]
               : [
                   // 播放图标
                   _buildPlayIcon(iconColor),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   // 波形
                   Expanded(child: _buildWaveform(iconColor, false)),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   // 时长
                   Text(
                     '${widget.duration}"',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: contentColor,
                     ),
                   ),
@@ -294,7 +320,7 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
     return Icon(
       _isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play,
       color: color,
-      size: 14,
+      size: 14.r,
     );
   }
 
@@ -317,11 +343,11 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
             final animatedHeight = baseHeights[index] + (animValue * 6);
 
             return Container(
-              width: 3,
+              width: 3.w,
               height: animatedHeight.clamp(4.0, 20.0),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(1.5),
+                borderRadius: BorderRadius.circular(1.5.r),
               ),
             );
           }),
@@ -331,7 +357,7 @@ class _ChatVoiceMessageBubbleState extends State<ChatVoiceMessageBubble> with Si
   }
 }
 
-/// 简化版语音消息（仅显示图标和时长）
+/// 简化版语音消息（带音频波形动画和时间显示）
 class ChatVoiceMessageSimple extends StatefulWidget {
   /// 语音URL
   final String voiceUrl;
@@ -363,17 +389,19 @@ class ChatVoiceMessageSimple extends StatefulWidget {
 
 class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with SingleTickerProviderStateMixin {
   final _playerManager = VoicePlayerManager();
-  late AnimationController _animController;
+  late AnimationController _waveController;
   bool _isPlaying = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+    _waveController = AnimationController(
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
     _playerManager.playingUrlNotifier.addListener(_onPlayingChanged);
+    _playerManager.loadingUrlNotifier.addListener(_onLoadingChanged);
   }
 
   void _onPlayingChanged() {
@@ -383,75 +411,169 @@ class _ChatVoiceMessageSimpleState extends State<ChatVoiceMessageSimple> with Si
         _isPlaying = isPlaying;
       });
       if (isPlaying) {
-        _animController.repeat(reverse: true);
+        _waveController.repeat();
       } else {
-        _animController.stop();
-        _animController.reset();
+        _waveController.stop();
+        _waveController.reset();
       }
+    }
+  }
+
+  void _onLoadingChanged() {
+    final isLoading = _playerManager.isLoading(widget.voiceUrl);
+    if (isLoading != _isLoading) {
+      setState(() {
+        _isLoading = isLoading;
+      });
     }
   }
 
   @override
   void dispose() {
     _playerManager.playingUrlNotifier.removeListener(_onPlayingChanged);
-    _animController.dispose();
+    _playerManager.loadingUrlNotifier.removeListener(_onLoadingChanged);
+    _waveController.dispose();
     super.dispose();
   }
 
   void _togglePlay() {
-    _playerManager.play(widget.voiceUrl);
+    if (!_isLoading) {
+      _playerManager.play(widget.voiceUrl);
+    }
+  }
+
+  String _formatDuration(int seconds) {
+    final mins = seconds ~/ 60;
+    final secs = seconds % 60;
+    if (mins > 0) {
+      return '$mins:${secs.toString().padLeft(2, '0')}';
+    }
+    return '0:${secs.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final width = (80 + widget.duration * 3).clamp(80, 160).toDouble();
+    final width = (120 + widget.duration * 5).clamp(140, 220).toDouble();
 
     return GestureDetector(
       onTap: _togglePlay,
-      child: SizedBox(
+      child: Container(
         width: width,
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedBuilder(
-              animation: _animController,
-              builder: (context, child) {
-                return Icon(
-                  _isPlaying ? FontAwesomeIcons.volumeHigh : FontAwesomeIcons.microphone,
-                  color: widget.iconColor.withValues(
-                    alpha: _isPlaying ? (0.5 + _animController.value * 0.5) : 1.0,
-                  ),
-                  size: 16,
-                );
-              },
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(
-                  4,
-                  (index) => Container(
-                    width: 2,
-                    height: [8, 12, 10, 6][index].toDouble(),
-                    decoration: BoxDecoration(
-                      color: widget.iconColor,
-                      borderRadius: BorderRadius.circular(1),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              '${widget.duration}"',
-              style: TextStyle(
-                fontSize: 14,
-                color: widget.textColor,
-              ),
-            ),
-          ],
+          children: widget.isMe ? _buildRightAlignedContent() : _buildLeftAlignedContent(),
         ),
+      ),
+    );
+  }
+
+  /// 左对齐内容（对方消息）
+  List<Widget> _buildLeftAlignedContent() {
+    return [
+      // 播放/暂停按钮
+      _buildPlayButton(),
+      SizedBox(width: 10.w),
+      // 音频波形
+      Expanded(child: _buildWaveform()),
+      SizedBox(width: 10.w),
+      // 时长
+      _buildDuration(),
+    ];
+  }
+
+  /// 右对齐内容（自己消息）
+  List<Widget> _buildRightAlignedContent() {
+    return [
+      // 时长
+      _buildDuration(),
+      SizedBox(width: 10.w),
+      // 音频波形
+      Expanded(child: _buildWaveform()),
+      SizedBox(width: 10.w),
+      // 播放/暂停按钮
+      _buildPlayButton(),
+    ];
+  }
+
+  /// 构建播放按钮
+  Widget _buildPlayButton() {
+    if (_isLoading) {
+      return SizedBox(
+        width: 24.w,
+        height: 24.h,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(widget.iconColor),
+        ),
+      );
+    }
+
+    return Container(
+      width: 32.w,
+      height: 32.h,
+      decoration: BoxDecoration(
+        color: widget.iconColor.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Icon(
+          _isPlaying ? FontAwesomeIcons.pause : FontAwesomeIcons.play,
+          color: widget.iconColor,
+          size: 14.r,
+        ),
+      ),
+    );
+  }
+
+  /// 构建音频波形动画
+  Widget _buildWaveform() {
+    return AnimatedBuilder(
+      animation: _waveController,
+      builder: (context, child) {
+        return SizedBox(
+          height: 24.h,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: List.generate(8, (index) {
+              // 预设的基础高度模式（模拟音频波形）
+              final baseHeights = [6.0, 10.0, 14.0, 18.0, 16.0, 12.0, 8.0, 5.0];
+
+              // 计算动画偏移
+              double animValue = 0;
+              if (_isPlaying) {
+                // 波浪效果：每个条形以不同相位波动
+                final phase = index * 0.12;
+                animValue = (((_waveController.value + phase) % 1.0) * 2 - 1).abs();
+              }
+
+              // 基础高度 + 动画高度变化
+              final animatedHeight = baseHeights[index] + (animValue * 8);
+
+              return Container(
+                width: 3.w,
+                height: animatedHeight.clamp(4.0, 24.0),
+                decoration: BoxDecoration(
+                  color: widget.iconColor.withValues(alpha: _isPlaying ? 1.0 : 0.7),
+                  borderRadius: BorderRadius.circular(1.5.r),
+                ),
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 构建时长显示
+  Widget _buildDuration() {
+    return Text(
+      _formatDuration(widget.duration),
+      style: TextStyle(
+        fontSize: 13.sp,
+        color: widget.textColor,
+        fontWeight: FontWeight.w500,
       ),
     );
   }

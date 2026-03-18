@@ -20,6 +20,9 @@ class NomadStats {
   /// 用户参加的未结束 Meetup 数量
   final int meetupsJoined;
 
+  /// 用户正在进行的 Meetup 数量：已加入 + 已创建（去重，仅 upcoming/ongoing）
+  final int activeMeetups;
+
   /// 完成的旅行数量
   final int tripsCompleted;
 
@@ -37,6 +40,7 @@ class NomadStats {
     this.daysNomading = 0,
     this.meetupsCreated = 0,
     this.meetupsJoined = 0,
+    this.activeMeetups = 0,
     this.tripsCompleted = 0,
     this.favoriteCitiesCount = 0,
     required this.createdAt,
@@ -54,6 +58,7 @@ class NomadStats {
       daysNomading: 0,
       meetupsCreated: 0,
       meetupsJoined: 0,
+      activeMeetups: 0,
       tripsCompleted: 0,
       favoriteCitiesCount: 0,
       createdAt: now,
@@ -71,6 +76,7 @@ class NomadStats {
       daysNomading: json['daysNomading'] as int? ?? json['days_nomading'] as int? ?? 0,
       meetupsCreated: json['meetupsCreated'] as int? ?? json['meetups_created'] as int? ?? 0,
       meetupsJoined: json['meetupsJoined'] as int? ?? json['meetups_joined'] as int? ?? 0,
+      activeMeetups: json['activeMeetups'] as int? ?? json['active_meetups'] as int? ?? 0,
       tripsCompleted: json['tripsCompleted'] as int? ?? json['trips_completed'] as int? ?? 0,
       favoriteCitiesCount: json['favoriteCitiesCount'] as int? ?? json['favorite_cities_count'] as int? ?? 0,
       createdAt: json['createdAt'] != null
@@ -96,6 +102,7 @@ class NomadStats {
       'daysNomading': daysNomading,
       'meetupsCreated': meetupsCreated,
       'meetupsJoined': meetupsJoined,
+      'activeMeetups': activeMeetups,
       'tripsCompleted': tripsCompleted,
       'favoriteCitiesCount': favoriteCitiesCount,
       'createdAt': createdAt.toIso8601String(),
@@ -112,6 +119,7 @@ class NomadStats {
     int? daysNomading,
     int? meetupsCreated,
     int? meetupsJoined,
+    int? activeMeetups,
     int? tripsCompleted,
     int? favoriteCitiesCount,
     DateTime? createdAt,
@@ -125,6 +133,7 @@ class NomadStats {
       daysNomading: daysNomading ?? this.daysNomading,
       meetupsCreated: meetupsCreated ?? this.meetupsCreated,
       meetupsJoined: meetupsJoined ?? this.meetupsJoined,
+      activeMeetups: activeMeetups ?? this.activeMeetups,
       tripsCompleted: tripsCompleted ?? this.tripsCompleted,
       favoriteCitiesCount: favoriteCitiesCount ?? this.favoriteCitiesCount,
       createdAt: createdAt ?? this.createdAt,

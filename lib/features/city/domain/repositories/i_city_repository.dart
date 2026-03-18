@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_region_tab.dart';
 
 /// 城市仓储接口 (Domain Layer)
 /// 定义城市数据访问的抽象契约,不依赖具体实现
@@ -14,18 +15,25 @@ abstract class ICityRepository implements IRepository {
   });
 
   /// 获取城市列表（基础版本，不包含聚合数据）
-  /// 用于快速首屏加载
+  /// 用于快速首屏加载，支持可选 region 筛选
   Future<Result<List<City>>> getCitiesBasic({
     int page = 1,
     int pageSize = 20,
     String? search,
+    String? region,
   });
+
+  /// 获取区域标签列表（用于Tab展示，后端控制）
+  Future<Result<List<CityRegionTab>>> getRegionTabs();
 
   /// 批量获取城市聚合数据
   Future<Result<Map<String, CityCountsData>>> getCityCountsBatch(List<String> cityIds);
 
   /// 根据ID获取城市详情
   Future<Result<City>> getCityById(String cityId);
+
+  /// 获取城市版主摘要（轻量接口）
+  Future<Result<CityModeratorSummary>> getCityModeratorSummary(String cityId);
 
   /// 搜索城市
   Future<Result<List<City>>> searchCities({
@@ -142,6 +150,12 @@ abstract class ICityRepository implements IRepository {
   /// [cityId] 城市ID
   /// 返回生成结果，包含竖屏封面图和横屏图片的 URL
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId);
+
+  /// 查询图片生成任务状态（用于轮询回退）
+  ///
+  /// [taskId] 任务ID
+  /// 返回任务状态和结果
+  Future<Result<Map<String, dynamic>>> checkImageTaskStatus(String taskId);
 
   /// 删除城市（仅管理员）
   ///

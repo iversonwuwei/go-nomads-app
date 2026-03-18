@@ -1,6 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
+import 'package:go_nomads_app/utils/app_logo_util.dart';
 import 'package:go_nomads_app/utils/clipboard_share_util.dart';
 import 'package:go_nomads_app/utils/dingtalk_share_util.dart';
 import 'package:go_nomads_app/utils/email_share_util.dart';
@@ -8,7 +12,6 @@ import 'package:go_nomads_app/utils/facebook_share_util.dart';
 import 'package:go_nomads_app/utils/image_save_util.dart';
 import 'package:go_nomads_app/utils/linkedin_share_util.dart';
 import 'package:go_nomads_app/utils/qq_share_util.dart';
-import 'package:go_nomads_app/utils/qzone_share_util.dart';
 import 'package:go_nomads_app/utils/share_card_generator.dart';
 import 'package:go_nomads_app/utils/sms_share_util.dart';
 import 'package:go_nomads_app/utils/system_share_util.dart';
@@ -17,9 +20,7 @@ import 'package:go_nomads_app/utils/twitter_share_util.dart';
 import 'package:go_nomads_app/utils/wechat_share_util.dart';
 import 'package:go_nomads_app/utils/weibo_share_util.dart';
 import 'package:go_nomads_app/utils/whatsapp_share_util.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum ShareChannel {
   system,
@@ -106,28 +107,28 @@ class _ShareChannelSheet extends StatelessWidget {
         color: const Color(0xFF07C160),
         onTap: () => _share(ShareChannel.wechat),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: FontAwesomeIcons.weixin,
         label: '朋友圈',
         color: const Color(0xFF07C160),
         onTap: () => _share(ShareChannel.wechatTimeline),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: FontAwesomeIcons.qq,
         label: 'QQ',
         color: const Color(0xFF12B7F5),
         onTap: () => _share(ShareChannel.qq),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: FontAwesomeIcons.qq,
         label: 'QQ空间',
         color: const Color(0xFFFECE00),
         onTap: () => _share(ShareChannel.qzone),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: FontAwesomeIcons.weibo,
         label: '微博',
@@ -146,28 +147,28 @@ class _ShareChannelSheet extends StatelessWidget {
         color: const Color(0xFF25D366),
         onTap: () => _share(ShareChannel.whatsapp),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: FontAwesomeIcons.telegram,
         label: 'Telegram',
         color: const Color(0xFF0088CC),
         onTap: () => _share(ShareChannel.telegram),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: FontAwesomeIcons.xTwitter,
         label: 'X/Twitter',
         color: Colors.black,
         onTap: () => _share(ShareChannel.twitter),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: FontAwesomeIcons.facebook,
         label: 'Facebook',
         color: const Color(0xFF1877F2),
         onTap: () => _share(ShareChannel.facebook),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: FontAwesomeIcons.linkedin,
         label: 'LinkedIn',
@@ -186,21 +187,21 @@ class _ShareChannelSheet extends StatelessWidget {
         color: Colors.grey,
         onTap: () => _share(ShareChannel.copyLink),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: Icons.email,
         label: '邮件'.tr,
         color: Colors.orange,
         onTap: () => _share(ShareChannel.email),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: Icons.save_alt,
         label: '保存图片'.tr,
         color: Colors.blue,
         onTap: () => _share(ShareChannel.saveImage),
       ),
-      const SizedBox(width: 16),
+      SizedBox(width: 16.w),
       _ShareButton(
         icon: Icons.share,
         label: '更多'.tr,
@@ -220,24 +221,24 @@ class _ShareChannelSheet extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('分享到'.tr, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
+            Text('分享到'.tr, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+            SizedBox(height: 16.h),
             // 第一行：当地常用社交
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(children: primaryChannels),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             // 第二行：其他地区社交
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(children: secondaryChannels),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             // 第三行：通用通道
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -266,10 +267,12 @@ class _ShareChannelSheet extends StatelessWidget {
             url: url, title: title, description: description, thumbnail: imageBytes, toTimeline: true);
         break;
       case ShareChannel.qq:
-        await QQShareUtil.shareToQQ(url: url, title: title, summary: description, imageBytes: imageBytes);
+        final logoUri = await AppLogoUtil.getFileUri();
+        await QQShareUtil.shareToQQFriend(url: url, title: title, summary: description, imageUri: logoUri);
         break;
       case ShareChannel.qzone:
-        await QzoneShareUtil.shareToQzone(url: url, title: title, summary: description);
+        final logoUri = await AppLogoUtil.getFileUri();
+        await QQShareUtil.shareToQzone(url: url, title: title, summary: description, imageUri: logoUri);
         break;
       case ShareChannel.weibo:
         await WeiboShareUtil.shareToWeibo(url: url, title: title, description: description, imageBytes: imageBytes);
@@ -324,21 +327,21 @@ class _ShareButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: SizedBox(
-        width: 64,
+        width: 64.w,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
               radius: 24,
               backgroundColor: color ?? Theme.of(context).primaryColor,
-              child: Icon(icon, size: 22, color: Colors.white),
+              child: Icon(icon, size: 22.r, color: Colors.white),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             Text(
               label,
-              style: const TextStyle(fontSize: 11),
+              style: TextStyle(fontSize: 11.sp),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

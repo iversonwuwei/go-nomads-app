@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 空状态提示
 class AiChatEmptyHint extends StatelessWidget {
@@ -10,18 +12,19 @@ class AiChatEmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildIcon(),
-          const SizedBox(height: 18),
-          const Text(
-            '还没有对话，向 AI 提问试试',
+          SizedBox(height: 18.h),
+          Text(
+            l10n.aiChatEmptyHint,
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 10),
-          _buildStartButton(),
+          SizedBox(height: 10.h),
+          _buildStartButton(l10n),
         ],
       ),
     );
@@ -29,39 +32,39 @@ class AiChatEmptyHint extends StatelessWidget {
 
   Widget _buildIcon() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: Color(0x11000000),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: Offset(0, 6),
           ),
         ],
       ),
-      child: const FaIcon(
+      child: FaIcon(
         FontAwesomeIcons.solidComments,
         color: AppColors.cityPrimary,
-        size: 28,
+        size: 28.r,
       ),
     );
   }
 
-  Widget _buildStartButton() {
+  Widget _buildStartButton(AppLocalizations l10n) {
     return ElevatedButton(
       onPressed: onStart,
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
         ),
       ),
-      child: const Text('开始对话'),
+      child: Text(l10n.aiChatStartConversation),
     );
   }
 }

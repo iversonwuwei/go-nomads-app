@@ -1,16 +1,20 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/moderator/domain/entities/moderator_application.dart';
 import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
 import 'package:go_nomads_app/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 版主申请详情页面（管理员审核使用）
 class ModeratorApplicationDetailPage extends StatefulWidget {
@@ -73,18 +77,19 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Future<void> _handleApprove() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('确认通过'),
-        content: Text('确定要通过 ${_application?.userName ?? "该用户"} 的版主申请吗？'),
+        title: Text(l10n.confirmApprove),
+        content: Text(l10n.confirmApproveMessage(_application?.userName ?? l10n.unknownUser)),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Get.back(result: true),
-            child: const Text('确认'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -96,6 +101,7 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Future<void> _handleReject() async {
+    final l10n = AppLocalizations.of(context)!;
     String? rejectionReason;
 
     final confirmed = await showDialog<bool>(
@@ -104,21 +110,21 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
         final reasonController = TextEditingController();
 
         return AlertDialog(
-          title: const Text('拒绝申请'),
+          title: Text(l10n.rejectApplication),
           content: SizedBox(
             width: double.maxFinite,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('确定要拒绝 ${_application?.userName ?? "该用户"} 的版主申请吗？'),
-                const SizedBox(height: 16),
+                Text(l10n.confirmRejectMessage(_application?.userName ?? l10n.unknownUser)),
+                SizedBox(height: 16.h),
                 TextField(
                   controller: reasonController,
-                  decoration: const InputDecoration(
-                    labelText: '拒绝原因（可选）',
-                    hintText: '请输入拒绝原因...',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.rejectReasonOptional,
+                    hintText: l10n.enterRejectReason,
+                    border: const OutlineInputBorder(),
                   ),
                   maxLines: 3,
                   maxLength: 200,
@@ -132,7 +138,7 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -140,7 +146,7 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
                 rejectionReason = reasonController.text;
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text('确认拒绝'),
+              child: Text(l10n.confirmReject),
             ),
           ],
         );
@@ -156,19 +162,21 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Future<void> _handleRevoke() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('确认撤销'),
-        content: Text('确定要撤销 ${_application?.userName ?? "该用户"} 的版主资格吗？\n\n此操作将移除该用户在此城市的所有版主权限。'),
+        title: Text(l10n.confirmRevoke),
+        content: Text(
+            '${l10n.confirmRevokeMessage(_application?.userName ?? l10n.unknownUser)}\n\n${l10n.revokePermissionWarning}'),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Get.back(result: true),
-            child: const Text('确认撤销'),
+            child: Text(l10n.confirmRevoke),
           ),
         ],
       ),
@@ -179,10 +187,23 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
       try {
         await _repository.revokeModerator(widget.applicationId);
-        AppToast.success('已撤销版主资格');
+        AppToast.success(l10n.moderatorRevoked);
+
+        // 通过 DataEventBus 广播城市更新事件
+        if (_application != null) {
+          DataEventBus.instance.emit(DataChangedEvent(
+            entityType: 'city',
+            entityId: _application!.cityId,
+            version: DateTime.now().millisecondsSinceEpoch,
+            changeType: DataChangeType.updated,
+            metadata: {'reason': 'moderator_revoked'},
+          ));
+          log('📡 [ModeratorApplication] 已发送版主撤销事件: cityId=${_application!.cityId}');
+        }
+
         Get.back(result: true);
       } catch (e) {
-        AppToast.error('撤销失败: $e');
+        AppToast.error(l10n.revokeFailed(e.toString()));
       } finally {
         setState(() => _isProcessing = false);
       }
@@ -190,6 +211,7 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Future<void> _processApplication(String action, {String? rejectionReason}) async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isProcessing = true);
 
     try {
@@ -199,13 +221,25 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
         rejectionReason: rejectionReason,
       );
 
-      final message = action == 'approve' ? '已通过申请' : '已拒绝申请';
+      final message = action == 'approve' ? l10n.applicationApproved : l10n.applicationRejected;
       AppToast.success(message);
+
+      // 通过 DataEventBus 广播城市更新事件，通知所有页面刷新版主信息
+      if (_application != null) {
+        DataEventBus.instance.emit(DataChangedEvent(
+          entityType: 'city',
+          entityId: _application!.cityId,
+          version: DateTime.now().millisecondsSinceEpoch,
+          changeType: DataChangeType.updated,
+          metadata: {'reason': 'moderator_application_$action'},
+        ));
+        log('📡 [ModeratorApplication] 已发送城市版主更新事件: cityId=${_application!.cityId}, action=$action');
+      }
 
       // 返回上一页
       Get.back(result: true);
     } catch (e) {
-      AppToast.error('操作失败: $e');
+      AppToast.error(l10n.operationFailedWithError(e.toString()));
     } finally {
       setState(() => _isProcessing = false);
     }
@@ -213,160 +247,159 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: const AppBackButton(),
-        title: const Text('版主申请详情'),
+        title: Text(l10n.moderatorApplicationDetail),
       ),
       body: _buildBody(),
     );
   }
 
   Widget _buildBody() {
-    if (_isLoading) {
-      return const UserProfileSkeleton();
-    }
+    final l10n = AppLocalizations.of(context)!;
+    Widget content;
 
     if (_error != null) {
-      return Center(
+      content = Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FaIcon(FontAwesomeIcons.circleExclamation, size: 56, color: AppColors.iconSecondary),
-            const SizedBox(height: 16),
+            FaIcon(FontAwesomeIcons.circleExclamation, size: 56.r, color: AppColors.iconSecondary),
+            SizedBox(height: 16.h),
             Text(
-              '加载失败',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              l10n.loadFailed,
+              style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               _error!,
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             ElevatedButton(
               onPressed: _loadApplication,
-              child: const Text('重试'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
       );
-    }
-
-    if (_application == null) {
-      return Center(
+    } else if (_application == null) {
+      content = Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FaIcon(FontAwesomeIcons.inbox, size: 56, color: AppColors.iconSecondary),
-            const SizedBox(height: 16),
+            FaIcon(FontAwesomeIcons.inbox, size: 56.r, color: AppColors.iconSecondary),
+            SizedBox(height: 16.h),
             Text(
-              '申请不存在',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              l10n.applicationNotExists,
+              style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
             ),
+          ],
+        ),
+      );
+    } else {
+      content = SingleChildScrollView(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStatusCard(),
+            SizedBox(height: 16.h),
+            _buildApplicantCard(),
+            SizedBox(height: 16.h),
+            _buildCityCard(),
+            SizedBox(height: 16.h),
+            _buildReasonCard(),
+            SizedBox(height: 24.h),
+            if (_application!.isPending) _buildActionButtons(),
+            if (_application!.isApproved) _buildRevokeButton(),
           ],
         ),
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 申请状态卡片
-          _buildStatusCard(),
-          const SizedBox(height: 16),
-
-          // 申请人信息
-          _buildApplicantCard(),
-          const SizedBox(height: 16),
-
-          // 申请城市
-          _buildCityCard(),
-          const SizedBox(height: 16),
-
-          // 申请理由
-          _buildReasonCard(),
-          const SizedBox(height: 24),
-
-          // 操作按钮（仅待处理状态显示）
-          if (_application!.isPending) _buildActionButtons(),
-
-          // 撤销版主按钮（仅已通过状态显示）
-          if (_application!.isApproved) _buildRevokeButton(),
-        ],
-      ),
+    return AppLoadingSwitcher(
+      isLoading: _isLoading,
+      loading: const UserProfileSkeleton(),
+      child: content,
     );
   }
 
   Widget _buildStatusCard() {
+    final l10n = AppLocalizations.of(context)!;
     final app = _application!;
     Color statusColor;
     IconData statusIcon;
+    String statusText;
 
     switch (app.status) {
       case 'pending':
         statusColor = Colors.orange;
         statusIcon = FontAwesomeIcons.hourglassHalf;
+        statusText = l10n.moderatorStatusPending;
         break;
       case 'approved':
         statusColor = Colors.green;
         statusIcon = FontAwesomeIcons.circleCheck;
+        statusText = l10n.moderatorStatusApproved;
         break;
       case 'rejected':
         statusColor = Colors.red;
         statusIcon = FontAwesomeIcons.circleXmark;
+        statusText = l10n.moderatorStatusRejected;
         break;
       default:
         statusColor = Colors.grey;
         statusIcon = FontAwesomeIcons.circleQuestion;
+        statusText = app.status;
     }
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: statusColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: FaIcon(statusIcon, color: statusColor, size: 28),
+              child: FaIcon(statusIcon, color: statusColor, size: 28.r),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    app.statusText,
+                    statusText,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: statusColor,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
-                    '申请时间: ${_formatDateTime(app.createdAt)}',
+                    l10n.applicationTime(_formatDateTime(app.createdAt)),
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: Colors.grey[600],
                     ),
                   ),
                   if (app.processedAt != null) ...[
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
-                      '处理时间: ${_formatDateTime(app.processedAt!)}',
+                      l10n.processTime(_formatDateTime(app.processedAt!)),
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -381,48 +414,49 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Widget _buildApplicantCard() {
+    final l10n = AppLocalizations.of(context)!;
     final app = _application!;
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '申请人信息',
+              l10n.applicantInfo,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[700],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(
               children: [
                 SafeCircleAvatar(
                   imageUrl: app.userAvatar,
                   radius: 28,
-                  placeholder: const FaIcon(FontAwesomeIcons.user, size: 24),
-                  errorWidget: const FaIcon(FontAwesomeIcons.user, size: 24),
+                  placeholder: FaIcon(FontAwesomeIcons.user, size: 24.r),
+                  errorWidget: FaIcon(FontAwesomeIcons.user, size: 24.r),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        app.userName ?? '未知用户',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        app.userName ?? l10n.unknownUser,
+                        style: TextStyle(
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         'ID: ${app.userId}',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey[500],
                         ),
                       ),
@@ -438,43 +472,44 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Widget _buildCityCard() {
+    final l10n = AppLocalizations.of(context)!;
     final app = _application!;
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '申请管理的城市',
+              l10n.applicationCity,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[700],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
                     color: AppColors.accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: FaIcon(
                     FontAwesomeIcons.city,
                     color: AppColors.accent,
-                    size: 24,
+                    size: 24.r,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Text(
-                    app.cityName ?? '未知城市',
-                    style: const TextStyle(
-                      fontSize: 18,
+                    app.cityName ?? l10n.unknownCity,
+                    style: TextStyle(
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -488,34 +523,35 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Widget _buildReasonCard() {
+    final l10n = AppLocalizations.of(context)!;
     final app = _application!;
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '申请理由',
+              l10n.applicationReason,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[700],
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
-                app.reason.isNotEmpty ? app.reason : '未填写申请理由',
+                app.reason.isNotEmpty ? app.reason : l10n.noReasonProvided,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   color: app.reason.isNotEmpty ? Colors.black87 : Colors.grey[500],
                   height: 1.5,
                 ),
@@ -524,28 +560,28 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
 
             // 如果被拒绝，显示拒绝原因
             if (app.isRejected && app.rejectionReason != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
-                '拒绝原因',
+                l10n.rejectReason,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.red[700],
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   color: Colors.red[50],
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(color: Colors.red[200]!),
                 ),
                 child: Text(
                   app.rejectionReason!,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     color: Colors.red[800],
                     height: 1.5,
                   ),
@@ -559,43 +595,44 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Widget _buildActionButtons() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: OutlinedButton.icon(
             onPressed: _isProcessing ? null : _handleReject,
             icon: _isProcessing
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
+                ? SizedBox(
+                    width: 18.w,
+                    height: 18.h,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const FaIcon(FontAwesomeIcons.xmark, size: 18),
-            label: const Text('拒绝'),
+                : FaIcon(FontAwesomeIcons.xmark, size: 18.r),
+            label: Text(l10n.reject),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w),
         Expanded(
           child: FilledButton.icon(
             onPressed: _isProcessing ? null : _handleApprove,
             icon: _isProcessing
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
+                ? SizedBox(
+                    width: 18.w,
+                    height: 18.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: Colors.white,
                     ),
                   )
-                : const FaIcon(FontAwesomeIcons.check, size: 18),
-            label: const Text('通过'),
+                : FaIcon(FontAwesomeIcons.check, size: 18.r),
+            label: Text(l10n.approve),
             style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
             ),
           ),
         ),
@@ -604,22 +641,23 @@ class _ModeratorApplicationDetailPageState extends State<ModeratorApplicationDet
   }
 
   Widget _buildRevokeButton() {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: _isProcessing ? null : _handleRevoke,
         icon: _isProcessing
-            ? const SizedBox(
-                width: 18,
-                height: 18,
+            ? SizedBox(
+                width: 18.w,
+                height: 18.h,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const FaIcon(FontAwesomeIcons.userSlash, size: 18),
-        label: const Text('撤销版主资格'),
+            : FaIcon(FontAwesomeIcons.userSlash, size: 18.r),
+        label: Text(l10n.revokeModeratorStatus),
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.red,
           side: const BorderSide(color: Colors.red),
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: EdgeInsets.symmetric(vertical: 14.h),
         ),
       ),
     );

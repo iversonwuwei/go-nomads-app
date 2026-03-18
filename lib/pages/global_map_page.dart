@@ -1,9 +1,12 @@
 import 'package:go_nomads_app/controllers/global_map_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 使用 flutter_map 显示基础全球地图页面
 class GlobalMapPage extends StatelessWidget {
@@ -21,25 +24,25 @@ class GlobalMapPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
       ),
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(16),
+              Padding(
+                padding: EdgeInsets.all(16.w),
                 child: Text(
                   '选择地图样式',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1),
               ...controller.tileSources.entries.map((entry) {
                 return Obx(() {
                   final isSelected = controller.selectedTileSource.value == entry.key;
@@ -63,7 +66,7 @@ class GlobalMapPage extends StatelessWidget {
                   );
                 });
               }),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
             ],
           ),
         );
@@ -74,10 +77,11 @@ class GlobalMapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('全球地图'),
+        title: Text(l10n.map),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 1,
@@ -116,23 +120,12 @@ class GlobalMapPage extends StatelessWidget {
           Obx(() => controller.isLoading.value
               ? Container(
                   color: Colors.white.withValues(alpha: 0.8),
-                  child: const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          '加载地图中...',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: const AppLoadingWidget(
+                    fullScreen: true,
+                    title: '加载地图中',
+                    subtitle: 'Loading map...',
+                    icon: Icons.map_rounded,
+                    accentColor: Color(0xFFFF4458),
                   ),
                 )
               : const SizedBox.shrink()),
@@ -145,23 +138,23 @@ class GlobalMapPage extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
-                          size: 48,
+                          size: 48.r,
                           color: Colors.red,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         Text(
                           controller.errorMessage.value!,
-                          style: const TextStyle(
-                            fontSize: 14,
+                          style: TextStyle(
+                            fontSize: 14.sp,
                             color: Colors.red,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16.h),
                         ElevatedButton(
                           onPressed: controller.retry,
-                          child: const Text('重试'),
+                          child: Text(l10n.retry),
                         ),
                       ],
                     ),
@@ -171,15 +164,15 @@ class GlobalMapPage extends StatelessWidget {
 
           // 缩放控制按钮
           Positioned(
-            right: 16,
-            bottom: 120,
+            right: 16.w,
+            bottom: 120.h,
             child: Column(
               children: [
                 _buildZoomButton(
                   icon: Icons.add,
                   onTap: controller.zoomIn,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 _buildZoomButton(
                   icon: Icons.remove,
                   onTap: controller.zoomOut,
@@ -190,17 +183,17 @@ class GlobalMapPage extends StatelessWidget {
 
           // 当前地图样式标签
           Positioned(
-            left: 16,
-            bottom: 32,
+            left: 16.w,
+            bottom: 32.h,
             child: Obx(() => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 8,
+                    blurRadius: 8.r,
                     offset: const Offset(0, 2),
                   ),
                 ],
@@ -208,12 +201,12 @@ class GlobalMapPage extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.map, size: 16, color: Color(0xFFFF4458)),
-                  const SizedBox(width: 8),
+                  Icon(Icons.map, size: 16.r, color: Color(0xFFFF4458)),
+                  SizedBox(width: 8.w),
                   Text(
                     controller.tileSources[controller.selectedTileSource.value]!['name']!,
-                    style: const TextStyle(
-                      fontSize: 12,
+                    style: TextStyle(
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -229,14 +222,14 @@ class GlobalMapPage extends StatelessWidget {
   Widget _buildZoomButton({required IconData icon, required VoidCallback onTap}) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       elevation: 2,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         child: Container(
-          width: 44,
-          height: 44,
+          width: 44.w,
+          height: 44.h,
           alignment: Alignment.center,
           child: Icon(icon, color: const Color(0xFFFF4458)),
         ),

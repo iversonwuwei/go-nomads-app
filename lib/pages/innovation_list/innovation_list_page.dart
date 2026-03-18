@@ -1,11 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/innovation_list_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/innovation_list/innovation_list_widgets.dart';
 import 'package:go_nomads_app/pages/innovation_list/innovation_project_card.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// Innovation Projects List Page
 /// 创意项目列表页面 - GetX 标准模式（StatelessWidget）
@@ -38,9 +40,9 @@ class InnovationListPage extends StatelessWidget {
         leading: const AppBackButton(color: Color(0xFF1a1a1a)),
         title: Text(
           l10n.innovation,
-          style: const TextStyle(
+          style: TextStyle(
             color: Color(0xFF1a1a1a),
-            fontSize: 20,
+            fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -67,20 +69,23 @@ class InnovationListPage extends StatelessWidget {
     final projectCount = sc.projects.length;
     debugPrint('📊 [InnovationListPage] 当前项目数量: $projectCount');
 
-    // 首次加载中
-    if (sc.isLoading.value && projectCount == 0) {
-      return const InnovationListSkeleton();
-    }
-
+    Widget content;
     // 错误状态
     if (sc.errorMessage.value != null && projectCount == 0) {
-      return InnovationListErrorState(
+      content = InnovationListErrorState(
         errorMessage: sc.errorMessage.value!,
         onRetry: () => controller.loadProjects(),
       );
+    } else {
+      content = _buildContent(controller, isMobile, sc.projects.toList());
     }
 
-    return _buildContent(controller, isMobile, sc.projects.toList());
+    // 首次加载中
+    return AppLoadingSwitcher(
+      isLoading: sc.isLoading.value && projectCount == 0,
+      loading: const InnovationListSkeleton(),
+      child: content,
+    );
   }
 
   Widget _buildContent(

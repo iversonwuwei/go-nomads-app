@@ -1,13 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_cost/add_cost_page.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/pages/manage_cost_page.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// Cost Tab - 费用标签页
 /// 使用 GetView 绑定 CityDetailController
@@ -27,11 +29,7 @@ class CostTab extends GetView<CityDetailController> {
 
     return Obx(() {
       final communityCost = contentController.costSummary.value;
-
-      // 加载中
-      if (contentController.isLoadingCostSummary.value && communityCost == null) {
-        return const CostTabSkeleton();
-      }
+      final isLoadingInitial = contentController.isLoadingCostSummary.value && communityCost == null;
 
       // 使用默认值
       final total = communityCost?.total ?? 0.0;
@@ -44,17 +42,17 @@ class CostTab extends GetView<CityDetailController> {
       final shopping = communityCost?.shopping ?? 0.0;
       final other = communityCost?.other ?? 0.0;
 
-      return RefreshIndicator(
+      final content = RefreshIndicator(
         onRefresh: () => contentController.loadCityCostSummary(controller.cityId),
         child: ListView(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 96),
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 16.h, bottom: 96.h),
           children: [
             // 标题和贡献者
             _CostHeader(
               l10n: l10n,
               contributorCount: contributorCount,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             // 总费用卡片
             _TotalCostCard(
@@ -62,7 +60,7 @@ class CostTab extends GetView<CityDetailController> {
               total: total,
               totalExpenseCount: totalExpenseCount,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
 
             // 费用分类
             _CostCategoryCard(
@@ -78,9 +76,15 @@ class CostTab extends GetView<CityDetailController> {
             _CostCategoryCard(
                 category: l10n.shopping, amount: shopping, icon: FontAwesomeIcons.bagShopping, color: Colors.pink),
             _CostCategoryCard(category: 'Other', amount: other, icon: FontAwesomeIcons.ellipsis, color: Colors.grey),
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
           ],
         ),
+      );
+
+      return AppLoadingSwitcher(
+        isLoading: isLoadingInitial,
+        loading: const CostTabSkeleton(),
+        child: content,
       );
     });
   }
@@ -126,18 +130,18 @@ class _CostHeader extends StatelessWidget {
       children: [
         Text(
           l10n.communityCostSummary,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
           decoration: BoxDecoration(
             color: Colors.green.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
           ),
           child: Text(
             '$contributorCount ${contributorCount != 1 ? l10n.contributors : l10n.contributor}',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: Colors.green[700],
               fontWeight: FontWeight.bold,
             ),
@@ -163,36 +167,36 @@ class _TotalCostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         children: [
           Text(
             l10n.averageCommunityCost,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(color: Colors.white, fontSize: 16.sp),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             '\$${total.toStringAsFixed(0)}',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 36,
+              fontSize: 36.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             l10n.basedOnRealExpenses(totalExpenseCount, totalExpenseCount != 1 ? 's' : ''),
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 12,
+              fontSize: 12.sp,
             ),
           ),
         ],
@@ -218,21 +222,21 @@ class _CostCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       child: ListTile(
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           child: Icon(icon, color: color),
         ),
         title: Text(category, style: const TextStyle(fontWeight: FontWeight.bold)),
         trailing: Text(
           '\$${amount.toStringAsFixed(2)}',
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
             color: AppColors.cityPrimary,
           ),

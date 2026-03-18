@@ -1,8 +1,11 @@
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/pros_and_cons_add_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Pros & Cons 添加页面
 /// 注意: 由于 TabController 需要 TickerProvider，保持 StatefulWidget 结构
@@ -60,6 +63,7 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
 
   /// 显示删除确认对话框
   Future<bool> _showDeleteConfirmDialog(String title, String content) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
         title: Text(title),
@@ -67,12 +71,12 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
             style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
-            child: const Text('删除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -98,11 +102,12 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('${widget.cityName} - 添加乐趣'),
+        title: Text(l10n.prosConsAddPageTitle(widget.cityName)),
         leading: IconButton(
           icon: const Icon(FontAwesomeIcons.xmark),
           onPressed: () {
@@ -117,19 +122,19 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
           controller: _tabController,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          labelStyle: const TextStyle(
+          labelStyle: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 15,
+            fontSize: 15.sp,
           ),
-          unselectedLabelStyle: const TextStyle(
+          unselectedLabelStyle: TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: 15,
+            fontSize: 15.sp,
           ),
           indicatorSize: TabBarIndicatorSize.label,
           indicatorColor: Colors.white,
           indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: const Border(
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border(
               bottom: BorderSide(
                 color: Colors.white,
                 width: 3,
@@ -165,12 +170,12 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           decoration: BoxDecoration(
             color: isActive ? const Color(0xFFFFEEF2) : Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: isActive ? activeColor.withValues(alpha: 0.4) : inactiveColor.withValues(alpha: 0.2),
             ),
@@ -180,21 +185,21 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
             children: [
               Icon(
                 FontAwesomeIcons.thumbsUp,
-                size: 18,
+                size: 18.r,
                 color: isActive ? activeColor : inactiveColor,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 '$count',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                   color: activeColor,
                 ),
               ),
               Text(
                 '投票',
-                style: TextStyle(fontSize: 10, color: activeColor),
+                style: TextStyle(fontSize: 10.sp, color: activeColor),
               ),
             ],
           ),
@@ -205,21 +210,22 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
 
   // 优点标签页
   Widget _buildProsTab() {
+    final l10n = AppLocalizations.of(context)!;
     return Obx(() {
       final prosConsController = _controller.prosConsController;
       return Column(
         children: [
           // 输入框区域 - 现代化设计
           Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            margin: EdgeInsets.all(16.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 16,
+                  blurRadius: 16.r,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -232,44 +238,44 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
                   child: TextField(
                     controller: _controller.prosTextController,
                     decoration: InputDecoration(
-                      hintText: '分享这个城市的优点...',
+                      hintText: l10n.prosConsAddProsHint,
                       hintStyle: TextStyle(
                         color: Colors.grey[400],
-                        fontSize: 15,
+                        fontSize: 15.sp,
                       ),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 12,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 4.w,
+                        vertical: 12.h,
                       ),
                       prefixIcon: Icon(
                         FontAwesomeIcons.lightbulb,
                         color: Colors.grey[400],
-                        size: 22,
+                        size: 22.r,
                       ),
                     ),
                     maxLines: null,
-                    style: const TextStyle(fontSize: 15),
+                    style: TextStyle(fontSize: 15.sp),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 // 添加按钮
                 _controller.isAddingPros.value
                     ? Container(
-                        width: 44,
-                        height: 44,
+                        width: 44.w,
+                        height: 44.h,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 20.w,
+                            height: 20.h,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -281,29 +287,29 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () => _controller.addPros(),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                           child: Ink(
-                            width: 44,
-                            height: 44,
+                            width: 44.w,
+                            height: 44.h,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                                  blurRadius: 8,
+                                  blurRadius: 8.r,
                                   offset: const Offset(0, 3),
                                 ),
                               ],
                             ),
-                            child: const Icon(
+                            child: Icon(
                               FontAwesomeIcons.circlePlus,
                               color: Colors.white,
-                              size: 24,
+                              size: 24.r,
                             ),
                           ),
                         ),
@@ -315,43 +321,43 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
           // 列表区域
           Expanded(
             child: prosConsController.isLoadingPros.value
-                ? const Center(child: CircularProgressIndicator())
+              ? const AppSceneLoading(scene: AppLoadingScene.reviews, fullScreen: true)
                 : prosConsController.prosList.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(FontAwesomeIcons.circleCheck, size: 64, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
+                            Icon(FontAwesomeIcons.circleCheck, size: 64.r, color: Colors.grey[300]),
+                            SizedBox(height: 16.h),
                             Text(
                               '暂无优点',
-                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                              style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
                             ),
                           ],
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         itemCount: prosConsController.prosList.length,
                         itemBuilder: (context, index) {
                           final item = prosConsController.prosList[index];
                           final itemId = item.id;
                           return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
+                            margin: EdgeInsets.only(bottom: 12.h),
                             child: Padding(
-                              padding: const EdgeInsets.all(12),
+                              padding: EdgeInsets.all(12.w),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     FontAwesomeIcons.circleCheck,
                                     color: Colors.green,
-                                    size: 24,
+                                    size: 24.r,
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12.w),
                                   Expanded(
                                     child: Text(
                                       item.text,
-                                      style: const TextStyle(fontSize: 15),
+                                      style: TextStyle(fontSize: 15.sp),
                                     ),
                                   ),
                                   _buildVoteChip(
@@ -359,10 +365,10 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
                                     onTap: itemId.isEmpty ? null : () => _controller.handleVote(itemId, true),
                                     currentUserVoted: item.currentUserVoted,
                                   ),
-                                  if (_controller.canDelete.value) const SizedBox(width: 8),
+                                  if (_controller.canDelete.value) SizedBox(width: 8.w),
                                   if (_controller.canDelete.value)
                                     IconButton(
-                                      icon: const Icon(FontAwesomeIcons.trash, color: Colors.red, size: 20),
+                                      icon: Icon(FontAwesomeIcons.trash, color: Colors.red, size: 20.r),
                                       onPressed: () => _deletePros(item.id),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
@@ -381,21 +387,22 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
 
   // 挑战标签页
   Widget _buildConsTab() {
+    final l10n = AppLocalizations.of(context)!;
     return Obx(() {
       final prosConsController = _controller.prosConsController;
       return Column(
         children: [
           // 输入框区域 - 现代化设计
           Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            margin: EdgeInsets.all(16.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 16,
+                  blurRadius: 16.r,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -408,44 +415,44 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
                   child: TextField(
                     controller: _controller.consTextController,
                     decoration: InputDecoration(
-                      hintText: '分享这个城市的挑战...',
+                      hintText: l10n.prosConsAddConsHint,
                       hintStyle: TextStyle(
                         color: Colors.grey[400],
-                        fontSize: 15,
+                        fontSize: 15.sp,
                       ),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 12,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 4.w,
+                        vertical: 12.h,
                       ),
                       prefixIcon: Icon(
                         FontAwesomeIcons.circleInfo,
                         color: Colors.grey[400],
-                        size: 22,
+                        size: 22.r,
                       ),
                     ),
                     maxLines: null,
-                    style: const TextStyle(fontSize: 15),
+                    style: TextStyle(fontSize: 15.sp),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 // 添加按钮
                 _controller.isAddingCons.value
                     ? Container(
-                        width: 44,
-                        height: 44,
+                        width: 44.w,
+                        height: 44.h,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 20.w,
+                            height: 20.h,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -457,29 +464,29 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () => _controller.addCons(),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                           child: Ink(
-                            width: 44,
-                            height: 44,
+                            width: 44.w,
+                            height: 44.h,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(12.r),
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                                  blurRadius: 8,
+                                  blurRadius: 8.r,
                                   offset: const Offset(0, 3),
                                 ),
                               ],
                             ),
-                            child: const Icon(
+                            child: Icon(
                               FontAwesomeIcons.circlePlus,
                               color: Colors.white,
-                              size: 24,
+                              size: 24.r,
                             ),
                           ),
                         ),
@@ -491,43 +498,43 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
           // 列表区域
           Expanded(
             child: prosConsController.isLoadingCons.value
-                ? const Center(child: CircularProgressIndicator())
+              ? const AppSceneLoading(scene: AppLoadingScene.reviews, fullScreen: true)
                 : prosConsController.consList.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(FontAwesomeIcons.ban, size: 64, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
+                            Icon(FontAwesomeIcons.ban, size: 64.r, color: Colors.grey[300]),
+                            SizedBox(height: 16.h),
                             Text(
                               '暂无挑战',
-                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                              style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
                             ),
                           ],
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         itemCount: prosConsController.consList.length,
                         itemBuilder: (context, index) {
                           final item = prosConsController.consList[index];
                           final itemId = item.id;
                           return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
+                            margin: EdgeInsets.only(bottom: 12.h),
                             child: Padding(
-                              padding: const EdgeInsets.all(12),
+                              padding: EdgeInsets.all(12.w),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     FontAwesomeIcons.ban,
                                     color: Colors.red,
-                                    size: 24,
+                                    size: 24.r,
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12.w),
                                   Expanded(
                                     child: Text(
                                       item.text,
-                                      style: const TextStyle(fontSize: 15),
+                                      style: TextStyle(fontSize: 15.sp),
                                     ),
                                   ),
                                   _buildVoteChip(
@@ -535,10 +542,10 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
                                     onTap: itemId.isEmpty ? null : () => _controller.handleVote(itemId, false),
                                     currentUserVoted: item.currentUserVoted,
                                   ),
-                                  if (_controller.canDelete.value) const SizedBox(width: 8),
+                                  if (_controller.canDelete.value) SizedBox(width: 8.w),
                                   if (_controller.canDelete.value)
                                     IconButton(
-                                      icon: const Icon(FontAwesomeIcons.trash, color: Colors.red, size: 20),
+                                      icon: Icon(FontAwesomeIcons.trash, color: Colors.red, size: 20.r),
                                       onPressed: () => _deleteCons(item.id),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),

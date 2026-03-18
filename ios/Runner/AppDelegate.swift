@@ -64,6 +64,34 @@ import CoreLocation
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
   
+  // MARK: - URL Scheme 回调处理（微信/QQ/PayPal 等第三方SDK回调）
+
+  /// 处理 URL Scheme 回调
+  /// 微信 SDK、QQ SDK 通过此方法接收授权/分享/支付的回调结果
+  override func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+  ) -> Bool {
+    // 交由 FlutterAppDelegate 统一分发给各 Flutter 插件（fluwx、tencent_kit 等）
+    return super.application(app, open: url, options: options)
+  }
+
+  // MARK: - Universal Link 回调处理（微信/QQ Universal Link 回调）
+
+  /// 处理 Universal Link 回调
+  /// iOS 9+ 微信 SDK 使用 Universal Link 进行通信，
+  /// 此方法接收来自微信/QQ等应用的 Universal Link 回调并转发给 Flutter 插件
+  override func application(
+    _ application: UIApplication,
+    continue userActivity: NSUserActivity,
+    restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
+  ) -> Bool {
+    // 交由 FlutterAppDelegate 统一分发给各 Flutter 插件
+    return super.application(
+      application, continue: userActivity, restorationHandler: restorationHandler)
+  }
+
   // MARK: - Platform Channel Methods
 
   /// 打开原生地图选择器

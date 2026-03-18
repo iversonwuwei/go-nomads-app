@@ -1,9 +1,11 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 import '../../../../../features/weather/presentation/controllers/weather_state_controller.dart';
 import '../../../city_detail_controller.dart';
@@ -28,22 +30,21 @@ class WeatherTab extends GetView<CityDetailController> {
     final weatherController = Get.find<WeatherStateController>();
 
     return Obx(() {
-      // 显示加载状态
-      if (weatherController.isLoading.value) {
-        return const WeatherTabSkeleton();
-      }
-
       final weather = weatherController.weather.value;
-      if (weather == null) {
-        return _WeatherEmptyState(
-          cityId: controller.cityId,
-          l10n: l10n,
-        );
-      }
+      final content = weather == null
+          ? _WeatherEmptyState(
+              cityId: controller.cityId,
+              l10n: l10n,
+            )
+          : _WeatherContent(
+              weatherTag: weatherTag,
+              l10n: l10n,
+            );
 
-      return _WeatherContent(
-        weatherTag: weatherTag,
-        l10n: l10n,
+      return AppLoadingSwitcher(
+        isLoading: weatherController.isLoading.value,
+        loading: const WeatherTabSkeleton(),
+        child: content,
       );
     });
   }
@@ -73,12 +74,12 @@ class _WeatherEmptyState extends StatelessWidget {
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
                   child: Text(
                     l10n.noData,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: TextStyle(
+                      fontSize: 16.sp,
                       color: AppColors.textSecondary,
                     ),
                   ),
@@ -116,7 +117,7 @@ class _WeatherContent extends GetView<CityDetailController> {
     return RefreshIndicator(
       onRefresh: () => weatherController.loadCityWeather(controller.cityId, forceRefresh: true),
       child: ListView(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 96),
+        padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 24.h, bottom: 96.h),
         children: [
           // 主天气卡片
           WeatherMainCard(
@@ -124,11 +125,11 @@ class _WeatherContent extends GetView<CityDetailController> {
             cityName: controller.cityName,
             l10n: l10n,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 天气指标网格
           WeatherMetricsGrid(metrics: metrics),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 日出日落卡片
           SunriseSunsetCard(
@@ -140,14 +141,14 @@ class _WeatherContent extends GetView<CityDetailController> {
 
           // 5天预报
           if (weather.forecast?.daily.isNotEmpty == true) ...[
-            const SizedBox(height: 32),
+            SizedBox(height: 32.h),
             FiveDayForecast(
               forecast: weather.forecast!,
               l10n: l10n,
             ),
           ],
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 数据源卡片
           DataSourceCard(

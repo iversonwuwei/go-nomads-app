@@ -266,7 +266,7 @@ class AddReviewPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: AppColors.borderLight)),
             focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: const Color(0xFFFF4458), width: 2.w)),
+                borderSide: BorderSide(color: const Color(0xFFFF4458), width: 2)),
             counterStyle: TextStyle(fontSize: 12.sp, color: AppColors.textTertiary),
           ),
           validator: (value) {
@@ -308,7 +308,7 @@ class AddReviewPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: AppColors.borderLight)),
             focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: const Color(0xFFFF4458), width: 2.w)),
+                borderSide: BorderSide(color: const Color(0xFFFF4458), width: 2)),
             counterStyle: TextStyle(fontSize: 12.sp, color: AppColors.textTertiary),
           ),
           validator: (value) {
@@ -397,7 +397,7 @@ class AddReviewPage extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.borderLight, width: 1.w),
+        border: Border.all(color: AppColors.borderLight, width: 1),
       ),
       child: Stack(
         children: [
@@ -434,7 +434,7 @@ class AddReviewPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFFFF4458), width: 2.w, style: BorderStyle.solid),
+          border: Border.all(color: const Color(0xFFFF4458), width: 2, style: BorderStyle.solid),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -456,7 +456,7 @@ class AddReviewPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppColors.borderLight, width: 1.w, style: BorderStyle.solid),
+        border: Border.all(color: AppColors.borderLight, width: 1, style: BorderStyle.solid),
       ),
     );
   }
@@ -473,7 +473,7 @@ class AddReviewPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFFFF4458), width: 2.w, style: BorderStyle.solid),
+          border: Border.all(color: const Color(0xFFFF4458), width: 2, style: BorderStyle.solid),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -494,7 +494,7 @@ class AddReviewPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.blue.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.blue.withValues(alpha: 0.2), width: 1.w),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.2), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -556,7 +556,7 @@ class AddReviewPage extends StatelessWidget {
                       height: 20.h,
                       width: 20.w,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2.w, valueColor: const AlwaysStoppedAnimation<Color>(Colors.white)),
+                          strokeWidth: 2, valueColor: const AlwaysStoppedAnimation<Color>(Colors.white)),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,

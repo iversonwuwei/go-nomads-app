@@ -136,7 +136,7 @@ class PhotosSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: AppColors.borderLight,
-            width: 2.w,
+            width: 2,
           ),
         ),
         child: Column(

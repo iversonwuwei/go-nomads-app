@@ -3,6 +3,8 @@ import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart' as doma
 /// Hotel DTO - 匹配后端 AccommodationService API 返回格式
 class HotelDto {
   final String id;
+  final String source;
+  final String externalStatus;
   final String name;
   final String? description;
   final String address;
@@ -52,6 +54,8 @@ class HotelDto {
 
   HotelDto({
     required this.id,
+    this.source = 'community',
+    this.externalStatus = 'internal',
     required this.name,
     this.description,
     required this.address,
@@ -106,6 +110,9 @@ class HotelDto {
 
     return HotelDto(
       id: map['id']?.toString() ?? '',
+      source: map['source'] as String? ?? 'community',
+      externalStatus: map['externalStatus'] as String? ??
+          ((map['source'] as String? ?? 'community') == 'booking' ? 'live' : 'internal'),
       name: map['name'] as String? ?? '',
       description: map['description'] as String?,
       address: map['address'] as String? ?? '',
@@ -189,6 +196,8 @@ class HotelDto {
   domain.Hotel toDomain() {
     return domain.Hotel(
       id: id,
+      source: source,
+      externalStatus: externalStatus,
       name: name,
       cityId: cityId ?? '',
       cityName: cityName ?? '',

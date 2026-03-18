@@ -1,9 +1,11 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/permission_purpose_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// 位置服务类
 /// 提供位置权限管理和位置获取功能
@@ -17,13 +19,37 @@ class LocationService extends GetxService {
   // 是否正在获取位置
   final RxBool isLoading = false.obs;
 
+  /// 是否已向用户展示过位置权限用途说明
+  static const String _locationPurposeShownKey = 'location_permission_purpose_shown';
+
   /// 初始化位置服务
+  /// 初始化时仅检查当前权限状态，不主动请求权限
   Future<LocationService> init() async {
-    await checkPermission();
+    await _checkCurrentPermissionStatus();
     return this;
   }
 
-  /// 检查位置权限
+  /// 仅检查当前权限状态，不触发权限请求
+  Future<void> _checkCurrentPermissionStatus() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        hasPermission.value = false;
+        return;
+      }
+
+      final permission = await Geolocator.checkPermission();
+      hasPermission.value = permission == LocationPermission.always || permission == LocationPermission.whileInUse;
+    } catch (e) {
+      log('⚠️ LocationService: 检查权限状态异常 - $e');
+      hasPermission.value = false;
+    }
+  }
+
+  /// 检查并请求位置权限
+  ///
+  /// 隐私合规要求：在请求系统权限之前，先通过显著方式告知用户
+  /// 申请该权限的目的（城市推荐、附近活动、共享办公空间、地图导航等）。
   Future<bool> checkPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -41,16 +67,35 @@ class LocationService extends GetxService {
 
     // 检查位置权限
     permission = await Geolocator.checkPermission();
+
+    // 如果权限已被授予，直接返回
+    if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+      hasPermission.value = true;
+      return true;
+    }
+
+    // 如果权限被永久拒绝，提示用户手动开启
+    if (permission == LocationPermission.deniedForever) {
+      AppToast.warning(
+        '请在设置中手动开启位置权限',
+        title: '位置权限被永久拒绝',
+      );
+      hasPermission.value = false;
+      return false;
+    }
+
+    // 权限未授予（denied 状态）：先展示用途说明，再请求系统权限
+    await _showPurposeDialogIfNeeded();
+
+    // 展示用途说明后，发起系统权限请求
+    permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        AppToast.warning(
-          '请授予位置权限以使用此功能',
-          title: '位置权限被拒绝',
-        );
-        hasPermission.value = false;
-        return false;
-      }
+      AppToast.warning(
+        '请授予位置权限以使用此功能',
+        title: '位置权限被拒绝',
+      );
+      hasPermission.value = false;
+      return false;
     }
 
     if (permission == LocationPermission.deniedForever) {
@@ -64,6 +109,29 @@ class LocationService extends GetxService {
 
     hasPermission.value = true;
     return true;
+  }
+
+  /// 在请求系统权限前，展示权限用途说明对话框
+  ///
+  /// 向用户说明为什么需要此权限（Apple Review Guideline 5.1.1 合规）。
+  /// 对话框只有"继续"按钮，阅读后直接进入系统权限弹窗。
+  Future<void> _showPurposeDialogIfNeeded() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasShownBefore = prefs.getBool(_locationPurposeShownKey) ?? false;
+
+      if (hasShownBefore) {
+        log('📋 再次展示位置权限用途说明');
+      }
+
+      await PermissionPurposeDialog.showLocationPermissionPurpose();
+
+      // 记录已展示过
+      await prefs.setBool(_locationPurposeShownKey, true);
+    } catch (e) {
+      log('⚠️ 展示权限用途说明对话框失败: $e');
+      // 如果对话框展示失败，仍然允许继续请求权限
+    }
   }
 
   /// 获取当前位置

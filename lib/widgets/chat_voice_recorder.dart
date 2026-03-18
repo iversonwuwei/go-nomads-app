@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -59,6 +61,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
   final AudioRecorder _recorder = AudioRecorder();
   bool _isRecording = false;
   bool _isCancelArea = false;
+  bool _isLongPressing = false; // 跟踪长按状态
   int _recordDuration = 0;
   Timer? _recordTimer;
   String? _recordingPath;
@@ -90,7 +93,16 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
 
   Future<void> _startRecording() async {
     try {
-      if (await _recorder.hasPermission()) {
+      // 检查权限，如果没有权限会触发请求
+      final hasPermission = await _recorder.hasPermission();
+
+      // 权限请求是异步的，用户可能已经松开了手指
+      // 只有在用户仍然按住的情况下才开始录制
+      if (!_isLongPressing) {
+        return;
+      }
+
+      if (hasPermission) {
         final dir = await getTemporaryDirectory();
         _recordingPath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
@@ -122,10 +134,10 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
 
         HapticFeedback.mediumImpact();
       } else {
-        AppToast.error('请允许录音权限');
+        AppToast.error(AppLocalizations.of(Get.context!)!.allowMicPermission);
       }
     } catch (e) {
-      AppToast.error('录音失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.recordingFailed(e.toString()));
     }
   }
 
@@ -147,7 +159,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
       if (send && path != null && _recordDuration >= widget.config.minDuration) {
         widget.onSendVoice(path, _recordDuration);
       } else if (_recordDuration < widget.config.minDuration) {
-        AppToast.info('说话时间太短');
+        AppToast.info(AppLocalizations.of(Get.context!)!.talkTooShort);
         if (path != null) {
           try {
             await File(path).delete();
@@ -175,7 +187,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
       });
 
       HapticFeedback.lightImpact();
-      AppToast.info('已取消');
+      AppToast.info(AppLocalizations.of(Get.context!)!.recordingCancelled);
 
       if (path != null) {
         try {
@@ -199,6 +211,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
 
     return GestureDetector(
       onLongPressStart: (details) {
+        _isLongPressing = true;
         _startY = details.globalPosition.dy;
         _startRecording();
       },
@@ -213,6 +226,7 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
         });
       },
       onLongPressEnd: (details) {
+        _isLongPressing = false;
         if (_isCancelArea) {
           _cancelRecording();
         } else {
@@ -220,18 +234,19 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
         }
       },
       onLongPressCancel: () {
+        _isLongPressing = false;
         _cancelRecording();
       },
       child: AnimatedBuilder(
         animation: _pulseAnimation,
         builder: (context, child) {
           return Container(
-            height: 36,
+            height: 36.h,
             decoration: BoxDecoration(
               color: _isRecording
                   ? (_isCancelArea ? Colors.red.withValues(alpha: 0.15) : primaryColor.withValues(alpha: 0.15))
                   : Colors.white,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(6.r),
               border: _isRecording
                   ? Border.all(
                       color: _isCancelArea ? Colors.red : primaryColor,
@@ -243,8 +258,8 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
                       BoxShadow(
                         color: (_isCancelArea ? Colors.red : primaryColor)
                             .withValues(alpha: 0.3 * (_pulseAnimation.value - 1) * 5),
-                        blurRadius: 8 * _pulseAnimation.value,
-                        spreadRadius: 2 * (_pulseAnimation.value - 1),
+                        blurRadius: 8.r * _pulseAnimation.value,
+                        spreadRadius: 2.r * (_pulseAnimation.value - 1),
                       ),
                     ]
                   : null,
@@ -259,11 +274,11 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
   }
 
   Widget _buildIdleContent() {
-    return const Text(
-      '按住 说话',
+    return Text(
+      AppLocalizations.of(Get.context!)!.holdToTalk,
       style: TextStyle(
         color: Color(0xFF999999),
-        fontSize: 15,
+        fontSize: 15.sp,
       ),
     );
   }
@@ -278,15 +293,15 @@ class _ChatVoiceRecorderButtonState extends State<ChatVoiceRecorderButton> with 
         Icon(
           _isCancelArea ? FontAwesomeIcons.trash : FontAwesomeIcons.microphone,
           color: color,
-          size: 14,
+          size: 14.r,
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         // 时间和提示
         Text(
-          _isCancelArea ? '松开取消' : '${_formatDuration(_recordDuration)} ↑ 取消',
+          _isCancelArea ? AppLocalizations.of(Get.context!)!.releaseToCancel : '${_formatDuration(_recordDuration)} ↑ ${AppLocalizations.of(Get.context!)!.cancelRecording}',
           style: TextStyle(
             color: color,
-            fontSize: 14,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -335,6 +350,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
   final AudioRecorder _recorder = AudioRecorder();
   bool _isRecording = false;
   bool _isCancelArea = false;
+  bool _isLongPressing = false; // 跟踪长按状态
   int _recordDuration = 0;
   Timer? _recordTimer;
   String? _recordingPath;
@@ -361,7 +377,16 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
 
   Future<void> _startRecording() async {
     try {
-      if (await _recorder.hasPermission()) {
+      // 检查权限，如果没有权限会触发请求
+      final hasPermission = await _recorder.hasPermission();
+
+      // 权限请求是异步的，用户可能已经松开了手指
+      // 只有在用户仍然按住的情况下才开始录制
+      if (!_isLongPressing) {
+        return;
+      }
+
+      if (hasPermission) {
         final dir = await getTemporaryDirectory();
         _recordingPath = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
@@ -392,10 +417,10 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
 
         HapticFeedback.mediumImpact();
       } else {
-        AppToast.error('请允许录音权限');
+        AppToast.error(AppLocalizations.of(Get.context!)!.allowMicPermission);
       }
     } catch (e) {
-      AppToast.error('录音失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.recordingFailed(e.toString()));
     }
   }
 
@@ -414,10 +439,11 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
       });
 
       if (send && path != null && _recordDuration >= widget.config.minDuration) {
+        if (!mounted) return;
         Navigator.of(context).pop();
         widget.onSendVoice(path, _recordDuration);
       } else if (_recordDuration < widget.config.minDuration) {
-        AppToast.info('说话时间太短');
+        AppToast.info(AppLocalizations.of(Get.context!)!.talkTooShort);
         if (path != null) {
           try {
             await File(path).delete();
@@ -464,25 +490,25 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
     final primaryColor = widget.config.primaryColor;
 
     return Container(
-      height: 280,
-      decoration: const BoxDecoration(
+      height: 280.h,
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: SafeArea(
         child: Column(
           children: [
             // 顶部拖动条
             Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             // 录音状态显示
             Expanded(
               child: Column(
@@ -493,8 +519,8 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                     animation: _waveController,
                     builder: (context, child) {
                       return Container(
-                        width: 80,
-                        height: 80,
+                        width: 80.w,
+                        height: 80.h,
                         decoration: BoxDecoration(
                           color: _isRecording
                               ? (_isCancelArea
@@ -506,17 +532,17 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                         child: Center(
                           child: Icon(
                             _isCancelArea ? FontAwesomeIcons.trash : FontAwesomeIcons.microphone,
-                            size: 32,
+                            size: 32.r,
                             color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : Colors.grey,
                           ),
                         ),
                       );
                     },
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   // 时间显示
                   Text(
-                    _isRecording ? _formatDuration(_recordDuration) : '按住下方按钮开始录音',
+                    _isRecording ? _formatDuration(_recordDuration) : AppLocalizations.of(context)!.holdButtonToRecord,
                     style: TextStyle(
                       fontSize: _isRecording ? 24 : 14,
                       fontWeight: _isRecording ? FontWeight.bold : FontWeight.normal,
@@ -524,11 +550,11 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                     ),
                   ),
                   if (_isRecording) ...[
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Text(
-                      _isCancelArea ? '松开手指，取消发送' : '上滑取消',
+                      _isCancelArea ? AppLocalizations.of(context)!.releaseToCancelSend : AppLocalizations.of(context)!.swipeUpToCancel,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: _isCancelArea ? Colors.red : const Color(0xFF999999),
                       ),
                     ),
@@ -538,9 +564,10 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
             ),
             // 底部录音按钮
             Padding(
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: EdgeInsets.only(bottom: 20.h),
               child: GestureDetector(
                 onLongPressStart: (details) {
+                  _isLongPressing = true;
                   _startY = details.globalPosition.dy;
                   _startRecording();
                 },
@@ -551,6 +578,7 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                   });
                 },
                 onLongPressEnd: (details) {
+                  _isLongPressing = false;
                   if (_isCancelArea) {
                     _cancelRecording();
                   } else {
@@ -558,17 +586,18 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                   }
                 },
                 onLongPressCancel: () {
+                  _isLongPressing = false;
                   _cancelRecording();
                 },
                 child: Container(
                   width: double.infinity,
-                  height: 50,
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  height: 50.h,
+                  margin: EdgeInsets.symmetric(horizontal: 20.w),
                   decoration: BoxDecoration(
                     color: _isRecording
                         ? (_isCancelArea ? Colors.red.withValues(alpha: 0.15) : primaryColor.withValues(alpha: 0.15))
                         : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(25.r),
                     border: _isRecording
                         ? Border.all(
                             color: _isCancelArea ? Colors.red : primaryColor,
@@ -585,13 +614,13 @@ class _ChatVoiceRecorderPanelState extends State<ChatVoiceRecorderPanel> with Si
                               ? (_isCancelArea ? FontAwesomeIcons.xmark : FontAwesomeIcons.microphone)
                               : FontAwesomeIcons.microphone,
                           color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : const Color(0xFF666666),
-                          size: 18,
+                          size: 18.r,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         Text(
-                          _isRecording ? (_isCancelArea ? '松开取消' : '正在录音...') : '按住说话',
+                          _isRecording ? (_isCancelArea ? AppLocalizations.of(context)!.releaseToCancel : AppLocalizations.of(context)!.recording) : AppLocalizations.of(context)!.holdToTalk,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w500,
                             color: _isRecording ? (_isCancelArea ? Colors.red : primaryColor) : const Color(0xFF666666),
                           ),

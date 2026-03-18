@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 景点卡片组件 - 无状态组件
 class TravelPlanAttractionCard extends StatelessWidget {
@@ -11,25 +12,25 @@ class TravelPlanAttractionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+            borderRadius: BorderRadius.horizontal(left: Radius.circular(12.r)),
             child: Image.network(
               attraction.image ?? '',
-              width: 100,
-              height: 100,
+              width: 100.w,
+              height: 100.h,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  width: 100,
-                  height: 100,
+                  width: 100.w,
+                  height: 100.h,
                   color: Colors.grey[300],
                   child: const Icon(FontAwesomeIcons.image),
                 );
@@ -38,41 +39,41 @@ class TravelPlanAttractionCard extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     attraction.name,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     attraction.description,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: Colors.grey[600],
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
-                      const Icon(FontAwesomeIcons.star, size: 12, color: Colors.amber),
-                      const SizedBox(width: 4),
+                      Icon(FontAwesomeIcons.star, size: 12.r, color: Colors.amber),
+                      SizedBox(width: 4.w),
                       Text(
                         attraction.rating.toString(),
-                        style: const TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: 11.sp),
                       ),
-                      const SizedBox(width: 12),
-                      const Icon(FontAwesomeIcons.dollarSign, size: 12, color: Color(0xFFFF4458)),
+                      SizedBox(width: 12.w),
+                      Icon(FontAwesomeIcons.dollarSign, size: 12.r, color: Color(0xFFFF4458)),
                       Text(
                         '\$${attraction.entryFee.toStringAsFixed(0)}',
-                        style: const TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: 11.sp),
                       ),
                     ],
                   ),
@@ -95,25 +96,25 @@ class TravelPlanRestaurantCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+            borderRadius: BorderRadius.horizontal(left: Radius.circular(12.r)),
             child: Image.network(
               restaurant.image ?? '',
-              width: 100,
-              height: 100,
+              width: 100.w,
+              height: 100.h,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  width: 100,
-                  height: 100,
+                  width: 100.w,
+                  height: 100.h,
                   color: Colors.grey[300],
                   child: const Icon(FontAwesomeIcons.utensils),
                 );
@@ -122,49 +123,49 @@ class TravelPlanRestaurantCard extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     restaurant.name,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     restaurant.cuisine,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       color: Colors.grey[600],
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     restaurant.specialty,
-                    style: const TextStyle(
-                      fontSize: 12,
+                    style: TextStyle(
+                      fontSize: 12.sp,
                       fontStyle: FontStyle.italic,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
-                      const Icon(FontAwesomeIcons.star, size: 12, color: Colors.amber),
-                      const SizedBox(width: 4),
+                      Icon(FontAwesomeIcons.star, size: 12.r, color: Colors.amber),
+                      SizedBox(width: 4.w),
                       Text(
                         restaurant.rating.toString(),
-                        style: const TextStyle(fontSize: 11),
+                        style: TextStyle(fontSize: 11.sp),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       Text(
                         restaurant.priceSymbol,
-                        style: const TextStyle(
-                          fontSize: 11,
+                        style: TextStyle(
+                          fontSize: 11.sp,
                           color: Color(0xFFFF4458),
                           fontWeight: FontWeight.w600,
                         ),
@@ -190,30 +191,30 @@ class TravelPlanTipItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 2),
-            width: 6,
-            height: 6,
+            margin: EdgeInsets.only(top: 2.h),
+            width: 6.w,
+            height: 6.h,
             decoration: const BoxDecoration(
               color: Color(0xFFFF4458),
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               tip,
-              style: const TextStyle(fontSize: 13),
+              style: TextStyle(fontSize: 13.sp),
             ),
           ),
         ],

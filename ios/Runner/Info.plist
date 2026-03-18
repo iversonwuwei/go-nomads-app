@@ -1,164 +1,218 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-	<dict>
-		<key>CFBundleDevelopmentRegion</key>
-		<string>$(DEVELOPMENT_LANGUAGE)</string>
-		<key>CFBundleDisplayName</key>
-		<string>行途</string>
-		<key>CFBundleExecutable</key>
-		<string>$(EXECUTABLE_NAME)</string>
-		<key>CFBundleIdentifier</key>
-		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-		<key>CFBundleInfoDictionaryVersion</key>
-		<string>6.0</string>
-		<key>CFBundleName</key>
-		<string>行途</string>
-		<key>CFBundlePackageType</key>
-		<string>APPL</string>
-		<key>CFBundleShortVersionString</key>
-		<string>$(FLUTTER_BUILD_NAME)</string>
-		<key>CFBundleSignature</key>
-		<string>????</string>
-		<key>CFBundleVersion</key>
-		<string>$(FLUTTER_BUILD_NUMBER)</string>
-		<key>LSRequiresIPhoneOS</key>
-		<true/>
-		<key>UILaunchStoryboardName</key>
-		<string>LaunchScreen</string>
-		<key>UIMainStoryboardFile</key>
-		<string>Main</string>
-		<key>UISupportedInterfaceOrientations</key>
-		<array>
-			<string>UIInterfaceOrientationPortrait</string>
-			<string>UIInterfaceOrientationLandscapeLeft</string>
-			<string>UIInterfaceOrientationLandscapeRight</string>
-		</array>
-		<key>UISupportedInterfaceOrientations~ipad</key>
-		<array>
-			<string>UIInterfaceOrientationPortrait</string>
-			<string>UIInterfaceOrientationPortraitUpsideDown</string>
-			<string>UIInterfaceOrientationLandscapeLeft</string>
-			<string>UIInterfaceOrientationLandscapeRight</string>
-		</array>
-		<key>CADisableMinimumFrameDurationOnPhone</key>
-		<true/>
-		<key>UIApplicationSupportsIndirectInputEvents</key>
-		<true/>
-		<!-- 允许 HTTP 请求（地图瓦片加载） -->
-		<key>NSAppTransportSecurity</key>
+<dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>行途</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>行途</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
 		<dict>
-			<key>NSAllowsArbitraryLoads</key>
-			<true/>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.gonomads.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>gonomads</string>
+			</array>
 		</dict>
-		<!-- 位置权限描述 -->
-		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>我们需要访问您的位置以提供基于位置的城市推荐服务</string>
-		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>我们需要访问您的位置以提供更好的服务体验</string>
-		<key>NSLocationAlwaysUsageDescription</key>
-		<string>我们需要访问您的位置以提供持续的位置服务</string>
-		<!-- 支持 canLaunchUrl 检测第三方App -->
-		<key>LSApplicationQueriesSchemes</key>
-		<array>
-			<string>fb</string>
-			<string>twitter</string>
-			<string>whatsapp</string>
-			<string>tg</string>
-			<string>linkedin</string>
-			<string>mqq</string>
-			<string>mqqzone</string>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>google-sign-in</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.856428781735-al5ljiii3u1i3dk3jj60sfsbntusc5of</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>douyin</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>douyinopensdk</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>gonomads-share</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>gonomads</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
 			<string>weixin</string>
-			<string>sinaweibo</string>
-			<string>dingtalk</string>
-			<!-- 地图应用 -->
-			<string>comgooglemaps</string>
-			<string>iosamap</string>
-			<string>baidumap</string>
-			<string>qqmap</string>
-		</array>
-		<!-- 日历权限描述 -->
-		<key>NSCalendarsUsageDescription</key>
-		<string>We need access to your calendar to add meetup events</string>
-		<!-- iOS 17+ 日历完整访问权限 -->
-		<key>NSCalendarsFullAccessUsageDescription</key>
-		<string>We need full access to your calendar to add and manage meetup events</string>
-		<!-- 联系人权限 (日历位置自动完成需要) -->
-		<key>NSContactsUsageDescription</key>
-		<string>We need access to contacts for calendar event location autocomplete</string>
-		<!-- 通知权限描述 -->
-		<key>NSUserNotificationsUsageDescription</key>
-		<string>我们需要发送通知以告知您旅游指南生成完成</string>
-		<!-- Deep Link URL Schemes -->
-		<key>CFBundleURLTypes</key>
-		<array>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wx3b333eed7c75a444</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>tencentopenapi</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tencent102822014</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>twitter-callback</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>gonomads</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fb</string>
+		<string>twitter</string>
+		<string>whatsapp</string>
+		<string>tg</string>
+		<string>linkedin</string>
+		<string>weixin</string>
+		<string>weixinULAPI</string>
+		<string>mqq</string>
+		<string>mqqapi</string>
+		<string>mqqopensdkapi</string>
+		<string>mqqopensdkapiV2</string>
+		<string>mqqopensdkapiV3</string>
+		<string>mqqopensdkapiV4</string>
+		<string>mqzone</string>
+		<string>mqqOpensdkSSoLogin</string>
+		<string>mqqopensdknopasteboard</string>
+		<string>mqqconnect</string>
+		<string>wtloginmqq2</string>
+		<string>mqqwpa</string>
+		<string>tim</string>
+		<string>timapi</string>
+		<string>sinaweibo</string>
+		<string>dingtalk</string>
+		<string>comgooglemaps</string>
+		<string>iosamap</string>
+		<string>baidumap</string>
+		<string>qqmap</string>
+		<string>snssdk1128</string>
+		<string>douyinopenplatform</string>
+		<string>weixinURLParamsAPI</string>
+		<string>mqqopensdknopasteboardios16</string>
+		<string>mqqgamebindinggroup</string>
+		<string>mqqopensdkavatar</string>
+		<string>mqqopensdkfriend</string>
+		<string>mqqopensdklaunchminiapp</string>
+		<string>tencentapi.qq.reqContent</string>
+		<string>tencentapi.qzone.reqContent</string>
+		<string>mqqthirdappgroup</string>
+		<string>mqqopensdkminiapp</string>
+	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>127.0.0.1</key>
 			<dict>
-				<key>CFBundleTypeRole</key>
-				<string>Editor</string>
-				<key>CFBundleURLName</key>
-				<string>com.gonomads.app</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>gonomads</string>
-				</array>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+<key>NSIncludesSubdomains</key>
+<true/>
+
 			</dict>
+			<key>192.168.110.67</key>
 			<dict>
-				<key>CFBundleTypeRole</key>
-				<string>Editor</string>
-				<key>CFBundleURLName</key>
-				<string>alipay</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>alipay2021006115624759</string>
-				</array>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+<true/>
+
+				<key>NSIncludesSubdomains</key>
+				<true/>
 			</dict>
+			<key>localhost</key>
 			<dict>
-				<key>CFBundleTypeRole</key>
-				<string>Editor</string>
-				<key>CFBundleURLName</key>
-				<string>gonomads-share</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>gonomads</string>
-				</array>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+<key>NSIncludesSubdomains</key>
+<true/>
+
 			</dict>
-			<dict>
-				<key>CFBundleTypeRole</key>
-				<string>Editor</string>
-				<key>CFBundleURLName</key>
-				<string>tencent</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>tencent102822014</string>
-				</array>
-			</dict>
-			<dict>
-				<key>CFBundleTypeRole</key>
-				<string>Editor</string>
-				<key>CFBundleURLName</key>
-				<string>weixin</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>wx3b333eed7c75a444</string>
-				</array>
-			</dict>
-		</array>
-		<!-- Universal Links 配置 -->
-		<key>com.apple.developer.associated-domains</key>
-		<array>
-			<string>applinks:go-nomads.com</string>
-		</array>
-		<!-- 支付宝白名单 -->
-		<key>LSApplicationQueriesSchemes</key>
-		<array>
-			<string>alipay</string>
-			<string>alipays</string>
-			<string>paypal</string>
-			<string>paypalme</string>
-		</array>
-		<key>UIStatusBarHidden</key>
-		<true/>
-		<key>UIViewControllerBasedStatusBarAppearance</key>
-		<false/>
+		</dict>
 	</dict>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>行途需要完整的日历访问权限，以便将活动和聚会添加到您选择的日历中，并管理活动提醒。我们仅在您主动操作时访问日历。</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>行途需要访问您的日历，以便将您感兴趣的活动和聚会添加到日历中，并设置活动提醒。我们仅在您主动点击&quot;添加到日历&quot;时访问日历，不会读取您的其他日历信息。</string>
+	<key>NSCameraUsageDescription</key>
+<string>行途需要访问您的相机，用于拍摄头像照片和社区内容图片。我们仅在您主动拍照时使用相机，不会在后台访问。</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>行途在您开启旅行足迹记录或连续定位相关功能时，可能需要持续访问位置信息，以便识别您到达的新城市、更新行程状态并提供更准确的位置服务。我们仅在您主动启用相关功能后使用该权限，且您可随时在系统设置中关闭。</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>行途需要获取您的位置信息，用于为您推荐附近城市和目的地、查找附近的活动和聚会、发现附近的共享办公空间，以及提供地图导航和位置选择功能。我们仅在您使用相关功能时获取位置信息。</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>行途需要访问您的麦克风，用于在聊天中发送语音消息。我们仅在您主动录制语音时使用麦克风。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>行途需要访问您的照片图库，用于选择头像和社区内容中的图片。我们不会访问您未选择的照片。</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>行途需要发送通知，用于旅行指南生成完成提醒、新消息和互动提醒、以及活动开始前提醒。您可以随时在应用设置或系统设置中关闭通知。</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIStatusBarHidden</key>
+	<true/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:go-nomads.com</string>
+	</array>
+</dict>
 </plist>

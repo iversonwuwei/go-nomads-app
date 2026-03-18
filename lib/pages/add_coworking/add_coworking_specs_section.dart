@@ -4,6 +4,7 @@ import 'package:go_nomads_app/controllers/add_coworking_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddCoworkingSpecsSection extends StatelessWidget {
   final String controllerTag;
@@ -20,15 +21,15 @@ class AddCoworkingSpecsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.specifications, FontAwesomeIcons.listCheck),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(controller: _c.wifiSpeedController, label: l10n.wifiSpeed, hint: l10n.wifiSpeedHint, keyboardType: TextInputType.number),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(controller: _c.capacityController, label: l10n.capacity, hint: l10n.capacityHint, keyboardType: TextInputType.number),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(controller: _c.numberOfDesksController, label: l10n.numberOfDesks, hint: l10n.numberOfDesksHint, keyboardType: TextInputType.number),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildNoiseLevelDropdown(context, l10n),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildSpaceTypeDropdown(context, l10n),
       ],
     );
@@ -37,9 +38,9 @@ class AddCoworkingSpecsSection extends StatelessWidget {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFFFF4458), size: 24),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+        Icon(icon, color: const Color(0xFFFF4458), size: 24.r),
+        SizedBox(width: 8.w),
+        Text(title, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
       ],
     );
   }
@@ -51,7 +52,7 @@ class AddCoworkingSpecsSection extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
         filled: true,
         fillColor: Colors.grey[50],
       ),
@@ -63,7 +64,7 @@ class AddCoworkingSpecsSection extends StatelessWidget {
           value: _c.noiseLevel.value,
           decoration: InputDecoration(
             labelText: l10n.noiseLevel,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
             filled: true,
             fillColor: Colors.grey[50],
           ),
@@ -81,7 +82,7 @@ class AddCoworkingSpecsSection extends StatelessWidget {
           value: _c.spaceType.value,
           decoration: InputDecoration(
             labelText: l10n.spaceType,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
             filled: true,
             fillColor: Colors.grey[50],
           ),

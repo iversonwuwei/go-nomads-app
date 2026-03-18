@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -30,6 +31,8 @@ class CityDetailStateController extends GetxController {
   StreamSubscription<DataChangedEvent>? _ratingChangedSubscription;
   StreamSubscription<Map<String, dynamic>>? _signalRRatingSubscription;
   StreamSubscription<Map<String, dynamic>>? _signalRReviewSubscription;
+  StreamSubscription<Map<String, dynamic>>? _signalRImageSubscription;
+  StreamSubscription<Map<String, dynamic>>? _signalRModeratorSubscription;
 
   CityDetailStateController({
     required GetCityByIdUseCase getCityByIdUseCase,
@@ -82,6 +85,16 @@ class CityDetailStateController extends GetxController {
       _handleSignalRReviewUpdated(data);
     });
 
+    // 监听城市图片更新事件 (来自 SignalR)
+    _signalRImageSubscription = signalRService.cityImageUpdatedStream.listen((data) {
+      _handleSignalRImageUpdated(data);
+    });
+
+    // 监听城市版主变更事件 (来自 SignalR)
+    _signalRModeratorSubscription = signalRService.cityModeratorUpdatedStream.listen((data) {
+      _handleSignalRModeratorUpdated(data);
+    });
+
     log('✅ [CityDetailStateController] SignalR 监听器已设置');
   }
 
@@ -122,6 +135,84 @@ class CityDetailStateController extends GetxController {
     currentCity.value = updatedCity;
 
     log('✅ [城市详情] SignalR 静默更新 Header 评论数据完成');
+  }
+
+  /// 处理 SignalR 城市图片更新事件 (用于详情页顶部图片实时更新)
+  void _handleSignalRImageUpdated(Map<String, dynamic> data) {
+    final cityId = data['cityId'] as String?;
+    final success = data['success'] as bool? ?? false;
+
+    log('📡 [城市详情] 收到 SignalR 图片更新: cityId=$cityId, success=$success, currentCityId=${currentCity.value?.id}');
+
+    if (!success || currentCity.value == null || cityId != currentCity.value!.id) {
+      return;
+    }
+
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch.toString();
+
+    // 提取竖屏图片 URL
+    String? portraitUrl = data['portraitImageUrl'] as String?;
+    if (portraitUrl != null && portraitUrl.isNotEmpty) {
+      portraitUrl = portraitUrl.contains('?') ? '$portraitUrl&v=$cacheBuster' : '$portraitUrl?v=$cacheBuster';
+    }
+
+    // 提取横屏图片 URL 列表
+    List<String>? landscapeUrls;
+    final landscapeImages = data['landscapeImageUrls'];
+    if (landscapeImages is List && landscapeImages.isNotEmpty) {
+      landscapeUrls = landscapeImages.cast<String>().map((url) {
+        return url.contains('?') ? '$url&v=$cacheBuster' : '$url?v=$cacheBuster';
+      }).toList();
+    }
+
+    if (portraitUrl == null && (landscapeUrls == null || landscapeUrls.isEmpty)) {
+      log('⚠️ [城市详情] 未解析到图片URL，跳过更新');
+      return;
+    }
+
+    var updatedCity = currentCity.value!.copyWith(
+      portraitImageUrl: portraitUrl ?? currentCity.value!.portraitImageUrl,
+      landscapeImageUrls: landscapeUrls ?? currentCity.value!.landscapeImageUrls,
+      imageUrl: portraitUrl ?? currentCity.value!.imageUrl,
+    );
+
+    // 强制触发 GetX 更新
+    currentCity.value = null;
+    currentCity.value = updatedCity;
+
+    log('✅ [城市详情] SignalR 城市图片已更新: portrait=${portraitUrl != null}, landscape=${landscapeUrls?.length ?? 0}');
+  }
+
+  /// 处理 SignalR 城市版主变更事件 (来自其他设备的审核操作)
+  void _handleSignalRModeratorUpdated(Map<String, dynamic> data) {
+    final cityId = data['cityId'] as String?;
+    final changeType = data['changeType'] as String?;
+
+    log('📡 [城市详情] 收到 SignalR 版主变更: cityId=$cityId, changeType=$changeType, currentCityId=${currentCity.value?.id}');
+
+    if (currentCity.value == null || cityId != currentCity.value!.id) {
+      return;
+    }
+
+    // 只 patch 版主字段，不全量刷新
+    _cityRepository.getCityModeratorSummary(cityId!).then((result) {
+      result.fold(
+        onSuccess: (summary) {
+          final updatedCity = currentCity.value!.copyWith(
+            moderatorId: summary.moderatorId,
+            moderator: summary.moderator,
+            isCurrentUserModerator: summary.isCurrentUserModerator,
+            isCurrentUserAdmin: summary.isCurrentUserAdmin,
+          );
+          currentCity.value = null;
+          currentCity.value = updatedCity;
+          log('✅ [城市详情] SignalR patch 版主字段完成: moderatorId=${summary.moderatorId}, moderator=${summary.moderator?.name}');
+        },
+        onFailure: (e) {
+          log('❌ [城市详情] SignalR patch 版主字段失败: ${e.message}');
+        },
+      );
+    });
   }
 
   /// 处理 SignalR 城市评分更新事件 (用于 Header 数据同步)
@@ -329,19 +420,21 @@ class CityDetailStateController extends GetxController {
 
     result.fold(
       onSuccess: (city) {
-        log('📦 [城市详情] 准备更新 currentCity: overallScore=${city.overallScore}, reviewCount=${city.reviewCount}');
-        log('📦 [城市详情] 更新前 currentCity.value: overallScore=${currentCity.value?.overallScore}, reviewCount=${currentCity.value?.reviewCount}');
+        log('📦 [城市详情] 准备更新 currentCity: overallScore=${city.overallScore}, reviewCount=${city.reviewCount}, moderatorId=${city.moderatorId}');
+        log('📦 [城市详情] 更新前 currentCity.value: overallScore=${currentCity.value?.overallScore}, moderatorId=${currentCity.value?.moderatorId}');
+        // 强制触发 GetX 更新 (City 的 == 只比较 id，需先置空再赋值)
+        currentCity.value = null;
         currentCity.value = city;
-        log('📦 [城市详情] 更新后 currentCity.value: overallScore=${currentCity.value?.overallScore}, reviewCount=${currentCity.value?.reviewCount}');
+        log('📦 [城市详情] 更新后 currentCity.value: overallScore=${currentCity.value?.overallScore}, moderatorId=${currentCity.value?.moderatorId}');
         isFavorited.value = city.isFavorite;
         isLoading.value = false;
-        log('✅ [城市详情] 加载成功: ${city.name}, isFavorite: ${city.isFavorite}, overallScore: ${city.overallScore}, reviewCount: ${city.reviewCount}');
+        log('✅ [城市详情] 加载成功: ${city.name}, isFavorite: ${city.isFavorite}, overallScore: ${city.overallScore}, reviewCount: ${city.reviewCount}, hasModerator: ${city.hasModerator}');
       },
       onFailure: (exception) {
         hasError.value = true;
         errorMessage.value = exception.message;
         isLoading.value = false;
-        AppToast.error(exception.message, title: '加载失败');
+        AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.loadFailedTitle);
       },
     );
   }
@@ -405,7 +498,10 @@ class CityDetailStateController extends GetxController {
     isFavorited.value = !previousState;
 
     final result = await _toggleCityFavoriteUseCase.execute(
-      ToggleCityFavoriteParams(cityId: cityId),
+      ToggleCityFavoriteParams(
+        cityId: cityId,
+        currentIsFavorited: previousState,
+      ),
     );
 
     result.fold(
@@ -428,8 +524,10 @@ class CityDetailStateController extends GetxController {
         log('✅ [城市详情] 收藏状态已同步: $cityId -> $newState');
 
         AppToast.success(
-          newState ? '已添加到收藏' : '已取消收藏',
-          title: '成功',
+          newState
+              ? AppLocalizations.of(Get.context!)!.addedToFavorites
+              : AppLocalizations.of(Get.context!)!.removedFromFavorites,
+          title: AppLocalizations.of(Get.context!)!.successTitle,
         );
         isTogglingFavorite.value = false;
       },
@@ -437,7 +535,7 @@ class CityDetailStateController extends GetxController {
         // 操作失败,恢复之前的状态
         isFavorited.value = previousState;
 
-        AppToast.error(exception.message, title: '操作失败');
+        AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.operationFailed);
         isTogglingFavorite.value = false;
       },
     );
@@ -475,7 +573,7 @@ class CityDetailStateController extends GetxController {
       },
       onFailure: (error) {
         log('❌ [CityDetailStateController] 删除城市失败: ${error.message}');
-        AppToast.error('删除失败: ${error.message}');
+        AppToast.error(AppLocalizations.of(Get.context!)!.deleteFailed(error.message));
         return false;
       },
     );
@@ -514,6 +612,10 @@ class CityDetailStateController extends GetxController {
     _signalRRatingSubscription = null;
     _signalRReviewSubscription?.cancel();
     _signalRReviewSubscription = null;
+    _signalRImageSubscription?.cancel();
+    _signalRImageSubscription = null;
+    _signalRModeratorSubscription?.cancel();
+    _signalRModeratorSubscription = null;
 
     // 清理所有状态
     currentCity.value = null;

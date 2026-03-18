@@ -7,6 +7,7 @@ import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_region_tab.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/domain/usecases/city_rating_usecases.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
@@ -46,6 +47,11 @@ class CityListController extends GetxController {
   final searchQuery = ''.obs;
   final followedCities = <String, bool>{}.obs;
 
+  // 区域 Tab 相关状态
+  final regionTabs = <CityRegionTab>[].obs;
+  final selectedRegion = Rx<String?>(null);
+  final isLoadingTabs = false.obs;
+
   // 本地生成中状态（响应式）
   final generatingImageCityIds = <String>{}.obs;
 
@@ -53,6 +59,7 @@ class CityListController extends GetxController {
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
   StreamSubscription<Map<String, dynamic>>? _cityRatingUpdatedSubscription;
   StreamSubscription<Map<String, dynamic>>? _cityReviewUpdatedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _cityModeratorUpdatedSubscription;
 
   // EventBus 订阅
   StreamSubscription<DataChangedEvent>? _favoriteChangedSubscription;
@@ -94,8 +101,8 @@ class CityListController extends GetxController {
     // 设置收藏状态变更监听器
     _setupFavoriteChangedListener();
 
-    // 初始加载
-    loadCities(refresh: true);
+    // 初始加载：先加载 Tab 列表，再加载城市数据，确保 Tab 先渲染
+    _initLoad();
 
     // 异步加载关注状态
     Future.microtask(() => _loadFollowedCities());
@@ -162,7 +169,20 @@ class CityListController extends GetxController {
       _handleSignalRReviewUpdated(data);
     });
 
-    log('✅ [CityListController] SignalR 监听已设置 (图片更新 + 评分更新 + 评论更新)');
+    // 监听城市版主变更事件 (通过 SignalR 同步列表中的版主状态)
+    _cityModeratorUpdatedSubscription = signalRService.cityModeratorUpdatedStream.listen((data) {
+      log('👤 [CityListController] 收到城市版主变更通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      if (cityId == null) {
+        log('⚠️ [CityListController] 城市ID为空，忽略通知');
+        return;
+      }
+
+      _updateCityModeratorInList(cityId);
+    });
+
+    log('✅ [CityListController] SignalR 监听已设置 (图片更新 + 评分更新 + 评论更新 + 版主更新)');
   }
 
   /// 处理 SignalR 城市评论更新事件 (同步城市列表中的评论数)
@@ -277,6 +297,35 @@ class CityListController extends GetxController {
     log('✅ [CityListController] 城市图片已更新: ${updatedCity.name}, imageUrl: ${updatedCity.imageUrl}');
   }
 
+  /// 仅更新城市版主字段
+  Future<void> _updateCityModeratorInList(String cityId) async {
+    try {
+      log('📡 [CityListController] 开始获取城市版主摘要: $cityId');
+      final result = await _cityRepository.getCityModeratorSummary(cityId);
+      result.fold(
+        onSuccess: (summary) {
+          final index = cities.indexWhere((c) => c.id == cityId);
+          if (index != -1) {
+            cities[index] = cities[index].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            cities.refresh();
+          }
+
+          log('✅ [CityListController] 版主字段已更新: moderatorId=${summary.moderatorId}, moderator=${summary.moderator?.name}');
+        },
+        onFailure: (e) {
+          log('⚠️ [CityListController] 获取版主摘要失败: ${e.message}');
+        },
+      );
+    } catch (e) {
+      log('⚠️ [CityListController] 获取版主摘要异常: $e');
+    }
+  }
+
   /// 同步 CityStateController 中的城市更新到本地列表
   void _syncCityUpdates(List<City> updatedCities) {
     bool hasUpdates = false;
@@ -326,11 +375,53 @@ class CityListController extends GetxController {
 
   // ==================== 数据加载 ====================
 
+  /// 初始化加载：并行加载 Tab 列表和城市数据，缩短首屏等待时间
+  Future<void> _initLoad() async {
+    await Future.wait([
+      loadRegionTabs(),
+      loadCities(refresh: true),
+    ]);
+  }
+
+  /// 加载区域 Tab 数据（后端控制）
+  Future<void> loadRegionTabs() async {
+    isLoadingTabs.value = true;
+    try {
+      final result = await _cityRepository.getRegionTabs();
+      result.fold(
+        onSuccess: (tabs) {
+          regionTabs.assignAll(tabs);
+          log('✅ 加载了 ${tabs.length} 个区域标签');
+        },
+        onFailure: (error) {
+          log('⚠️ 加载区域标签失败: ${error.message}');
+        },
+      );
+    } catch (e) {
+      log('⚠️ 加载区域标签异常: $e');
+    } finally {
+      isLoadingTabs.value = false;
+    }
+  }
+
+  /// 切换区域 Tab - 清空列表显示骨架屏，再加载新数据
+  Future<void> selectRegion(String? region) async {
+    if (selectedRegion.value == region) return;
+    selectedRegion.value = region;
+    // 清空当前列表，触发骨架屏
+    cities.clear();
+    await loadCities(refresh: true);
+  }
+
   /// 加载城市列表
-  Future<void> loadCities({bool refresh = false}) async {
+  /// [refresh] 为 true 时重置分页
+  /// [showLoading] 为 false 时不显示全局loading（tab切换时使用）
+  Future<void> loadCities({bool refresh = false, bool showLoading = true}) async {
     if (isLoading.value && !refresh) return;
 
-    isLoading.value = true;
+    if (showLoading) {
+      isLoading.value = true;
+    }
     errorMessage.value = null;
     _currentPage = 1;
 
@@ -368,6 +459,8 @@ class CityListController extends GetxController {
   /// 搜索城市
   Future<void> search(String query) async {
     searchQuery.value = query.trim();
+    // 搜索时自动切到"全部" Tab，搜索结果不受区域限制
+    selectedRegion.value = null;
     await loadCities(refresh: true);
   }
 
@@ -426,7 +519,11 @@ class CityListController extends GetxController {
   }
 
   Future<void> _loadFromDatabase() async {
-    final result = await _cityRepository.getCitiesBasic(page: 1, pageSize: _pageSize);
+    final result = await _cityRepository.getCitiesBasic(
+      page: 1,
+      pageSize: _pageSize,
+      region: selectedRegion.value,
+    );
 
     result.fold(
       onSuccess: (data) {
@@ -487,6 +584,7 @@ class CityListController extends GetxController {
     final result = await _cityRepository.getCitiesBasic(
       page: _currentPage + 1,
       pageSize: _pageSize,
+      region: selectedRegion.value,
     );
 
     result.fold(
@@ -540,26 +638,39 @@ class CityListController extends GetxController {
     }
   }
 
-  /// 异步加载评分
+  /// 异步加载评分 — 🚀 优化：使用 Future.wait 并行加载，替代串行循环
   Future<void> _loadCityRatingsAsync(List<String> cityIds) async {
     if (cityIds.isEmpty) return;
-    log('📊 开始异步加载评分: ${cityIds.length} 个城市');
-    for (final cityId in cityIds) {
+    log('📊 开始并行加载评分: ${cityIds.length} 个城市');
+
+    // 并行发起所有评分请求
+    final futures = cityIds.map((cityId) async {
       try {
         final info = await _cityRatingUseCases.getCityRatings(cityId);
-        log('📊 获取到评分: cityId=$cityId, overallScore=${info.overallScore}');
-        final idx = cities.indexWhere((c) => c.id == cityId);
-        if (idx != -1) {
-          final oldScore = cities[idx].overallScore;
-          cities[idx] = cities[idx].copyWith(overallScore: info.overallScore);
-          log('📊 更新城市评分: ${cities[idx].name} $oldScore -> ${info.overallScore}');
-        }
+        return MapEntry(cityId, info.overallScore);
       } catch (e) {
         log('⚠️ 评分加载失败: cityId=$cityId, error=$e');
+        return null;
+      }
+    }).toList();
+
+    final results = await Future.wait(futures);
+
+    // 批量更新城市列表
+    bool hasUpdates = false;
+    for (final result in results) {
+      if (result == null) continue;
+      final idx = cities.indexWhere((c) => c.id == result.key);
+      if (idx != -1) {
+        cities[idx] = cities[idx].copyWith(overallScore: result.value);
+        hasUpdates = true;
       }
     }
-    cities.refresh();
-    log('📊 评分异步加载完成');
+
+    if (hasUpdates) {
+      cities.refresh();
+    }
+    log('📊 评分并行加载完成');
   }
 
   City _convertSearchDocToCity(CitySearchDocument doc) {
@@ -691,8 +802,20 @@ class CityListController extends GetxController {
 
     final user = authController.currentUser.value;
     final userRole = user?.role.toLowerCase() ?? '';
-    if (userRole != 'admin') {
-      AppToast.warning('Only administrators can generate images', title: 'Permission Denied');
+    final isAdmin = userRole == 'admin';
+
+    // 检查是否为该城市的版主（通过城市列表中的 moderatorId 或 isCurrentUserModerator 判断）
+    bool isCityModerator = false;
+    try {
+      final city = cities.firstWhereOrNull((c) => c.id == cityId) ??
+          _cityStateController.cities.firstWhereOrNull((c) => c.id == cityId);
+      if (city != null) {
+        isCityModerator = city.isCurrentUserModerator || (city.moderatorId != null && city.moderatorId == user?.id);
+      }
+    } catch (_) {}
+
+    if (!isAdmin && !isCityModerator) {
+      AppToast.warning('Only administrators or city moderators can generate images', title: 'Permission Denied');
       return;
     }
 
@@ -731,6 +854,8 @@ class CityListController extends GetxController {
     _cityRatingUpdatedSubscription = null;
     _cityReviewUpdatedSubscription?.cancel();
     _cityReviewUpdatedSubscription = null;
+    _cityModeratorUpdatedSubscription?.cancel();
+    _cityModeratorUpdatedSubscription = null;
 
     // 取消 EventBus 订阅
     _favoriteChangedSubscription?.cancel();

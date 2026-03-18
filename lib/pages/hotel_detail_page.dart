@@ -1,10 +1,12 @@
-import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
-import 'package:go_nomads_app/controllers/hotel_detail_page_controller.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/hotel_detail_page_controller.dart';
+import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 酒店详情页面
 class HotelDetailPage extends StatelessWidget {
@@ -31,20 +33,19 @@ class HotelDetailPage extends StatelessWidget {
 
     return Scaffold(
       body: Obx(() {
-        if (controller.isLoading.value) {
-          return const HotelDetailSkeleton();
-        }
-
+        Widget content;
         if (controller.error.value.isNotEmpty) {
-          return _buildErrorState(controller);
+          content = _buildErrorState(controller);
+        } else {
+          final hotel = controller.hotel.value;
+          content = hotel == null ? _buildErrorState(controller) : _buildHotelDetail(hotel);
         }
 
-        final hotel = controller.hotel.value;
-        if (hotel == null) {
-          return _buildErrorState(controller);
-        }
-
-        return _buildHotelDetail(hotel);
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading.value,
+          loading: const HotelDetailSkeleton(),
+          child: content,
+        );
       }),
     );
   }
@@ -54,7 +55,7 @@ class HotelDetailPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FontAwesomeIcons.circleExclamation, size: 64, color: Colors.grey[400]),
+          Icon(FontAwesomeIcons.circleExclamation, size: 64.r, color: Colors.grey[400]),
           SizedBox(height: 16.h),
           Text(
             controller.error.value.isNotEmpty ? controller.error.value : 'Hotel not found',
@@ -64,7 +65,7 @@ class HotelDetailPage extends StatelessWidget {
           SizedBox(height: 24.h),
           ElevatedButton(
             onPressed: () => Get.back(),
-            child: const Text('Go Back'),
+            child: Text(AppLocalizations.of(Get.context!)!.goBack),
           ),
         ],
       ),
@@ -81,8 +82,8 @@ class HotelDetailPage extends StatelessWidget {
           flexibleSpace: FlexibleSpaceBar(
             title: Text(
               hotel.name,
-              style: const TextStyle(
-                shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+              style: TextStyle(
+                shadows: [Shadow(color: Colors.black, blurRadius: 4.r)],
               ),
             ),
             background: hotel.images.isNotEmpty
@@ -94,7 +95,7 @@ class HotelDetailPage extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           color: Colors.grey[300],
-                          child: const Icon(FontAwesomeIcons.hotel, size: 64),
+                          child: Icon(FontAwesomeIcons.hotel, size: 64.r),
                         ),
                       );
                     },
@@ -102,7 +103,7 @@ class HotelDetailPage extends StatelessWidget {
                 : Container(
                     color: Colors.grey[300],
                     child: Center(
-                      child: Icon(FontAwesomeIcons.hotel, size: 64, color: Colors.grey[400]),
+                      child: Icon(FontAwesomeIcons.hotel, size: 64.r, color: Colors.grey[400]),
                     ),
                   ),
           ),

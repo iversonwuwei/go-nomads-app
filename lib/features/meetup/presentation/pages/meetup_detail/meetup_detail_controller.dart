@@ -61,13 +61,22 @@ class MeetupDetailController extends GetxController {
   /// 图片轮播控制器
   final PageController imagePageController = PageController();
 
+  /// 防止页面重复初始化触发多次详情请求
+  bool _initialized = false;
+  String? _requestedMeetupId;
+
   // ==================== 数据变更订阅 ====================
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
 
   // ==================== 计算属性 ====================
 
   /// 当前用户是否已加入活动
-  bool get isJoined => meetup.value != null && _meetupStateController.isRsvped(meetup.value!.id);
+  bool get isJoined {
+    final currentMeetup = meetup.value;
+    if (currentMeetup == null) return false;
+
+    return currentMeetup.isJoined || _meetupStateController.isRsvped(currentMeetup.id);
+  }
 
   /// 当前用户是否是组织者
   bool get isOrganizer => meetup.value?.isOrganizer ?? false;
@@ -103,10 +112,30 @@ class MeetupDetailController extends GetxController {
 
   // ==================== 初始化方法 ====================
 
-  /// 设置初始活动数据并加载详情
-  void setInitialMeetup(Meetup initialMeetup) {
-    meetup.value = initialMeetup;
-    loadEventDetails();
+  /// 按需初始化活动数据
+  void ensureMeetupLoaded({Meetup? initialMeetup, String? meetupId}) {
+    if (initialMeetup != null) {
+      if (_initialized && meetup.value?.id == initialMeetup.id) {
+        return;
+      }
+      _initialized = true;
+      _requestedMeetupId = initialMeetup.id;
+      meetup.value = _mergeMeetupWithLocalState(initialMeetup);
+      loadEventDetails();
+      return;
+    }
+
+    if (meetupId == null || meetupId.isEmpty) {
+      return;
+    }
+
+    if (_initialized && _requestedMeetupId == meetupId) {
+      return;
+    }
+
+    _initialized = true;
+    _requestedMeetupId = meetupId;
+    loadEventDetailsById(meetupId);
   }
 
   /// 检查管理员状态
@@ -154,10 +183,19 @@ class MeetupDetailController extends GetxController {
   Future<void> loadEventDetails() async {
     if (meetup.value == null) return;
 
+    await _loadMeetupFromApi(meetup.value!.id);
+  }
+
+  /// 通过活动 id 加载详情
+  Future<void> loadEventDetailsById(String meetupId) async {
+    await _loadMeetupFromApi(meetupId);
+  }
+
+  Future<void> _loadMeetupFromApi(String meetupId) async {
     try {
       isLoading.value = true;
 
-      final response = await _httpService.get('/events/${meetup.value!.id}');
+      final response = await _httpService.get('/events/$meetupId');
       final data = response.data as Map<String, dynamic>;
 
       // 提取参与者列表
@@ -169,9 +207,10 @@ class MeetupDetailController extends GetxController {
 
       // 映射为 Meetup 实体
       final dto = MeetupDto.fromJson(data);
-      final loadedMeetup = dto.toDomain();
+      final loadedMeetup = _mergeMeetupWithLocalState(dto.toDomain());
 
       meetup.value = loadedMeetup;
+      _requestedMeetupId = loadedMeetup.id;
       meetup.refresh();
       log('✅ 成功加载活动详情: ${loadedMeetup.title}, 参与者: ${loadedMeetup.capacity.currentAttendees}');
     } catch (e) {
@@ -180,6 +219,32 @@ class MeetupDetailController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Meetup _mergeMeetupWithLocalState(Meetup sourceMeetup) {
+    final currentUser = Get.find<AuthStateController>().currentUser.value;
+    final wasJoinedLocally = meetup.value?.isJoined ?? false;
+    final isRsvpedLocally = _meetupStateController.isRsvped(sourceMeetup.id);
+    final isCurrentUserOrganizer = currentUser != null && currentUser.id == sourceMeetup.organizer.id;
+
+    return Meetup(
+      id: sourceMeetup.id,
+      title: sourceMeetup.title,
+      type: sourceMeetup.type,
+      eventType: sourceMeetup.eventType,
+      description: sourceMeetup.description,
+      location: sourceMeetup.location,
+      venue: sourceMeetup.venue,
+      schedule: sourceMeetup.schedule,
+      capacity: sourceMeetup.capacity,
+      organizer: sourceMeetup.organizer,
+      images: sourceMeetup.images,
+      attendeeIds: sourceMeetup.attendeeIds,
+      status: sourceMeetup.status,
+      createdAt: sourceMeetup.createdAt,
+      isJoined: sourceMeetup.isJoined || wasJoinedLocally || isRsvpedLocally,
+      isOrganizer: sourceMeetup.isOrganizer || isCurrentUserOrganizer,
+    );
   }
 
   // ==================== 业务操作方法 ====================

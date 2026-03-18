@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:ui';
 
+import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/core/application/use_case.dart';
 import 'package:go_nomads_app/core/auth/token_manager.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
@@ -9,12 +12,13 @@ import 'package:go_nomads_app/features/auth/application/use_cases/auth_use_cases
 import 'package:go_nomads_app/features/auth/domain/entities/auth_token.dart';
 import 'package:go_nomads_app/features/auth/domain/entities/auth_user.dart';
 import 'package:go_nomads_app/features/auth/domain/repositories/iauth_repository.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:get/get.dart';
 
 /// 认证状态控制器
 class AuthStateController extends GetxController {
@@ -148,6 +152,7 @@ class AuthStateController extends GetxController {
         if (isAuth) {
           // ✅ 加载并刷新用户信息(会更新本地缓存的角色)
           await _loadCurrentUser();
+          await _syncUserProfilePreferences();
           _autoRefreshToken();
 
           // 加入 SignalR 用户通知组（应用启动时恢复登录状态）
@@ -167,6 +172,20 @@ class AuthStateController extends GetxController {
       onSuccess: (user) => currentUser.value = user,
       onFailure: (_) => currentUser.value = null,
     );
+  }
+
+  Future<void> _syncUserProfilePreferences() async {
+    if (!isAuthenticated.value) return;
+    if (!Get.isRegistered<IUserPreferencesRepository>()) return;
+    if (!Get.isRegistered<LocaleController>()) return;
+
+    try {
+      final preferences = await Get.find<IUserPreferencesRepository>().getCurrentUserPreferences();
+      Get.find<LocaleController>().syncFromPreferences(preferences.language);
+      log('✅ 已按用户 profile 同步启动偏好: language=${preferences.language}');
+    } catch (e) {
+      log('⚠️ 同步用户 profile 偏好失败，继续使用本地/系统设置: $e');
+    }
   }
 
   /// 刷新当前用户信息 (公共方法)
@@ -272,6 +291,7 @@ class AuthStateController extends GetxController {
     try {
       // 加载当前用户（从服务器获取最新信息）
       await _loadCurrentUser();
+      await _syncUserProfilePreferences();
 
       // Token 已经在 AuthRepository.login() 中保存到 SQLite
       // 这里只需要设置 HttpService 的用户ID 和加入 SignalR 组
@@ -311,6 +331,7 @@ class AuthStateController extends GetxController {
     required String email,
     required String password,
     required String confirmPassword,
+    required String verificationCode,
     String? phone,
   }) async {
     isLoading.value = true;
@@ -321,6 +342,7 @@ class AuthStateController extends GetxController {
         email: email,
         password: password,
         confirmPassword: confirmPassword,
+        verificationCode: verificationCode,
         phone: phone,
       ),
     );
@@ -348,26 +370,35 @@ class AuthStateController extends GetxController {
     );
   }
 
-  /// 社交登录 (微信、支付宝、QQ 等)
+  /// 社交登录 (微信、QQ 等)
   /// [type] 社交平台类型
-  Future<bool> socialLogin(SocialLoginType type) async {
-    isLoading.value = true;
-
+  /// [onAuthSuccess] 可选回调，在第三方授权成功后、调用后端 API 前触发
+  Future<bool> socialLogin(SocialLoginType type, {VoidCallback? onAuthSuccess}) async {
     try {
-      // 1. 调用 SDK 获取授权码
+      // 1. 调用 SDK 获取授权码（此时会跳转到微信/QQ等APP）
       final sdkResult = await _socialLoginService.login(type);
 
       if (!sdkResult.success) {
-        isLoading.value = false;
+        final l10n = AppLocalizations.of(Get.context!)!;
         if (sdkResult.isCancelled) {
           // 用户取消授权，使用普通提示
-          AppToast.info('用户取消授权');
+          AppToast.info(l10n.userCancelledAuth);
+        } else if (sdkResult.errorMessage == 'WECHAT_NOT_INSTALLED') {
+          // 微信未安装，提示用户安装
+          AppToast.warning(l10n.wechatNotInstalled, title: l10n.wechatNotDetected);
+        } else if (sdkResult.errorMessage == 'QQ_NOT_INSTALLED') {
+          // QQ 未安装，提示用户安装
+          AppToast.warning(l10n.qqNotInstalled, title: l10n.qqNotDetected);
         } else if (sdkResult.errorMessage != null) {
           // 真正的错误，使用错误提示
           AppToast.error(sdkResult.errorMessage!);
         }
         return false;
       }
+
+      // ⭐ 授权成功，触发回调（此时才显示加载状态）
+      onAuthSuccess?.call();
+      isLoading.value = true;
 
       // 2. 将授权信息发送给后端换取 token
       final provider = _mapSocialLoginTypeToProvider(type);
@@ -377,6 +408,7 @@ class AuthStateController extends GetxController {
           code: sdkResult.code,
           accessToken: sdkResult.accessToken,
           openId: sdkResult.openId,
+          nickname: sdkResult.nickname,
         ),
       );
 
@@ -406,7 +438,7 @@ class AuthStateController extends GetxController {
     } catch (e) {
       isLoading.value = false;
       log('❌ 社交登录异常: $e');
-      AppToast.error('社交登录失败: $e');
+      AppToast.error(AppLocalizations.of(Get.context!)!.socialLoginFailed(e.toString()));
       return false;
     }
   }
@@ -416,6 +448,7 @@ class AuthStateController extends GetxController {
     try {
       // 加载当前用户
       await _loadCurrentUser();
+      await _syncUserProfilePreferences();
 
       // 保存到数据库 (如果用户已加载)
       if (currentUser.value != null) {
@@ -547,6 +580,7 @@ class AuthStateController extends GetxController {
       currentToken.value = token;
       currentUser.value = user;
       isAuthenticated.value = true;
+      await _syncUserProfilePreferences();
 
       // 加入 SignalR 用户通知组（不阻塞登录流程）
       try {
@@ -571,14 +605,14 @@ class AuthStateController extends GetxController {
     switch (type) {
       case SocialLoginType.wechat:
         return SocialAuthProvider.wechat;
-      case SocialLoginType.alipay:
-        return SocialAuthProvider.alipay;
       case SocialLoginType.qq:
         return SocialAuthProvider.qq;
       case SocialLoginType.apple:
         return SocialAuthProvider.apple;
       case SocialLoginType.google:
         return SocialAuthProvider.google;
+      case SocialLoginType.twitter:
+        return SocialAuthProvider.twitter;
     }
   }
 
@@ -621,7 +655,7 @@ class AuthStateController extends GetxController {
 
     isLoading.value = false;
     log('✅ [AuthStateController] 登出完成');
-    AppToast.success('已退出登录');
+    AppToast.success(AppLocalizations.of(Get.context!)!.loggedOut);
   }
 
   /// 更新用户资料
@@ -645,7 +679,7 @@ class AuthStateController extends GetxController {
     return result.fold(
       onSuccess: (user) {
         currentUser.value = user;
-        AppToast.success('用户资料已更新');
+        AppToast.success(AppLocalizations.of(Get.context!)!.userProfileUpdated);
         return true;
       },
       onFailure: (error) {

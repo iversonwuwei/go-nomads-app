@@ -70,7 +70,7 @@ class MeetupBottomActionBar extends GetView<MeetupDetailController> {
           foregroundColor: Colors.blue,
           side: BorderSide(
             color: Colors.blue,
-            width: 1.5.w,
+            width: 1.5,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
@@ -126,7 +126,7 @@ class MeetupBottomActionBar extends GetView<MeetupDetailController> {
           foregroundColor: controller.isJoined ? Colors.blue : Colors.grey,
           side: BorderSide(
             color: controller.isJoined ? Colors.blue : Colors.grey.shade300,
-            width: 1.5.w,
+            width: 1.5,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),

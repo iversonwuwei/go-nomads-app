@@ -1,10 +1,13 @@
+import 'package:get/get.dart';
+import 'package:go_nomads_app/core/lifecycle/binding_helper.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/user_management/domain/repositories/iuser_management_repository.dart';
 import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
-import 'package:get/get.dart';
 
 /// 指定版主页面绑定
+///
+/// 每次进入页面时创建全新控制器。
 class AssignModeratorBinding extends Bindings {
   @override
   void dependencies() {
@@ -22,7 +25,7 @@ class AssignModeratorBinding extends Bindings {
       cityName = args['cityName'] as String? ?? '';
     }
 
-    Get.lazyPut<AssignModeratorController>(
+    BindingHelper.putFresh<AssignModeratorController>(
       () => AssignModeratorController(
         cityId: cityId,
         cityName: cityName,

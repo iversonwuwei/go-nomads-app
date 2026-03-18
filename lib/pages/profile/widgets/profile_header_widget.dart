@@ -1,8 +1,11 @@
-import 'package:go_nomads_app/features/user/domain/entities/user.dart';
-import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:intl/intl.dart';
 
 /// 个人资料头部组件
 class ProfileHeaderWidget extends StatelessWidget {
@@ -17,6 +20,8 @@ class ProfileHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -61,7 +66,7 @@ class ProfileHeaderWidget extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(width: 20),
+        SizedBox(width: 20.w),
 
         // User Info
         Expanded(
@@ -78,38 +83,38 @@ class ProfileHeaderWidget extends StatelessWidget {
                       color: const Color(0xFF1a1a1a),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   if (user.isVerified)
-                    const Icon(
+                    Icon(
                       FontAwesomeIcons.circleCheck,
                       color: Color(0xFFFF4458),
-                      size: 20,
+                      size: 20.r,
                     ),
                 ],
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 user.username,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: 16.sp,
                   color: Color(0xFF6b7280),
                   fontWeight: FontWeight.w500,
                 ),
               ),
               if (user.currentCity != null && user.currentCountry != null) ...[
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       FontAwesomeIcons.locationDot,
-                      size: 18,
+                      size: 18.r,
                       color: Color(0xFFFF4458),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6.w),
                     Text(
                       '${user.currentCity}, ${user.currentCountry}',
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: 14.sp,
                         color: Color(0xFF1a1a1a),
                         fontWeight: FontWeight.w600,
                       ),
@@ -118,21 +123,21 @@ class ProfileHeaderWidget extends StatelessWidget {
                 ),
               ],
               if (user.bio != null) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   user.bio!,
-                  style: const TextStyle(
-                    fontSize: 15,
+                  style: TextStyle(
+                    fontSize: 15.sp,
                     color: Color(0xFF374151),
                     height: 1.6,
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               Text(
-                'Member since ${_formatJoinDate(user.joinedDate)}',
-                style: const TextStyle(
-                  fontSize: 13,
+                l10n.profileJoinedAt(_formatJoinDate(context, user.joinedDate)),
+                style: TextStyle(
+                  fontSize: 13.sp,
                   color: Color(0xFF9ca3af),
                 ),
               ),
@@ -189,15 +194,14 @@ class ProfileHeaderWidget extends StatelessWidget {
             fontSize: isMobile ? 32 : 48,
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            letterSpacing: 1,
+            letterSpacing: 1.sp,
           ),
         ),
       ),
     );
   }
 
-  String _formatJoinDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month - 1]} ${date.year}';
+  String _formatJoinDate(BuildContext context, DateTime date) {
+    return DateFormat.yMMM(Localizations.localeOf(context).toLanguageTag()).format(date);
   }
 }

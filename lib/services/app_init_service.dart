@@ -6,6 +6,7 @@ import 'package:go_nomads_app/features/auth/application/use_cases/auth_database_
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 应用启动初始化服务
 /// 用于在应用启动时恢复用户登录状态
@@ -123,7 +124,7 @@ class _AppInitializerState extends State<AppInitializer> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const CircularProgressIndicator(),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Text(
                       'Loading...',
                       style: Theme.of(context).textTheme.titleMedium,

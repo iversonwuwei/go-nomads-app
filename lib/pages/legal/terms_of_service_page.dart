@@ -3,6 +3,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 服务条款页面
 class TermsOfServicePage extends StatelessWidget {
@@ -22,10 +23,10 @@ class TermsOfServicePage extends StatelessWidget {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             _SectionTitle('1. 接受条款'),
             _SectionBody(
               '使用行途（Go-Nomads）即表示您已阅读并同意本服务条款。'
@@ -73,7 +74,7 @@ class TermsOfServicePage extends StatelessWidget {
             ),
             _SectionTitle('10. 联系我们'),
             _SectionBody('如有疑问，请通过应用内“反馈/联系我们”与我们沟通。'),
-            SizedBox(height: 24),
+            SizedBox(height: 24.h),
             CopyrightWidget(),
           ],
         ),
@@ -90,11 +91,11 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 6),
+      padding: EdgeInsets.only(top: 8.h, bottom: 6.h),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
@@ -111,11 +112,11 @@ class _SectionBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 12.h),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 14,
+        style: TextStyle(
+          fontSize: 14.sp,
           color: AppColors.textSecondary,
           height: 1.5,
         ),

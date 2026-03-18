@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_form_field.dart';
 
@@ -29,6 +31,10 @@ class RegisterForm extends GetView<RegisterController> {
         return l10n.confirmPasswordRequired;
       case 'passwordsNotMatch':
         return l10n.passwordsNotMatch;
+      case 'verificationCodeRequired':
+        return l10n.verificationCodeRequired;
+      case 'verificationCodeLength':
+        return l10n.verificationCodeLength;
       default:
         return errorKey;
     }
@@ -50,7 +56,7 @@ class RegisterForm extends GetView<RegisterController> {
                   controller.showValidationErrors.value ? _getErrorText(controller.usernameError.value, l10n) : null,
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 邮箱输入
         Obx(() => RegisterFormField(
@@ -63,7 +69,63 @@ class RegisterForm extends GetView<RegisterController> {
                   controller.showValidationErrors.value ? _getErrorText(controller.emailError.value, l10n) : null,
             )),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
+
+        // 邮箱验证码输入
+        Obx(() => Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: RegisterFormField(
+                    controller: controller.verificationCodeController,
+                    labelText: l10n.verificationCode,
+                    hintText: l10n.enterVerificationCode,
+                    prefixIcon: FontAwesomeIcons.shieldHalved,
+                    keyboardType: TextInputType.number,
+                    compactHeight: _registerCodeRowHeight.h,
+                    errorText: controller.showValidationErrors.value
+                        ? _getErrorText(controller.verificationCodeError.value, l10n)
+                        : null,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                SizedBox(
+                  height: _registerCodeRowHeight.h,
+                  child: ElevatedButton(
+                    onPressed: controller.isSendingCode.value || controller.countdown.value > 0
+                        ? null
+                        : () => controller.sendVerificationCode(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: RegisterConstants.primaryColor,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      minimumSize: Size(88.w, _registerCodeRowHeight.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(RegisterConstants.inputBorderRadius),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    ),
+                    child: controller.isSendingCode.value
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.h,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            controller.countdown.value > 0
+                                ? '${controller.countdown.value}s'
+                                : (controller.codeSent.value ? l10n.resend : l10n.sendCode),
+                            style: TextStyle(fontSize: 14.sp),
+                          ),
+                  ),
+                ),
+              ],
+            )),
+
+        SizedBox(height: 20.h),
 
         // 密码输入
         _PasswordField(
@@ -78,7 +140,7 @@ class RegisterForm extends GetView<RegisterController> {
           getErrorText: (key) => _getErrorText(key, l10n),
         ),
 
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
 
         // 确认密码输入
         _PasswordField(
@@ -97,6 +159,8 @@ class RegisterForm extends GetView<RegisterController> {
     );
   }
 }
+
+const double _registerCodeRowHeight = 56;
 
 /// 密码输入框 - 使用响应式验证
 class _PasswordField extends StatelessWidget {

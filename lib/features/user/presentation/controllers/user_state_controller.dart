@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/chat/infrastructure/services/tencent_im/tencent_im.dart';
 import 'package:go_nomads_app/features/interest/presentation/controllers/interest_state_controller.dart';
 import 'package:go_nomads_app/features/skill/presentation/controllers/skill_state_controller.dart';
 import 'package:go_nomads_app/features/travel_history/presentation/controllers/travel_history_controller.dart';
@@ -11,6 +13,7 @@ import 'package:go_nomads_app/features/user/application/use_cases/favorite_city_
 import 'package:go_nomads_app/features/user/application/use_cases/user_use_cases.dart' as user_use_cases;
 import 'package:go_nomads_app/features/user/domain/entities/nomad_stats.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// 用户状态控制器 V2 (优化版)
@@ -68,6 +71,12 @@ class UserStateController extends GetxController {
   DateTime? _lastFavoritesLoadTime;
   static const _cacheDuration = Duration(minutes: 5);
 
+  // 防抖定时器 — 避免短时间内多个事件触发重复网络请求
+  Timer? _userDebounceTimer;
+  Timer? _statsDebounceTimer;
+  Timer? _favoritesDebounceTimer;
+  static const _debounceDuration = Duration(milliseconds: 500);
+
   // ==================== Getters ====================
   bool get isLoggedIn => currentUser.value != null;
   bool get hasCompletedProfile => currentUser.value?.hasCompletedProfile ?? false;
@@ -88,6 +97,10 @@ class UserStateController extends GetxController {
   @override
   void onClose() {
     log('👋 UserStateController 关闭');
+    // 取消防抖定时器
+    _userDebounceTimer?.cancel();
+    _statsDebounceTimer?.cancel();
+    _favoritesDebounceTimer?.cancel();
     currentUser.value = null;
     isLoading.value = false;
     errorMessage.value = '';
@@ -104,7 +117,7 @@ class UserStateController extends GetxController {
   void _setupAuthStateListener() {
     try {
       final authController = Get.find<AuthStateController>();
-      ever(authController.isAuthenticated, (isAuthenticated) {
+      ever(authController.isAuthenticated, (isAuthenticated) async {
         log('🔔 UserStateController: 认证状态变化 -> $isAuthenticated');
         if (isAuthenticated) {
           log('✅ 用户已登录，加载用户数据...');
@@ -112,13 +125,72 @@ class UserStateController extends GetxController {
           loadFavoriteCityIds();
           loadNomadStats();
           _syncTravelHistory();
+
+          // 自动登录腾讯云IM
+          _loginTencentIM();
         } else {
           log('⚠️ 用户已退出，清除用户数据');
           _clearAllData();
+
+          // 退出腾讯云IM
+          _logoutTencentIM();
         }
       });
     } catch (e) {
       log('⚠️ AuthStateController 未就绪，无法设置监听器');
+    }
+  }
+
+  /// 登录腾讯云IM
+  Future<void> _loginTencentIM() async {
+    try {
+      if (!Get.isRegistered<TencentIMService>()) {
+        log('⚠️ TencentIMService 未注册，跳过IM登录');
+        return;
+      }
+
+      final imService = Get.find<TencentIMService>();
+      if (imService.isLoggedIn) {
+        log('ℹ️ 腾讯云IM已登录，跳过');
+        return;
+      }
+
+      final authController = Get.find<AuthStateController>();
+      final user = authController.currentUser.value;
+      if (user == null) {
+        log('⚠️ 当前用户为空，跳过IM登录');
+        return;
+      }
+
+      log('🔐 认证状态变化后自动登录腾讯云IM...');
+
+      // 先通过后端API确保当前用户存在于IM系统
+      final imApiService = TencentIMApiService();
+      await imApiService.ensureUserExists(
+        nickname: user.name,
+        avatarUrl: user.avatar,
+      );
+
+      // 然后登录IM
+      await imService.login(user.id);
+      log('✅ 腾讯云IM登录成功');
+    } catch (e) {
+      log('❌ 腾讯云IM登录失败: $e');
+    }
+  }
+
+  /// 退出腾讯云IM
+  Future<void> _logoutTencentIM() async {
+    try {
+      if (!Get.isRegistered<TencentIMService>()) return;
+
+      final imService = Get.find<TencentIMService>();
+      if (imService.isLoggedIn) {
+        await imService.logout();
+        log('✅ 腾讯云IM已退出');
+      }
+    } catch (e) {
+      log('❌ 腾讯云IM退出失败: $e');
     }
   }
 
@@ -135,48 +207,71 @@ class UserStateController extends GetxController {
     DataEventBus.instance.on('meetup', _handleMeetupChanged);
     // 监听 meetup RSVP 变更（加入/退出活动）
     DataEventBus.instance.on('meetup_rsvp', _handleMeetupRsvpChanged);
+    // 监听旅行历史变更（影响 countries/cities/days/trips 统计）
+    DataEventBus.instance.on('travel_history', _handleTravelHistoryChanged);
   }
 
   void _handleUserDataChanged(DataChangedEvent event) {
     log('🔔 收到用户数据变更通知: ${event.changeType}');
     if (event.entityId == currentUser.value?.id || event.entityId == null) {
       _invalidateUserCache();
-      loadCurrentUser(forceRefresh: true);
+      _userDebounceTimer?.cancel();
+      _userDebounceTimer = Timer(_debounceDuration, () {
+        loadCurrentUser(forceRefresh: true);
+      });
     }
   }
 
   void _handleFavoriteChanged(DataChangedEvent event) {
     log('🔔 收到收藏数据变更通知: ${event.changeType}');
     _invalidateFavoritesCache();
-    loadFavoriteCityIds(forceRefresh: true);
-    // 收藏变更也会影响统计数据
     _invalidateStatsCache();
-    loadNomadStats(forceRefresh: true);
+    _favoritesDebounceTimer?.cancel();
+    _favoritesDebounceTimer = Timer(_debounceDuration, () {
+      // 收藏变更后并行刷新收藏列表和统计数据
+      Future.wait([
+        loadFavoriteCityIds(forceRefresh: true),
+        loadNomadStats(forceRefresh: true),
+      ]);
+    });
   }
 
   void _handleSkillInterestChanged(DataChangedEvent event) {
     log('🔔 收到技能/兴趣变更通知');
-    // 技能或兴趣变更后刷新用户数据
     _invalidateUserCache();
-    loadCurrentUser(forceRefresh: true);
+    _userDebounceTimer?.cancel();
+    _userDebounceTimer = Timer(_debounceDuration, () {
+      loadCurrentUser(forceRefresh: true);
+    });
   }
 
   void _handleMeetupChanged(DataChangedEvent event) {
     log('🔔 收到 Meetup 变更通知: ${event.changeType}');
-    // Meetup 创建/删除会影响用户统计数据
     if (event.changeType == DataChangeType.created || event.changeType == DataChangeType.deleted) {
       _invalidateStatsCache();
-      // 立即重新加载统计数据
-      loadNomadStats(forceRefresh: true);
+      _statsDebounceTimer?.cancel();
+      _statsDebounceTimer = Timer(_debounceDuration, () {
+        loadNomadStats(forceRefresh: true);
+      });
     }
   }
 
   void _handleMeetupRsvpChanged(DataChangedEvent event) {
     log('🔔 收到 Meetup RSVP 变更通知: ${event.changeType}');
-    // 加入/退出活动会影响用户统计数据
     _invalidateStatsCache();
-    // 立即重新加载统计数据
-    loadNomadStats(forceRefresh: true);
+    _statsDebounceTimer?.cancel();
+    _statsDebounceTimer = Timer(_debounceDuration, () {
+      loadNomadStats(forceRefresh: true);
+    });
+  }
+
+  void _handleTravelHistoryChanged(DataChangedEvent event) {
+    log('🔔 收到旅行历史变更通知: ${event.changeType}');
+    _invalidateStatsCache();
+    _statsDebounceTimer?.cancel();
+    _statsDebounceTimer = Timer(_debounceDuration, () {
+      loadNomadStats(forceRefresh: true);
+    });
   }
 
   void _invalidateStatsCache() {
@@ -340,7 +435,7 @@ class UserStateController extends GetxController {
   Future<bool> updateUser(Map<String, dynamic> updates) async {
     final user = currentUser.value;
     if (user == null) {
-      errorMessage.value = '用户未登录';
+      errorMessage.value = AppLocalizations.of(Get.context!)!.userNotLoggedIn;
       return false;
     }
 
@@ -358,7 +453,8 @@ class UserStateController extends GetxController {
       onSuccess: (updatedUser) {
         currentUser.value = updatedUser;
         _lastUserLoadTime = DateTime.now();
-        _showSnackbar('成功', '用户信息已更新');
+        _showSnackbar(
+            AppLocalizations.of(Get.context!)!.successTitle, AppLocalizations.of(Get.context!)!.userInfoUpdated);
 
         // 通知其他组件
         _notifyUserChanged();
@@ -445,7 +541,8 @@ class UserStateController extends GetxController {
       onSuccess: (success) {
         if (success) {
           favoriteCityIds.add(cityId);
-          _showSnackbar('成功', '已添加到收藏');
+          _showSnackbar(
+              AppLocalizations.of(Get.context!)!.successTitle, AppLocalizations.of(Get.context!)!.addedToFavorites);
 
           // 通知其他组件
           _notifyFavoriteChanged(cityId, true);
@@ -467,7 +564,8 @@ class UserStateController extends GetxController {
       onSuccess: (success) {
         if (success) {
           favoriteCityIds.remove(cityId);
-          _showSnackbar('成功', '已取消收藏');
+          _showSnackbar(
+              AppLocalizations.of(Get.context!)!.successTitle, AppLocalizations.of(Get.context!)!.removedFromFavorites);
 
           // 通知其他组件
           _notifyFavoriteChanged(cityId, false);
@@ -513,7 +611,7 @@ class UserStateController extends GetxController {
   Future<bool> removeSkill(String skillId) async {
     final user = currentUser.value;
     if (user == null) {
-      errorMessage.value = '用户未登录';
+      errorMessage.value = AppLocalizations.of(Get.context!)!.userNotLoggedIn;
       return false;
     }
 
@@ -530,8 +628,8 @@ class UserStateController extends GetxController {
 
       return success;
     } catch (e) {
-      errorMessage.value = '移除技能失败: $e';
-      AppToast.error('移除技能失败');
+      errorMessage.value = AppLocalizations.of(Get.context!)!.removeSkillFailedWithError(e.toString());
+      AppToast.error(AppLocalizations.of(Get.context!)!.removeSkillFailed);
       return false;
     }
   }
@@ -540,7 +638,7 @@ class UserStateController extends GetxController {
   Future<bool> removeInterest(String interestId) async {
     final user = currentUser.value;
     if (user == null) {
-      errorMessage.value = '用户未登录';
+      errorMessage.value = AppLocalizations.of(Get.context!)!.userNotLoggedIn;
       return false;
     }
 
@@ -557,8 +655,8 @@ class UserStateController extends GetxController {
 
       return success;
     } catch (e) {
-      errorMessage.value = '移除兴趣失败: $e';
-      AppToast.error('移除兴趣失败');
+      errorMessage.value = AppLocalizations.of(Get.context!)!.removeInterestFailedWithError(e.toString());
+      AppToast.error(AppLocalizations.of(Get.context!)!.removeInterestFailed);
       return false;
     }
   }
@@ -594,24 +692,25 @@ class UserStateController extends GetxController {
   // ==================== 异常处理 ====================
 
   void _handleException(DomainException exception, {bool silent = false}) {
-    String title = '错误';
+    final l10n = AppLocalizations.of(Get.context!)!;
+    String title = l10n.errorTitle;
     String message = exception.message;
 
     switch (exception) {
       case UnauthorizedException():
-        title = '未授权';
+        title = l10n.unauthorizedTitle;
         break;
       case NetworkException():
-        title = '网络错误';
+        title = l10n.networkErrorTitle;
         break;
       case ServerException():
-        title = '服务器错误';
+        title = l10n.serverErrorTitle;
         break;
       case ValidationException():
-        title = '验证失败';
+        title = l10n.validationFailedTitle;
         break;
       default:
-        title = '未知错误';
+        title = l10n.unknownErrorTitle;
     }
 
     if (!silent) {
@@ -625,7 +724,7 @@ class UserStateController extends GetxController {
   }
 
   void _showSnackbar(String title, String message) {
-    if (title == '成功') {
+    if (title == AppLocalizations.of(Get.context!)!.successTitle) {
       AppToast.success(message);
     } else {
       AppToast.error(message);

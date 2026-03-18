@@ -5,6 +5,7 @@ import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_cont
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
@@ -18,6 +19,7 @@ class ProfileController extends GetxController {
 
   UserStateController get userController => Get.find<UserStateController>();
   AuthStateController get authController => Get.find<AuthStateController>();
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
 
   MembershipStateController? get membershipController {
     if (Get.isRegistered<MembershipStateController>()) {
@@ -87,31 +89,27 @@ class ProfileController extends GetxController {
       // 检查认证状态
       if (!isAuthenticated) {
         log('⚠️ 用户未登录，跳转到登录页');
-        AppToast.info('Please login to view your profile', title: 'Login Required');
+        AppToast.info(_l10n.profilePleaseLoginToView, title: _l10n.loginRequired);
         Get.offAllNamed(AppRoutes.login);
         return;
       }
 
-      // 加载用户数据
-      await userController.loadUserProfile();
-
-      if (currentUser == null && userController.errorMessage.value.isNotEmpty) {
-        log('⚠️ 加载用户数据失败，跳转到登录页');
-        AppToast.info('Please login again', title: 'Session Expired');
-        Get.offAllNamed(AppRoutes.login);
-        return;
-      }
-
-      // 并行加载其他数据
+      // 并行加载所有数据（用户资料 + 统计 + 收藏 + 旅行计划 + 会员信息）
+      // 这些接口均使用 auth token，不依赖 currentUser 的返回值
       await Future.wait([
+        userController.loadUserProfile(),
         _loadNomadStats(),
         _loadFavoriteCityIds(),
         _loadTravelPlans(),
         _ensureMembershipLoaded(),
       ]);
 
-      // 后端已经在 /users/me/stats 接口中返回 meetupsJoined
-      // 无需前端单独获取
+      if (currentUser == null && userController.errorMessage.value.isNotEmpty) {
+        log('⚠️ 加载用户数据失败，跳转到登录页');
+        AppToast.info(_l10n.profilePleaseLoginAgain, title: _l10n.dataServiceSessionExpiredTitle);
+        Get.offAllNamed(AppRoutes.login);
+        return;
+      }
 
       _isInitialized.value = true;
       log('✅ ProfileController: 数据加载完成');
@@ -235,16 +233,16 @@ class ProfileController extends GetxController {
       log('✅ 用户状态已清除');
 
       AppToast.success(
-        'You have been logged out successfully',
-        title: 'Logout Success',
+        _l10n.profileLogoutSuccessMessage,
+        title: _l10n.profileLogoutSuccessTitle,
       );
 
       Get.offAllNamed(AppRoutes.login);
     } catch (e) {
       log('❌ 退出登录失败: $e');
       AppToast.error(
-        'An error occurred during logout',
-        title: 'Error',
+        _l10n.profileLogoutErrorMessage,
+        title: _l10n.error,
       );
     }
   }

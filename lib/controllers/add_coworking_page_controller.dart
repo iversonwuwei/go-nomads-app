@@ -1,6 +1,8 @@
 import 'dart:developer';
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/supabase_config.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
@@ -15,8 +17,6 @@ import 'package:go_nomads_app/features/location/presentation/controllers/locatio
 import 'package:go_nomads_app/services/image_upload_service.dart';
 import 'package:go_nomads_app/utils/image_upload_helper.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// Add/Edit Coworking Space Controller
 class AddCoworkingPageController extends GetxController {
@@ -51,6 +51,8 @@ class AddCoworkingPageController extends GetxController {
   final Rx<String?> selectedCityId = Rx<String?>(null);
   final RxDouble latitude = 0.0.obs;
   final RxDouble longitude = 0.0.obs;
+  final latitudeController = TextEditingController();
+  final longitudeController = TextEditingController();
 
   // Contact
   final phoneController = TextEditingController();
@@ -153,6 +155,8 @@ class AddCoworkingPageController extends GetxController {
     selectedCountry.value = space.location.country;
     latitude.value = space.location.latitude;
     longitude.value = space.location.longitude;
+    latitudeController.text = space.location.latitude != 0 ? space.location.latitude.toStringAsFixed(6) : '';
+    longitudeController.text = space.location.longitude != 0 ? space.location.longitude.toStringAsFixed(6) : '';
 
     phoneController.text = space.contactInfo.phone;
     emailController.text = space.contactInfo.email;
@@ -276,6 +280,8 @@ class AddCoworkingPageController extends GetxController {
     numberOfDesksController.dispose();
     numberOfMeetingRoomsController.dispose();
     capacityController.dispose();
+    latitudeController.dispose();
+    longitudeController.dispose();
     super.onClose();
   }
 
@@ -289,6 +295,8 @@ class AddCoworkingPageController extends GetxController {
   void updateCoordinates(double lat, double lng) {
     latitude.value = lat;
     longitude.value = lng;
+    latitudeController.text = lat != 0 ? lat.toStringAsFixed(6) : '';
+    longitudeController.text = lng != 0 ? lng.toStringAsFixed(6) : '';
   }
 
   // Image Management

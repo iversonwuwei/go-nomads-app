@@ -1,17 +1,20 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/utils/share_link_util.dart';
 
 import '../../features/ai/presentation/controllers/ai_state_controller.dart';
 import '../../features/city/application/state_controllers/pros_cons_state_controller.dart';
 import '../../features/city/presentation/controllers/city_detail_state_controller.dart';
-import '../../features/membership/presentation/controllers/membership_state_controller.dart';
+import '../../features/membership/presentation/services/ai_quota_service.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/app_toast.dart';
+import '../../widgets/share_bottom_sheet.dart';
 import '../add_coworking/add_coworking_page.dart';
 import '../city_photo_submission_page.dart';
 import '../manage_pros_cons_page.dart';
@@ -71,25 +74,27 @@ class CityDetailPage extends StatelessWidget {
     // 使用唯一 tag 确保每个城市页面有独立的控制器实例
     final tag = 'city_detail_$resolvedCityId';
 
-    // 注册控制器
-    if (!Get.isRegistered<CityDetailController>(tag: tag)) {
-      final controller = Get.put(CityDetailController(), tag: tag);
-      controller.initWithParams(
-        cityId: resolvedCityId,
-        cityName: resolvedCityName,
-        cityImages: heroImages,
-        overallScore:
-            resolvedOverallScore is double ? resolvedOverallScore : (resolvedOverallScore as num?)?.toDouble() ?? 0.0,
-        reviewCount: resolvedReviewCount is int ? resolvedReviewCount : (resolvedReviewCount as num?)?.toInt() ?? 0,
-        initialTab: initialTab,
-      );
-    } else {
-      // 控制器已存在，需要重新同步收藏状态
-      // 这解决了从列表页跳转到详情页时，收藏状态不同步的问题
-      final cityDetailController = Get.find<CityDetailStateController>();
-      cityDetailController.loadCityDetail(resolvedCityId);
-      log('🔄 [CityDetailPage] 控制器已存在，重新加载城市详情以同步状态');
+    // 每次进入都清理旧控制器，确保数据从服务端全新加载
+    if (Get.isRegistered<CityDetailController>(tag: tag)) {
+      Get.delete<CityDetailController>(tag: tag, force: true);
+      log('🧹 [CityDetailPage] 清理旧控制器: $tag');
     }
+
+    // 重置共享状态控制器的 tab 索引
+    final cityDetailStateController = Get.find<CityDetailStateController>();
+    cityDetailStateController.currentTabIndex.value = 0;
+
+    // 注册全新的控制器
+    final controller = Get.put(CityDetailController(), tag: tag);
+    controller.initWithParams(
+      cityId: resolvedCityId,
+      cityName: resolvedCityName,
+      cityImages: heroImages,
+      overallScore:
+          resolvedOverallScore is double ? resolvedOverallScore : (resolvedOverallScore as num?)?.toDouble() ?? 0.0,
+      reviewCount: resolvedReviewCount is int ? resolvedReviewCount : (resolvedReviewCount as num?)?.toInt() ?? 0,
+      initialTab: initialTab,
+    );
 
     return _CityDetailPageContent(controllerTag: tag);
   }
@@ -100,6 +105,8 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
   const _CityDetailPageContent({required this.controllerTag});
 
   final String controllerTag;
+
+  AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
 
   @override
   String? get tag => controllerTag;
@@ -182,22 +189,22 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       isScrollable: true,
       labelColor: const Color(0xFFFF4458),
       unselectedLabelColor: Colors.grey[600],
-      labelStyle: const TextStyle(
+      labelStyle: TextStyle(
         fontWeight: FontWeight.w600,
-        fontSize: 14,
+        fontSize: 14.sp,
       ),
-      unselectedLabelStyle: const TextStyle(
+      unselectedLabelStyle: TextStyle(
         fontWeight: FontWeight.w500,
-        fontSize: 14,
+        fontSize: 14.sp,
       ),
       indicatorSize: TabBarIndicatorSize.label,
-      indicator: const UnderlineTabIndicator(
+      indicator: UnderlineTabIndicator(
         borderSide: BorderSide(color: Color(0xFFFF4458), width: 2.5),
-        insets: EdgeInsets.symmetric(horizontal: 12),
+        insets: EdgeInsets.symmetric(horizontal: 12.w),
       ),
       tabAlignment: TabAlignment.start,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      labelPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      labelPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 0),
       tabs: List.generate(tabLabels.length, (index) {
         final hasAdd = addableTabs.containsKey(index);
         return Tab(
@@ -206,31 +213,31 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
             children: [
               Text(tabLabels[index]),
               if (hasAdd) ...[
-                const SizedBox(width: 5),
+                SizedBox(width: 5.w),
                 GestureDetector(
                   onTap: addableTabs[index],
                   behavior: HitTestBehavior.opaque,
                   child: Container(
-                    width: 14,
-                    height: 14,
+                    width: 14.w,
+                    height: 14.h,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFF6B7A), Color(0xFFFF4458)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFFFF4458).withValues(alpha: 0.25),
-                          blurRadius: 3,
+                          blurRadius: 3.r,
                           offset: const Offset(0, 1),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       FontAwesomeIcons.plus,
-                      size: 7,
+                      size: 7.r,
                       color: Colors.white,
                     ),
                   ),
@@ -243,8 +250,8 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-      decoration: const BoxDecoration(
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
+      decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
           bottom: BorderSide(color: Color(0x11000000), width: 1),
@@ -306,7 +313,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       },
       onResult: (result) {
         if (result.needsRefresh) {
-          AppToast.success('酒店将在审核后添加！');
+          AppToast.success(_l10n.hotelSubmittedSuccess);
         }
       },
     );
@@ -333,7 +340,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
   /// 显示评分对话框
   void _showRatingDialog(BuildContext context) {
     // 触发评分评价，滚动到第一个评分项并提示用户点击评分
-    AppToast.info('请点击下方评分项进行评分');
+    AppToast.info(_l10n.tapStarsToRate);
     // 确保当前 tab 是 Scores
     if (controller.tabController.index != CityDetailController.tabScores) {
       controller.tabController.animateTo(CityDetailController.tabScores);
@@ -367,8 +374,66 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     final city = cityDetailController.currentCity.value;
     if (city == null) return;
 
-    // TODO: 实现分享功能
-    AppToast.info('分享功能开发中...');
+    final l10n = AppLocalizations.of(context)!;
+
+    // 构建分享标题
+    final String title =
+        city.country != null ? '${city.name}, ${city.country} - Go Nomads' : '${city.name} - Go Nomads';
+
+    // 构建分享描述
+    final List<String> descParts = [];
+
+    // 总体评分
+    if (city.overallScore != null && city.overallScore! > 0) {
+      descParts.add('⭐ ${l10n.overallScore}: ${city.overallScore!.toStringAsFixed(1)}/5.0');
+    }
+
+    // 温度
+    if (city.temperature != null) {
+      descParts.add('🌡️ ${city.temperature}°C');
+    }
+
+    // 人口
+    if (city.population != null && city.population!.isNotEmpty) {
+      descParts.add('👥 ${l10n.population}: ${city.population}');
+    }
+
+    // 平均花费
+    if (city.averageCost != null && city.averageCost! > 0) {
+      descParts.add('💰 ${l10n.monthlyCost}: \$${city.averageCost!.toStringAsFixed(0)}/月');
+    }
+
+    // 安全评分
+    if (city.safetyScore != null && city.safetyScore! > 0) {
+      descParts.add('🛡️ ${l10n.safety}: ${city.safetyScore!.toStringAsFixed(1)}/5.0');
+    }
+
+    // 网速评分
+    if (city.internetScore != null && city.internetScore! > 0) {
+      descParts.add('📶 ${l10n.internet}: ${city.internetScore!.toStringAsFixed(1)}/5.0');
+    }
+
+    // 描述
+    if (city.description != null && city.description!.isNotEmpty) {
+      descParts.add('\n${city.description}');
+    }
+
+    final String description = descParts.join('\n');
+
+    // 构建分享链接
+    final String shareUrl = ShareLinkUtil.cityDetail(city.id.toString());
+
+    // 封面图
+    final String imageUrl = city.displayImageUrl;
+
+    // 显示分享底部抽屉
+    ShareBottomSheet.show(
+      context,
+      title: title,
+      description: description,
+      imageUrl: imageUrl,
+      shareUrl: shareUrl,
+    );
   }
 
   // ==================== Coworking 相关 ====================
@@ -387,7 +452,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
         if (result.needsRefresh) {
           AppToast.success(
             'Your coworking space will be reviewed and added soon!',
-            title: 'Success',
+            title: _l10n.success,
           );
         }
       },
@@ -399,49 +464,26 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
   Future<bool> _checkGeneratePermission() async {
     log('🔐 [权限检查] 开始检查生成权限...');
 
-    // 检查是否是管理员
-    try {
-      final cityDetailController = Get.find<CityDetailStateController>();
-      final city = cityDetailController.currentCity.value;
+    // 使用统一的 AiQuotaService 检查配额并显示升级对话框
+    final canUse = await AiQuotaService().checkAndUseAI(
+      featureName: '附近城市生成',
+      showUpgradeDialog: true,
+    );
 
-      if (city != null && city.isCurrentUserAdmin) {
-        log('✅ [权限检查] 当前用户是管理员，允许生成');
-        return true;
-      }
-    } catch (e) {
-      log('⚠️ [权限检查] 获取城市信息失败: $e');
-    }
-
-    // 检查会员权限
-    try {
-      final membershipController = Get.find<MembershipStateController>();
-      final membership = membershipController.membership;
-
-      if (membership == null) {
-        AppToast.error('请先登录');
-        return false;
-      }
-
-      final remaining = membership.aiUsageRemaining;
-      if (remaining <= 0) {
-        AppToast.error('AI 使用次数已用完，请升级会员');
-        return false;
-      }
-
-      log('✅ [权限检查] 会员权限检查通过，剩余次数: $remaining');
-      return true;
-    } catch (e) {
-      log('⚠️ [权限检查] 会员检查失败: $e');
-      AppToast.error('权限检查失败，请稍后再试');
+    if (!canUse) {
+      log('❌ [权限检查] AI 配额不足');
       return false;
     }
+
+    log('✅ [权限检查] 权限检查通过');
+    return true;
   }
 
   void _showNearbyCitiesGenerateDialog(BuildContext context) {
     final aiController = Get.find<AiStateController>();
     _showAiGenerateProgressDialog(
       context: context,
-      title: 'AI 正在生成附近城市',
+      title: _l10n.cityDetailGeneratingNearbyCitiesTitle,
       icon: FontAwesomeIcons.mapLocationDot,
       progressGetter: () => aiController.nearbyCitiesGenerationProgress,
       messageGetter: () => aiController.nearbyCitiesGenerationMessage,
@@ -452,7 +494,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       ),
       onComplete: () {
         aiController.loadNearbyCities(cityId: controller.cityId);
-        AppToast.success('附近城市生成成功!');
+        AppToast.success(_l10n.cityDetailNearbyCitiesGeneratedSuccess);
       },
     );
   }
@@ -484,7 +526,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
               (completed) {
                 if (completed) {
                   Future.delayed(const Duration(milliseconds: 800), () {
-                    if (Navigator.of(dialogContext).canPop()) {
+                    if (dialogContext.mounted && Navigator.of(dialogContext).canPop()) {
                       Navigator.of(dialogContext).pop();
                       statusWorker?.dispose();
                       statusWorker = null;
@@ -503,44 +545,44 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
 
           return AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
             ),
             title: Row(
               children: [
-                Icon(icon, color: const Color(0xFFFF4458), size: 28),
-                const SizedBox(width: 12),
+                Icon(icon, color: const Color(0xFFFF4458), size: 28.r),
+                SizedBox(width: 12.w),
                 Expanded(
-                  child: Text(title, style: const TextStyle(fontSize: 18)),
+                  child: Text(title, style: TextStyle(fontSize: 18.sp)),
                 ),
               ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 LinearProgressIndicator(
                   value: progress / 100,
                   backgroundColor: Colors.grey[200],
                   valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
                       '$progress%',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         color: Color(0xFFFF4458),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   message,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
               ],

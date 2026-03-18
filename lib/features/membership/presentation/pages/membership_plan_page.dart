@@ -1,17 +1,28 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_plan.dart';
+import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
+import 'package:go_nomads_app/features/payment/application/services/apple_iap_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/unified_payment_service.dart';
 import 'package:go_nomads_app/features/payment/application/services/wechat_pay_service.dart';
-import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart' as payment_entities;
+import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart'
+    as payment_entities;
+import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
+import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
+import 'package:go_nomads_app/widgets/double_spin_loader.dart';
 
 /// 支付方式枚举
 enum PaymentMethod {
@@ -58,14 +69,208 @@ extension PaymentMethodExtension on PaymentMethod {
   }
 }
 
+const double _usdToCnyDisplayRate = 7.2;
+
+class _MembershipDisplayCurrency {
+  final String code;
+  final String symbol;
+
+  const _MembershipDisplayCurrency(this.code, this.symbol);
+}
+
+bool _isChineseMembershipLocale(BuildContext context) {
+  return _currentMembershipLanguageCode(context) == 'zh';
+}
+
+String _currentMembershipLanguageCode(BuildContext context) {
+  if (Get.isRegistered<LocaleController>()) {
+    return Get.find<LocaleController>()
+        .uiLocale
+        .value
+        .languageCode
+        .toLowerCase();
+  }
+
+  return Localizations.localeOf(context).languageCode.toLowerCase();
+}
+
+_MembershipDisplayCurrency _resolveMembershipDisplayCurrency(
+  BuildContext context, {
+  String? fallbackCurrencyCode,
+}) {
+  final languageCode = _currentMembershipLanguageCode(context);
+  if (languageCode == 'zh') {
+    return const _MembershipDisplayCurrency('CNY', '¥');
+  }
+  if (languageCode == 'en') {
+    return const _MembershipDisplayCurrency('USD', r'$');
+  }
+
+  switch ((fallbackCurrencyCode ?? 'USD').toUpperCase()) {
+    case 'CNY':
+      return const _MembershipDisplayCurrency('CNY', '¥');
+    case 'USD':
+    default:
+      return const _MembershipDisplayCurrency('USD', r'$');
+  }
+}
+
+double _convertMembershipDisplayAmount(
+  double amount, {
+  required String fromCurrencyCode,
+  required String toCurrencyCode,
+}) {
+  final from = fromCurrencyCode.toUpperCase();
+  final to = toCurrencyCode.toUpperCase();
+
+  if (from == to) {
+    return amount;
+  }
+
+  if (from == 'USD' && to == 'CNY') {
+    return amount * _usdToCnyDisplayRate;
+  }
+
+  if (from == 'CNY' && to == 'USD') {
+    return amount / _usdToCnyDisplayRate;
+  }
+
+  return amount;
+}
+
+String _formatMembershipDisplayPrice(
+  BuildContext context,
+  double amount, {
+  required String sourceCurrencyCode,
+  bool withSymbol = true,
+}) {
+  final displayCurrency = _resolveMembershipDisplayCurrency(
+    context,
+    fallbackCurrencyCode: sourceCurrencyCode,
+  );
+  final convertedAmount = _convertMembershipDisplayAmount(
+    amount,
+    fromCurrencyCode: sourceCurrencyCode,
+    toCurrencyCode: displayCurrency.code,
+  );
+  final formattedAmount = convertedAmount.toStringAsFixed(0);
+
+  if (!withSymbol) {
+    return formattedAmount;
+  }
+
+  return '${displayCurrency.symbol}$formattedAmount';
+}
+
+String _buildAppleMembershipDisplayPrice(
+  BuildContext context,
+  AppleIapService? service,
+  MembershipPlan plan,
+  BillingCycle billingCycle,
+) {
+  final fallbackAmount = billingCycle == BillingCycle.monthly
+      ? plan.priceMonthly
+      : plan.priceYearly;
+
+  if (service == null) {
+    return _formatMembershipDisplayPrice(
+      context,
+      fallbackAmount,
+      sourceCurrencyCode: plan.currency,
+    );
+  }
+
+  final product = service.getProductForPlan(
+    MembershipLevel.fromValue(plan.level),
+    billingCycle,
+  );
+
+  if (product == null) {
+    return _formatMembershipDisplayPrice(
+      context,
+      fallbackAmount,
+      sourceCurrencyCode: plan.currency,
+    );
+  }
+
+  return _formatMembershipDisplayPrice(
+    context,
+    product.rawPrice,
+    sourceCurrencyCode: product.currencyCode,
+  );
+}
+
+String _buildMembershipUpgradeSummary(
+  BuildContext context,
+  MembershipPlan plan,
+  bool isMonthly,
+) {
+  final amount = isMonthly ? plan.priceMonthly : plan.priceYearly;
+  final formattedPrice = _formatMembershipDisplayPrice(
+    context,
+    amount,
+    sourceCurrencyCode: plan.currency,
+  );
+
+  if (_isChineseMembershipLocale(context)) {
+    return '升级到 ${plan.name} - $formattedPrice';
+  }
+
+  return 'Upgrade to ${plan.name} - $formattedPrice';
+}
+
+String _buildMembershipSavingsLabel(BuildContext context, MembershipPlan plan) {
+  final amount = plan.priceMonthly * 12 - plan.priceYearly;
+  final formattedPrice = _formatMembershipDisplayPrice(
+    context,
+    amount,
+    sourceCurrencyCode: plan.currency,
+  );
+
+  if (_isChineseMembershipLocale(context)) {
+    return '省 $formattedPrice';
+  }
+
+  return 'Save $formattedPrice';
+}
+
 /// 会员计划页面
 /// 使用 GetView 模式，符合 GetX 标准
 class MembershipPlanPage extends GetView<MembershipStateController> {
   const MembershipPlanPage({super.key});
 
+  bool get _isIosStoreKitPlatform =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
+  AppleIapService? get _appleIapService {
+    if (!Get.isRegistered<AppleIapService>()) {
+      return null;
+    }
+    return Get.find<AppleIapService>();
+  }
+
+  bool _isApplePlanPurchasable(MembershipPlan plan) {
+    if (!_isIosStoreKitPlatform) {
+      return true;
+    }
+
+    final service = _appleIapService;
+    if (service == null) {
+      return false;
+    }
+
+    return service.isStoreAvailable.value &&
+        !service.isLoadingProducts.value &&
+        service.hasProductForPlan(
+          MembershipLevel.fromValue(plan.level),
+          controller.selectedBillingCycle,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final appleIapService = _appleIapService;
 
     // 页面首次构建时确保加载数据
     _ensureDataLoaded();
@@ -86,7 +291,6 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         centerTitle: true,
       ),
       body: Obx(() {
-        final currentLevel = controller.level;
         final isLoading = controller.isUpgrading;
         final isLoadingPlans = controller.isLoadingPlans;
         final paidPlans = controller.paidPlans;
@@ -94,7 +298,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
 
         // 加载中状态
         if (isLoadingPlans && paidPlans.isEmpty) {
-          return _buildLoadingSkeleton();
+          return _buildLoadingView();
         }
 
         // 错误状态
@@ -103,32 +307,102 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         }
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.w),
           child: Column(
             children: [
               // 当前会员状态
               _buildCurrentStatus(context),
-              const SizedBox(height: 24),
+              SizedBox(height: 20.h),
 
-              // 动态生成会员计划卡片
-              ...paidPlans.asMap().entries.map((entry) {
-                final index = entry.key;
-                final plan = entry.value;
-                final isPopular = plan.level == 2; // Pro 计划标记为热门
+              if (_isIosStoreKitPlatform) ...[
+                _buildIosPurchaseComplianceNote(context),
+                SizedBox(height: 20.h),
+              ],
 
-                return Padding(
-                  padding: EdgeInsets.only(bottom: index < paidPlans.length - 1 ? 16 : 0),
-                  child: _MembershipPlanCard(
-                    plan: plan,
-                    isCurrentPlan: currentLevel.levelValue == plan.level,
-                    isLoading: isLoading,
-                    isPopular: isPopular,
-                    onSelect: () => _handleUpgrade(context, plan),
-                  ),
-                );
-              }),
+              // 计费周期切换
+              _buildBillingCycleToggle(context),
+              SizedBox(height: 20.h),
 
-              const SizedBox(height: 32),
+              // 动态生成会员计划卡片 — 带滑动切换动画
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                switchInCurve: Curves.easeInOut,
+                switchOutCurve: Curves.easeInOut,
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  // 根据当前切换方向决定滑入/滑出方向
+                  final isIncoming =
+                      child.key == ValueKey<bool>(controller.isMonthlyBilling);
+                  final isGoingToMonthly = controller.isMonthlyBilling;
+
+                  // 切换到月度 → 新内容从左滑入，旧内容向右滑出
+                  // 切换到年度 → 新内容从右滑入，旧内容向左滑出
+                  final beginX = isIncoming
+                      ? (isGoingToMonthly ? -0.15 : 0.15)
+                      : (isGoingToMonthly ? 0.15 : -0.15);
+
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: Offset(beginX, 0.0),
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOut,
+                      )),
+                      child: child,
+                    ),
+                  );
+                },
+                layoutBuilder: (currentChild, previousChildren) {
+                  return Stack(
+                    alignment: Alignment.topCenter,
+                    children: [
+                      ...previousChildren,
+                      if (currentChild != null) currentChild,
+                    ],
+                  );
+                },
+                child: Column(
+                  key: ValueKey<bool>(controller.isMonthlyBilling),
+                  children: paidPlans.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final plan = entry.value;
+                    final isPopular = plan.level == 2; // Pro 计划标记为热门
+
+                    return Padding(
+                      padding: EdgeInsets.only(
+                          bottom: index < paidPlans.length - 1 ? 16 : 0),
+                      child: _MembershipPlanCard(
+                        plan: plan,
+                        isCurrentPlan: controller.shouldGreyOutPlan(plan.level),
+                        isLoading: isLoading,
+                        isSelectable: _isIosStoreKitPlatform
+                            ? _isApplePlanPurchasable(plan)
+                            : true,
+                        isPopular: isPopular,
+                        isMonthly: controller.isMonthlyBilling,
+                        customPriceText: _isIosStoreKitPlatform
+                            ? _buildAppleMembershipDisplayPrice(
+                                context,
+                                appleIapService,
+                                plan,
+                                controller.selectedBillingCycle,
+                              )
+                            : null,
+                        customButtonLabel: _isIosStoreKitPlatform
+                            ? (_isApplePlanPurchasable(plan)
+                                ? 'App Store 购买 / Buy with App Store'
+                                : '暂不可购买 / Unavailable')
+                            : null,
+                        onSelect: () => _handleUpgrade(context, plan),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              SizedBox(height: 32.h),
 
               // 底部说明
               _buildFooterNote(context),
@@ -143,30 +417,17 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
   void _ensureDataLoaded() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.ensurePlansLoaded();
+      if (_isIosStoreKitPlatform) {
+        unawaited(_appleIapService?.ensureInitialized());
+      }
     });
   }
 
-  /// 加载中骨架屏
-  Widget _buildLoadingSkeleton() {
-    return SafeShimmer(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const _CurrentStatusSkeleton(),
-            const SizedBox(height: 24),
-            ...List.generate(3, (index) {
-              final hasSpacing = index < 2;
-              return Padding(
-                padding: EdgeInsets.only(bottom: hasSpacing ? 16 : 0),
-                child: const _MembershipPlanSkeleton(),
-              );
-            }),
-            const SizedBox(height: 32),
-            const _FooterSkeleton(),
-          ],
-        ),
-      ),
+  /// 加载中视图
+  Widget _buildLoadingView() {
+    return const AppSceneLoading(
+      scene: AppLoadingScene.generic,
+      fullScreen: true,
     );
   }
 
@@ -177,50 +438,59 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         final l10n = AppLocalizations.of(context)!;
         return Center(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: EdgeInsets.all(32.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   FontAwesomeIcons.triangleExclamation,
-                  size: 64,
+                  size: 64.r,
                   color: Colors.orange.shade400,
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 Text(
                   l10n.unableToLoadPlans,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   controller.plansError ?? l10n.checkNetworkConnection,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: Colors.grey.shade600,
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 ElevatedButton.icon(
-                  onPressed: controller.isLoadingPlans ? null : () => controller.loadPlans(),
+                  onPressed: controller.isLoadingPlans
+                      ? null
+                      : () => controller.loadPlans(),
                   icon: controller.isLoadingPlans
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      ? SizedBox(
+                          width: 16.w,
+                          height: 16.h,
+                          child: DoubleSpinLoader(
+                            size: 16.w,
+                            strokeWidth: 2.2,
+                            color1: Colors.white,
+                            color2: Colors.white.withValues(alpha: 0.45),
+                          ),
                         )
-                      : const Icon(FontAwesomeIcons.arrowsRotate, size: 16),
-                  label: Text(controller.isLoadingPlans ? l10n.loading : l10n.retry),
+                      : Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
+                  label: Text(
+                      controller.isLoadingPlans ? l10n.loading : l10n.retry),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
                 ),
@@ -238,7 +508,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -248,11 +518,11 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Color(level.colorValue).withValues(alpha: 0.3),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 6),
           ),
         ],
@@ -260,47 +530,58 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       child: Row(
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 60.w,
+            height: 60.h,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Center(
               child: Text(
                 level.icon,
-                style: const TextStyle(fontSize: 32),
+                style: TextStyle(fontSize: 32.sp),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   l10n.currentPlan(level.name),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
-                if (membership?.isActive == true)
+                SizedBox(height: 4.h),
+                if (membership?.isActive == true) ...[
                   Text(
-                    l10n.daysRemaining(controller.remainingDays),
+                    '${membership!.billingCycle.label}会员 · ${l10n.daysRemaining(controller.remainingDays)}',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
-                  )
-                else if (level == MembershipLevel.free)
+                  ),
+                  if (membership.isYearly && membership.isActive)
+                    Padding(
+                      padding: EdgeInsets.only(top: 4.h),
+                      child: Text(
+                        '年度会员到期后可切换为月付',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ),
+                ] else if (level == MembershipLevel.free)
                   Text(
                     l10n.upgradeToUnlock,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
               ],
@@ -311,33 +592,84 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     );
   }
 
+  /// 计费周期切换组件 — toggle 滑动切换效果
+  Widget _buildBillingCycleToggle(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isMonthly = controller.isMonthlyBilling;
+    return _BillingCycleToggle(
+      isMonthly: isMonthly,
+      monthlyLabel: l10n.billingMonthly,
+      yearlyLabel: l10n.billingYearly,
+      onChanged: (monthly) => controller.setMonthlyBilling(monthly),
+    );
+  }
+
   Widget _buildFooterNote(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    if (_isIosStoreKitPlatform) {
+      return Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF7ED),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFFDBA74)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(FontAwesomeIcons.circleInfo,
+                    size: 16.r, color: const Color(0xFFEA580C)),
+                SizedBox(width: 8.w),
+                const Expanded(
+                  child: Text(
+                    'iOS 支付说明 / iOS Payment Notice',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'iOS 端会员购买已切换到 App Store 应用内购买。当前 Flutter 端会在购买完成后调用现有会员升级接口同步状态，后续仍建议补齐服务端收据校验。\nMembership purchases on iOS now use App Store In-App Purchase. Server-side receipt validation should still be added next.',
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 13.sp,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              Icon(FontAwesomeIcons.shield, size: 16, color: Colors.green.shade600),
-              const SizedBox(width: 8),
+              Icon(FontAwesomeIcons.shield,
+                  size: 16.r, color: Colors.green.shade600),
+              SizedBox(width: 8.w),
               Text(
                 l10n.securePayment,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             l10n.allPaymentsSecure,
             style: TextStyle(
               color: Colors.grey.shade600,
-              fontSize: 13,
+              fontSize: 13.sp,
             ),
           ),
         ],
@@ -345,31 +677,303 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     );
   }
 
+  Widget _buildIosPurchaseComplianceNote(BuildContext context) {
+    final appleIapService = _appleIapService;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFFCD34D)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 2.h),
+            child: Icon(
+              FontAwesomeIcons.apple,
+              size: 16.r,
+              color: const Color(0xFFD97706),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'iOS 端会员现在仅支持 App Store 应用内购买，页面不再提供 PayPal 或微信支付。若你曾购买过订阅，可使用下方按钮恢复购买记录。\nMemberships on iOS now use App Store In-App Purchase only. PayPal and WeChat are no longer available here.',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    height: 1.45,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Wrap(
+                  spacing: 10.w,
+                  runSpacing: 10.h,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: appleIapService == null ||
+                              appleIapService.isLoadingProducts.value
+                          ? null
+                          : _refreshAppleProducts,
+                      icon: appleIapService?.isLoadingProducts.value == true
+                          ? SizedBox(
+                              width: 14.w,
+                              height: 14.h,
+                              child: DoubleSpinLoader(
+                                size: 14.w,
+                                strokeWidth: 2,
+                                color1: Theme.of(context).colorScheme.primary,
+                                color2: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.45),
+                              ),
+                            )
+                          : Icon(FontAwesomeIcons.arrowsRotate, size: 14.r),
+                      label: const Text('刷新商品'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: appleIapService == null ||
+                              appleIapService.isRestoreInProgress.value
+                          ? null
+                          : () => _restoreApplePurchases(context),
+                      icon: appleIapService?.isRestoreInProgress.value == true
+                          ? SizedBox(
+                              width: 14.w,
+                              height: 14.h,
+                              child: DoubleSpinLoader(
+                                size: 14.w,
+                                strokeWidth: 2,
+                                color1: Theme.of(context).colorScheme.primary,
+                                color2: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.45),
+                              ),
+                            )
+                          : Icon(FontAwesomeIcons.clockRotateLeft, size: 14.r),
+                      label: const Text('恢复购买'),
+                    ),
+                  ],
+                ),
+                if (appleIapService?.errorMessage.value != null) ...[
+                  SizedBox(height: 10.h),
+                  Text(
+                    appleIapService!.errorMessage.value!,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.red.shade600,
+                    ),
+                  ),
+                ] else if (appleIapService != null &&
+                    !appleIapService.isLoadingProducts.value &&
+                    !appleIapService.hasAvailableProducts) ...[
+                  SizedBox(height: 10.h),
+                  Text(
+                    '当前没有可用的 App Store 订阅商品，请先检查 App Store Connect 的订阅配置、协议状态与沙盒可用性。\nNo App Store subscription products are currently available.',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.orange.shade700,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _refreshAppleProducts() async {
+    final service = _appleIapService;
+    if (service == null) {
+      return;
+    }
+
+    await service.refreshProducts();
+    if (service.errorMessage.value == null) {
+      AppToast.success('App Store 商品已刷新');
+    } else {
+      AppToast.warning(service.errorMessage.value!);
+    }
+  }
+
+  Future<void> _restoreApplePurchases(BuildContext context) async {
+    final service = _appleIapService;
+    if (service == null) {
+      AppToast.warning('Apple IAP 服务未初始化');
+      return;
+    }
+
+    final restored = await service.restoreMembershipPurchases();
+    if (restored.isEmpty) {
+      AppToast.info('未发现可恢复的会员购买记录，请确认当前 Apple ID 与订阅账号一致。');
+      return;
+    }
+
+    final latest = restored.last;
+    final success =
+        await _syncMembershipAfterApplePurchase(latest, isRestore: true);
+
+    if (success) {
+      AppToast.success('已恢复购买并同步会员状态');
+    } else {
+      AppToast.warning('已恢复购买，但服务端会员状态尚未同步');
+    }
+  }
+
+  Future<bool> _syncMembershipAfterApplePurchase(
+    AppleIapPurchaseResult result, {
+    bool isRestore = false,
+  }) async {
+    if (result.level == null || result.billingCycle == null) {
+      return false;
+    }
+
+    if (!Get.isRegistered<PaymentStateController>()) {
+      return false;
+    }
+
+    final paymentController = Get.find<PaymentStateController>();
+    final purchaseDetails = result.purchaseDetails;
+    final productId = result.productId;
+    final transactionId = purchaseDetails?.purchaseID;
+    final verificationData =
+        purchaseDetails?.verificationData.serverVerificationData;
+
+    if (productId == null ||
+        productId.isEmpty ||
+        transactionId == null ||
+        transactionId.isEmpty) {
+      return false;
+    }
+
+    final synced = await paymentController.completeAppleIapPurchase(
+      productId: productId,
+      transactionId: transactionId,
+      verificationData: verificationData,
+      isRestore: isRestore,
+    );
+
+    final upgraded = synced?.success == true;
+
+    if (upgraded) {
+      await controller.loadMembership();
+    }
+
+    if (upgraded && Get.isRegistered<UserStateController>()) {
+      await Get.find<UserStateController>().refresh();
+    }
+
+    return upgraded;
+  }
+
+  Future<void> _processAppleIapPurchase(
+    BuildContext context,
+    MembershipLevel targetLevel,
+  ) async {
+    final service = _appleIapService;
+
+    if (service == null) {
+      AppToast.warning('Apple IAP 服务未初始化');
+      return;
+    }
+
+    final result = await service.purchaseMembership(
+      level: targetLevel,
+      billingCycle: controller.selectedBillingCycle,
+    );
+
+    switch (result.state) {
+      case AppleIapPurchaseState.success:
+      case AppleIapPurchaseState.restored:
+        final synced = await _syncMembershipAfterApplePurchase(
+          result,
+          isRestore: result.state == AppleIapPurchaseState.restored,
+        );
+        if (synced) {
+          AppToast.success('App Store 购买成功，会员状态已更新');
+        } else {
+          AppToast.warning('购买已完成，但服务端会员状态同步失败，请稍后重试');
+        }
+        break;
+      case AppleIapPurchaseState.cancelled:
+        AppToast.info('已取消购买');
+        break;
+      case AppleIapPurchaseState.pending:
+        AppToast.info(result.message ?? '购买正在处理中');
+        break;
+      case AppleIapPurchaseState.error:
+      case AppleIapPurchaseState.unavailable:
+        AppToast.error(result.message ?? 'Apple IAP 购买失败');
+        break;
+    }
+  }
+
   void _handleUpgrade(BuildContext context, MembershipPlan plan) async {
     final targetLevel = MembershipLevel.fromValue(plan.level);
     final l10n = AppLocalizations.of(context)!;
 
-    if (controller.level.levelValue >= plan.level) {
+    // 检查是否为当前计划且相同计费周期（已置灰）
+    if (controller.shouldGreyOutPlan(plan.level)) {
       AppToast.info(l10n.alreadyHavePlan);
+      return;
+    }
+
+    // 检查计费周期切换限制：年付会员在有效期内不能切换为月付
+    if (controller.isMonthlyBilling && !controller.canSwitchToMonthly) {
+      AppToast.warning('您的年度会员尚在有效期内，到期后可切换为月付');
+      return;
+    }
+
+    // 检查是否已有相同或更高等级（不同计费周期可以切换）
+    if (controller.level.levelValue > plan.level) {
+      AppToast.info(l10n.alreadyHavePlan);
+      return;
+    }
+
+    if (_isIosStoreKitPlatform) {
+      if (!_isApplePlanPurchasable(plan)) {
+        AppToast.warning(
+          'App Store 商品尚未就绪，请先刷新商品后重试。\nApp Store products are not ready yet. Please refresh and try again.',
+        );
+        return;
+      }
+
+      await _processAppleIapPurchase(context, targetLevel);
       return;
     }
 
     // 显示支付方式选择底部弹窗
     final selectedMethod = await _showPaymentMethodSheet(context, plan);
 
-    if (selectedMethod != null) {
+    if (selectedMethod != null && context.mounted) {
       await _processPayment(context, plan, targetLevel, selectedMethod);
     }
   }
 
   /// 显示支付方式选择底部弹窗
-  Future<PaymentMethod?> _showPaymentMethodSheet(BuildContext context, MembershipPlan plan) {
+  Future<PaymentMethod?> _showPaymentMethodSheet(
+      BuildContext context, MembershipPlan plan) {
+    if (_isIosStoreKitPlatform) {
+      AppToast.info('iOS 端会员购买已改为 App Store 应用内购买');
+      return Future.value(null);
+    }
+
     final l10n = AppLocalizations.of(context)!;
     return Get.bottomSheet<PaymentMethod>(
       Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         ),
         child: SafeArea(
           child: Column(
@@ -377,33 +981,37 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
             children: [
               // 拖动指示器
               Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(top: 12.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
 
               // 标题
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20.w),
                 child: Column(
                   children: [
                     Text(
                       l10n.selectPaymentMethod,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
                     Text(
-                      l10n.upgradeTo(plan.name, plan.priceYearly.toStringAsFixed(0)),
+                      _buildMembershipUpgradeSummary(
+                        context,
+                        plan,
+                        controller.isMonthlyBilling,
+                      ),
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -411,7 +1019,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 ),
               ),
 
-              const Divider(height: 1),
+              Divider(height: 1.h),
 
               // 支付方式列表
               _buildPaymentMethodTile(
@@ -425,24 +1033,24 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 l10n.wechatDescription,
               ),
 
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
 
               // 安全提示
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       FontAwesomeIcons.shieldHalved,
-                      size: 14,
+                      size: 14.r,
                       color: Colors.green.shade600,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
                       l10n.allPaymentsEncrypted,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: Colors.grey.shade600,
                       ),
                     ),
@@ -450,7 +1058,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                 ),
               ),
 
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
             ],
           ),
         ),
@@ -461,7 +1069,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
   }
 
   /// 构建支付方式选项
-  Widget _buildPaymentMethodTile(BuildContext context, PaymentMethod method, String subtitle) {
+  Widget _buildPaymentMethodTile(
+      BuildContext context, PaymentMethod method, String subtitle) {
     final l10n = AppLocalizations.of(context)!;
     String title;
     switch (method) {
@@ -473,37 +1082,37 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
         break;
     }
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       leading: Container(
-        width: 48,
-        height: 48,
+        width: 48.w,
+        height: 48.h,
         decoration: BoxDecoration(
           color: method.color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         child: Icon(
           method.iconData,
           color: method.color,
-          size: 24,
+          size: 24.r,
         ),
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           fontWeight: FontWeight.w600,
         ),
       ),
       subtitle: Text(
         subtitle,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 12.sp,
           color: Colors.grey.shade600,
         ),
       ),
       trailing: Icon(
         FontAwesomeIcons.chevronRight,
-        size: 14,
+        size: 14.r,
         color: Colors.grey.shade400,
       ),
       onTap: () => Get.back(result: method),
@@ -550,8 +1159,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       AlertDialog(
         content: Row(
           children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: 16),
+            const DoubleSpinLoader(size: 24, strokeWidth: 2.4),
+            SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -561,10 +1170,20 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     l10n.creatingPaypalOrder,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
-                    l10n.priceForPlan(plan.priceYearly.toStringAsFixed(0), plan.name),
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    l10n.priceForPlan(
+                      _formatMembershipDisplayPrice(
+                        context,
+                        controller.isMonthlyBilling
+                            ? plan.priceMonthly
+                            : plan.priceYearly,
+                        sourceCurrencyCode: plan.currency,
+                      ),
+                      plan.name,
+                    ),
+                    style:
+                        TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -584,12 +1203,13 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
 
     try {
       // 判断是升级还是续费
-      final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
+      final isRenewal = controller.membership?.isActive == true &&
+          controller.level.levelValue == plan.level;
 
       // 发起支付
       success = await paymentService.startMembershipPayment(
         membershipLevel: plan.level,
-        durationDays: 365, // 年度订阅
+        durationDays: controller.billingDurationDays,
         isRenewal: isRenewal,
       );
     } catch (e) {
@@ -604,6 +1224,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     // 处理结果
     if (errorMessage != null) {
       AppToast.error(l10n.paymentError(errorMessage));
+      if (!context.mounted) return;
       _retryPaymentMethodSelection(context, plan, targetLevel);
     } else if (success) {
       AppToast.info(l10n.openingPaypal);
@@ -611,6 +1232,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       // 用户完成支付后会通过 deep link 返回
     } else {
       AppToast.error(l10n.failedToCreateOrder);
+      if (!context.mounted) return;
       _retryPaymentMethodSelection(context, plan, targetLevel);
     }
   }
@@ -637,6 +1259,7 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     // 检查微信是否已安装
     if (!await wechatService.isWeChatInstalled) {
       AppToast.error(l10n.wechatNotInstalled);
+      if (!context.mounted) return;
       _retryPaymentMethodSelection(context, plan, targetLevel);
       return;
     }
@@ -646,8 +1269,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       AlertDialog(
         content: Row(
           children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: 16),
+            const DoubleSpinLoader(size: 24, strokeWidth: 2.4),
+            SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -657,10 +1280,20 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
                     l10n.creatingWechatOrder,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
-                    l10n.cnyPriceForPlan((plan.priceYearly * 7.2).toStringAsFixed(0), plan.name),
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    l10n.priceForPlan(
+                      _formatMembershipDisplayPrice(
+                        context,
+                        controller.isMonthlyBilling
+                            ? plan.priceMonthly
+                            : plan.priceYearly,
+                        sourceCurrencyCode: plan.currency,
+                      ),
+                      plan.name,
+                    ),
+                    style:
+                        TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -676,21 +1309,27 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     await Future.delayed(const Duration(milliseconds: 100));
 
     try {
-      final isRenewal = controller.membership?.isActive == true && controller.level.levelValue == plan.level;
+      final isRenewal = controller.membership?.isActive == true &&
+          controller.level.levelValue == plan.level;
 
       // 异步调用支付，不等待结果
       unifiedPaymentService
           .payForMembership(
         method: payment_entities.PaymentMethod.wechat,
         membershipLevel: plan.level,
-        durationDays: 365,
+        durationDays: controller.billingDurationDays,
         isRenewal: isRenewal,
       )
           .then((result) {
         // 支付结果回调
         if (result.success) {
           AppToast.success(l10n.paymentSuccessful);
+          // 刷新会员状态
           controller.loadMembership();
+          // 强制刷新用户 profile（跳过缓存，确保获取最新会员级别）
+          if (Get.isRegistered<UserStateController>()) {
+            Get.find<UserStateController>().refresh();
+          }
         } else {
           AppToast.error(result.errorMessage ?? l10n.wechatPayFailed);
         }
@@ -719,156 +1358,315 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     // 稍微延迟一下，让用户看清错误提示
     await Future.delayed(const Duration(milliseconds: 500));
 
+    if (!context.mounted) return;
     // 重新显示支付方式选择底部弹窗
     final selectedMethod = await _showPaymentMethodSheet(context, plan);
-    if (selectedMethod != null) {
+    if (selectedMethod != null && context.mounted) {
       await _processPayment(context, plan, targetLevel, selectedMethod);
     }
   }
 }
 
-/// 会员计划骨架卡片
-class _MembershipPlanSkeleton extends StatelessWidget {
-  const _MembershipPlanSkeleton();
+/// 计费周期 Toggle 切换组件 — 支持手势拖拽 + 弹性动画
+class _BillingCycleToggle extends StatefulWidget {
+  final bool isMonthly;
+  final String monthlyLabel;
+  final String yearlyLabel;
+  final ValueChanged<bool> onChanged;
+
+  const _BillingCycleToggle({
+    required this.isMonthly,
+    required this.monthlyLabel,
+    required this.yearlyLabel,
+    required this.onChanged,
+  });
+
+  @override
+  State<_BillingCycleToggle> createState() => _BillingCycleToggleState();
+}
+
+class _BillingCycleToggleState extends State<_BillingCycleToggle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _slideAnimation;
+
+  // 拖拽进度（0.0 = 月付，1.0 = 年付）
+  double _dragValue = 0.0;
+  bool _isDragging = false;
+
+  // 记录当前 thumb 的逻辑位置（0.0 = 月付，1.0 = 年付）
+  double _currentPosition = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPosition = widget.isMonthly ? 0.0 : 1.0;
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _slideAnimation = AlwaysStoppedAnimation(_currentPosition);
+  }
+
+  @override
+  void didUpdateWidget(covariant _BillingCycleToggle oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isMonthly != widget.isMonthly && !_isDragging) {
+      _animateTo(widget.isMonthly ? 0.0 : 1.0);
+    }
+  }
+
+  void _animateTo(double target) {
+    final begin = _currentPosition;
+    _slideAnimation = Tween<double>(
+      begin: begin,
+      end: target,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutBack,
+    ));
+    _animController.forward(from: 0.0).then((_) {
+      _currentPosition = target;
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        final padding = 4.w;
+        final trackWidth = totalWidth - padding * 2;
+        final thumbWidth = trackWidth / 2;
+
+        return GestureDetector(
+          // 横向拖拽手势
+          onHorizontalDragStart: (_) {
+            _isDragging = true;
+            _dragValue = _currentPosition;
+          },
+          onHorizontalDragUpdate: (details) {
+            setState(() {
+              _dragValue += details.primaryDelta! / thumbWidth;
+              _dragValue = _dragValue.clamp(0.0, 1.0);
+            });
+          },
+          onHorizontalDragEnd: (details) {
+            _isDragging = false;
+            final velocity = details.primaryVelocity ?? 0;
+            // 根据速度或位置判断最终归位
+            final goToYearly =
+                velocity > 300 || (velocity.abs() < 300 && _dragValue > 0.5);
+            final target = goToYearly ? 1.0 : 0.0;
+            _currentPosition = _dragValue;
+            _animateTo(target);
+            widget.onChanged(!goToYearly);
+          },
+          child: Container(
+            height: 48.h,
+            padding: EdgeInsets.all(padding),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: AnimatedBuilder(
+              animation: _animController,
+              isDragging: _isDragging,
+              dragValue: _dragValue,
+              slideAnimation: _slideAnimation,
+              thumbWidth: thumbWidth,
+              trackWidth: trackWidth,
+              isMonthly: widget.isMonthly,
+              monthlyLabel: widget.monthlyLabel,
+              yearlyLabel: widget.yearlyLabel,
+              onTapMonthly: () => widget.onChanged(true),
+              onTapYearly: () => widget.onChanged(false),
+            ),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        );
+      },
+    );
+  }
+}
+
+/// 内部构建器，将动画值映射到 UI
+class AnimatedBuilder extends StatelessWidget {
+  final Animation<double> animation;
+  final bool isDragging;
+  final double dragValue;
+  final Animation<double> slideAnimation;
+  final double thumbWidth;
+  final double trackWidth;
+  final bool isMonthly;
+  final String monthlyLabel;
+  final String yearlyLabel;
+  final VoidCallback onTapMonthly;
+  final VoidCallback onTapYearly;
+
+  const AnimatedBuilder({
+    super.key,
+    required this.animation,
+    required this.isDragging,
+    required this.dragValue,
+    required this.slideAnimation,
+    required this.thumbWidth,
+    required this.trackWidth,
+    required this.isMonthly,
+    required this.monthlyLabel,
+    required this.yearlyLabel,
+    required this.onTapMonthly,
+    required this.onTapYearly,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder2(
+      listenable: animation,
+      builder: (context, _) {
+        // 当前进度值：拖拽中用 dragValue，否则用动画值
+        final progress = isDragging ? dragValue : slideAnimation.value;
+        final offset = progress * (trackWidth - thumbWidth);
+        // 文字渐变：月付选中度 = 1 - progress
+        final monthlyActive = 1.0 - progress;
+        final yearlyActive = progress;
+
+        return Stack(
           children: [
-            Row(
-              children: [
-                SkeletonBox(width: 48, height: 48, borderRadius: 12),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      SkeletonBox(width: 140, height: 18),
-                      SizedBox(height: 6),
-                      SkeletonBox(width: 200, height: 14),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: const [
-                    SkeletonBox(width: 80, height: 22),
-                    SizedBox(height: 6),
-                    SkeletonBox(width: 50, height: 14),
+            // 滑动 Thumb
+            Positioned(
+              left: offset,
+              top: 0,
+              bottom: 0,
+              width: thumbWidth,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8.r,
+                      offset: const Offset(0, 2),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 2.r,
+                      offset: const Offset(0, 1),
+                    ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Column(
-              children: const [
-                _PlanBenefitSkeleton(),
-                SizedBox(height: 8),
-                _PlanBenefitSkeleton(),
-                SizedBox(height: 8),
-                _PlanBenefitSkeleton(),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              height: 44,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12),
               ),
             ),
+
+            // 文字层
+            Row(
+              children: [
+                // 月付
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onTapMonthly,
+                    child: Center(
+                      child: Text(
+                        monthlyLabel,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: monthlyActive > 0.5
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: Color.lerp(
+                            Colors.grey.shade600,
+                            Colors.black87,
+                            monthlyActive,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // 年付
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onTapYearly,
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            yearlyLabel,
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: yearlyActive > 0.5
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: Color.lerp(
+                                Colors.grey.shade600,
+                                Colors.black87,
+                                yearlyActive,
+                              ),
+                            ),
+                          ),
+                          // 优惠标签随年付激活程度渐入
+                          if (yearlyActive > 0.3)
+                            Opacity(
+                              opacity:
+                                  ((yearlyActive - 0.3) / 0.7).clamp(0.0, 1.0),
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 6.w),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 6.w, vertical: 2.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade100,
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
+                                  child: Text(
+                                    '优惠',
+                                    style: TextStyle(
+                                      fontSize: 10.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green.shade700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
-class _PlanBenefitSkeleton extends StatelessWidget {
-  const _PlanBenefitSkeleton();
+/// 简单的 AnimatedBuilder 包装，避免与 Flutter 内置命名冲突
+class AnimatedBuilder2 extends AnimatedWidget {
+  final TransitionBuilder builder;
+
+  const AnimatedBuilder2({
+    super.key,
+    required super.listenable,
+    required this.builder,
+  }) : super();
+
+  Animation<double> get animation => listenable as Animation<double>;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: const [
-        SkeletonCircle(size: 12),
-        SizedBox(width: 8),
-        Expanded(child: SkeletonBox(height: 14)),
-      ],
-    );
-  }
-}
-
-/// 当前状态骨架
-class _CurrentStatusSkeleton extends StatelessWidget {
-  const _CurrentStatusSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            SkeletonBox(width: 160, height: 18),
-            SizedBox(height: 12),
-            SkeletonBox(width: 220, height: 16),
-            SizedBox(height: 12),
-            SkeletonBox(width: 120, height: 14),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 底部说明骨架
-class _FooterSkeleton extends StatelessWidget {
-  const _FooterSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        SkeletonBox(width: 180, height: 16),
-        SizedBox(height: 8),
-        SkeletonBox(width: double.infinity, height: 14),
-        SizedBox(height: 6),
-        SkeletonBox(width: double.infinity, height: 14),
-      ],
-    );
+    return builder(context, null);
   }
 }
 
@@ -877,14 +1675,22 @@ class _MembershipPlanCard extends StatelessWidget {
   final MembershipPlan plan;
   final bool isCurrentPlan;
   final bool isLoading;
+  final bool isSelectable;
   final bool isPopular;
+  final bool isMonthly;
+  final String? customPriceText;
+  final String? customButtonLabel;
   final VoidCallback onSelect;
 
   const _MembershipPlanCard({
     required this.plan,
     required this.isCurrentPlan,
     required this.isLoading,
+    this.isSelectable = true,
     this.isPopular = false,
+    this.isMonthly = false,
+    this.customPriceText,
+    this.customButtonLabel,
     required this.onSelect,
   });
 
@@ -924,7 +1730,7 @@ class _MembershipPlanCard extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: isCurrentPlan
                   ? planColor
@@ -936,13 +1742,13 @@ class _MembershipPlanCard extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
+                blurRadius: 10.r,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -950,17 +1756,18 @@ class _MembershipPlanCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 48.w,
+                      height: 48.h,
                       decoration: BoxDecoration(
                         color: planColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Center(
-                        child: Text(planIcon, style: const TextStyle(fontSize: 24)),
+                        child:
+                            Text(planIcon, style: TextStyle(fontSize: 24.sp)),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -968,7 +1775,7 @@ class _MembershipPlanCard extends StatelessWidget {
                           Text(
                             plan.name,
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 20.sp,
                               fontWeight: FontWeight.bold,
                               color: planColor,
                             ),
@@ -977,7 +1784,7 @@ class _MembershipPlanCard extends StatelessWidget {
                             Text(
                               plan.description!,
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 13.sp,
                                 color: Colors.grey.shade600,
                               ),
                             ),
@@ -988,78 +1795,108 @@ class _MembershipPlanCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          '\$${plan.priceYearly.toStringAsFixed(0)}',
+                          customPriceText ??
+                              _formatMembershipDisplayPrice(
+                                context,
+                                isMonthly
+                                    ? plan.priceMonthly
+                                    : plan.priceYearly,
+                                sourceCurrencyCode: plan.currency,
+                              ),
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 28.sp,
                             fontWeight: FontWeight.bold,
                             color: planColor,
                           ),
                         ),
                         Text(
-                          l10n.perYear,
+                          isMonthly ? l10n.perMonth : l10n.perYear,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: Colors.grey.shade500,
                           ),
                         ),
+                        if (!isMonthly) ...[
+                          SizedBox(height: 2.h),
+                          Text(
+                            _buildMembershipSavingsLabel(context, plan),
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.green.shade600,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 const Divider(),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
                 // 功能列表
                 ...plan.features.map((feature) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: EdgeInsets.only(bottom: 8.h),
                       child: Row(
                         children: [
                           Icon(
                             FontAwesomeIcons.circleCheck,
-                            size: 14,
+                            size: 14.r,
                             color: planColor,
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10.w),
                           Expanded(
                             child: Text(
                               feature,
-                              style: const TextStyle(fontSize: 14),
+                              style: TextStyle(fontSize: 14.sp),
                             ),
                           ),
                         ],
                       ),
                     )),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 选择按钮
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: isCurrentPlan || isLoading ? null : onSelect,
+                    onPressed: isCurrentPlan || isLoading || !isSelectable
+                        ? null
+                        : onSelect,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isCurrentPlan ? Colors.grey.shade300 : planColor,
+                      backgroundColor: isCurrentPlan || !isSelectable
+                          ? Colors.grey.shade300
+                          : planColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
                     child: isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                        ? SizedBox(
+                            width: 20.w,
+                            height: 20.h,
+                            child: DoubleSpinLoader(
+                              size: 20.w,
+                              strokeWidth: 2.2,
+                              color1: Colors.white,
+                              color2: Colors.white.withValues(alpha: 0.45),
                             ),
                           )
                         : Text(
-                            isCurrentPlan ? l10n.currentPlanLabel : l10n.selectPlanLabel,
-                            style: const TextStyle(
-                              fontSize: 16,
+                            isCurrentPlan
+                                ? l10n.currentPlanLabel
+                                : (customButtonLabel ??
+                                    (isSelectable
+                                        ? l10n.selectPlanLabel
+                                        : '暂不可购买')),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1074,20 +1911,20 @@ class _MembershipPlanCard extends StatelessWidget {
         if (isPopular)
           Positioned(
             top: -1,
-            right: 20,
+            right: 20.w,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: planColor,
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(8),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(8.r),
                 ),
               ),
               child: Text(
                 l10n.popular,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 11,
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),

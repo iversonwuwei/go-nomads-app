@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/ai_usage_check.dart';
 import 'package:go_nomads_app/features/membership/domain/entities/membership_level.dart';
@@ -7,7 +8,7 @@ import 'package:go_nomads_app/features/membership/domain/entities/membership_pla
 import 'package:go_nomads_app/features/membership/domain/entities/user_membership.dart';
 import 'package:go_nomads_app/features/membership/domain/repositories/membership_repository.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
-import 'package:get/get.dart';
+import 'package:go_nomads_app/services/token_storage_service.dart';
 
 /// 会员状态控制器
 ///
@@ -35,6 +36,9 @@ class MembershipStateController extends GetxController {
 
   /// 是否正在升级
   final _isUpgrading = false.obs;
+
+  /// 是否为月付模式（false = 年付）
+  final _isMonthlyBilling = false.obs;
 
   /// 错误信息
   final _errorMessage = Rx<String?>(null);
@@ -93,6 +97,50 @@ class MembershipStateController extends GetxController {
   /// 是否正在升级
   bool get isUpgrading => _isUpgrading.value;
   RxBool get isUpgradingRx => _isUpgrading;
+
+  /// 是否为月付模式
+  bool get isMonthlyBilling => _isMonthlyBilling.value;
+  RxBool get isMonthlyBillingRx => _isMonthlyBilling;
+
+  /// 切换计费周期
+  void toggleBillingCycle() => _isMonthlyBilling.value = !_isMonthlyBilling.value;
+
+  /// 设置计费周期
+  void setMonthlyBilling(bool isMonthly) => _isMonthlyBilling.value = isMonthly;
+
+  /// 当前选中的计费天数
+  int get billingDurationDays => _isMonthlyBilling.value ? 30 : 365;
+
+  /// 当前会员的计费周期
+  BillingCycle get currentBillingCycle => _membership.value?.billingCycle ?? BillingCycle.yearly;
+
+  /// 是否可以切换到月付（年付会员在有效期内不能切换为月付）
+  bool get canSwitchToMonthly {
+    final m = _membership.value;
+    if (m == null) return true;
+    // 年付会员在有效期内不能切换为月付
+    if (m.isYearly && m.isActive) return false;
+    return true;
+  }
+
+  /// 是否可以切换到年付（月付用户可以随时升级为年付）
+  bool get canSwitchToYearly => true;
+
+  /// 检查指定计划卡片是否应该置灰（当前计划 + 匹配的计费周期 tab）
+  bool shouldGreyOutPlan(int planLevel) {
+    final m = _membership.value;
+    if (m == null) return false;
+    // 只有当计划等级匹配 AND 计费周期匹配当前 tab 时才置灰
+    if (m.level.levelValue != planLevel) return false;
+    if (!m.isActive) return false;
+    // 当前 tab 的计费周期与用户实际计费周期一致时置灰
+    if (_isMonthlyBilling.value && m.isMonthly) return true;
+    if (!_isMonthlyBilling.value && m.isYearly) return true;
+    return false;
+  }
+
+  /// 获取当前选中的 BillingCycle 枚举
+  BillingCycle get selectedBillingCycle => _isMonthlyBilling.value ? BillingCycle.monthly : BillingCycle.yearly;
 
   /// 错误信息
   String? get errorMessage => _errorMessage.value;
@@ -228,14 +276,16 @@ class MembershipStateController extends GetxController {
   }
 
   /// 升级会员
-  Future<bool> upgradeMembership(MembershipLevel level) async {
+  Future<bool> upgradeMembership(MembershipLevel level, {BillingCycle? billingCycle}) async {
     if (_isUpgrading.value) return false;
 
     _isUpgrading.value = true;
     _errorMessage.value = null;
 
+    final cycle = billingCycle ?? selectedBillingCycle;
+
     try {
-      final result = await _repository.upgradeMembership(level);
+      final result = await _repository.upgradeMembership(level, billingCycle: cycle);
       return result.fold(
         onSuccess: (membership) {
           _membership.value = membership;
@@ -314,6 +364,20 @@ class MembershipStateController extends GetxController {
 
   /// 检查 AI 配额（从后端获取最新状态）
   Future<AiUsageCheck> checkAiQuota() async {
+    // Admin 用户直接返回无限制
+    final isAdmin = await TokenStorageService().isAdmin();
+    if (isAdmin) {
+      log('✅ Admin 用户，AI 无限制');
+      return const AiUsageCheck(
+        canUse: true,
+        level: MembershipLevel.premium,
+        limit: -1,
+        used: 0,
+        remaining: -1,
+        isUnlimited: true,
+      );
+    }
+
     final result = await _repository.checkAiUsage();
     return result.fold(
       onSuccess: (check) {
@@ -327,6 +391,12 @@ class MembershipStateController extends GetxController {
   /// 尝试使用 AI（检查配额并记录使用）
   /// 返回 true 表示可以继续，false 表示配额不足
   Future<bool> tryUseAI() async {
+    // Admin 用户无限制
+    final isAdmin = await TokenStorageService().isAdmin();
+    if (isAdmin) {
+      return true;
+    }
+
     // 先检查配额
     final check = await checkAiQuota();
 

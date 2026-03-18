@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:get/get.dart';
-import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:go_nomads_app/features/chat/presentation/controllers/conversation_list_controller.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_planner_access_service.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
@@ -23,13 +23,19 @@ class BottomNavController extends GetxController {
   /// 导航栏可见性
   final isBottomNavVisible = true.obs;
 
-  /// 未读消息数量 - 从 NotificationStateController 同步
+  /// 未读通知数量 - 从 NotificationStateController 同步
   final unreadCount = 0.obs;
+
+  /// IM 未读消息数量 - 从 ConversationListController 同步
+  final imUnreadCount = 0.obs;
 
   // ==================== 私有变量 ====================
 
   /// Worker 用于监听通知控制器的未读数量变化
   Worker? _unreadCountWorker;
+
+  /// Worker 用于监听 IM 未读数量变化
+  Worker? _imUnreadCountWorker;
 
   /// SignalR 通知订阅
   StreamSubscription<Map<String, dynamic>>? _notificationSubscription;
@@ -44,6 +50,7 @@ class BottomNavController extends GetxController {
     // 延迟初始化，确保其他控制器已注册
     Future.delayed(const Duration(milliseconds: 500), () {
       _setupUnreadCountListener();
+      _setupIMUnreadCountListener();
       _setupSignalRNotificationListener();
       _refreshUnreadCount();
     });
@@ -53,6 +60,7 @@ class BottomNavController extends GetxController {
   void onClose() {
     log('🔘 BottomNavController: onClose');
     _unreadCountWorker?.dispose();
+    _imUnreadCountWorker?.dispose();
     _notificationSubscription?.cancel();
     super.onClose();
   }
@@ -77,17 +85,34 @@ class BottomNavController extends GetxController {
 
     // 认证有效，允许跳转
     log('✅ 认证有效，允许跳转');
+
+    if (index == 3 && !await _checkAiPlannerAccess()) {
+      return;
+    }
+
     changeTab(index);
 
     // 根据索引跳转到对应页面
     switch (index) {
-      case 1: // Profile
+      case 1: // 消息会话列表 (IM)
+        log('   → 消息会话列表页面');
+        Get.toNamed(AppRoutes.conversations);
+        break;
+      case 2: // AI 助手
+        log('   → AI 助手页面');
+        Get.toNamed(AppRoutes.aiAssistantTab);
+        break;
+      case 3: // AI 规划师
+        log('   → AI 旅行规划师页面');
+        Get.toNamed(AppRoutes.aiPlannerTab);
+        break;
+      case 4: // 通知列表
+        log('   → 通知列表页面');
+        Get.toNamed(AppRoutes.notifications);
+        break;
+      case 5: // Profile
         log('   → Profile 页面');
         _navigateToProfile();
-        break;
-      case 2: // 用户消息列表
-        log('   → 用户消息列表页面');
-        Get.toNamed(AppRoutes.notifications);
         break;
     }
   }
@@ -111,18 +136,16 @@ class BottomNavController extends GetxController {
     // 如果 HomePageController 已存在，触发数据刷新
     if (Get.isRegistered<HomePageController>()) {
       final homeController = Get.find<HomePageController>();
-      // 立即设置加载状态
-      homeController.isLoadingLocalCities.value = true;
-      if (Get.isRegistered<MeetupStateController>()) {
-        final meetupController = Get.find<MeetupStateController>();
-        meetupController.isLoading.value = true;
-        meetupController.loadState.value = LoadState.loading;
-      }
-      // 触发数据刷新
-      homeController.onRouteResume();
+      // ⭐ 不再手动设置 isLoading/loadState，让 onRouteResume 智能判断是否需要刷新
+      unawaited(homeController.onRouteResume());
     }
 
-    Get.offAllNamed(AppRoutes.home);
+    await Get.offAllNamed(AppRoutes.home);
+
+    // 导航完成后再做一次可见性强制检查，覆盖路由回调遗漏场景。
+    if (Get.isRegistered<HomePageController>()) {
+      Get.find<HomePageController>().onHomeVisible(forceRefresh: true);
+    }
   }
 
   /// 检查认证状态
@@ -153,6 +176,18 @@ class BottomNavController extends GetxController {
     return true;
   }
 
+  /// 检查 AI 旅行规划师访问权限
+  Future<bool> _checkAiPlannerAccess() async {
+    try {
+      return await AiPlannerAccessService().ensureAccess(
+        featureName: 'AI 旅行规划师',
+      );
+    } catch (error) {
+      log('⚠️ AI 旅行规划师会员检查失败，按降级策略继续放行: $error');
+      return true;
+    }
+  }
+
   /// 切换标签页
   void changeTab(int index) {
     currentIndex.value = index;
@@ -178,14 +213,44 @@ class BottomNavController extends GetxController {
     final currentRoute = Get.currentRoute;
     if (currentRoute == AppRoutes.home) {
       currentIndex.value = 0;
-    } else if (currentRoute == AppRoutes.profile) {
+    } else if (currentRoute == AppRoutes.conversations) {
       currentIndex.value = 1;
-    } else if (currentRoute == AppRoutes.notifications) {
+    } else if (currentRoute == AppRoutes.aiAssistantTab) {
       currentIndex.value = 2;
+    } else if (currentRoute == AppRoutes.aiPlannerTab) {
+      currentIndex.value = 3;
+    } else if (currentRoute == AppRoutes.notifications) {
+      currentIndex.value = 4;
+    } else if (currentRoute == AppRoutes.profile || currentRoute == AppRoutes.profileEdit) {
+      currentIndex.value = 5;
     }
   }
 
   // ==================== 通知相关 ====================
+
+  /// 设置 IM 未读数量监听器
+  void _setupIMUnreadCountListener() {
+    try {
+      final authController = Get.find<AuthStateController>();
+      if (!authController.isAuthenticated.value) {
+        imUnreadCount.value = 0;
+        return;
+      }
+
+      final conversationController = Get.isRegistered<ConversationListController>()
+          ? Get.find<ConversationListController>()
+          : Get.put(ConversationListController(), permanent: true);
+
+      _imUnreadCountWorker?.dispose();
+      _imUnreadCountWorker = ever(conversationController.totalUnreadCount, (count) {
+        log('💬 BottomNav: IM 未读数量更新为 $count');
+        imUnreadCount.value = count;
+      });
+      imUnreadCount.value = conversationController.totalUnreadCount.value;
+    } catch (e) {
+      log('⚠️ BottomNav: 设置 IM 未读数量监听器失败: $e');
+    }
+  }
 
   /// 设置未读数量监听器
   void _setupUnreadCountListener() {
@@ -237,8 +302,14 @@ class BottomNavController extends GetxController {
       final tokenService = TokenStorageService();
       final accessToken = await tokenService.getAccessToken();
       if (accessToken == null || accessToken.isEmpty) {
+        imUnreadCount.value = 0;
         unreadCount.value = 0;
         return;
+      }
+
+      if (Get.isRegistered<ConversationListController>()) {
+        final conversationController = Get.find<ConversationListController>();
+        await conversationController.loadConversations();
       }
 
       if (Get.isRegistered<NotificationStateController>()) {

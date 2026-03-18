@@ -1,6 +1,10 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
@@ -9,12 +13,9 @@ import 'package:go_nomads_app/pages/add_coworking/add_coworking_page.dart';
 import 'package:go_nomads_app/pages/coworking_list_page.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:go_nomads_app/widgets/skeletons/base_skeleton.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// Coworking Home Page
 /// 共享办公空间首页 - 城市选择（无限滚动）
@@ -34,12 +35,23 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
   bool _hasMoreData = true;
   int _currentPage = 1;
   static const int _pageSize = 20;
+  bool _isInitialLoadDone = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadCitiesWithCoworkingCount();
+    // 注意：不在 initState 中调用依赖 context 的方法（如 AppLocalizations.of(context)）
+    // 数据加载移到 didChangeDependencies 中
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialLoadDone) {
+      _isInitialLoadDone = true;
+      _loadCitiesWithCoworkingCount();
+    }
   }
 
   @override
@@ -115,6 +127,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
   /// 优化：后端直接返回有 coworking 空间的城市列表（含数量），一次请求搞定
   Future<void> _loadCitiesWithCoworkingCount() async {
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _isLoading = true;
@@ -148,7 +161,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
           setState(() {
             _isLoading = false;
           });
-          AppToast.error('加载失败: ${exception.message}');
+          AppToast.error('${l10n.loadFailed}: ${exception.message}');
       }
     } catch (e) {
       log('❌ 加载城市数据异常: $e');
@@ -156,7 +169,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
       setState(() {
         _isLoading = false;
       });
-      AppToast.error('加载失败，请重试');
+      AppToast.error(l10n.loadFailed);
     }
   }
 
@@ -164,6 +177,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
   /// 优化：后端直接返回有 coworking 空间的城市列表（含数量）
   Future<void> _loadMoreCities() async {
     if (!mounted || _isLoadingMore || !_hasMoreData) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() {
       _isLoadingMore = true;
@@ -198,7 +212,7 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
           setState(() {
             _isLoadingMore = false;
           });
-          AppToast.error('加载更多失败');
+          AppToast.error(l10n.loadFailed);
       }
     } catch (e) {
       log('❌ 加载更多异常: $e');
@@ -251,158 +265,158 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
         elevation: 0,
         leading: const AppBackButton(),
       ),
-      body: _isLoading && _cities.isEmpty
-          ? _buildSkeletonGrid()
-          : RefreshIndicator(
-              onRefresh: _refreshData,
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  // 顶部内容：添加按钮和标题
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Create Space Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                await NavigationUtil.toWithCallback<bool>(
-                                  page: () => AddCoworkingPage(),
-                                  onResult: (result) async {
-                                    if (result.needsRefresh && mounted) {
-                                      await _refreshData();
-                                    }
-                                  },
-                                );
+      body: AppLoadingSwitcher(
+        isLoading: _isLoading && _cities.isEmpty,
+        loading: _buildSkeletonGrid(),
+        child: RefreshIndicator(
+          onRefresh: _refreshData,
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              // 顶部内容：添加按钮和标题
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(8.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Create Space Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56.h,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await NavigationUtil.toWithCallback<bool>(
+                              page: () => AddCoworkingPage(),
+                              onResult: (result) async {
+                                if (result.needsRefresh && mounted) {
+                                  await _refreshData();
+                                }
                               },
-                              icon: const Icon(FontAwesomeIcons.circlePlus, size: 24),
-                              label: Builder(
-                                builder: (context) {
-                                  final l10n = AppLocalizations.of(context)!;
-                                  return Text(
-                                    l10n.addCoworkingSpace,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  );
-                                },
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6366F1),
-                                foregroundColor: Colors.white,
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                            );
+                          },
+                          icon: Icon(FontAwesomeIcons.circlePlus, size: 24.r),
+                          label: Builder(
+                            builder: (context) {
+                              final l10n = AppLocalizations.of(context)!;
+                              return Text(
+                                l10n.addCoworkingSpace,
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ),
+                              );
+                            },
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
                             ),
                           ),
+                        ),
+                      ),
 
-                          const SizedBox(height: 12),
+                      SizedBox(height: 12.h),
 
-                          // Section Title
-                          Row(
-                            children: [
-                              const Icon(
-                                FontAwesomeIcons.compass,
-                                color: Color(0xFF6366F1),
-                                size: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '选择城市',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey[800],
-                                ),
-                              ),
-                            ],
+                      // Section Title
+                      Row(
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.compass,
+                            color: Color(0xFF6366F1),
+                            size: 24.r,
                           ),
-
-                          const SizedBox(height: 8),
+                          SizedBox(width: 8.w),
+                          Text(
+                            '选择城市',
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[800],
+                            ),
+                          ),
                         ],
                       ),
-                    ),
+
+                      SizedBox(height: 8.h),
+                    ],
                   ),
-
-                  // City Grid
-                  if (_cities.isEmpty)
-                    SliverToBoxAdapter(
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Text(
-                            '暂无共享办公空间数据',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      sliver: SliverGrid(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                          childAspectRatio: 0.78,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final city = _cities[index];
-                            return _buildCityCard(context, city);
-                          },
-                          childCount: _cities.length,
-                        ),
-                      ),
-                    ),
-
-                  // Loading More Indicator
-                  if (_isLoadingMore)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                    ),
-
-                  // No More Data Indicator
-                  if (!_hasMoreData && _cities.isNotEmpty)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Center(
-                          child: Text(
-                            '没有更多数据了',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // Bottom Padding
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 16),
-                  ),
-                ],
+                ),
               ),
-            ),
+
+              // City Grid
+              if (_cities.isEmpty)
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0.w),
+                      child: Text(
+                        '暂无共享办公空间数据',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 8.w,
+                      mainAxisSpacing: 8.w,
+                      childAspectRatio: 0.78,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final city = _cities[index];
+                        return _buildCityCard(context, city);
+                      },
+                      childCount: _cities.length,
+                    ),
+                  ),
+                ),
+
+              // Loading More Indicator
+              if (_isLoadingMore)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0.w),
+                      child: const Center(child: AppLoadingWidget(fullScreen: false)),
+                  ),
+                ),
+
+              // No More Data Indicator
+              if (!_hasMoreData && _cities.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0.w),
+                    child: Center(
+                      child: Text(
+                        '没有更多数据了',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Bottom Padding
+              SliverToBoxAdapter(
+                child: SizedBox(height: 16.h),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -415,19 +429,19 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
     return Container(
       margin: const EdgeInsets.only(bottom: 0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           onTap: () async {
             // 添加调试日志
             log('🏙️ 点击城市卡片:');
@@ -473,8 +487,8 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
             errorWidget: (context, url, error) {
               return Container(
                 color: Colors.grey[300],
-                child: const Center(
-                  child: Icon(FontAwesomeIcons.city, size: 48, color: Colors.grey),
+                child: Center(
+                  child: Icon(FontAwesomeIcons.city, size: 48.r, color: Colors.grey),
                 ),
               );
             },
@@ -499,9 +513,9 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
         ),
         // 底部信息面板
         Positioned(
-          left: 10,
-          right: 10,
-          bottom: 10,
+          left: 10.w,
+          right: 10.w,
+          bottom: 10.h,
           child: _buildHeroInfoPanel(city, spacesCount, l10n),
         ),
       ],
@@ -510,10 +524,10 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
 
   Widget _buildHeroInfoPanel(Map<String, dynamic> city, int spacesCount, AppLocalizations l10n) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: EdgeInsets.all(10.w),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.18),
           width: 1,
@@ -529,8 +543,8 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
               Expanded(
                 child: Text(
                   city['name'],
-                  style: const TextStyle(
-                    fontSize: 15,
+                  style: TextStyle(
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
@@ -538,18 +552,18 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               // Coworking 数量徽章 - 醒目显示
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: const Color(0xFF6366F1),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
                   '$spacesCount 空间',
-                  style: const TextStyle(
-                    fontSize: 11,
+                  style: TextStyle(
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -557,21 +571,21 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           // 国家和天气信息
           Row(
             children: [
               Icon(
                 FontAwesomeIcons.locationDot,
-                size: 10,
+                size: 10.r,
                 color: Colors.white.withValues(alpha: 0.8),
               ),
-              const SizedBox(width: 3),
+              SizedBox(width: 3.w),
               Expanded(
                 child: Text(
                   city['country'],
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: Colors.white.withValues(alpha: 0.8),
                   ),
                   maxLines: 1,
@@ -580,17 +594,17 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
               ),
               // 天气信息
               if (city['temperature'] != null) ...[
-                const SizedBox(width: 6),
+                SizedBox(width: 6.w),
                 Icon(
                   _getWeatherIcon(city['weatherIcon']),
-                  size: 11,
+                  size: 11.r,
                   color: Colors.white.withValues(alpha: 0.9),
                 ),
-                const SizedBox(width: 3),
+                SizedBox(width: 3.w),
                 Text(
                   '${city['temperature']?.toStringAsFixed(0)}°',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
                     color: Colors.white.withValues(alpha: 0.9),
                   ),
@@ -605,139 +619,6 @@ class _CoworkingHomePageState extends State<CoworkingHomePage> with RouteAwareRe
 
   /// 骨架屏网格（加载时显示）
   Widget _buildSkeletonGrid() {
-    return CustomScrollView(
-      slivers: [
-        // 顶部占位
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 添加按钮骨架
-                SafeShimmer(
-                  child: Container(
-                    width: double.infinity,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // 标题骨架
-                SafeShimmer(
-                  child: Container(
-                    width: 150,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        // 骨架屏网格
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 0.8,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => _buildSkeletonCityCard(),
-              childCount: 6, // 显示6个骨架卡片
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 单个城市卡片骨架屏 - Hero 风格
-  Widget _buildSkeletonCityCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: SafeShimmer(
-        child: Stack(
-          children: [
-            // 背景骨架
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-            // 右上角徽章骨架
-            Positioned(
-              top: 10,
-              right: 10,
-              child: Container(
-                width: 50,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            // 底部信息面板骨架
-            Positioned(
-              left: 10,
-              right: 10,
-              bottom: 10,
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[500],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      width: 80,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[500],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const AppSceneLoading(scene: AppLoadingScene.cityList, fullScreen: true);
   }
 }

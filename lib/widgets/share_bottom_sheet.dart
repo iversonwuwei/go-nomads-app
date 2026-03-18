@@ -1,14 +1,17 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
-import 'package:go_nomads_app/controllers/locale_controller.dart';
-import 'package:go_nomads_app/services/social_sdk_service.dart';
-import 'package:go_nomads_app/utils/qq_share_util.dart';
-import 'package:go_nomads_app/utils/wechat_share_util.dart';
-import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/controllers/locale_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/services/social_sdk_service.dart';
+import 'package:go_nomads_app/utils/app_logo_util.dart';
+import 'package:go_nomads_app/utils/qq_share_util.dart';
+import 'package:go_nomads_app/utils/wechat_share_util.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,7 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 enum ShareChannelType {
   none,
   wechat, // 微信（微信好友、朋友圈）
-  qq, // QQ（QQ好友、QQ空间）
+  qq, // QQ（QQ 好友、QQ 空间）
 }
 
 /// 分享底部抽屉
@@ -64,9 +67,25 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   /// 当前展开的子通道类型
   ShareChannelType _expandedChannel = ShareChannelType.none;
 
+  /// App Logo 缩略图缓存
+  Uint8List? _logoThumbnail;
+  Uri? _logoFileUri;
+
   String get title => widget.title;
   String get description => widget.description;
   String get shareUrl => widget.shareUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppLogo();
+  }
+
+  /// 加载 App Logo 作为分享缩略图
+  Future<void> _loadAppLogo() async {
+    _logoThumbnail = await AppLogoUtil.getThumbnail();
+    _logoFileUri = await AppLogoUtil.getFileUri();
+  }
 
   /// 判断是否为中国区用户
   bool get _isChineseUser {
@@ -162,11 +181,11 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   String _getTitle() {
     switch (_expandedChannel) {
       case ShareChannelType.wechat:
-        return '分享到微信';
+        return AppLocalizations.of(Get.context!)!.shareToWechat;
       case ShareChannelType.qq:
-        return '分享到QQ';
+        return AppLocalizations.of(Get.context!)!.shareToQQ;
       case ShareChannelType.none:
-        return '分享到';
+        return AppLocalizations.of(Get.context!)!.shareTo;
     }
   }
 
@@ -184,26 +203,6 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   /// 构建子通道
   Widget _buildSubChannels(BuildContext context) {
     switch (_expandedChannel) {
-      case ShareChannelType.wechat:
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildShareOption(
-              context,
-              icon: FontAwesomeIcons.weixin,
-              label: '微信好友',
-              color: const Color(0xFF09B83E),
-              onTap: () => _shareToWeChatFriend(context),
-            ),
-            _buildShareOption(
-              context,
-              icon: FontAwesomeIcons.circleNotch,
-              label: '朋友圈',
-              color: const Color(0xFF09B83E),
-              onTap: () => _shareToWeChatMoments(context),
-            ),
-          ],
-        );
       case ShareChannelType.qq:
         return Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -211,16 +210,36 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.qq,
-              label: 'QQ好友',
+              label: AppLocalizations.of(context)!.qqFriends,
               color: const Color(0xFF12B7F5),
               onTap: () => _shareToQQFriend(context),
             ),
             _buildShareOption(
               context,
-              icon: FontAwesomeIcons.star,
-              label: 'QQ空间',
+              icon: FontAwesomeIcons.qq,
+              label: AppLocalizations.of(context)!.qqZone,
               color: const Color(0xFFFECE00),
-              onTap: () => _shareToQZone(context),
+              onTap: () => _shareToQzone(context),
+            ),
+          ],
+        );
+      case ShareChannelType.wechat:
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildShareOption(
+              context,
+              icon: FontAwesomeIcons.weixin,
+              label: AppLocalizations.of(context)!.wechatFriends,
+              color: const Color(0xFF09B83E),
+              onTap: () => _shareToWeChatFriend(context),
+            ),
+            _buildShareOption(
+              context,
+              icon: FontAwesomeIcons.circleNotch,
+              label: AppLocalizations.of(context)!.moments,
+              color: const Color(0xFF09B83E),
+              onTap: () => _shareToWeChatMoments(context),
             ),
           ],
         );
@@ -240,21 +259,21 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.link,
-              label: '复制链接',
+              label: AppLocalizations.of(context)!.copyLink,
               color: Colors.grey[700]!,
               onTap: () => _copyLink(context),
             ),
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.shareNodes,
-              label: '系统分享',
+              label: AppLocalizations.of(context)!.systemShare,
               color: Colors.blue[700]!,
               onTap: () => _shareSystem(context),
             ),
             _buildShareOption(
               context,
               icon: FontAwesomeIcons.envelope,
-              label: '邮件',
+              label: AppLocalizations.of(context)!.email,
               color: Colors.orange[700]!,
               onTap: () => _shareToEmail(context),
             ),
@@ -272,7 +291,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
               _buildShareOption(
                 context,
                 icon: FontAwesomeIcons.weixin,
-                label: '微信',
+                label: AppLocalizations.of(context)!.wechat,
                 color: const Color(0xFF09B83E),
                 onTap: () => _toggleSubChannel(ShareChannelType.wechat),
                 hasSubChannel: true,
@@ -288,7 +307,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
               _buildShareOption(
                 context,
                 icon: FontAwesomeIcons.weibo,
-                label: '微博',
+                label: AppLocalizations.of(context)!.weibo,
                 color: const Color(0xFFE6162D),
                 onTap: () => _shareToWeibo(context),
               ),
@@ -367,19 +386,19 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
     final isInstalled = await SocialSdkService.isWechatInstalled();
     log('📤 微信安装状态: $isInstalled');
     if (isInstalled) {
-      // 使用微信 SDK 直接分享
+      // 使用微信 SDK 直接分享，带上 App Logo 缩略图
       await WechatShareUtil.shareToWeChat(
         url: shareUrl,
         title: title,
         description: description,
-        toTimeline: false, // 发送给好友
+        thumbnail: _logoThumbnail,
+        toTimeline: false,
       );
     } else {
-      // 微信未安装，使用系统分享
       final shareText = '$title\n$description\n$shareUrl';
       await Share.share(shareText);
       if (context.mounted) {
-        AppToast.info('微信未安装，已使用系统分享');
+        AppToast.info(AppLocalizations.of(context)!.wechatNotInstalledSystemShare);
       }
     }
   }
@@ -388,47 +407,46 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   void _shareToWeChatMoments(BuildContext context) async {
     Navigator.pop(context);
 
-    // 检查微信是否安装
     final isInstalled = await SocialSdkService.isWechatInstalled();
     if (isInstalled) {
-      // 使用微信 SDK 直接分享到朋友圈
+      // 使用微信 SDK 直接分享到朋友圈，带上 App Logo 缩略图
       await WechatShareUtil.shareToWeChat(
         url: shareUrl,
         title: title,
         description: description,
-        toTimeline: true, // 发送到朋友圈
+        thumbnail: _logoThumbnail,
+        toTimeline: true,
       );
     } else {
-      // 微信未安装，使用系统分享
       final shareText = '$title\n$description\n$shareUrl';
       await Share.share(shareText);
       if (context.mounted) {
-        AppToast.info('微信未安装，已使用系统分享');
+        AppToast.info(AppLocalizations.of(context)!.wechatNotInstalledSystemShare);
       }
     }
   }
 
-  /// 分享到QQ好友
+  /// 分享到 QQ 好友
   void _shareToQQFriend(BuildContext context) async {
     Navigator.pop(context);
 
-    // 尝试使用 QQ URL Scheme 唤醒 QQ 分享
     await QQShareUtil.shareToQQFriend(
       url: shareUrl,
       title: title,
-      description: description,
+      summary: description,
+      imageUri: _logoFileUri,
     );
   }
 
-  /// 分享到QQ空间
-  void _shareToQZone(BuildContext context) async {
+  /// 分享到 QQ 空间
+  void _shareToQzone(BuildContext context) async {
     Navigator.pop(context);
 
-    // 使用 QQShareUtil 唤醒 QQ空间分享
-    await QQShareUtil.shareToQZone(
+    await QQShareUtil.shareToQzone(
       url: shareUrl,
       title: title,
-      description: description,
+      summary: description,
+      imageUri: _logoFileUri,
     );
   }
 
@@ -507,7 +525,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   void _copyLink(BuildContext context) {
     Share.share(shareUrl);
     Navigator.pop(context);
-    AppToast.success('链接已复制');
+    AppToast.success(AppLocalizations.of(context)!.linkCopied);
   }
 
   /// 系统分享
@@ -605,13 +623,13 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
       } else {
         if (context.mounted) {
           Navigator.pop(context);
-          AppToast.error('无法打开分享链接');
+          AppToast.error(AppLocalizations.of(context)!.cannotOpenShareLink);
         }
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
-        AppToast.error('分享失败: ${e.toString()}');
+        AppToast.error(AppLocalizations.of(context)!.shareFailedWithError(e.toString()));
       }
     }
   }

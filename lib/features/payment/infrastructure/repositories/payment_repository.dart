@@ -214,4 +214,84 @@ class PaymentRepository implements IPaymentRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<PaymentResult> confirmWeChatPayment({
+    required String orderId,
+  }) async {
+    log('🔍 确认微信支付结果: orderId=$orderId');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/payments/orders/$orderId/wechat-confirm',
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['data'] != null) {
+        final result = PaymentResult.fromJson(response.data['data'] as Map<String, dynamic>);
+        log('✅ 微信支付确认完成: success=${result.success}');
+        return result;
+      }
+
+      throw Exception(response.data['message'] ?? '确认微信支付失败');
+    } catch (e) {
+      // 尝试提取服务端返回的详细错误信息
+      if (e is DioException && e.response?.data != null) {
+        final serverMessage = e.response?.data is Map ? e.response?.data['message'] : e.response?.data.toString();
+        log('❌ 确认微信支付失败 (服务端): $serverMessage');
+        log('❌ 确认微信支付失败 (HTTP ${e.response?.statusCode}): $e');
+      } else {
+        log('❌ 确认微信支付失败: $e');
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<PaymentResult> completeAppleIapPurchase({
+    required String productId,
+    required String transactionId,
+    String? originalTransactionId,
+    String? verificationData,
+    bool isRestore = false,
+  }) async {
+    log('🍎 完成 Apple IAP 购买: productId=$productId, transactionId=$transactionId');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}/payments/apple/complete',
+        data: {
+          'productId': productId,
+          'transactionId': transactionId,
+          if (originalTransactionId != null) 'originalTransactionId': originalTransactionId,
+          if (verificationData != null && verificationData.isNotEmpty) 'verificationData': verificationData,
+          'isRestore': isRestore,
+        },
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['data'] != null) {
+        final result = PaymentResult.fromJson(response.data['data'] as Map<String, dynamic>);
+        log('✅ Apple IAP 完成成功: success=${result.success}');
+        return result;
+      }
+
+      throw Exception(response.data['message'] ?? '完成 Apple IAP 购买失败');
+    } catch (e) {
+      log('❌ 完成 Apple IAP 购买失败: $e');
+      rethrow;
+    }
+  }
 }

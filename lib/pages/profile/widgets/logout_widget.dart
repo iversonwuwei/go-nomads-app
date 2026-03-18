@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 退出登录组件
 class LogoutWidget extends StatelessWidget {
@@ -16,25 +17,25 @@ class LogoutWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             FontAwesomeIcons.rightFromBracket,
             color: Color(0xFF6B7280),
-            size: 20,
+            size: 20.r,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               l10n.logout,
-              style: const TextStyle(
-                fontSize: 14,
+              style: TextStyle(
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
                 color: Color(0xFF374151),
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_controller.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_message_bubble.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// AI Chat 消息列表
 /// 使用 GetView 自动获取 controller
@@ -20,7 +21,7 @@ class AiChatMessageList extends GetView<AiChatController> {
         reverse: true, // 从底部开始显示，自动显示最新消息
         padding: EdgeInsets.symmetric(
           horizontal: isMobile ? 16 : 24,
-          vertical: 12,
+          vertical: 12.h,
         ),
         itemCount: items.length,
         itemBuilder: (context, index) {

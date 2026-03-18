@@ -10,6 +10,8 @@ import 'package:go_nomads_app/pages/register/widgets/register_login_link.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_submit_button.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_terms_checkbox.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
+import 'package:go_nomads_app/widgets/legal_links_widget.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 注册页面 - 使用响应式验证，无需 GlobalKey
 class RegisterPage extends GetView<RegisterController> {
@@ -26,37 +28,42 @@ class RegisterPage extends GetView<RegisterController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
+                SizedBox(height: 40.h),
 
                 // Logo 和标题
                 const RegisterHeader(),
 
-                const SizedBox(height: 48),
+                SizedBox(height: 48.h),
 
                 // 表单输入 (响应式验证，无需 Form widget)
                 const RegisterForm(),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // 服务条款复选框
                 const RegisterTermsCheckbox(),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
 
                 // 注册按钮
                 const RegisterSubmitButton(),
 
-                const SizedBox(height: 32),
+                SizedBox(height: 32.h),
 
                 // 已有账号提示
                 const RegisterLoginLink(),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
 
                 // 社区亮点
                 const RegisterFeatureHighlights(),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
+
+                // 用户协议 & 隐私政策链接（工信部合规）
+                const LegalLinksWidget(),
+
+                SizedBox(height: 8.h),
 
                 // ICP 备案信息
                 const CopyrightWidget(),

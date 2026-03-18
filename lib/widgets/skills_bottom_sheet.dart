@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 底部抽屉：技能选择器
 class SkillsBottomSheet extends StatefulWidget {
@@ -51,8 +52,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
   void didUpdateWidget(covariant SkillsBottomSheet oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (!setEquals(
-        widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
+    if (!setEquals(widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
       _restoreSelectionFromWidget(force: true);
     }
   }
@@ -230,35 +230,35 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: Column(
         children: [
           // 顶部拖动指示器和标题
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: 12.h),
             child: Column(
               children: [
                 Container(
-                  width: 40,
-                  height: 4,
+                  width: 40.w,
+                  height: 4.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         '选择技能',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -269,8 +269,8 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                         },
                         child: Text(
                           '完成 (${_selectedSkills.length})',
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -282,7 +282,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
             ),
           ),
 
-          const Divider(height: 1),
+          Divider(height: 1.h),
 
           if (_isLoading)
             const Expanded(
@@ -294,20 +294,18 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                 children: [
                   // 搜索框
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(16.0.w),
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: '搜索技能...',
-                        prefixIcon:
-                            const Icon(FontAwesomeIcons.magnifyingGlass),
+                        prefixIcon: const Icon(FontAwesomeIcons.magnifyingGlass),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12.r),
                           borderSide: BorderSide(color: AppColors.border),
                         ),
                         filled: true,
                         fillColor: AppColors.background,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                       ),
                       onChanged: (value) {
                         setState(() => _searchQuery = value);
@@ -318,27 +316,24 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                   // 类别筛选
                   if (_searchQuery.isEmpty)
                     SizedBox(
-                      height: 50,
+                      height: 50.h,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
                         children: [
                           _CategoryChip(
                             label: '全部',
                             isSelected: _selectedCategory == null,
-                            onTap: () =>
-                                setState(() => _selectedCategory = null),
+                            onTap: () => setState(() => _selectedCategory = null),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           ..._skillsByCategory.map((category) {
                             return Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: EdgeInsets.only(right: 8.w),
                               child: _CategoryChip(
                                 label: _getCategoryText(category.category),
-                                isSelected:
-                                    _selectedCategory == category.category,
-                                onTap: () => setState(() =>
-                                    _selectedCategory = category.category),
+                                isSelected: _selectedCategory == category.category,
+                                onTap: () => setState(() => _selectedCategory = category.category),
                               ),
                             );
                           }),
@@ -346,7 +341,7 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                       ),
                     ),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
 
                   // 技能列表
                   Expanded(
@@ -358,32 +353,28 @@ class _SkillsBottomSheetState extends State<SkillsBottomSheet> {
                             ),
                           )
                         : ListView(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
                             children: [
                               Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
+                                spacing: 8.w,
+                                runSpacing: 8.w,
                                 children: filteredSkills.map((skill) {
-                                  final isSelected = _selectedSkills
-                                      .any((s) => s.skillId == skill.id);
+                                  final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
                                   return FilterChip(
                                     avatar: Text(skill.icon ?? '💼'),
                                     label: Text(skill.name),
                                     selected: isSelected,
                                     onSelected: (_) => _toggleSkill(skill),
-                                    selectedColor:
-                                        AppColors.accent.withValues(alpha: 0.2),
+                                    selectedColor: AppColors.accent.withValues(alpha: 0.2),
                                     checkmarkColor: AppColors.accent,
                                     backgroundColor: AppColors.white,
                                     side: BorderSide(
-                                      color: isSelected
-                                          ? AppColors.accent
-                                          : AppColors.border,
+                                      color: isSelected ? AppColors.accent : AppColors.border,
                                     ),
                                   );
                                 }).toList(),
                               ),
-                              const SizedBox(height: 80), // 底部留白
+                              SizedBox(height: 80.h), // 底部留白
                             ],
                           ),
                   ),
@@ -413,10 +404,10 @@ class _CategoryChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.accent : AppColors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isSelected ? AppColors.accent : AppColors.border,
           ),

@@ -5,6 +5,7 @@ import 'package:go_nomads_app/services/amap_poi_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 地址搜索组件
 class AddressSearchSection extends GetView<VenueMapPickerPageController> {
@@ -41,7 +42,7 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
 
     // 只显示输入框或完整组件
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -59,11 +60,11 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -79,19 +80,19 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
         },
         decoration: InputDecoration(
           hintText: l10n.searchAddress,
-          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-          prefixIcon: const Icon(
+          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14.sp),
+          prefixIcon: Icon(
             FontAwesomeIcons.magnifyingGlass,
-            size: 16,
+            size: 16.r,
             color: Color(0xFFFF4458),
           ),
           suffixIcon: Obx(() {
             if (controller.isSearching.value) {
-              return const Padding(
-                padding: EdgeInsets.all(12),
+              return Padding(
+                padding: EdgeInsets.all(12.w),
                 child: SizedBox(
-                  width: 20,
-                  height: 20,
+                  width: 20.w,
+                  height: 20.h,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
@@ -101,19 +102,19 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
             }
             if (controller.searchController.text.isNotEmpty) {
               return IconButton(
-                icon: Icon(Icons.clear, color: Colors.grey.shade400, size: 20),
+                icon: Icon(Icons.clear, color: Colors.grey.shade400, size: 20.r),
                 onPressed: controller.clearSearch,
               );
             }
             return const SizedBox.shrink();
           }),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             borderSide: BorderSide.none,
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         ),
       ),
     );
@@ -125,8 +126,8 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
 
       if (controller.isSearching.value && results.isEmpty) {
         return _buildSearchResultsContainer(
-          child: const Padding(
-            padding: EdgeInsets.all(20),
+          child: Padding(
+            padding: EdgeInsets.all(20.w),
             child: Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
@@ -139,11 +140,11 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
       if (results.isEmpty) {
         return _buildSearchResultsContainer(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.w),
             child: Center(
               child: Text(
                 l10n.noResults,
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 14.sp),
               ),
             ),
           ),
@@ -159,7 +160,7 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
           separatorBuilder: (_, __) => Divider(
             height: 1,
             color: Colors.grey.shade200,
-            indent: 48,
+            indent: 48.w,
           ),
           itemBuilder: (context, index) {
             final poi = results[index];
@@ -172,21 +173,21 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
 
   Widget _buildSearchResultsContainer({required Widget child}) {
     return Container(
-      margin: const EdgeInsets.only(top: 8),
-      constraints: const BoxConstraints(maxHeight: 300),
+      margin: EdgeInsets.only(top: 8.h),
+      constraints: BoxConstraints(maxHeight: 300.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 12,
+            blurRadius: 12.r,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         child: child,
       ),
     );
@@ -198,23 +199,23 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
       child: InkWell(
         onTap: () => controller.selectSearchResult(poi),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           child: Row(
             children: [
               Container(
-                width: 36,
-                height: 36,
+                width: 36.w,
+                height: 36.h,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: const Icon(
+                child: Icon(
                   FontAwesomeIcons.locationDot,
-                  size: 16,
+                  size: 16.r,
                   color: Color(0xFFFF4458),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,8 +223,8 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
                   children: [
                     Text(
                       poi.name,
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                         color: AppColors.textPrimary,
                       ),
@@ -231,11 +232,11 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (poi.address.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         poi.address,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           color: Colors.grey.shade500,
                         ),
                         maxLines: 1,
@@ -247,15 +248,15 @@ class AddressSearchSection extends GetView<VenueMapPickerPageController> {
               ),
               if (poi.distance != null && poi.distance!.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: Text(
                     poi.formattedDistance,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       color: Colors.grey.shade600,
                     ),
                   ),

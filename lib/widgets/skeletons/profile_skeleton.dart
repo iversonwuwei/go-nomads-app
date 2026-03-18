@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import 'base_skeleton.dart';
@@ -17,33 +18,33 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
     final isMobile = Get.width < 600;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Profile Header
           _buildProfileHeader(isMobile),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Travel Plans Section (空状态容器)
           _buildTravelPlansSection(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Stats Section
           _buildStatsSection(isMobile),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Badges Section
           _buildBadgesSection(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Skills and Interests Section
           _buildSkillsAndInterestsSection(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Travel History Section
           _buildTravelHistorySection(),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // Social Links Section
           _buildSocialLinksSection(),
@@ -61,7 +62,7 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
         SkeletonCircle(
           size: avatarSize,
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16.w),
 
         // 用户信息
         Expanded(
@@ -74,28 +75,28 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
                 height: isMobile ? 20 : 28,
                 borderRadius: 4,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
 
               // 邮箱
               SkeletonBox(
                 width: isMobile ? 150 : 220,
-                height: 14,
+                height: 14.h,
                 borderRadius: 4,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
 
               // 按钮行
               Row(
                 children: [
-                  const SkeletonBox(
-                    width: 80,
-                    height: 32,
+                  SkeletonBox(
+                    width: 80.w,
+                    height: 32.h,
                     borderRadius: 8,
                   ),
-                  const SizedBox(width: 8),
-                  const SkeletonBox(
-                    width: 80,
-                    height: 32,
+                  SizedBox(width: 8.w),
+                  SkeletonBox(
+                    width: 80.w,
+                    height: 32.h,
                     borderRadius: 8,
                   ),
                 ],
@@ -109,17 +110,17 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
 
   Widget _buildTravelPlansSection() {
     return SkeletonCard(
-      height: 120,
+      height: 120.h,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SkeletonCircle(
-              size: 48,
+            SkeletonCircle(
+              size: 48.r,
             ),
-            const SizedBox(height: 12),
-            const SkeletonBox(
-              height: 16,
+            SizedBox(height: 12.h),
+            SkeletonBox(
+              height: 16.h,
               borderRadius: 4,
             ),
           ],
@@ -129,29 +130,36 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
   }
 
   Widget _buildStatsSection(bool isMobile) {
-    final cardWidth = isMobile ? (Get.width - 44) / 2 : null;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final spacing = 12.w;
+        final cardWidth = isMobile
+            ? (constraints.maxWidth - spacing) / 2
+            : null;
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: List.generate(6, (index) {
-        return SkeletonCard(
-          width: cardWidth,
-          height: 100,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SkeletonBox(
-                width: 40,
-                height: 24,
-                borderRadius: 4,
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 12.w,
+          children: List.generate(6, (index) {
+            return SkeletonCard(
+              width: cardWidth,
+              height: 100.h,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SkeletonBox(
+                    width: 40.w,
+                    height: 24.h,
+                    borderRadius: 4,
+                  ),
+                  SizedBox(height: 8.h),
+                  const SkeletonBox(),
+                ],
               ),
-              const SizedBox(height: 8),
-              const SkeletonBox(),
-            ],
-          ),
+            );
+          }),
         );
-      }),
+      },
     );
   }
 
@@ -160,31 +168,31 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section 标题
-        const SkeletonBox(
-          width: 100,
-          height: 20,
+        SkeletonBox(
+          width: 100.w,
+          height: 20.h,
           borderRadius: 4,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
 
         // Badges wrap
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 12.w,
+          runSpacing: 12.w,
           children: List.generate(4, (index) {
             return SkeletonCard(
-              width: 80,
-              height: 100,
+              width: 80.w,
+              height: 100.h,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SkeletonCircle(
-                    size: 40,
+                  SkeletonCircle(
+                    size: 40.r,
                   ),
-                  const SizedBox(height: 8),
-                  const SkeletonBox(
-                    width: 60,
-                    height: 12,
+                  SizedBox(height: 8.h),
+                  SkeletonBox(
+                    width: 60.w,
+                    height: 12.h,
                     borderRadius: 4,
                   ),
                 ],
@@ -201,42 +209,42 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Skills 部分
-        const SkeletonBox(
-          width: 80,
-          height: 20,
+        SkeletonBox(
+          width: 80.w,
+          height: 20.h,
           borderRadius: 4,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
 
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 8.w,
+          runSpacing: 8.w,
           children: List.generate(5, (index) {
             return SkeletonBox(
-              width: 60 + (index * 10.0),
-              height: 32,
+              width: 60.w + (index * 10.0),
+              height: 32.h,
               borderRadius: 16,
             );
           }),
         ),
 
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // Interests 部分
-        const SkeletonBox(
-          width: 80,
-          height: 20,
+        SkeletonBox(
+          width: 80.w,
+          height: 20.h,
           borderRadius: 4,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
 
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 8.w,
+          runSpacing: 8.w,
           children: List.generate(5, (index) {
             return SkeletonBox(
-              width: 70 + (index * 8.0),
-              height: 32,
+              width: 70.w + (index * 8.0),
+              height: 32.h,
               borderRadius: 16,
             );
           }),
@@ -250,41 +258,41 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section 标题
-        const SkeletonBox(
-          width: 120,
-          height: 20,
+        SkeletonBox(
+          width: 120.w,
+          height: 20.h,
           borderRadius: 4,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
 
         // 旅行历史列表项
         ...List.generate(3, (index) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.only(bottom: 12.h),
             child: SkeletonCard(
-              height: 80,
+              height: 80.h,
               child: Row(
                 children: [
-                  const SkeletonBox(
-                    width: 60,
-                    height: 60,
+                  SkeletonBox(
+                    width: 60.w,
+                    height: 60.h,
                     borderRadius: 8,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SkeletonBox(
-                          width: 150,
-                          height: 16,
+                        SkeletonBox(
+                          width: 150.w,
+                          height: 16.h,
                           borderRadius: 4,
                         ),
-                        const SizedBox(height: 8),
-                        const SkeletonBox(
-                          width: 100,
-                          height: 14,
+                        SizedBox(height: 8.h),
+                        SkeletonBox(
+                          width: 100.w,
+                          height: 14.h,
                           borderRadius: 4,
                         ),
                       ],
@@ -304,21 +312,21 @@ class _ProfileSkeletonState extends BaseSkeletonState<ProfileSkeleton> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section 标题
-        const SkeletonBox(
-          width: 100,
-          height: 20,
+        SkeletonBox(
+          width: 100.w,
+          height: 20.h,
           borderRadius: 4,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
 
         // 社交链接按钮
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 12.w,
+          runSpacing: 12.w,
           children: List.generate(4, (index) {
-            return const SkeletonBox(
-              width: 48,
-              height: 48,
+            return SkeletonBox(
+              width: 48.w,
+              height: 48.h,
               borderRadius: 24,
             );
           }),

@@ -4,6 +4,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 地图应用类型
 enum MapAppType {
@@ -180,7 +181,7 @@ class MapAppLauncher {
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
         ),
         child: SafeArea(
           child: Column(
@@ -188,17 +189,17 @@ class MapAppLauncher {
             children: [
               // 拖拽指示器
               Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
+                margin: EdgeInsets.only(top: 12.h),
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               // 标题
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w),
                 child: Text(
                   '选择地图应用',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -206,14 +207,14 @@ class MapAppLauncher {
                       ),
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1),
               // 地图应用列表 - 使用 Flexible 包裹 ListView 确保可滚动
               Flexible(
                 child: ListView(
                   shrinkWrap: true,
                   children: [
                     ...apps.map((app) => ListTile(
-                          leading: FaIcon(app.icon, size: 24, color: Theme.of(context).primaryColor),
+                          leading: FaIcon(app.icon, size: 24.r, color: Theme.of(context).primaryColor),
                           title: Text(app.name),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () async {
@@ -232,7 +233,7 @@ class MapAppLauncher {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               // 取消按钮
               ListTile(
                 title: Center(
@@ -243,7 +244,7 @@ class MapAppLauncher {
                 ),
                 onTap: () => Navigator.pop(context),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
             ],
           ),
         ),

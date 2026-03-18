@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/weather/domain/entities/weather.dart';
 import 'weather_utils.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 5天天气预报组件
 class FiveDayForecast extends StatelessWidget {
@@ -25,14 +26,14 @@ class FiveDayForecast extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         SizedBox(
-          height: 200,
+          height: 200.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             itemCount: forecast.daily.length,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
             itemBuilder: (context, index) {
               final day = forecast.daily[index];
               final isToday = index == 0;
@@ -53,24 +54,24 @@ class FiveDayForecast extends StatelessWidget {
 
   Widget _buildSectionTitle() {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      padding: EdgeInsets.only(left: 4.w, bottom: 8.h),
       child: Row(
         children: [
           Container(
-            width: 4,
-            height: 24,
+            width: 4.w,
+            height: 24.h,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
               ),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.r),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Text(
             l10n.fiveDayForecast,
-            style: const TextStyle(
-              fontSize: 20,
+            style: TextStyle(
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
               letterSpacing: -0.5,
             ),
@@ -98,7 +99,7 @@ class _ForecastDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 140,
+      width: 140.w,
       margin: EdgeInsets.only(right: isLast ? 0 : 16),
       decoration: BoxDecoration(
         gradient: isToday
@@ -112,7 +113,7 @@ class _ForecastDayCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r),
         border: isToday
             ? null
             : Border.all(
@@ -129,9 +130,9 @@ class _ForecastDayCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 20,
-          horizontal: 16,
+        padding: EdgeInsets.symmetric(
+          vertical: 20.h,
+          horizontal: 16.w,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -147,21 +148,21 @@ class _ForecastDayCard extends StatelessWidget {
 
   Widget _buildDayLabel() {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
+      padding: EdgeInsets.symmetric(
+        horizontal: 12.w,
+        vertical: 6.h,
       ),
       decoration: BoxDecoration(
         color: isToday ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFFF4458).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Text(
         dayName,
         style: TextStyle(
-          fontSize: 13,
+          fontSize: 13.sp,
           fontWeight: FontWeight.w700,
           color: isToday ? Colors.white : const Color(0xFFFF4458),
-          letterSpacing: 0.5,
+          letterSpacing: 0.5.sp,
         ),
       ),
     );
@@ -174,7 +175,7 @@ class _ForecastDayCard extends StatelessWidget {
         isNight: false,
       ),
       color: isToday ? Colors.white : Colors.orange.shade600,
-      size: 48,
+      size: 48.r,
     );
   }
 
@@ -189,7 +190,7 @@ class _ForecastDayCard extends StatelessWidget {
             Text(
               day.tempMax.toStringAsFixed(0),
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 28.sp,
                 fontWeight: FontWeight.bold,
                 color: isToday ? Colors.white : Colors.grey.shade900,
                 height: 1.0,
@@ -198,7 +199,7 @@ class _ForecastDayCard extends StatelessWidget {
             Text(
               '°',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
                 color: isToday ? Colors.white.withValues(alpha: 0.9) : Colors.grey.shade700,
                 height: 1.2,
@@ -206,7 +207,7 @@ class _ForecastDayCard extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         // 最低温度
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -214,14 +215,14 @@ class _ForecastDayCard extends StatelessWidget {
           children: [
             Icon(
               FontAwesomeIcons.arrowDown,
-              size: 12,
+              size: 12.r,
               color: isToday ? Colors.white.withValues(alpha: 0.7) : Colors.grey.shade500,
             ),
-            const SizedBox(width: 2),
+            SizedBox(width: 2.w),
             Text(
               day.tempMin.toStringAsFixed(0),
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
                 color: isToday ? Colors.white.withValues(alpha: 0.8) : Colors.grey.shade600,
               ),
@@ -229,7 +230,7 @@ class _ForecastDayCard extends StatelessWidget {
             Text(
               '°',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: isToday ? Colors.white.withValues(alpha: 0.7) : Colors.grey.shade500,
               ),
             ),

@@ -5,6 +5,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 服务条款复选框
 class RegisterTermsCheckbox extends GetView<RegisterController> {
@@ -24,10 +25,10 @@ class RegisterTermsCheckbox extends GetView<RegisterController> {
             )),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 12),
+            padding: EdgeInsets.only(top: 12.h),
             child: RichText(
               text: TextSpan(
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                style: TextStyle(fontSize: 14.sp, color: Colors.black87),
                 children: [
                   TextSpan(
                     text: '${l10n.agreeToTerms} ',
@@ -49,6 +50,15 @@ class RegisterTermsCheckbox extends GetView<RegisterController> {
                       decoration: TextDecoration.underline,
                     ),
                     recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.communityGuidelinesPage),
+                  ),
+                  TextSpan(text: ' ${l10n.and} '),
+                  TextSpan(
+                    text: l10n.privacyPolicy,
+                    style: const TextStyle(
+                      color: RegisterConstants.primaryColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.privacyPolicy),
                   ),
                 ],
               ),

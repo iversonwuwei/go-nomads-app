@@ -3,6 +3,7 @@ import 'package:go_nomads_app/controllers/venue_map_picker_page_controller.dart'
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 筛选器芯片组件
 class FilterChipsSection extends StatelessWidget {
@@ -25,13 +26,13 @@ class FilterChipsSection extends StatelessWidget {
     ];
 
     return Obx(() => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 4,
+                blurRadius: 4.r,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -42,9 +43,9 @@ class FilterChipsSection extends StatelessWidget {
               children: filters.map((filter) {
                 final isSelected = controller.selectedFilter.value == filter['key'];
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: EdgeInsets.only(right: 8.w),
                   child: FilterChip(
-                    avatar: Icon(filter['icon'] as IconData, size: 14),
+                    avatar: Icon(filter['icon'] as IconData, size: 14.r),
                     label: Text(filter['label'] as String),
                     selected: isSelected,
                     onSelected: (_) => controller.onFilterChanged(filter['key'] as String),

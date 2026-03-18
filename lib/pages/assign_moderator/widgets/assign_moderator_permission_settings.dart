@@ -2,6 +2,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/pages/assign_moderator/assign_moderator_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 版主权限设置组件
 class AssignModeratorPermissionSettings extends StatelessWidget {
@@ -15,17 +16,17 @@ class AssignModeratorPermissionSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
-      title: const Text(
+      title: Text(
         '版主权限设置（可选）',
         style: TextStyle(
-          fontSize: 14,
+          fontSize: 14.sp,
           fontWeight: FontWeight.w600,
         ),
       ),
       subtitle: Text(
         '展开设置批量权限',
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 12.sp,
           color: Colors.grey[600],
         ),
       ),
@@ -45,7 +46,7 @@ class AssignModeratorPermissionSettings extends StatelessWidget {
     return Obx(() => CheckboxListTile(
           title: Text(
             title,
-            style: const TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14.sp),
           ),
           value: value.value,
           activeColor: AppColors.accent,

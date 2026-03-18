@@ -3,6 +3,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 总费用显示组件
 class TotalDisplaySection extends StatelessWidget {
@@ -18,7 +19,7 @@ class TotalDisplaySection extends StatelessWidget {
     return Obx(() {
       final currencySymbol = _getCurrencySymbol(context, controller);
       return Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -26,7 +27,7 @@ class TotalDisplaySection extends StatelessWidget {
                 const Color(0xFFFF4458).withValues(alpha: 0.05),
               ],
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.3)),
           ),
           child: Row(
@@ -38,16 +39,16 @@ class TotalDisplaySection extends StatelessWidget {
                   Text(
                     l10n.totalMonthly,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       color: Colors.grey[700],
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                   '$currencySymbol ${controller.totalCost.value.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 28,
+                    style: TextStyle(
+                      fontSize: 28.sp,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFFF4458),
                     ),
@@ -55,15 +56,15 @@ class TotalDisplaySection extends StatelessWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF4458),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: const Icon(
+                child: Icon(
                   FontAwesomeIcons.calculator,
                   color: Colors.white,
-                  size: 32,
+                  size: 32.r,
                 ),
               ),
             ],
@@ -111,21 +112,21 @@ class NotesSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               '📝',
-              style: TextStyle(fontSize: 20),
+              style: TextStyle(fontSize: 20.sp),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(
               l10n.additionalNotes,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         TextFormField(
           controller: controller.notesController,
           maxLines: 4,
@@ -135,18 +136,18 @@ class NotesSection extends StatelessWidget {
             hintStyle: TextStyle(color: Colors.grey[400]),
             filled: true,
             fillColor: Colors.grey[50],
-            contentPadding: const EdgeInsets.all(16),
+            contentPadding: EdgeInsets.all(16.w),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFF4458), width: 2),
+              borderRadius: BorderRadius.circular(8.r),
+              borderSide: BorderSide(color: Color(0xFFFF4458), width: 2),
             ),
           ),
         ),
@@ -172,13 +173,13 @@ class SubmitButton extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            blurRadius: 10.r,
             offset: const Offset(0, -5),
           ),
         ],
@@ -186,21 +187,21 @@ class SubmitButton extends StatelessWidget {
       child: SafeArea(
         child: Obx(() => SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 50.h,
               child: ElevatedButton(
                 onPressed: controller.isSubmitting.value ? null : onSubmit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2196F3),
                   disabledBackgroundColor: Colors.grey[300],
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   elevation: 0,
                 ),
                 child: controller.isSubmitting.value
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                    ? SizedBox(
+                        height: 20.h,
+                        width: 20.w,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -208,8 +209,8 @@ class SubmitButton extends StatelessWidget {
                       )
                     : Text(
                         l10n.submitCost,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: TextStyle(
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),

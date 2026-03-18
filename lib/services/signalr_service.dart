@@ -33,6 +33,7 @@ class SignalRService {
   final _notificationReceivedController = StreamController<Map<String, dynamic>>.broadcast();
   final _cityRatingUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
   final _cityReviewUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
+  final _cityModeratorUpdatedController = StreamController<Map<String, dynamic>>.broadcast();
   final _aiChatChunkController = StreamController<AIChatChunk>.broadcast();
 
   // 事件流
@@ -43,9 +44,46 @@ class SignalRService {
   Stream<Map<String, dynamic>> get notificationReceivedStream => _notificationReceivedController.stream;
   Stream<Map<String, dynamic>> get cityRatingUpdatedStream => _cityRatingUpdatedController.stream;
   Stream<Map<String, dynamic>> get cityReviewUpdatedStream => _cityReviewUpdatedController.stream;
+  Stream<Map<String, dynamic>> get cityModeratorUpdatedStream => _cityModeratorUpdatedController.stream;
   Stream<AIChatChunk> get aiChatChunkStream => _aiChatChunkController.stream;
 
   SignalRService._internal();
+
+  /// 确保 SignalR 已连接并加入用户组
+  ///
+  /// 如果当前未连接，会尝试重新连接（最多 [maxRetries] 次）
+  /// 如果已连接但未加入用户组，会自动加入
+  /// 返回是否成功连接并加入用户组
+  Future<bool> ensureConnected({String? userId, int maxRetries = 3}) async {
+    // 已连接且用户组已加入
+    if (_isConnected && _hubConnection != null) {
+      // 确保用户组已加入
+      if (userId != null && userId != _currentUserId) {
+        await joinUserGroup(userId);
+      }
+      return true;
+    }
+
+    // 尝试重连
+    for (var i = 0; i < maxRetries; i++) {
+      try {
+        log('🔄 [SignalR] ensureConnected: 尝试连接 (${i + 1}/$maxRetries)...');
+        await connect(ApiConfig.messageServiceBaseUrl, userId: userId);
+        if (_isConnected) {
+          log('✅ [SignalR] ensureConnected: 连接成功');
+          return true;
+        }
+      } catch (e) {
+        log('⚠️ [SignalR] ensureConnected: 第 ${i + 1} 次连接失败: $e');
+        if (i < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 1000 * (i + 1)));
+        }
+      }
+    }
+
+    log('❌ [SignalR] ensureConnected: 所有重试均失败');
+    return false;
+  }
 
   /// 连接到 SignalR Hub
   ///
@@ -356,6 +394,37 @@ class SignalRService {
       }
     });
 
+    // CityModeratorUpdated: 城市版主变更
+    _notificationHubConnection?.on('CityModeratorUpdated', (arguments) {
+      log('👤 收到 CityModeratorUpdated 事件！');
+      log('   参数数量: ${arguments?.length ?? 0}');
+
+      if (arguments == null || arguments.isEmpty) {
+        log('❌ CityModeratorUpdated 参数为空');
+        return;
+      }
+
+      try {
+        final data = arguments[0] as Map<String, dynamic>;
+        log('👤 收到城市版主变更:');
+        log('   CityId: ${data['CityId'] ?? data['cityId']}');
+        log('   ChangeType: ${data['ChangeType'] ?? data['changeType']}');
+        log('   UserId: ${data['UserId'] ?? data['userId']}');
+
+        // 转换为小写 key 的 map
+        final normalizedData = <String, dynamic>{};
+        data.forEach((key, value) {
+          final normalizedKey = key[0].toLowerCase() + key.substring(1);
+          normalizedData[normalizedKey] = value;
+        });
+
+        _cityModeratorUpdatedController.add(normalizedData);
+      } catch (e) {
+        log('❌ 解析 CityModeratorUpdated 失败: $e');
+        log('   原始数据: ${arguments[0]}');
+      }
+    });
+
     log('✅ NotificationHub 事件处理器注册完成');
   }
 
@@ -655,6 +724,7 @@ class SignalRService {
     _notificationReceivedController.close();
     _cityRatingUpdatedController.close();
     _cityReviewUpdatedController.close();
+    _cityModeratorUpdatedController.close();
     _aiChatChunkController.close();
     disconnect();
   }

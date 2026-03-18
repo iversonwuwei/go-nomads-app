@@ -1,14 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/add_hotel_page_controller.dart';
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/pages/flutter_map_picker_page.dart';
+import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/location_picker_field.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 class AddHotelPage extends StatelessWidget {
   final String? cityName;
@@ -39,9 +40,9 @@ class AddHotelPage extends StatelessWidget {
         leading: const AppBackButton(),
         title: Text(
           isEditMode ? l10n.editHotel : l10n.addHotel,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textPrimary,
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -52,22 +53,22 @@ class AddHotelPage extends StatelessWidget {
             child: Form(
               key: controller.formKey,
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w),
                 children: [
                   _buildImageSection(controller, l10n),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildBasicInfoSection(controller, l10n),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildLocationSection(controller, l10n),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildContactSection(controller, l10n),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildPricingSection(controller, l10n),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildRoomTypesSection(controller),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   _buildNomadFeaturesSection(controller, l10n),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32.h),
                 ],
               ),
             ),
@@ -94,11 +95,11 @@ class AddHotelPage extends StatelessWidget {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFFFF4458), size: 24),
-        const SizedBox(width: 8),
+        Icon(icon, color: const Color(0xFFFF4458), size: 24.r),
+        SizedBox(width: 8.w),
         Text(
           title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
         ),
       ],
     );
@@ -120,7 +121,7 @@ class AddHotelPage extends StatelessWidget {
       decoration: InputDecoration(
         labelText: required ? '$label *' : label,
         hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
         filled: true,
         fillColor: Colors.grey[50],
       ),
@@ -156,16 +157,16 @@ class AddHotelPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l10n.addCoverPhoto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              Text('${controller.hotelImageUrls.length}/${AddHotelPageController.maxHotelImages}',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+              Text(l10n.addCoverPhoto, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+              Text([controller.hotelImageUrls.length, AddHotelPageController.maxHotelImages].join('/'),
+                  style: TextStyle(fontSize: 13.sp, color: Colors.grey[600])),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           if (hasImages)
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: 12.w,
+              runSpacing: 12.w,
               children: [
                 ...controller.hotelImageUrls.asMap().entries.map((e) => _buildImageTile(controller, e.value, e.key)),
                 if (canAddMore) _buildAddImageTile(controller, l10n),
@@ -174,11 +175,11 @@ class AddHotelPage extends StatelessWidget {
           else
             _buildAddImageTile(controller, l10n, fullWidth: true),
           if (controller.isUploadingImages.value) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Row(children: [
-              const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-              const SizedBox(width: 8),
-              Text(controller.imageUploadStatus.value ?? 'Uploading...'),
+              SizedBox(height: 18.h, width: 18.w, child: CircularProgressIndicator(strokeWidth: 2)),
+              SizedBox(width: 8.w),
+              Text(controller.imageUploadStatus.value ?? l10n.uploading),
             ]),
           ],
         ],
@@ -190,21 +191,21 @@ class AddHotelPage extends StatelessWidget {
     return Stack(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: Container(
-            width: 120,
-            height: 120,
+            width: 120.w,
+            height: 120.h,
             color: Colors.grey[200],
             child: Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(FontAwesomeIcons.image)),
           ),
         ),
         Positioned(
-          top: 6,
-          right: 6,
+          top: 6.h,
+          right: 6.w,
           child: IconButton(
             onPressed: () => controller.removeImageAt(index),
-            icon: const Icon(FontAwesomeIcons.xmark, size: 18, color: Colors.white),
-            style: IconButton.styleFrom(backgroundColor: Colors.black45, padding: const EdgeInsets.all(4)),
+            icon: Icon(FontAwesomeIcons.xmark, size: 18.r, color: Colors.white),
+            style: IconButton.styleFrom(backgroundColor: Colors.black45, padding: EdgeInsets.all(4.w)),
           ),
         ),
       ],
@@ -216,19 +217,19 @@ class AddHotelPage extends StatelessWidget {
       onTap: () => _showImageOptions(controller, l10n),
       child: Container(
         width: fullWidth ? double.infinity : 120,
-        height: 120,
+        height: 120.h,
         decoration: BoxDecoration(
           color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: Colors.grey[300]!),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FontAwesomeIcons.photoFilm, size: 32, color: Colors.grey[500]),
-            const SizedBox(height: 8),
+            Icon(FontAwesomeIcons.photoFilm, size: 32.r, color: Colors.grey[500]),
+            SizedBox(height: 8.h),
             Text(l10n.tapToChoosePhoto, textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey[600])),
           ],
         ),
       ),
@@ -276,14 +277,14 @@ class AddHotelPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.basicInformation, FontAwesomeIcons.circleInfo),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(
           controller: controller.nameController,
           label: l10n.hotelName,
           hint: l10n.hotelNameHint,
           required: true,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(
           controller: controller.descriptionController,
           label: l10n.description,
@@ -301,14 +302,14 @@ class AddHotelPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.location, FontAwesomeIcons.locationDot),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(
           controller: controller.addressController,
           label: l10n.address,
           hint: l10n.addressHint,
           required: true,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         Obx(() {
           return LocationPickerField(
             locationController: controller.locationController,
@@ -329,7 +330,7 @@ class AddHotelPage extends StatelessWidget {
             },
           );
         }),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildLocationPicker(controller, l10n),
       ],
     );
@@ -343,7 +344,7 @@ class AddHotelPage extends StatelessWidget {
         elevation: 0,
         color: Colors.grey[50],
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
           side: BorderSide(color: Colors.grey[300]!),
         ),
         child: ListTile(
@@ -351,17 +352,21 @@ class AddHotelPage extends StatelessWidget {
           title: (lat != 0 && lng != 0)
               ? Text(l10n.locationCoordinates(lat.toStringAsFixed(6), lng.toStringAsFixed(6)))
               : Text(l10n.pickLocationOnMap),
-          trailing: const Icon(FontAwesomeIcons.arrowRight, size: 16),
+          trailing: Icon(FontAwesomeIcons.arrowRight, size: 16.r),
           onTap: () async {
-            final result = await Get.to(() => FlutterMapPickerPage(
-                  initialLatitude: lat != 0 ? lat : null,
-                  initialLongitude: lng != 0 ? lng : null,
-                  searchQuery: controller.addressController.text.trim().isNotEmpty
-                      ? controller.addressController.text.trim()
-                      : null,
-                  country: controller.selectedCountry.value,
-                  city: controller.selectedCity.value,
-                ));
+            final result = await Get.to(
+              () => const MapPickerPage(),
+              binding: MapPickerBinding(),
+              arguments: {
+                'initialLatitude': lat != 0 ? lat : null,
+                'initialLongitude': lng != 0 ? lng : null,
+                'searchQuery': controller.addressController.text.trim().isNotEmpty
+                    ? controller.addressController.text.trim()
+                    : null,
+                    'country': controller.selectedCountry.value,
+                    'city': controller.selectedCity.value,
+                  },
+                );
 
             if (result != null && result is Map<String, dynamic>) {
               controller.updateCoordinates(result['latitude'] ?? 0.0, result['longitude'] ?? 0.0);
@@ -378,21 +383,21 @@ class AddHotelPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.contactInformation, FontAwesomeIcons.addressBook),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(
           controller: controller.phoneController,
           label: l10n.phone,
           hint: l10n.phoneHint,
           keyboardType: TextInputType.phone,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(
           controller: controller.emailController,
           label: l10n.email,
           hint: l10n.emailHint,
           keyboardType: TextInputType.emailAddress,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(
           controller: controller.websiteController,
           label: l10n.website,
@@ -409,9 +414,9 @@ class AddHotelPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.pricing, FontAwesomeIcons.dollarSign),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildCurrencyDropdown(controller, l10n),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildTextField(
           controller: controller.pricePerNightController,
           label: l10n.pricePerNight,
@@ -419,7 +424,7 @@ class AddHotelPage extends StatelessWidget {
           keyboardType: TextInputType.number,
           required: true,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         _buildSwitchTile(
           l10n.longStayDiscount,
           controller.hasLongStayDiscount,
@@ -435,7 +440,7 @@ class AddHotelPage extends StatelessWidget {
         value: controller.currency.value,
         decoration: InputDecoration(
           labelText: l10n.currency,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
           filled: true,
           fillColor: Colors.grey[50],
         ),
@@ -449,6 +454,7 @@ class AddHotelPage extends StatelessWidget {
 
   // ============ 房型 ============
   Widget _buildRoomTypesSection(AddHotelPageController controller) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     return Obx(() {
       final rooms = controller.roomTypes;
       return Column(
@@ -457,35 +463,35 @@ class AddHotelPage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSectionTitle('房型管理', FontAwesomeIcons.bed),
+              _buildSectionTitle(l10n.addHotelRoomTypesTitle, FontAwesomeIcons.bed),
               TextButton.icon(
                 onPressed: () => _showRoomTypeDialog(controller),
-                icon: const Icon(FontAwesomeIcons.plus, size: 14),
-                label: const Text('添加房型'),
+                icon: Icon(FontAwesomeIcons.plus, size: 14.r),
+                label: Text(l10n.addHotelAddRoomType),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text('添加不同的房型及价格（可选）', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-          const SizedBox(height: 16),
+          SizedBox(height: 8.h),
+          Text(l10n.addHotelRoomTypesHint, style: TextStyle(fontSize: 13.sp, color: Colors.grey[600])),
+          SizedBox(height: 16.h),
           if (rooms.isEmpty)
             Card(
               elevation: 0,
               color: Colors.grey[50],
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
                 side: BorderSide(color: Colors.grey[300]!),
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(24),
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(FontAwesomeIcons.bed, size: 32, color: Colors.grey),
-                      SizedBox(height: 12),
-                      Text('暂无房型', style: TextStyle(color: Colors.grey)),
-                      SizedBox(height: 4),
-                      Text('点击上方按钮添加房型', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Icon(FontAwesomeIcons.bed, size: 32.r, color: Colors.grey),
+                      SizedBox(height: 12.h),
+                      Text(l10n.addHotelNoRoomTypes, style: TextStyle(color: Colors.grey)),
+                      SizedBox(height: 4.h),
+                      Text(l10n.addHotelTapToAddRoomType, style: TextStyle(fontSize: 12.sp, color: Colors.grey)),
                     ],
                   ),
                 ),
@@ -499,16 +505,17 @@ class AddHotelPage extends StatelessWidget {
   }
 
   Widget _buildRoomTypeCard(AddHotelPageController controller, int index) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final room = controller.roomTypes[index];
     return Card(
       elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12.h),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: Colors.grey[300]!),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -517,19 +524,19 @@ class AddHotelPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    room['name'] ?? '未命名房型',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    room['name'] ?? l10n.addHotelUnnamedRoomType,
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(FontAwesomeIcons.penToSquare, size: 16),
+                      icon: Icon(FontAwesomeIcons.penToSquare, size: 16.r),
                       onPressed: () => _showRoomTypeDialog(controller, editIndex: index),
                       color: Colors.blue,
                     ),
                     IconButton(
-                      icon: const Icon(FontAwesomeIcons.trash, size: 16),
+                      icon: Icon(FontAwesomeIcons.trash, size: 16.r),
                       onPressed: () => _confirmRemoveRoomType(controller, index),
                       color: Colors.red,
                     ),
@@ -540,19 +547,20 @@ class AddHotelPage extends StatelessWidget {
             const Divider(),
             Row(
               children: [
-                _buildRoomInfoChip(Icons.attach_money, '${room['currency']} ${room['pricePerNight']}/晚'),
-                const SizedBox(width: 8),
-                _buildRoomInfoChip(Icons.people, '最多${room['maxOccupancy']}人'),
-                const SizedBox(width: 8),
+                _buildRoomInfoChip(
+                    Icons.attach_money, l10n.addHotelPricePerNightChip(room['currency'], room['pricePerNight'])),
+                SizedBox(width: 8.w),
+                _buildRoomInfoChip(Icons.people, l10n.addHotelMaxOccupancyChip(room['maxOccupancy'])),
+                SizedBox(width: 8.w),
                 _buildRoomInfoChip(Icons.square_foot, '${room['size'] ?? room['roomSize']}㎡'),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Row(
               children: [
-                _buildRoomInfoChip(Icons.bed, room['bedType'] ?? 'Double'),
-                const SizedBox(width: 8),
-                _buildRoomInfoChip(Icons.meeting_room, '${room['availableRooms']}间'),
+                _buildRoomInfoChip(Icons.bed, room['bedType'] ?? l10n.addHotelBedTypeDouble),
+                SizedBox(width: 8.w),
+                _buildRoomInfoChip(Icons.meeting_room, l10n.addHotelAvailableRoomsChip(room['availableRooms'])),
               ],
             ),
           ],
@@ -563,23 +571,24 @@ class AddHotelPage extends StatelessWidget {
 
   Widget _buildRoomInfoChip(IconData icon, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.grey[600]),
-          const SizedBox(width: 4),
-          Text(text, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+          Icon(icon, size: 14.r, color: Colors.grey[600]),
+          SizedBox(width: 4.w),
+          Text(text, style: TextStyle(fontSize: 12.sp, color: Colors.grey[700])),
         ],
       ),
     );
   }
 
   void _showRoomTypeDialog(AddHotelPageController controller, {int? editIndex}) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     final isEdit = editIndex != null;
     final room = isEdit ? controller.roomTypes[editIndex] : <String, dynamic>{};
 
@@ -596,37 +605,39 @@ class AddHotelPage extends StatelessWidget {
       context: Get.context!,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(isEdit ? '编辑房型' : '添加房型'),
+          title: Text(isEdit ? l10n.addHotelEditRoomType : l10n.addHotelAddRoomType),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: '房型名称 *', hintText: '例如：标准双人间'),
+                  decoration: InputDecoration(
+                      labelText: '${l10n.addHotelRoomTypeName} *', hintText: l10n.addHotelRoomTypeNameHint),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 TextField(
                   controller: descController,
-                  decoration: const InputDecoration(labelText: '房型描述', hintText: '房间设施、特色等'),
+                  decoration: InputDecoration(
+                      labelText: l10n.addHotelRoomTypeDescription, hintText: l10n.addHotelRoomTypeDescriptionHint),
                   maxLines: 2,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Row(
                   children: [
                     Expanded(
                       flex: 2,
                       child: TextField(
                         controller: priceController,
-                        decoration: const InputDecoration(labelText: '每晚价格 *'),
+                        decoration: InputDecoration(labelText: '${l10n.pricePerNight} *'),
                         keyboardType: TextInputType.number,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: selectedCurrency,
-                        decoration: const InputDecoration(labelText: '货币'),
+                        decoration: InputDecoration(labelText: l10n.currency),
                         items: const ['USD', 'EUR', 'CNY', 'THB', 'VND', 'IDR']
                             .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                             .toList(),
@@ -635,44 +646,50 @@ class AddHotelPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Row(
                   children: [
                     Expanded(
                       child: TextField(
                         controller: sizeController,
-                        decoration: const InputDecoration(labelText: '面积(㎡)'),
+                        decoration: InputDecoration(labelText: l10n.addHotelRoomSize),
                         keyboardType: TextInputType.number,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: TextField(
                         controller: maxOccupancyController,
-                        decoration: const InputDecoration(labelText: '最大入住'),
+                        decoration: InputDecoration(labelText: l10n.addHotelMaxOccupancy),
                         keyboardType: TextInputType.number,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Row(
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         value: selectedBedType,
-                        decoration: const InputDecoration(labelText: '床型'),
-                        items: const ['Single', 'Double', 'Queen', 'King', 'Twin', 'Bunk']
-                            .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                        decoration: InputDecoration(labelText: l10n.addHotelBedType),
+                        items: [
+                          DropdownMenuItem(value: 'Single', child: Text(l10n.addHotelBedTypeSingle)),
+                          DropdownMenuItem(value: 'Double', child: Text(l10n.addHotelBedTypeDouble)),
+                          DropdownMenuItem(value: 'Queen', child: Text(l10n.addHotelBedTypeQueen)),
+                          DropdownMenuItem(value: 'King', child: Text(l10n.addHotelBedTypeKing)),
+                          DropdownMenuItem(value: 'Twin', child: Text(l10n.addHotelBedTypeTwin)),
+                          DropdownMenuItem(value: 'Bunk', child: Text(l10n.addHotelBedTypeBunk)),
+                        ]
                             .toList(),
                         onChanged: (v) => setDialogState(() => selectedBedType = v!),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: TextField(
                         controller: availableRoomsController,
-                        decoration: const InputDecoration(labelText: '可用房间数'),
+                        decoration: InputDecoration(labelText: l10n.addHotelAvailableRooms),
                         keyboardType: TextInputType.number,
                       ),
                     ),
@@ -682,15 +699,15 @@ class AddHotelPage extends StatelessWidget {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
             ElevatedButton(
               onPressed: () {
                 if (nameController.text.trim().isEmpty) {
-                  AppToast.error('请输入房型名称');
+                  AppToast.error(l10n.addHotelEnterRoomTypeName);
                   return;
                 }
                 if (priceController.text.trim().isEmpty) {
-                  AppToast.error('请输入每晚价格');
+                  AppToast.error(l10n.addHotelEnterPricePerNight);
                   return;
                 }
 
@@ -717,9 +734,9 @@ class AddHotelPage extends StatelessWidget {
                 }
 
                 Navigator.pop(context);
-                AppToast.success(isEdit ? '房型已更新' : '房型已添加');
+                AppToast.success(isEdit ? l10n.addHotelRoomTypeUpdated : l10n.addHotelRoomTypeAdded);
               },
-              child: Text(isEdit ? '保存' : '添加'),
+              child: Text(isEdit ? l10n.save : l10n.add),
             ),
           ],
         ),
@@ -728,21 +745,22 @@ class AddHotelPage extends StatelessWidget {
   }
 
   void _confirmRemoveRoomType(AddHotelPageController controller, int index) {
+    final l10n = AppLocalizations.of(Get.context!)!;
     showDialog(
       context: Get.context!,
       builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
-        content: Text('确定要删除房型 "${controller.roomTypes[index]['name']}" 吗？'),
+        title: Text(l10n.confirmDelete),
+        content: Text(l10n.addHotelDeleteRoomTypeConfirm(controller.roomTypes[index]['name'] ?? '')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () {
               controller.removeRoomType(index);
               Navigator.pop(context);
-              AppToast.success('房型已删除');
+              AppToast.success(l10n.addHotelRoomTypeDeleted);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('删除'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -755,16 +773,16 @@ class AddHotelPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle(l10n.nomadFeatures, FontAwesomeIcons.laptopCode),
-        const SizedBox(height: 8),
-        Text(l10n.nomadFeaturesSubtitle, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-        const SizedBox(height: 16),
+        SizedBox(height: 8.h),
+        Text(l10n.nomadFeaturesSubtitle, style: TextStyle(fontSize: 13.sp, color: Colors.grey[600])),
+        SizedBox(height: 16.h),
         _buildTextField(
           controller: controller.wifiSpeedController,
           label: l10n.wifiSpeed,
           hint: l10n.wifiSpeedHint,
           keyboardType: TextInputType.number,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         _buildSwitchTile(l10n.wifi, controller.hasWifi, (v) => controller.hasWifi.value = v),
         _buildSwitchTile(l10n.workDesk, controller.hasWorkDesk, (v) => controller.hasWorkDesk.value = v),
         _buildSwitchTile(l10n.hasCoworkingSpace, controller.hasCoworkingSpace, (v) => controller.hasCoworkingSpace.value = v),
@@ -785,10 +803,10 @@ class AddHotelPage extends StatelessWidget {
   Widget _buildBottomBar(AddHotelPageController controller, AppLocalizations l10n) {
     return Builder(
       builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10.r, offset: const Offset(0, -2))],
         ),
         child: SafeArea(
           child: Obx(() {
@@ -809,23 +827,23 @@ class AddHotelPage extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF4458),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 controller.isSubmitting.value
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
+                    ? SizedBox(
+                        height: 20.h,
+                        width: 20.w,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : Icon(isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.circleCheck, size: 20),
-                const SizedBox(width: 8),
+                    : Icon(isEditMode ? FontAwesomeIcons.penToSquare : FontAwesomeIcons.circleCheck, size: 20.r),
+                SizedBox(width: 8.w),
                 Text(
                   isEditMode ? l10n.save : l10n.submitHotel,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                 ),
               ],
             ),

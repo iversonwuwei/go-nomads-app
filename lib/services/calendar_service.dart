@@ -2,8 +2,10 @@ import 'dart:developer';
 
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/permission_purpose_dialog.dart';
 
 /// 日历服务 - 用于将事件添加到设备日历
 class CalendarService {
@@ -29,13 +31,21 @@ class CalendarService {
   }
 
   /// 请求日历权限
+  ///
+  /// 隐私合规：在请求系统日历权限前，先展示用途说明对话框，
+  /// 告知用户我们为什么需要访问日历（添加活动提醒）。
   Future<bool> requestPermissions() async {
     try {
+      // 先检查是否已有权限
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       if (permissionsGranted.isSuccess && (permissionsGranted.data ?? false)) {
         return true;
       }
 
+      // 权限未授予，先展示用途说明对话框（Apple Guideline 5.1.1 合规：不可跳过）
+      await PermissionPurposeDialog.showCalendarPermissionPurpose();
+
+      // 用途说明阅读完毕后，发起系统权限请求
       permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
       return permissionsGranted.isSuccess && (permissionsGranted.data ?? false);
     } catch (e) {
@@ -165,11 +175,11 @@ class CalendarService {
     final shouldAdd = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
             const Icon(Icons.calendar_today, color: Color(0xFFFF4458)),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Text(l10n.addToCalendar),
           ],
         ),
@@ -188,7 +198,7 @@ class CalendarService {
               backgroundColor: const Color(0xFFFF4458),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
               ),
             ),
             child: Text(l10n.addToCalendarButton),
@@ -197,7 +207,7 @@ class CalendarService {
       ),
     );
 
-    if (shouldAdd == true) {
+    if (shouldAdd == true && context.mounted) {
       final result = await addMeetupToCalendar(
         context: context,
         title: title,

@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/features/travel_history/routes/travel_history_routes.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 /// 旅行历史部分组件
 class TravelHistoryWidget extends StatelessWidget {
@@ -24,32 +27,15 @@ class TravelHistoryWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 标题行：点击可进入完整旅行历史页面
-        InkWell(
+        ProfileSectionHeader(
+          title: l10n.travelHistory,
           onTap: () => Get.toNamed(TravelHistoryRoutes.travelHistory),
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.travelHistory,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1a1a1a),
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  color: Color(0xFF6b7280),
-                ),
-              ],
-            ),
+          trailing: const Icon(
+            Icons.chevron_right,
+            color: Color(0xFF6b7280),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         latestTrip == null
             ? _EmptyTravelHistory(isMobile: isMobile)
             : _LatestTripCard(trip: latestTrip!, isMobile: isMobile),
@@ -66,6 +52,8 @@ class _EmptyTravelHistory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: EdgeInsets.symmetric(
         vertical: isMobile ? 40 : 60,
@@ -76,7 +64,7 @@ class _EmptyTravelHistory extends StatelessWidget {
           color: Colors.grey.withValues(alpha: 0.3),
           width: 1,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Center(
         child: Column(
@@ -87,18 +75,18 @@ class _EmptyTravelHistory extends StatelessWidget {
               size: isMobile ? 48 : 64,
               color: Colors.grey.withValues(alpha: 0.4),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
-              'No travel history yet',
+              l10n.noTravelHistoryYet,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: isMobile ? 16 : 18,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
-              'Start your digital nomad journey!',
+              l10n.profileStartNomadJourney,
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: isMobile ? 14 : 16,
@@ -123,7 +111,12 @@ class _LatestTripCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateRange = _formatDateRange(trip.arrivalTime, trip.departureTime);
+    final l10n = AppLocalizations.of(context)!;
+    final dateRange = _formatDateRange(
+      context,
+      trip.arrivalTime,
+      trip.departureTime,
+    );
     final daysAgo = DateTime.now().difference(trip.arrivalTime).inDays;
 
     return Container(
@@ -140,7 +133,7 @@ class _LatestTripCard extends StatelessWidget {
                 : const Color(0xFF1D4ED8).withValues(alpha: 0.04),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: trip.isOngoing
               ? const Color(0xFF10B981).withValues(alpha: 0.2)
@@ -174,7 +167,7 @@ class _LatestTripCard extends StatelessWidget {
               );
             }
           },
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: Padding(
             padding: EdgeInsets.all(isMobile ? 16 : 20),
             child: Column(
@@ -186,22 +179,22 @@ class _LatestTripCard extends StatelessWidget {
                   children: [
                     _StatusBadge(isOngoing: trip.isOngoing),
                     Text(
-                      trip.isOngoing ? 'Now' : _formatDaysAgo(daysAgo),
+                      trip.isOngoing ? l10n.today : _formatDaysAgo(l10n, daysAgo),
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 城市和国家
                 Row(
                   children: [
                     _CountryFlag(country: trip.country),
-                    const SizedBox(width: 14),
+                    SizedBox(width: 14.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,11 +207,11 @@ class _LatestTripCard extends StatelessWidget {
                               color: const Color(0xFF1a1a1a),
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2.h),
                           Text(
                             trip.country,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 14.sp,
                               color: Colors.grey[600],
                             ),
                           ),
@@ -228,7 +221,7 @@ class _LatestTripCard extends StatelessWidget {
                     _NavigationArrow(),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // 底部信息栏
                 _BottomInfoBar(
@@ -244,25 +237,33 @@ class _LatestTripCard extends StatelessWidget {
     );
   }
 
-  String _formatDateRange(DateTime arrival, DateTime? departure) {
-    final arrivalStr = '${arrival.month}/${arrival.day}';
-    if (departure != null) {
-      final departureStr = '${departure.month}/${departure.day}';
-      if (arrival.year == departure.year) {
-        return '$arrivalStr - $departureStr, ${arrival.year}';
-      }
-      return '${arrival.year}/$arrivalStr - ${departure.year}/$departureStr';
+  String _formatDateRange(
+    BuildContext context,
+    DateTime arrival,
+    DateTime? departure,
+  ) {
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final fullFormat = DateFormat.yMMMd(localeTag);
+
+    if (departure == null) {
+      return '${fullFormat.format(arrival)} - ${AppLocalizations.of(context)!.present}';
     }
-    return '${arrival.year}/$arrivalStr - Present';
+
+    if (arrival.year == departure.year) {
+      final startFormat = DateFormat.MMMd(localeTag);
+      return '${startFormat.format(arrival)} - ${fullFormat.format(departure)}';
+    }
+
+    return '${fullFormat.format(arrival)} - ${fullFormat.format(departure)}';
   }
 
-  String _formatDaysAgo(int days) {
-    if (days == 0) return 'Today';
-    if (days == 1) return 'Yesterday';
-    if (days < 7) return '$days days ago';
-    if (days < 30) return '${(days / 7).floor()} weeks ago';
-    if (days < 365) return '${(days / 30).floor()} months ago';
-    return '${(days / 365).floor()} years ago';
+  String _formatDaysAgo(AppLocalizations l10n, int days) {
+    if (days == 0) return l10n.today;
+    if (days == 1) return l10n.yesterday;
+    if (days < 7) return l10n.daysAgo(days.toString());
+    if (days < 30) return l10n.weeksAgo(((days / 7).floor()).toString());
+    if (days < 365) return l10n.monthsAgo(((days / 30).floor()).toString());
+    return l10n.yearsAgo((days / 365).floor());
   }
 }
 
@@ -274,25 +275,27 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: isOngoing ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             isOngoing ? Icons.flight_takeoff : Icons.check_circle,
-            size: 14,
+            size: 14.r,
             color: Colors.white,
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Text(
-            isOngoing ? 'Currently Here' : 'Recent Trip',
-            style: const TextStyle(
-              fontSize: 12,
+            isOngoing ? l10n.profileCurrentlyHere : l10n.profileRecentTrip,
+            style: TextStyle(
+              fontSize: 12.sp,
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
@@ -312,15 +315,15 @@ class _CountryFlag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 48,
-      height: 48,
+      width: 48.w,
+      height: 48.h,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
+            blurRadius: 8.r,
             offset: const Offset(0, 2),
           ),
         ],
@@ -328,7 +331,7 @@ class _CountryFlag extends StatelessWidget {
       child: Center(
         child: Text(
           _getCountryEmoji(country),
-          style: const TextStyle(fontSize: 24),
+          style: TextStyle(fontSize: 24.sp),
         ),
       ),
     );
@@ -399,22 +402,22 @@ class _NavigationArrow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 36,
-      height: 36,
+      width: 36.w,
+      height: 36.h,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: const Icon(
+      child: Icon(
         Icons.arrow_forward_ios,
-        size: 14,
+        size: 14.r,
         color: Color(0xFF6b7280),
       ),
     );
@@ -435,11 +438,13 @@ class _BottomInfoBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
       ),
       child: Row(
         children: [
@@ -448,15 +453,15 @@ class _BottomInfoBar extends StatelessWidget {
               children: [
                 Icon(
                   Icons.calendar_today_outlined,
-                  size: 16,
+                  size: 16.r,
                   color: Colors.grey[600],
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6.w),
                 Flexible(
                   child: Text(
                     dateRange,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       color: Colors.grey[700],
                       fontWeight: FontWeight.w500,
                     ),
@@ -468,23 +473,23 @@ class _BottomInfoBar extends StatelessWidget {
           ),
           if (durationDays != null) ...[
             Container(
-              width: 1,
-              height: 20,
+              width: 1.w,
+              height: 20.h,
               color: Colors.grey[300],
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Row(
               children: [
                 Icon(
                   Icons.access_time,
-                  size: 16,
+                  size: 16.r,
                   color: Colors.grey[600],
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6.w),
                 Text(
-                  '$durationDays ${durationDays == 1 ? 'day' : 'days'}',
+                  '$durationDays ${durationDays == 1 ? l10n.profileDayUnit : l10n.profileDayUnitPlural}',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: Colors.grey[700],
                     fontWeight: FontWeight.w500,
                   ),
@@ -494,14 +499,14 @@ class _BottomInfoBar extends StatelessWidget {
           ],
           if (hasLocation) ...[
             Container(
-              width: 1,
-              height: 20,
+              width: 1.w,
+              height: 20.h,
               color: Colors.grey[300],
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Icon(
               Icons.location_on_outlined,
-              size: 16,
+              size: 16.r,
               color: Colors.grey[600],
             ),
           ],

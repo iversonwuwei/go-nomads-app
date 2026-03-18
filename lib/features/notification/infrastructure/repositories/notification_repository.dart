@@ -1,12 +1,12 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 import 'package:go_nomads_app/features/notification/domain/repositories/i_notification_repository.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/services/http_service.dart';
-import 'package:get/get.dart';
 
 /// 通知仓储实现
 class NotificationRepository implements INotificationRepository {
@@ -417,6 +417,10 @@ class NotificationRepository implements INotificationRepository {
         return 'event_invitation';
       case NotificationType.eventInvitationResponse:
         return 'event_invitation_response';
+      case NotificationType.userReport:
+        return 'user_report';
+      case NotificationType.cityReport:
+        return 'city_report';
       case NotificationType.other:
         return 'other';
     }
@@ -443,6 +447,10 @@ class NotificationRepository implements INotificationRepository {
         return NotificationType.eventInvitation;
       case 'event_invitation_response':
         return NotificationType.eventInvitationResponse;
+      case 'user_report':
+        return NotificationType.userReport;
+      case 'city_report':
+        return NotificationType.cityReport;
       default:
         return NotificationType.other;
     }

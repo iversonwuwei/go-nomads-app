@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 社区亮点展示
 class RegisterFeatureHighlights extends StatelessWidget {
@@ -10,10 +11,10 @@ class RegisterFeatureHighlights extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -21,36 +22,36 @@ class RegisterFeatureHighlights extends StatelessWidget {
           Text(
             l10n.joinMembers,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade800,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           _FeatureItem(
             emoji: '🍹',
             title: l10n.attendMeetups,
             subtitle: l10n.inCitiesWorldwide,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _FeatureItem(
             emoji: '❤️',
             title: l10n.meetNewPeople,
             subtitle: l10n.forDatingAndFriends,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _FeatureItem(
             emoji: '🧪',
             title: l10n.researchDestinations,
             subtitle: l10n.findBestPlace,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _FeatureItem(
             emoji: '💬',
             title: l10n.joinExclusiveChat,
             subtitle: l10n.messagesSentThisMonth,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _FeatureItem(
             emoji: '🗺️',
             title: l10n.trackTravels,
@@ -79,23 +80,23 @@ class _FeatureItem extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 24)),
-        const SizedBox(width: 12),
+        Text(emoji, style: TextStyle(fontSize: 24.sp)),
+        SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 15,
+                style: TextStyle(
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
               ),
               Text(
                 subtitle,
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                style: TextStyle(fontSize: 13.sp, color: Colors.grey.shade600),
               ),
             ],
           ),

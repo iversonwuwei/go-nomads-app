@@ -136,8 +136,7 @@ class GenerateNearbyCitiesStreamParams {
 // ==================== Use Cases ====================
 
 /// 生成旅行计划 (标准方式)
-class GenerateTravelPlanUseCase
-    extends UseCase<TravelPlan, GenerateTravelPlanParams> {
+class GenerateTravelPlanUseCase extends UseCase<TravelPlan, GenerateTravelPlanParams> {
   final IAiRepository _repository;
 
   GenerateTravelPlanUseCase(this._repository);
@@ -162,10 +161,9 @@ class GenerateTravelPlanUseCase
 
 /// 生成旅行计划 (流式方式)
 ///
-/// 注意: 这个Use Case返回Result<void>
+/// 注意: 这个Use Case返回 `Result<void>`
 /// 实际数据通过params中的回调函数返回
-class GenerateTravelPlanStreamUseCase
-    extends UseCase<void, GenerateTravelPlanStreamParams> {
+class GenerateTravelPlanStreamUseCase extends UseCase<void, GenerateTravelPlanStreamParams> {
   final IAiRepository _repository;
 
   GenerateTravelPlanStreamUseCase(this._repository);
@@ -193,8 +191,7 @@ class GenerateTravelPlanStreamUseCase
 }
 
 /// 根据ID获取旅行计划
-class GetTravelPlanByIdUseCase
-    extends UseCase<TravelPlan, GetTravelPlanByIdParams> {
+class GetTravelPlanByIdUseCase extends UseCase<TravelPlan, GetTravelPlanByIdParams> {
   final IAiRepository _repository;
 
   GetTravelPlanByIdUseCase(this._repository);
@@ -219,17 +216,15 @@ class GetDigitalNomadGuideUseCase extends UseCase<DigitalNomadGuide?, String> {
 
 /// 生成数字游民指南 (流式方式)
 ///
-/// 注意: 这个Use Case返回Result<void>
+/// 注意: 这个Use Case返回 `Result<void>`
 /// 实际数据通过params中的回调函数返回
-class GenerateDigitalNomadGuideStreamUseCase
-    extends UseCase<void, GenerateDigitalNomadGuideStreamParams> {
+class GenerateDigitalNomadGuideStreamUseCase extends UseCase<void, GenerateDigitalNomadGuideStreamParams> {
   final IAiRepository _repository;
 
   GenerateDigitalNomadGuideStreamUseCase(this._repository);
 
   @override
-  Future<Result<void>> execute(
-      GenerateDigitalNomadGuideStreamParams params) async {
+  Future<Result<void>> execute(GenerateDigitalNomadGuideStreamParams params) async {
     return await _repository.generateDigitalNomadGuideStream(
       cityId: params.cityId,
       cityName: params.cityName,
@@ -299,7 +294,7 @@ class GetNearbyCitiesUseCase extends UseCase<List<NearbyCityDto>, String> {
 
 /// 生成附近城市 (流式方式)
 ///
-/// 注意: 这个Use Case返回Result<void>
+/// 注意: 这个Use Case返回 `Result<void>`
 /// 实际数据通过params中的回调函数返回
 class GenerateNearbyCitiesStreamUseCase extends UseCase<void, GenerateNearbyCitiesStreamParams> {
   final IAiRepository _repository;

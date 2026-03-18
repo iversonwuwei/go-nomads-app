@@ -1,10 +1,13 @@
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/manage_pros_cons_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+
 import 'pros_and_cons_add_page.dart';
 
 /// Pros & Cons 数据管理列表页面
@@ -65,11 +68,12 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
-        title: Text('${widget.cityName} - 优缺点管理'),
+        title: Text(l10n.manageProsConsPageTitle(widget.cityName)),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -96,16 +100,16 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
         ],
       ),
       body: Obx(() {
-        if (_controller.isLoading.value) {
-          return const ManageListSkeleton();
-        }
-
-        return TabBarView(
-          controller: _tabController,
-          children: [
-            _buildProsList(),
-            _buildConsList(),
-          ],
+        return AppLoadingSwitcher(
+          isLoading: _controller.isLoading.value,
+          loading: const ManageListSkeleton(),
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildProsList(),
+              _buildConsList(),
+            ],
+          ),
         );
       }),
     );
@@ -120,11 +124,11 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.circleCheck, size: 80, color: Colors.grey[300]),
-              const SizedBox(height: 16),
+              Icon(FontAwesomeIcons.circleCheck, size: 80.r, color: Colors.grey[300]),
+              SizedBox(height: 16.h),
               Text(
                 '暂无优点数据',
-                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 18.sp, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -132,12 +136,12 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
       }
 
       return ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: prosConsController.prosList.length,
         itemBuilder: (context, index) {
           final item = prosConsController.prosList[index];
           return Card(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: EdgeInsets.only(bottom: 12.h),
             elevation: 2,
             child: ListTile(
               leading: const CircleAvatar(
@@ -146,27 +150,27 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
               ),
               title: Text(
                 item.text,
-                style: const TextStyle(fontSize: 15),
+                style: TextStyle(fontSize: 15.sp),
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
-                      Icon(FontAwesomeIcons.arrowUp, size: 16, color: Colors.green[700]),
-                      const SizedBox(width: 4),
-                      Text('${item.upvotes}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 16),
-                      Icon(FontAwesomeIcons.arrowDown, size: 16, color: Colors.red[700]),
-                      const SizedBox(width: 4),
-                      Text('${item.downvotes}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Icon(FontAwesomeIcons.arrowUp, size: 16.r, color: Colors.green[700]),
+                      SizedBox(width: 4.w),
+                      Text(item.upvotes.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(width: 16.w),
+                      Icon(FontAwesomeIcons.arrowDown, size: 16.r, color: Colors.red[700]),
+                      SizedBox(width: 4.w),
+                      Text(item.downvotes.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     '创建于: ${_controller.formatDate(item.createdAt)}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -193,11 +197,11 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FontAwesomeIcons.circleInfo, size: 80, color: Colors.grey[300]),
-              const SizedBox(height: 16),
+              Icon(FontAwesomeIcons.circleInfo, size: 80.r, color: Colors.grey[300]),
+              SizedBox(height: 16.h),
               Text(
                 '暂无挑战数据',
-                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 18.sp, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -205,12 +209,12 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
       }
 
       return ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.w),
         itemCount: prosConsController.consList.length,
         itemBuilder: (context, index) {
           final item = prosConsController.consList[index];
           return Card(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: EdgeInsets.only(bottom: 12.h),
             elevation: 2,
             child: ListTile(
               leading: const CircleAvatar(
@@ -219,27 +223,27 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
               ),
               title: Text(
                 item.text,
-                style: const TextStyle(fontSize: 15),
+                style: TextStyle(fontSize: 15.sp),
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
-                      Icon(FontAwesomeIcons.arrowUp, size: 16, color: Colors.green[700]),
-                      const SizedBox(width: 4),
-                      Text('${item.upvotes}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 16),
-                      Icon(FontAwesomeIcons.arrowDown, size: 16, color: Colors.red[700]),
-                      const SizedBox(width: 4),
-                      Text('${item.downvotes}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Icon(FontAwesomeIcons.arrowUp, size: 16.r, color: Colors.green[700]),
+                      SizedBox(width: 4.w),
+                      Text(item.upvotes.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                      SizedBox(width: 16.w),
+                      Icon(FontAwesomeIcons.arrowDown, size: 16.r, color: Colors.red[700]),
+                      SizedBox(width: 4.w),
+                      Text(item.downvotes.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     '创建于: ${_controller.formatDate(item.createdAt)}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                   ),
                 ],
               ),

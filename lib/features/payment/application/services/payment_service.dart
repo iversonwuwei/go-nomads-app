@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/payment/application/services/paypal_service.dart';
 import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
@@ -10,6 +12,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// 支付服务 - 处理支付流程
 class PaymentService extends GetxService {
+  bool get _isIosExternalPaymentBlocked => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+
   PaymentStateController? get _paymentController {
     if (Get.isRegistered<PaymentStateController>()) {
       return Get.find<PaymentStateController>();
@@ -31,6 +35,11 @@ class PaymentService extends GetxService {
     int durationDays = 365,
     bool isRenewal = false,
   }) async {
+    if (_isIosExternalPaymentBlocked) {
+      log('⛔️ iOS 已禁用第三方会员支付');
+      return false;
+    }
+
     final controller = _paymentController;
     if (controller == null) {
       log('❌ PaymentStateController 未注册');
@@ -55,6 +64,11 @@ class PaymentService extends GetxService {
 
   /// 发起版主保证金支付
   Future<bool> startDepositPayment({required double amount}) async {
+    if (_isIosExternalPaymentBlocked) {
+      log('⛔️ iOS 已禁用第三方保证金支付');
+      return false;
+    }
+
     final controller = _paymentController;
     if (controller == null) {
       log('❌ PaymentStateController 未注册');
@@ -75,6 +89,11 @@ class PaymentService extends GetxService {
 
   /// 打开支付页面
   Future<bool> _openPaymentPage(Order order) async {
+    if (_isIosExternalPaymentBlocked) {
+      log('⛔️ iOS 已禁用外部支付页面拉起');
+      return false;
+    }
+
     if (order.approvalUrl == null || order.approvalUrl!.isEmpty) {
       log('❌ 支付链接为空');
       return false;
@@ -172,7 +191,7 @@ class PaymentService extends GetxService {
               success ? Icons.check_circle : Icons.error,
               color: success ? Colors.green : Colors.red,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Text(success ? '支付成功' : '支付失败'),
           ],
         ),

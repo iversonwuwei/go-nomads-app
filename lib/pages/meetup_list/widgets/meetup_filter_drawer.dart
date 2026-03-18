@@ -16,9 +16,9 @@ class MeetupFilterDrawer extends GetView<MeetupListController> {
 
     return Container(
       height: screenHeight * 0.85,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: Column(
         children: [
@@ -63,7 +63,7 @@ class _FilterHeader extends GetView<MeetupListController> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(20.w),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: AppColors.borderLight, width: 1),
         ),
@@ -316,7 +316,7 @@ class _FilterApplyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(20.w),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           top: BorderSide(color: AppColors.borderLight, width: 1),
         ),
@@ -331,7 +331,7 @@ class _FilterApplyButton extends StatelessWidget {
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               elevation: 0,
             ),

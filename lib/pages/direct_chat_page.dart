@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
@@ -12,12 +13,14 @@ import 'package:go_nomads_app/features/chat/domain/entities/chat.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/chat_state_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/pages/flutter_map_picker_page.dart';
+import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/services/image_upload_service.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/chat_more_options_sheet.dart';
 import 'package:go_nomads_app/widgets/chat_voice.dart';
+import 'package:go_nomads_app/widgets/report_dialog.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 import 'package:image_picker/image_picker.dart';
@@ -85,10 +88,10 @@ class _DirectChatPageState extends State<DirectChatPage> {
   Widget build(BuildContext context) {
     // 显示连接动画
     if (_isConnecting) {
-      return _DirectChatLoadingView(
-        userName: widget.user.name,
-        userAvatar: widget.user.avatarUrl,
-        onBack: () => Get.back(),
+      return const Scaffold(
+        body: SafeArea(
+          child: AppSceneLoading(scene: AppLoadingScene.meetupDetail, fullScreen: true),
+        ),
       );
     }
 
@@ -98,306 +101,6 @@ class _DirectChatPageState extends State<DirectChatPage> {
       controller: _chatController,
     );
   }
-}
-
-// ==================== 加载动画视图 ====================
-
-/// 私聊加载动画视图
-class _DirectChatLoadingView extends StatefulWidget {
-  final String userName;
-  final String? userAvatar;
-  final VoidCallback onBack;
-
-  const _DirectChatLoadingView({
-    required this.userName,
-    this.userAvatar,
-    required this.onBack,
-  });
-
-  @override
-  State<_DirectChatLoadingView> createState() => _DirectChatLoadingViewState();
-}
-
-class _DirectChatLoadingViewState extends State<_DirectChatLoadingView> with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _bubbleController;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _rotationAnimation;
-
-  // 漂浮气泡数据
-  final List<_FloatingBubble> _bubbles = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _initAnimations();
-    _generateBubbles();
-  }
-
-  void _initAnimations() {
-    // 脉冲动画
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    // 气泡漂浮动画
-    _bubbleController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat();
-
-    _rotationAnimation = Tween<double>(begin: 0, end: 2 * 3.14159).animate(
-      CurvedAnimation(parent: _bubbleController, curve: Curves.linear),
-    );
-  }
-
-  void _generateBubbles() {
-    final random = DateTime.now().millisecondsSinceEpoch;
-    for (int i = 0; i < 8; i++) {
-      _bubbles.add(_FloatingBubble(
-        x: ((random + i * 137) % 100) / 100,
-        y: ((random + i * 251) % 100) / 100,
-        size: 20 + ((random + i * 73) % 30).toDouble(),
-        speed: 0.3 + ((random + i * 41) % 50) / 100,
-        icon: _chatIcons[i % _chatIcons.length],
-      ));
-    }
-  }
-
-  static const List<IconData> _chatIcons = [
-    FontAwesomeIcons.heart,
-    FontAwesomeIcons.message,
-    FontAwesomeIcons.faceSmile,
-    FontAwesomeIcons.star,
-    FontAwesomeIcons.bolt,
-    FontAwesomeIcons.fire,
-    FontAwesomeIcons.handPeace,
-    FontAwesomeIcons.paperPlane,
-  ];
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _bubbleController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFFFC00), // 黄色主题（Snapchat 风格）
-              Color(0xFFFFE600),
-              Color(0xFFFFD700),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // 漂浮气泡背景
-              ..._buildFloatingBubbles(),
-
-              // 返回按钮
-              Positioned(
-                top: 8,
-                left: 8,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
-                  onPressed: widget.onBack,
-                ),
-              ),
-
-              // 中心加载动画
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // 脉冲圆环动画 + 用户头像
-                    AnimatedBuilder(
-                      animation: _pulseController,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _pulseAnimation.value,
-                          child: Container(
-                            width: 140,
-                            height: 140,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                width: 3,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: AnimatedBuilder(
-                                animation: _rotationAnimation,
-                                builder: (context, child) {
-                                  return Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      // 旋转光环
-                                      Transform.rotate(
-                                        angle: _rotationAnimation.value,
-                                        child: Container(
-                                          width: 110,
-                                          height: 110,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            gradient: SweepGradient(
-                                              colors: [
-                                                Colors.black.withValues(alpha: 0.3),
-                                                Colors.black.withValues(alpha: 0.05),
-                                                Colors.black.withValues(alpha: 0.3),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      // 用户头像
-                                      SafeCircleAvatar(
-                                        imageUrl: widget.userAvatar,
-                                        radius: 45,
-                                        backgroundColor: Colors.white,
-                                        errorWidget: const Icon(
-                                          FontAwesomeIcons.user,
-                                          color: Colors.black54,
-                                          size: 36,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // 用户名称
-                    Text(
-                      widget.userName,
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 加载文字动画
-                    _buildLoadingText(),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Widget> _buildFloatingBubbles() {
-    return _bubbles.map((bubble) {
-      return AnimatedBuilder(
-        animation: _bubbleController,
-        builder: (context, child) {
-          final progress = (_bubbleController.value + bubble.speed) % 1.0;
-          final yOffset = progress * 200 - 100;
-          final xWave = 20 * (0.5 - (progress - 0.5).abs());
-
-          return Positioned(
-            left: bubble.x * MediaQuery.of(context).size.width + xWave,
-            top: bubble.y * MediaQuery.of(context).size.height + yOffset,
-            child: Opacity(
-              opacity: 0.3 + 0.3 * (1 - (progress - 0.5).abs() * 2),
-              child: Icon(
-                bubble.icon,
-                color: Colors.black54,
-                size: bubble.size,
-              ),
-            ),
-          );
-        },
-      );
-    }).toList();
-  }
-
-  Widget _buildLoadingText() {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        final dotCount = (_pulseController.value * 3).floor() + 1;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              '正在连接',
-              style: TextStyle(
-                color: Colors.black54,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(
-              width: 30,
-              child: Text(
-                '.' * dotCount,
-                style: const TextStyle(
-                  color: Colors.black54,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// 漂浮气泡数据类
-class _FloatingBubble {
-  final double x;
-  final double y;
-  final double size;
-  final double speed;
-  final IconData icon;
-
-  _FloatingBubble({
-    required this.x,
-    required this.y,
-    required this.size,
-    required this.speed,
-    required this.icon,
-  });
 }
 
 // ==================== 聊天视图 ====================
@@ -488,8 +191,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
                     right: 0,
                     bottom: 0,
                     child: Container(
-                      width: 14,
-                      height: 14,
+                      width: 14.w,
+                      height: 14.h,
                       decoration: BoxDecoration(
                         color: const Color(0xFF00D856),
                         shape: BoxShape.circle,
@@ -499,24 +202,24 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   ),
                 ],
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       widget.user.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.black,
-                        fontSize: 17,
+                        fontSize: 17.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      widget.user.currentCity ?? '在线',
-                      style: const TextStyle(
+                      widget.user.currentCity ?? AppLocalizations.of(context)!.online,
+                      style: TextStyle(
                         color: Color(0xFF666666),
-                        fontSize: 13,
+                        fontSize: 13.sp,
                       ),
                     ),
                   ],
@@ -527,15 +230,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         ),
         actions: [
           // TODO: 暂时隐藏视频通话按钮，功能待完善后启用
-          // IconButton(
-          //   icon: const Icon(FontAwesomeIcons.video, color: Colors.black, size: 28),
-          //   onPressed: () => AppToast.info('视频通话功能即将推出'),
-          // ),
           // TODO: 暂时隐藏语音通话按钮，功能待完善后启用
-          // IconButton(
-          //   icon: const Icon(FontAwesomeIcons.phone, color: Colors.black, size: 24),
-          //   onPressed: () => AppToast.info('语音通话功能即将推出'),
-          // ),
           PopupMenuButton<String>(
             icon: const Icon(FontAwesomeIcons.ellipsisVertical, color: Colors.black),
             onSelected: (value) {
@@ -553,6 +248,14 @@ class _DirectChatViewState extends State<_DirectChatView> {
                 case 'block':
                   _showBlockDialog(widget.user.name, context);
                   break;
+                case 'report':
+                  ReportDialog.show(
+                    context: context,
+                    contentType: ReportContentType.user,
+                    targetId: widget.user.id,
+                    targetName: widget.user.name,
+                  );
+                  break;
               }
             },
             itemBuilder: (context) {
@@ -562,8 +265,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   value: 'profile',
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.user, size: 20),
-                      const SizedBox(width: 12),
+                      Icon(FontAwesomeIcons.user, size: 20.r),
+                      SizedBox(width: 12.w),
                       Text(l10n.viewProfile),
                     ],
                   ),
@@ -572,8 +275,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   value: 'mute',
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.bellSlash, size: 20),
-                      const SizedBox(width: 12),
+                      Icon(FontAwesomeIcons.bellSlash, size: 20.r),
+                      SizedBox(width: 12.w),
                       Text(l10n.muteNotifications),
                     ],
                   ),
@@ -582,9 +285,19 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   value: 'block',
                   child: Row(
                     children: [
-                      const Icon(FontAwesomeIcons.ban, size: 20, color: Colors.red),
-                      const SizedBox(width: 12),
+                      Icon(FontAwesomeIcons.ban, size: 20.r, color: Colors.red),
+                      SizedBox(width: 12.w),
                       Text(l10n.blockUser, style: const TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(FontAwesomeIcons.flag, size: 20.r, color: Colors.orange),
+                      SizedBox(width: 12.w),
+                      Text(l10n.reportUser, style: const TextStyle(color: Colors.orange)),
                     ],
                   ),
                 ),
@@ -594,51 +307,51 @@ class _DirectChatViewState extends State<_DirectChatView> {
         ],
       ),
       body: Obx(() {
-        if (controller.isLoading) {
-          return const MessagesSkeleton();
-        }
-
         final currentUserId = _currentUserId;
 
-        return Column(
-          children: [
-            // Messages
-            Expanded(
-              child: controller.messages.isEmpty && _uploadingImages.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      reverse: true,
-                      padding: const EdgeInsets.all(16),
-                      itemCount: controller.messages.length + _uploadingImages.length,
-                      itemBuilder: (context, index) {
-                        // 先显示上传中的图片（在最底部/最新位置）
-                        if (index < _uploadingImages.length) {
-                          final uploadingImage = _uploadingImages[_uploadingImages.length - 1 - index];
-                          return _buildUploadingImageBubble(uploadingImage);
-                        }
-                        // 然后显示已发送的消息
-                        final messageIndex = index - _uploadingImages.length;
-                        final message = controller.messages[messageIndex];
-                        final isMe = currentUserId != null && message.author.userId == currentUserId;
-                        return _buildMessageBubble(message, isMe, controller);
-                      },
-                    ),
-            ),
+        return AppLoadingSwitcher(
+          isLoading: controller.isLoading,
+          loading: const MessagesSkeleton(),
+          child: Column(
+            children: [
+              // Messages
+              Expanded(
+                child: controller.messages.isEmpty && _uploadingImages.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.builder(
+                        reverse: true,
+                        padding: EdgeInsets.all(16.w),
+                        itemCount: controller.messages.length + _uploadingImages.length,
+                        itemBuilder: (context, index) {
+                          // 先显示上传中的图片（在最底部/最新位置）
+                          if (index < _uploadingImages.length) {
+                            final uploadingImage = _uploadingImages[_uploadingImages.length - 1 - index];
+                            return _buildUploadingImageBubble(uploadingImage);
+                          }
+                          // 然后显示已发送的消息
+                          final messageIndex = index - _uploadingImages.length;
+                          final message = controller.messages[messageIndex];
+                          final isMe = currentUserId != null && message.author.userId == currentUserId;
+                          return _buildMessageBubble(message, isMe, controller);
+                        },
+                      ),
+              ),
 
-            // Reply Preview
-            Obx(() {
-              if (controller.replyTo != null) {
-                return _buildReplyPreview(controller);
-              }
-              return const SizedBox.shrink();
-            }),
+              // Reply Preview
+              Obx(() {
+                if (controller.replyTo != null) {
+                  return _buildReplyPreview(controller);
+                }
+                return const SizedBox.shrink();
+              }),
 
-            // Input
-            _buildMessageInput(controller),
+              // Input
+              _buildMessageInput(controller),
 
-            // Emoji Panel
-            if (_showEmojiPanel) _buildEmojiPanel(),
-          ],
+              // Emoji Panel
+              if (_showEmojiPanel) _buildEmojiPanel(),
+            ],
+          ),
         );
       }),
     );
@@ -655,15 +368,15 @@ class _DirectChatViewState extends State<_DirectChatView> {
             children: [
               Icon(
                 FontAwesomeIcons.message,
-                size: 64,
+                size: 64.r,
                 color: const Color(0xFF6b7280).withValues(alpha: 0.3),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
                 l10n.startConversation,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF6b7280),
-                  fontSize: 16,
+                  fontSize: 16.sp,
                 ),
               ),
             ],
@@ -682,7 +395,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         }
       },
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 16),
+        padding: EdgeInsets.only(bottom: 16.h),
         child: Row(
           mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -698,7 +411,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   backgroundColor: Colors.grey[200],
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
             ],
             Flexible(
               child: Column(
@@ -708,7 +421,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.7,
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       gradient: isMe
                           ? const LinearGradient(
@@ -721,13 +434,13 @@ class _DirectChatViewState extends State<_DirectChatView> {
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(isMe ? 20 : 4),
                         topRight: Radius.circular(isMe ? 4 : 20),
-                        bottomLeft: const Radius.circular(20),
-                        bottomRight: const Radius.circular(20),
+                        bottomLeft: Radius.circular(20.r),
+                        bottomRight: Radius.circular(20.r),
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: (isMe ? const Color(0xFFFF3838) : Colors.black).withValues(alpha: isMe ? 0.2 : 0.05),
-                          blurRadius: 8,
+                          blurRadius: 8.r,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -738,12 +451,12 @@ class _DirectChatViewState extends State<_DirectChatView> {
                         // Reply preview in message
                         if (message.replyTo?.message != null) ...[
                           Container(
-                            padding: const EdgeInsets.all(10),
-                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: EdgeInsets.all(10.w),
+                            margin: EdgeInsets.only(bottom: 8.h),
                             decoration: BoxDecoration(
                               color:
                                   (isMe ? Colors.white : const Color(0xFF666666)).withValues(alpha: isMe ? 0.2 : 0.1),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(8.r),
                               border: Border.all(
                                 color: (isMe ? Colors.white : const Color(0xFF666666)).withValues(alpha: 0.3),
                               ),
@@ -754,18 +467,18 @@ class _DirectChatViewState extends State<_DirectChatView> {
                                 Text(
                                   message.replyTo!.userName,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     fontWeight: FontWeight.bold,
                                     color: isMe ? Colors.white.withValues(alpha: 0.9) : const Color(0xFF333333),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4.h),
                                 Text(
                                   message.replyTo!.message,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 12.sp,
                                     color: isMe ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF666666),
                                   ),
                                 ),
@@ -777,13 +490,13 @@ class _DirectChatViewState extends State<_DirectChatView> {
                         // Message content
                         _buildMessageContent(message, isMe),
 
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
 
                         // Timestamp
                         Text(
                           _formatTime(message.timestamp),
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             color: isMe ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF999999),
                           ),
                         ),
@@ -794,11 +507,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
               ),
             ),
             if (isMe) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               // 已读/未读状态
               Icon(
                 FontAwesomeIcons.circleCheck,
-                size: 16,
+                size: 16.r,
                 color: const Color(0xFF00D856).withValues(alpha: 0.8),
               ),
             ],
@@ -813,7 +526,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     final hasError = uploadingImage.errorMessage != null;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -823,30 +536,30 @@ class _DirectChatViewState extends State<_DirectChatView> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  constraints: const BoxConstraints(
-                    maxWidth: 200,
-                    maxHeight: 200,
+                  constraints: BoxConstraints(
+                    maxWidth: 200.w,
+                    maxHeight: 200.h,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFF3838).withValues(alpha: 0.2),
-                        blurRadius: 8,
+                        blurRadius: 8.r,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     child: Stack(
                       children: [
                         // 本地图片预览
                         Image.file(
                           File(uploadingImage.localPath),
                           fit: BoxFit.cover,
-                          width: 150,
-                          height: 150,
+                          width: 150.w,
+                          height: 150.h,
                         ),
 
                         // 上传进度遮罩
@@ -865,24 +578,24 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   ),
                 ),
 
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
 
                 // 状态文字
                 Text(
-                  hasError ? uploadingImage.errorMessage! : '上传中...',
+                  hasError ? uploadingImage.errorMessage! : AppLocalizations.of(context)!.uploading,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: hasError ? const Color(0xFFFF3838) : const Color(0xFF999999),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           // 上传状态图标
           Icon(
             hasError ? FontAwesomeIcons.circleExclamation : FontAwesomeIcons.cloudArrowUp,
-            size: 16,
+            size: 16.r,
             color: hasError
                 ? const Color(0xFFFF3838).withValues(alpha: 0.8)
                 : const Color(0xFFFF3838).withValues(alpha: 0.5),
@@ -898,8 +611,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 50,
-          height: 50,
+          width: 50.w,
+          height: 50.h,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -911,9 +624,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
               ),
               Text(
                 '${(uploadingImage.progress * 100).toInt()}%',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -926,15 +639,16 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 构建上传错误遮罩
   Widget _buildUploadErrorOverlay(_UploadingImage uploadingImage) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
+        Icon(
           FontAwesomeIcons.circleExclamation,
           color: Colors.white,
-          size: 24,
+          size: 24.r,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -942,37 +656,37 @@ class _DirectChatViewState extends State<_DirectChatView> {
             GestureDetector(
               onTap: () => _retryUpload(uploadingImage),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(FontAwesomeIcons.arrowRotateRight, size: 12, color: Color(0xFFFF3838)),
-                    SizedBox(width: 4),
-                    Text('重试', style: TextStyle(fontSize: 12, color: Color(0xFFFF3838))),
+                    Icon(FontAwesomeIcons.arrowRotateRight, size: 12.r, color: Color(0xFFFF3838)),
+                    SizedBox(width: 4.w),
+                    Text(l10n.retry, style: TextStyle(fontSize: 12.sp, color: Color(0xFFFF3838))),
                   ],
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             // 取消按钮
             GestureDetector(
               onTap: () => _removeUploadingImage(uploadingImage.id),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(FontAwesomeIcons.xmark, size: 12, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text('取消', style: TextStyle(fontSize: 12, color: Colors.white)),
+                    Icon(FontAwesomeIcons.xmark, size: 12.r, color: Colors.white),
+                    SizedBox(width: 4.w),
+                    Text(l10n.cancel, style: TextStyle(fontSize: 12.sp, color: Colors.white)),
                   ],
                 ),
               ),
@@ -990,7 +704,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           decoration: BoxDecoration(
             color: const Color(0xFFF3F4F6),
             border: Border(
@@ -1000,33 +714,33 @@ class _DirectChatViewState extends State<_DirectChatView> {
           child: Row(
             children: [
               Container(
-                width: 3,
-                height: 40,
+                width: 3.w,
+                height: 40.h,
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF4458),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '${l10n.reply} ${replyTo.author.userName}',
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFFF4458),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       replyTo.message,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: TextStyle(
+                        fontSize: 13.sp,
                         color: Color(0xFF6b7280),
                       ),
                     ),
@@ -1034,7 +748,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                 ),
               ),
               IconButton(
-                icon: const Icon(FontAwesomeIcons.xmark, size: 20),
+                icon: Icon(FontAwesomeIcons.xmark, size: 20.r),
                 onPressed: () => controller.clearReplyTo(),
               ),
             ],
@@ -1050,7 +764,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
       builder: (context) {
         final l10n = AppLocalizations.of(context)!;
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           decoration: const BoxDecoration(
             color: Color(0xFFF7F7F7),
             border: Border(top: BorderSide(color: Color(0xFFE5E5E5))),
@@ -1072,20 +786,20 @@ class _DirectChatViewState extends State<_DirectChatView> {
                     });
                   },
                   child: Container(
-                    width: 36,
-                    height: 36,
+                    width: 36.w,
+                    height: 36.h,
                     decoration: BoxDecoration(
                       color: _isVoiceMode ? const Color(0xFFFF3838) : Colors.white,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(6.r),
                     ),
                     child: Icon(
                       _isVoiceMode ? FontAwesomeIcons.keyboard : FontAwesomeIcons.microphone,
                       color: _isVoiceMode ? Colors.white : const Color(0xFF666666),
-                      size: 16,
+                      size: 16.r,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 // 输入框或录音按钮
                 Expanded(
                   child: _isVoiceMode
@@ -1095,26 +809,26 @@ class _DirectChatViewState extends State<_DirectChatView> {
                         )
                       : _buildTextInputField(l10n, controller),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 // 表情按钮（非语音模式且无文字时显示）
                 if (!_isVoiceMode && _messageController.text.trim().isEmpty) ...[
                   GestureDetector(
                     onTap: _toggleEmojiPanel,
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 36.w,
+                      height: 36.h,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Icon(
                         _showEmojiPanel ? FontAwesomeIcons.keyboard : FontAwesomeIcons.faceSmile,
                         color: const Color(0xFF666666),
-                        size: 16,
+                        size: 16.r,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                 ],
                 // 发送按钮或更多按钮
                 if (!_isVoiceMode && _messageController.text.trim().isNotEmpty)
@@ -1127,16 +841,16 @@ class _DirectChatViewState extends State<_DirectChatView> {
                       }
                     },
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 36.w,
+                      height: 36.h,
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF3838),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6.r),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         FontAwesomeIcons.paperPlane,
                         color: Colors.white,
-                        size: 14,
+                        size: 14.r,
                       ),
                     ),
                   )
@@ -1150,16 +864,16 @@ class _DirectChatViewState extends State<_DirectChatView> {
                       ),
                     ),
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 36.w,
+                      height: 36.h,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(6.r),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         FontAwesomeIcons.plus,
                         color: Color(0xFF666666),
-                        size: 16,
+                        size: 16.r,
                       ),
                     ),
                   ),
@@ -1174,11 +888,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
   /// 构建文字输入框
   Widget _buildTextInputField(AppLocalizations l10n, ChatStateController controller) {
     return Container(
-      height: 36,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: 36.h,
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(6.r),
       ),
       child: TextField(
         controller: _messageController,
@@ -1191,33 +905,34 @@ class _DirectChatViewState extends State<_DirectChatView> {
         onChanged: (_) => setState(() {}),
         decoration: InputDecoration(
           hintText: l10n.typeMessage,
-          hintStyle: const TextStyle(
+          hintStyle: TextStyle(
             color: Color(0xFF999999),
-            fontSize: 15,
+            fontSize: 15.sp,
           ),
           border: InputBorder.none,
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+          contentPadding: EdgeInsets.symmetric(vertical: 8.h),
         ),
         maxLines: 1,
         textCapitalization: TextCapitalization.sentences,
-        style: const TextStyle(fontSize: 15),
+        style: TextStyle(fontSize: 15.sp),
       ),
     );
   }
 
   String _formatTime(DateTime time) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(time);
 
     if (difference.inMinutes < 1) {
-      return 'Just now';
+      return l10n.directChatJustNow;
     } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m ago';
+      return l10n.directChatMinutesAgo(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return '${difference.inHours}h ago';
+      return l10n.directChatHoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
+      return l10n.directChatDaysAgo(difference.inDays);
     } else {
       return '${time.day}/${time.month}/${time.year}';
     }
@@ -1253,9 +968,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 选择位置
   Future<void> _pickLocation() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final result = await Get.to<Map<String, dynamic>>(
-        () => const FlutterMapPickerPage(),
+        () => const MapPickerPage(),
+        binding: MapPickerBinding(),
       );
       if (result != null) {
         final lat = result['latitude'] as double?;
@@ -1263,23 +980,24 @@ class _DirectChatViewState extends State<_DirectChatView> {
         final address = result['address'] as String?;
         if (lat != null && lng != null) {
           widget.controller.sendMessage(
-            address ?? '位置',
+            address ?? l10n.location,
             messageType: 'location',
             attachment: {
               'latitude': lat,
               'longitude': lng,
-              'locationName': address ?? '位置',
+              'locationName': address ?? l10n.location,
             },
           );
         }
       }
     } catch (e) {
-      AppToast.error('选择位置失败: $e');
+      AppToast.error(l10n.directChatPickLocationFailed(e.toString()));
     }
   }
 
   /// 发送文件消息
   Future<void> _sendFile(PlatformFile platformFile) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final file = File(platformFile.path!);
       final imageUploadService = ImageUploadService();
@@ -1302,7 +1020,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         },
       );
     } catch (e) {
-      AppToast.error('发送文件失败: $e');
+      AppToast.error(l10n.directChatSendFileFailed(e.toString()));
     }
   }
 
@@ -1325,10 +1043,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 发送语音消息
   Future<void> _sendVoiceMessage(String localPath, int duration) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final file = File(localPath);
       if (!file.existsSync()) {
-        AppToast.error('语音文件不存在');
+        AppToast.error(l10n.directChatVoiceFileMissing);
         return;
       }
 
@@ -1340,7 +1059,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
       );
 
       widget.controller.sendMessage(
-        '语音消息',
+        l10n.directChatVoiceMessageText,
         messageType: 'voice',
         attachment: {
           'url': voiceUrl,
@@ -1355,7 +1074,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
         debugPrint('⚠️ 删除临时语音文件失败: $e');
       }
     } catch (e) {
-      AppToast.error('发送语音失败: $e');
+      AppToast.error(l10n.directChatSendVoiceFailed(e.toString()));
     }
   }
 
@@ -1412,15 +1131,16 @@ class _DirectChatViewState extends State<_DirectChatView> {
     } catch (e) {
       debugPrint('❌ 图片上传失败: $e');
       // 标记上传失败
-      String errorMsg = '上传失败';
+      final l10n = AppLocalizations.of(context)!;
+      String errorMsg = l10n.uploadFailed;
       if (e.toString().contains('Bucket not found')) {
-        errorMsg = '存储服务错误';
+        errorMsg = l10n.storageServiceError;
       } else if (e.toString().contains('not authenticated')) {
-        errorMsg = '请重新登录';
+        errorMsg = l10n.pleaseReLogin;
       } else if (e.toString().contains('未初始化')) {
-        errorMsg = '请重启应用';
+        errorMsg = l10n.pleaseRestartApp;
       } else if (e.toString().contains('network') || e.toString().contains('Connection')) {
-        errorMsg = '网络错误';
+        errorMsg = l10n.networkError;
       }
 
       setState(() {
@@ -1523,7 +1243,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     return Text(
       message.message,
       style: TextStyle(
-        fontSize: 16,
+        fontSize: 16.sp,
         color: isMe ? Colors.white : const Color(0xFF1a1a1a),
         height: 1.4,
       ),
@@ -1537,13 +1257,13 @@ class _DirectChatViewState extends State<_DirectChatView> {
       onTap: () => _showMapPicker(
         attachment.latitude!,
         attachment.longitude!,
-        attachment.locationName ?? '位置',
+        attachment.locationName ?? AppLocalizations.of(context)!.location,
       ),
       child: Container(
-        width: 200,
+        width: 200.w,
         decoration: BoxDecoration(
           color: isMe ? Colors.white.withValues(alpha: 0.2) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12.r),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1551,36 +1271,36 @@ class _DirectChatViewState extends State<_DirectChatView> {
           children: [
             // 地图预览
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
               child: Container(
-                width: 200,
-                height: 100,
+                width: 200.w,
+                height: 100.h,
                 color: const Color(0xFFE8F5E9),
                 child: Stack(
                   children: [
                     Image.network(
                       'https://staticmap.openstreetmap.de/staticmap.php?center=${attachment.latitude},${attachment.longitude}&zoom=15&size=200x100&markers=${attachment.latitude},${attachment.longitude},red-pushpin',
                       fit: BoxFit.cover,
-                      width: 200,
-                      height: 100,
+                      width: 200.w,
+                      height: 100.h,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: const Color(0xFFE8F5E9),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               FontAwesomeIcons.mapLocationDot,
                               color: Color(0xFF4CAF50),
-                              size: 32,
+                              size: 32.r,
                             ),
                           ),
                         );
                       },
                     ),
-                    const Center(
+                    Center(
                       child: Icon(
                         FontAwesomeIcons.locationDot,
                         color: Color(0xFFE53935),
-                        size: 24,
+                        size: 24.r,
                       ),
                     ),
                   ],
@@ -1589,20 +1309,20 @@ class _DirectChatViewState extends State<_DirectChatView> {
             ),
             // 位置名称
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.w),
               child: Row(
                 children: [
                   Icon(
                     FontAwesomeIcons.locationDot,
                     color: isMe ? Colors.white70 : const Color(0xFF666666),
-                    size: 12,
+                    size: 12.r,
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6.w),
                   Expanded(
                     child: Text(
-                      attachment.locationName ?? '位置',
+                      attachment.locationName ?? AppLocalizations.of(context)!.location,
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         color: isMe ? Colors.white : Colors.black87,
                       ),
                       maxLines: 1,
@@ -1625,7 +1345,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     final voiceUrl = attachment?.url ?? '';
 
     if (voiceUrl.isEmpty) {
-      return const Text('语音消息不可用');
+      return Text(AppLocalizations.of(context)!.directChatVoiceMessageUnavailable);
     }
 
     return ChatVoiceMessageSimple(
@@ -1640,7 +1360,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
   /// 构建文件消息内容
   Widget _buildFileMessageContent(ChatMessage message, bool isMe) {
     final attachment = message.attachment;
-    final fileName = attachment?.fileName ?? '文件';
+    final fileName = attachment?.fileName ?? AppLocalizations.of(context)!.directChatFileFallback;
     final fileSize = attachment?.fileSize ?? 0;
 
     return GestureDetector(
@@ -1655,9 +1375,9 @@ class _DirectChatViewState extends State<_DirectChatView> {
           Icon(
             FontAwesomeIcons.file,
             color: isMe ? Colors.white70 : const Color(0xFF666666),
-            size: 28,
+            size: 28.r,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Flexible(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1666,17 +1386,17 @@ class _DirectChatViewState extends State<_DirectChatView> {
                 Text(
                   fileName,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     color: isMe ? Colors.white : Colors.black87,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   _formatFileSize(fileSize),
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     color: isMe ? Colors.white60 : const Color(0xFF999999),
                   ),
                 ),
@@ -1697,90 +1417,91 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 显示地图APP选择器
   void _showMapPicker(double latitude, double longitude, String name) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
       ),
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 36,
-              height: 4,
+              margin: EdgeInsets.only(top: 8.h),
+              width: 36.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.all(16),
+            Padding(
+              padding: EdgeInsets.all(16.w),
               child: Text(
-                '选择地图导航',
+                l10n.directChatChooseMapNavigation,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
               ),
             ),
-            const Divider(height: 1),
+            Divider(height: 1),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.apple,
-              title: 'Apple 地图',
+              title: l10n.directChatMapApple,
               iconColor: Colors.black87,
               onTap: () => _openAppleMaps(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.google,
-              title: 'Google 地图',
+              title: l10n.directChatMapGoogle,
               iconColor: const Color(0xFF4285F4),
               onTap: () => _openGoogleMaps(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.locationArrow,
-              title: '高德地图',
+              title: l10n.directChatMapAmap,
               iconColor: const Color(0xFF0091FF),
               onTap: () => _openAmap(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.mapPin,
-              title: '百度地图',
+              title: l10n.directChatMapBaidu,
               iconColor: const Color(0xFF3385FF),
               onTap: () => _openBaiduMap(latitude, longitude, name),
             ),
             _DirectMapAppOption(
               icon: FontAwesomeIcons.mapLocation,
-              title: '腾讯地图',
+              title: l10n.directChatMapTencent,
               iconColor: const Color(0xFF12B7F5),
               onTap: () => _openTencentMap(latitude, longitude, name),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
                   backgroundColor: Colors.grey[100],
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
                 ),
-                child: const Text(
-                  '取消',
+                child: Text(
+                  l10n.cancel,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     color: Colors.black54,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
           ],
         ),
       ),
@@ -1793,7 +1514,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('Apple 地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapApple);
     }
   }
 
@@ -1803,7 +1524,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('Google 地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapGoogle);
     }
   }
 
@@ -1814,7 +1535,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('高德地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapAmap);
     }
   }
 
@@ -1825,7 +1546,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('百度地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapBaidu);
     }
   }
 
@@ -1835,12 +1556,13 @@ class _DirectChatViewState extends State<_DirectChatView> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      _showMapError('腾讯地图');
+      _showMapError(AppLocalizations.of(context)!.directChatMapTencent);
     }
   }
 
   void _showMapError(String mapName) {
-    AppToast.warning('未安装$mapName');
+    final l10n = AppLocalizations.of(context)!;
+    AppToast.warning(l10n.directChatMapNotInstalled(mapName));
   }
 
   /// 检查是否是图片 URL
@@ -1868,14 +1590,17 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
     return GestureDetector(
       onTap: () => _showFullScreenImage(imageUrl!),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          constraints: const BoxConstraints(
-            maxWidth: 200,
-            maxHeight: 200,
+      child: Hero(
+        tag: 'image_$imageUrl',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12.r),
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: 200.w,
+              maxHeight: 200.h,
+            ),
+            child: _buildNetworkImage(imageUrl),
           ),
-          child: _buildNetworkImage(imageUrl),
         ),
       ),
     );
@@ -1892,17 +1617,17 @@ class _DirectChatViewState extends State<_DirectChatView> {
           if (loadingProgress == null) return child;
           // 显示灰色占位框，带图片图标
           return Container(
-            width: 150,
-            height: 150,
+            width: 150.w,
+            height: 150.h,
             decoration: BoxDecoration(
               color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
-            child: const Center(
+            child: Center(
               child: Icon(
                 FontAwesomeIcons.image,
                 color: Colors.grey,
-                size: 40,
+                size: 40.r,
               ),
             ),
           );
@@ -1918,16 +1643,17 @@ class _DirectChatViewState extends State<_DirectChatView> {
 
   /// 构建图片占位符
   Widget _buildImagePlaceholder() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      width: 150,
-      height: 150,
+      width: 150.w,
+      height: 150.h,
       color: Colors.grey[200],
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FontAwesomeIcons.image, size: 40, color: Colors.grey),
-          SizedBox(height: 8),
-          Text('图片加载失败', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          Icon(FontAwesomeIcons.image, size: 40.r, color: Colors.grey),
+          SizedBox(height: 8.h),
+          Text(l10n.directChatImageLoadFailed, style: TextStyle(color: Colors.grey, fontSize: 12.sp)),
         ],
       ),
     );
@@ -1977,7 +1703,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
   /// 构建表情面板
   Widget _buildEmojiPanel() {
     return Container(
-      height: 260,
+      height: 260.h,
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
         border: Border(
@@ -1988,8 +1714,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
         children: [
           // 表情分类标签
           Container(
-            height: 44,
-            decoration: const BoxDecoration(
+            height: 44.h,
+            decoration: BoxDecoration(
               color: Colors.white,
               border: Border(
                 bottom: BorderSide(color: Color(0xFFE5E5E5), width: 0.5),
@@ -2007,7 +1733,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
                 const Spacer(),
                 // 删除按钮
                 IconButton(
-                  icon: const Icon(FontAwesomeIcons.deleteLeft, size: 20, color: Color(0xFF666666)),
+                  icon: Icon(FontAwesomeIcons.deleteLeft, size: 20.r, color: Color(0xFF666666)),
                   onPressed: () {
                     final text = _messageController.text;
                     if (text.isNotEmpty) {
@@ -2028,11 +1754,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
           // 表情网格
           Expanded(
             child: GridView.builder(
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              padding: EdgeInsets.all(8.w),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 8,
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 4,
+                mainAxisSpacing: 4.w,
+                crossAxisSpacing: 4.w,
               ),
               itemCount: _emojis.length,
               itemBuilder: (context, index) {
@@ -2041,11 +1767,11 @@ class _DirectChatViewState extends State<_DirectChatView> {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
                       _emojis[index],
-                      style: const TextStyle(fontSize: 28),
+                      style: TextStyle(fontSize: 28.sp),
                     ),
                   ),
                 );
@@ -2054,8 +1780,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
           ),
           // 发送按钮区域
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: const BoxDecoration(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            decoration: BoxDecoration(
               color: Colors.white,
               border: Border(
                 top: BorderSide(color: Color(0xFFE5E5E5), width: 0.5),
@@ -2079,12 +1805,12 @@ class _DirectChatViewState extends State<_DirectChatView> {
                     backgroundColor:
                         _messageController.text.trim().isEmpty ? const Color(0xFFE5E5E5) : const Color(0xFFFF3838),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.r),
                     ),
                   ),
-                  child: const Text('发送'),
+                  child: Text(AppLocalizations.of(context)!.send),
                 ),
               ],
             ),
@@ -2101,8 +1827,8 @@ class _DirectChatViewState extends State<_DirectChatView> {
         // TODO: 切换表情分类
       },
       child: Container(
-        width: 44,
-        height: 44,
+        width: 44.w,
+        height: 44.h,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           border: Border(
@@ -2112,7 +1838,7 @@ class _DirectChatViewState extends State<_DirectChatView> {
             ),
           ),
         ),
-        child: Text(emoji, style: const TextStyle(fontSize: 22)),
+        child: Text(emoji, style: TextStyle(fontSize: 22.sp)),
       ),
     );
   }
@@ -2170,93 +1896,159 @@ class _FullScreenImageViewer extends StatefulWidget {
   State<_FullScreenImageViewer> createState() => _FullScreenImageViewerState();
 }
 
-class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
+class _FullScreenImageViewerState extends State<_FullScreenImageViewer> with SingleTickerProviderStateMixin {
   final TransformationController _transformationController = TransformationController();
+  late AnimationController _animationController;
+  Animation<Matrix4>? _animation;
   double _currentScale = 1.0;
+  bool _showControls = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _animationController.addListener(() {
+      if (_animation != null) {
+        _transformationController.value = _animation!.value;
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _transformationController.dispose();
     super.dispose();
   }
 
+  /// 双击缩放
+  void _handleDoubleTap(TapDownDetails details) {
+    final position = details.localPosition;
+    final endScale = _currentScale > 1.0 ? 1.0 : 2.5;
+
+    final Matrix4 endMatrix;
+    if (endScale == 1.0) {
+      endMatrix = Matrix4.identity();
+    } else {
+      final tx = -position.dx * (endScale - 1);
+      final ty = -position.dy * (endScale - 1);
+      endMatrix = Matrix4.identity()
+        ..setEntry(0, 3, tx)
+        ..setEntry(1, 3, ty)
+        ..setEntry(0, 0, endScale)
+        ..setEntry(1, 1, endScale);
+    }
+
+    _animation = Matrix4Tween(
+      begin: _transformationController.value,
+      end: endMatrix,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _animationController.forward(from: 0);
+    setState(() => _currentScale = endScale);
+  }
+
+  /// 切换控制栏显示
+  void _toggleControls() {
+    setState(() => _showControls = !_showControls);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white, size: 28),
-          onPressed: () => Get.back(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.download, color: Colors.white, size: 20),
-            onPressed: () {
-              AppToast.info('保存功能即将推出');
-            },
-          ),
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.share, color: Colors.white, size: 20),
-            onPressed: () {
-              AppToast.info('分享功能即将推出');
-            },
-          ),
-        ],
-      ),
+      extendBodyBehindAppBar: true,
+      appBar: _showControls
+          ? AppBar(
+              backgroundColor: Colors.black.withValues(alpha: 0.5),
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.close, color: Colors.white, size: 28.r),
+                onPressed: () => Get.back(),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(FontAwesomeIcons.download, color: Colors.white, size: 20.r),
+                  onPressed: () {
+                    AppToast.info(l10n.directChatSaveComingSoon);
+                  },
+                ),
+                IconButton(
+                  icon: Icon(FontAwesomeIcons.share, color: Colors.white, size: 20.r),
+                  onPressed: () {
+                    AppToast.info(l10n.directChatShareComingSoon);
+                  },
+                ),
+              ],
+            )
+          : null,
       body: GestureDetector(
-        onTap: () => Get.back(),
-        child: Center(
-          child: InteractiveViewer(
-            transformationController: _transformationController,
-            minScale: 0.5,
-            maxScale: 4.0,
-            onInteractionEnd: (details) {
-              setState(() {
-                _currentScale = _transformationController.value.getMaxScaleOnAxis();
-              });
-            },
-            child: _buildFullScreenImage(),
+        onTap: _toggleControls,
+        onDoubleTapDown: _handleDoubleTap,
+        child: Container(
+          color: Colors.black,
+          child: Center(
+            child: Hero(
+              tag: 'image_${widget.imagePath}',
+              child: InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 4.0,
+                onInteractionEnd: (details) {
+                  setState(() {
+                    _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                  });
+                },
+                child: _buildFullScreenImage(),
+              ),
+            ),
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        color: Colors.black,
-        padding: const EdgeInsets.all(16),
-        child: SafeArea(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.magnifyingGlassMinus, color: Colors.white54, size: 20),
-                onPressed: () {
-                  _transformationController.value = Matrix4.identity();
-                  setState(() => _currentScale = 1.0);
-                },
+      bottomNavigationBar: _showControls
+          ? Container(
+              color: Colors.black.withValues(alpha: 0.5),
+              padding: EdgeInsets.all(16.w),
+              child: SafeArea(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: Icon(FontAwesomeIcons.magnifyingGlassMinus, color: Colors.white54, size: 20.r),
+                      onPressed: () {
+                        _transformationController.value = Matrix4.identity();
+                        setState(() => _currentScale = 1.0);
+                      },
+                    ),
+                    SizedBox(width: 16.w),
+                    Text(
+                      '${(_currentScale * 100).toInt()}%',
+                      style: TextStyle(color: Colors.white54, fontSize: 14.sp),
+                    ),
+                    SizedBox(width: 16.w),
+                    IconButton(
+                      icon: Icon(FontAwesomeIcons.magnifyingGlassPlus, color: Colors.white54, size: 20.r),
+                      onPressed: () {
+                        final currentScale = _transformationController.value.getMaxScaleOnAxis();
+                        if (currentScale < 4.0) {
+                          final newScale = currentScale + 0.5;
+                          _transformationController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
+                          setState(() => _currentScale = newScale);
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 16),
-              Text(
-                '${(_currentScale * 100).toInt()}%',
-                style: const TextStyle(color: Colors.white54, fontSize: 14),
-              ),
-              const SizedBox(width: 16),
-              IconButton(
-                icon: const Icon(FontAwesomeIcons.magnifyingGlassPlus, color: Colors.white54, size: 20),
-                onPressed: () {
-                  final currentScale = _transformationController.value.getMaxScaleOnAxis();
-                  if (currentScale < 4.0) {
-                    final newScale = currentScale + 0.5;
-                    _transformationController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
-                    setState(() => _currentScale = newScale);
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+            )
+          : null,
     );
   }
 
@@ -2289,14 +2081,14 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
   }
 
   Widget _buildErrorWidget() {
-    return const Column(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(FontAwesomeIcons.circleExclamation, size: 48, color: Colors.white54),
-        SizedBox(height: 16),
+        Icon(FontAwesomeIcons.circleExclamation, size: 48.r, color: Colors.white54),
+        SizedBox(height: 16.h),
         Text(
-          '无法加载图片',
-          style: TextStyle(color: Colors.white54, fontSize: 16),
+          AppLocalizations.of(context)!.cannotLoadImage,
+          style: TextStyle(color: Colors.white54, fontSize: 16.sp),
         ),
       ],
     );
@@ -2321,28 +2113,28 @@ class _DirectMapAppOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Container(
-        width: 44,
-        height: 44,
+        width: 44.w,
+        height: 44.h,
         decoration: BoxDecoration(
           color: iconColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
         ),
         child: Icon(
           icon,
           color: iconColor,
-          size: 22,
+          size: 22.r,
         ),
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          fontSize: 16,
+        style: TextStyle(
+          fontSize: 16.sp,
           color: Colors.black87,
         ),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         FontAwesomeIcons.chevronRight,
-        size: 14,
+        size: 14.r,
         color: Colors.grey,
       ),
       onTap: onTap,

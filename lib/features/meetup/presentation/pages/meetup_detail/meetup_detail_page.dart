@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail_controller.dart';
@@ -8,15 +11,17 @@ import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/w
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/widgets/meetup_image_carousel.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/widgets/meetup_organizer_section.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/widgets/meetup_time_location_section.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/create_meetup/create_meetup_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
+import 'package:go_nomads_app/utils/share_link_util.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
+import 'package:go_nomads_app/widgets/report_button.dart';
+import 'package:go_nomads_app/widgets/report_dialog.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// Meetup 详情页面
@@ -26,18 +31,20 @@ import 'package:intl/intl.dart';
 /// - 通过 Binding 注入依赖
 /// - 页面由多个小组件组成
 class MeetupDetailPage extends GetView<MeetupDetailController> {
-  final Meetup meetup;
+  final Meetup? meetup;
+  final String? meetupId;
 
   const MeetupDetailPage({
     super.key,
-    required this.meetup,
-  });
+    this.meetup,
+    this.meetupId,
+  }) : assert(meetup != null || meetupId != null, 'meetup or meetupId is required');
 
   @override
   Widget build(BuildContext context) {
     // 初始化 Controller 的数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.setInitialMeetup(meetup);
+      controller.ensureMeetupLoaded(initialMeetup: meetup, meetupId: meetupId);
     });
 
     return PopScope(
@@ -49,15 +56,39 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        body: CustomScrollView(
-          slivers: [
-            // 顶部图片和AppBar
-            _buildAppBar(context),
-            // 内容区域
-            _buildContent(),
-          ],
+        body: Obx(() {
+          if (controller.isLoading.value) {
+            return Stack(
+              children: [
+                const AppSceneLoading(
+                  scene: AppLoadingScene.meetupDetail,
+                  fullScreen: true,
+                ),
+                SafeArea(
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: SliverBackButton(
+                      onPressed: controller.handleBack,
+                      opacity: 0,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return CustomScrollView(
+            slivers: [
+              // 顶部图片和AppBar
+              _buildAppBar(context),
+              // 内容区域
+              _buildContent(),
+            ],
+          );
+        }),
+        bottomNavigationBar: Obx(
+          () => controller.isLoading.value ? const SizedBox.shrink() : const MeetupBottomActionBar(),
         ),
-        bottomNavigationBar: const MeetupBottomActionBar(),
       ),
     );
   }
@@ -87,12 +118,29 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
                   },
                 );
               },
-              size: 18,
+              size: 18.r,
             );
           }
           return const SizedBox.shrink();
         }),
         SliverShareButton(onPressed: () => _shareMeetup(context)),
+        // 举报按钮 - 非组织者可见
+        Obx(() {
+          if (!controller.isOrganizer) {
+            return SliverReportButton(
+              onPressed: () {
+                ReportDialog.show(
+                  context: context,
+                  contentType: ReportContentType.meetup,
+                  targetId: controller.meetup.value?.id ?? '',
+                  targetName: controller.meetup.value?.title,
+                );
+              },
+              tooltip: AppLocalizations.of(context)!.report,
+            );
+          }
+          return const SizedBox.shrink();
+        }),
         SizedBox(width: 8.w),
       ],
       flexibleSpace: const FlexibleSpaceBar(
@@ -104,44 +152,30 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
   /// 构建内容区域
   SliverToBoxAdapter _buildContent() {
     return SliverToBoxAdapter(
-      child: Obx(() {
-        // 显示加载指示器
-        if (controller.isLoading.value) {
-          return Container(
-            padding: EdgeInsets.all(40.w),
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFFFF4458),
-              ),
-            ),
-          );
-        }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 基本信息
+          const MeetupBasicInfoSection(),
+          SizedBox(height: 16.h),
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 基本信息
-            const MeetupBasicInfoSection(),
-            SizedBox(height: 16.h),
+          // 时间地点
+          const MeetupTimeLocationSection(),
+          SizedBox(height: 16.h),
 
-            // 时间地点
-            const MeetupTimeLocationSection(),
-            SizedBox(height: 16.h),
+          // 描述
+          const MeetupDescriptionSection(),
+          SizedBox(height: 16.h),
 
-            // 描述
-            const MeetupDescriptionSection(),
-            SizedBox(height: 16.h),
+          // 组织者信息
+          const MeetupOrganizerSection(),
+          SizedBox(height: 16.h),
 
-            // 组织者信息
-            const MeetupOrganizerSection(),
-            SizedBox(height: 16.h),
-
-            // 参与者列表
-            const MeetupAttendeesSection(),
-            SizedBox(height: 100.h),
-          ],
-        );
-      }),
+          // 参与者列表
+          const MeetupAttendeesSection(),
+          SizedBox(height: 100.h),
+        ],
+      ),
     );
   }
 
@@ -162,7 +196,7 @@ class MeetupDetailPage extends GetView<MeetupDetailController> {
         '${meetupData.description}';
 
     // 构建分享链接
-    final String shareUrl = 'https://nomadcities.app/meetups/${meetupData.id}';
+    final String shareUrl = ShareLinkUtil.meetupDetail(meetupData.id);
 
     // 显示分享底部抽屉
     ShareBottomSheet.show(

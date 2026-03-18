@@ -4,9 +4,11 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
+import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -84,6 +86,10 @@ class CityStateController extends PaginatedRefreshableController {
 
   // SignalR 订阅
   StreamSubscription<Map<String, dynamic>>? _cityImageUpdatedSubscription;
+  StreamSubscription<Map<String, dynamic>>? _cityModeratorUpdatedSubscription;
+
+  // 图片生成任务轮询回退 (cityId -> Timer)
+  final Map<String, Timer> _imageTaskPollingTimers = {};
 
   // 数据变更事件订阅
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
@@ -159,8 +165,16 @@ class CityStateController extends PaginatedRefreshableController {
   void onClose() {
     _cityImageUpdatedSubscription?.cancel();
     _cityImageUpdatedSubscription = null;
+    _cityModeratorUpdatedSubscription?.cancel();
+    _cityModeratorUpdatedSubscription = null;
     _dataChangedSubscription?.cancel();
     _dataChangedSubscription = null;
+
+    // 取消所有图片生成轮询定时器
+    for (final timer in _imageTaskPollingTimers.values) {
+      timer.cancel();
+    }
+    _imageTaskPollingTimers.clear();
 
     // 清理状态
     cities.clear();
@@ -214,7 +228,7 @@ class CityStateController extends PaginatedRefreshableController {
 
         // 非授权错误才显示 Toast
         if (exception is! UnauthorizedException) {
-          AppToast.error(exception.message, title: '加载失败');
+          AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.loadFailedTitle);
         }
 
         throw exception;
@@ -397,7 +411,7 @@ class CityStateController extends PaginatedRefreshableController {
 
     // 监听城市图片更新事件
     _cityImageUpdatedSubscription = signalRService.cityImageUpdatedStream.listen((data) {
-      log('🖼️ [CityController] 收到城市图片更新通知: $data');
+      log('🖼️ [CityController] 收到城市图片更新通知 (SignalR): $data');
 
       final cityId = data['cityId'] as String?;
       final success = data['success'] as bool? ?? false;
@@ -407,13 +421,17 @@ class CityStateController extends PaginatedRefreshableController {
         return;
       }
 
+      // 取消该城市的轮询定时器（SignalR 已收到，无需继续轮询）
+      _cancelPollingTimer(cityId);
+
       // 无论成功还是失败，都从生成中列表移除
       generatingImageCityIds.remove(cityId);
 
       if (!success) {
-        final errorMsg = data['errorMessage'] as String? ?? '图片生成失败';
+        final l10n = AppLocalizations.of(Get.context!)!;
+        final errorMsg = data['errorMessage'] as String? ?? l10n.imageGenFailedDefault;
         log('❌ [CityController] 城市图片生成失败: $errorMsg');
-        AppToast.error(errorMsg, title: '图片生成失败');
+        AppToast.error(errorMsg, title: l10n.imageGenFailed);
         return;
       }
 
@@ -423,7 +441,22 @@ class CityStateController extends PaginatedRefreshableController {
 
       // 显示成功提示
       final cityName = data['cityName'] as String? ?? '';
-      AppToast.success('$cityName 的图片已更新', title: '图片生成完成');
+      AppToast.success(AppLocalizations.of(Get.context!)!.cityImageUpdated(cityName),
+          title: AppLocalizations.of(Get.context!)!.imageGenComplete);
+    });
+
+    // 监听城市版主变更事件 (来自其他设备的审核操作)
+    _cityModeratorUpdatedSubscription = signalRService.cityModeratorUpdatedStream.listen((data) {
+      log('👤 [CityController] 收到城市版主变更通知: $data');
+
+      final cityId = data['cityId'] as String?;
+      if (cityId == null) {
+        log('⚠️ [CityController] 城市ID为空，忽略通知');
+        return;
+      }
+
+      // 仅更新版主字段（轻量接口）
+      _updateCityModeratorInList(cityId);
     });
 
     log('✅ [CityController] SignalR 城市图片更新监听已设置');
@@ -469,6 +502,68 @@ class CityStateController extends PaginatedRefreshableController {
       );
     } catch (e) {
       log('⚠️ [城市列表] 更新城市异常: $e');
+    }
+  }
+
+  /// 仅更新城市版主字段
+  Future<void> _updateCityModeratorInList(String cityId) async {
+    try {
+      log('📡 [城市列表] 开始获取城市版主摘要: $cityId');
+      final result = await _cityRepository.getCityModeratorSummary(cityId);
+      result.fold(
+        onSuccess: (summary) {
+          final index = cities.indexWhere((c) => c.id == cityId);
+          if (index != -1) {
+            cities[index] = cities[index].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            cities.refresh();
+          }
+
+          final recIndex = recommendedCities.indexWhere((c) => c.id == cityId);
+          if (recIndex != -1) {
+            recommendedCities[recIndex] = recommendedCities[recIndex].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            recommendedCities.refresh();
+          }
+
+          final popIndex = popularCities.indexWhere((c) => c.id == cityId);
+          if (popIndex != -1) {
+            popularCities[popIndex] = popularCities[popIndex].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            popularCities.refresh();
+          }
+
+          final favIndex = favoriteCities.indexWhere((c) => c.id == cityId);
+          if (favIndex != -1) {
+            favoriteCities[favIndex] = favoriteCities[favIndex].copyWith(
+              moderatorId: summary.moderatorId,
+              moderator: summary.moderator,
+              isCurrentUserModerator: summary.isCurrentUserModerator,
+              isCurrentUserAdmin: summary.isCurrentUserAdmin,
+            );
+            favoriteCities.refresh();
+          }
+
+          log('✅ [城市列表] 版主字段已更新: moderatorId=${summary.moderatorId}, moderator=${summary.moderator?.name}');
+        },
+        onFailure: (e) {
+          log('⚠️ [城市列表] 获取版主摘要失败: ${e.message}');
+        },
+      );
+    } catch (e) {
+      log('⚠️ [城市列表] 获取版主摘要异常: $e');
     }
   }
 
@@ -578,8 +673,15 @@ class CityStateController extends PaginatedRefreshableController {
 
   /// 切换城市收藏状态
   Future<bool> toggleFavorite(String cityId) async {
+    // 从本地列表获取已知收藏状态，避免额外 HTTP 请求
+    final city = cities.firstWhereOrNull((c) => c.id == cityId) ??
+        recommendedCities.firstWhereOrNull((c) => c.id == cityId) ??
+        popularCities.firstWhereOrNull((c) => c.id == cityId);
     final result = await _toggleCityFavoriteUseCase.execute(
-      ToggleCityFavoriteParams(cityId: cityId),
+      ToggleCityFavoriteParams(
+        cityId: cityId,
+        currentIsFavorited: city?.isFavorite,
+      ),
     );
 
     return result.fold(
@@ -598,7 +700,7 @@ class CityStateController extends PaginatedRefreshableController {
       },
       onFailure: (exception) {
         log('❌ 切换收藏失败: ${exception.message}');
-        AppToast.error(exception.message, title: '操作失败');
+        AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.operationFailed);
         return false;
       },
     );
@@ -708,33 +810,235 @@ class CityStateController extends PaginatedRefreshableController {
   ///
   /// [cityId] 城市ID
   /// 返回生成结果
+  ///
+  /// 1. 确保 SignalR 已连接（尝试重连）
+  /// 2. 调用后端 API 创建异步图片生成任务
+  /// 3. 启动轮询回退机制（防止 SignalR 未连接时永远卡在加载状态）
   Future<Result<Map<String, dynamic>>> generateCityImages(String cityId) async {
     log('🖼️ [CityStateController] 开始生成城市图片: $cityId');
 
     // 标记为正在生成
     generatingImageCityIds.add(cityId);
 
+    // 1. 确保 SignalR 已连接并加入用户组（最佳努力，不阻塞主流程）
+    _ensureSignalRForImageGeneration();
+
     try {
       final result = await _cityRepository.generateCityImages(cityId);
 
       return result.fold(
         onSuccess: (data) {
-          log('✅ [CityStateController] 图片生成任务已创建，等待 SignalR 通知');
-          // 注意：这里不移除 cityId，等待 SignalR 通知时再移除
+          log('✅ [CityStateController] 图片生成任务已创建，等待 SignalR 通知 + 轮询回退');
+
+          // 2. 提取 taskId，启动轮询回退
+          final taskId = data['data']?['taskId'] as String?;
+          if (taskId != null) {
+            _startImageTaskPolling(cityId, taskId);
+          } else {
+            log('⚠️ [CityStateController] 未获取到 taskId，无法启动轮询回退');
+            // 设置超时兜底：5 分钟后强制移除加载状态
+            _startTimeoutFallback(cityId);
+          }
+
           return Success(data);
         },
         onFailure: (exception) {
           log('❌ [CityStateController] 图片生成失败: ${exception.message}');
-          // 失败时移除
           generatingImageCityIds.remove(cityId);
           return Failure(exception);
         },
       );
     } catch (e) {
       log('💥 [CityStateController] 生成图片异常: $e');
-      // 异常时移除
       generatingImageCityIds.remove(cityId);
-      return Failure(UnknownException('生成图片失败: $e'));
+      return Failure(UnknownException(AppLocalizations.of(Get.context!)!.generateImageFailed(e.toString())));
+    }
+  }
+
+  /// 确保 SignalR 已连接（用于图片生成前）
+  void _ensureSignalRForImageGeneration() {
+    final signalRService = SignalRService();
+    if (signalRService.isConnected) return;
+
+    // 异步尝试重连，不阻塞主流程
+    Future.microtask(() async {
+      try {
+        final userId = _getCurrentUserId();
+        final connected = await signalRService.ensureConnected(
+          userId: userId,
+          maxRetries: 2,
+        );
+        if (connected) {
+          log('✅ [CityStateController] SignalR 重连成功');
+        } else {
+          log('⚠️ [CityStateController] SignalR 重连失败，将依赖轮询回退');
+        }
+      } catch (e) {
+        log('⚠️ [CityStateController] SignalR 重连异常: $e');
+      }
+    });
+  }
+
+  /// 获取当前用户 ID
+  String? _getCurrentUserId() {
+    try {
+      final authController = Get.find<AuthStateController>();
+      return authController.currentUser.value?.id;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 启动图片生成任务轮询（轮询回退机制）
+  ///
+  /// 每 5 秒查询一次任务状态，最多轮询 60 次（5 分钟）
+  /// 当 SignalR 事件先到达时，轮询定时器会被取消
+  void _startImageTaskPolling(String cityId, String taskId) {
+    // 取消之前的轮询（如果有）
+    _cancelPollingTimer(cityId);
+
+    log('⏰ [CityStateController] 启动图片生成轮询回退: cityId=$cityId, taskId=$taskId');
+
+    var pollCount = 0;
+    const maxPolls = 60; // 最多轮询 5 分钟 (60 * 5秒)
+    const pollInterval = Duration(seconds: 5);
+
+    _imageTaskPollingTimers[cityId] = Timer.periodic(pollInterval, (timer) async {
+      pollCount++;
+
+      // 如果已经不在生成列表中（SignalR 事件已处理），停止轮询
+      if (!generatingImageCityIds.contains(cityId)) {
+        log('ℹ️ [CityStateController] 轮询停止：城市 $cityId 已不在生成列表中');
+        timer.cancel();
+        _imageTaskPollingTimers.remove(cityId);
+        return;
+      }
+
+      // 超过最大轮询次数，强制结束
+      if (pollCount > maxPolls) {
+        log('⏰ [CityStateController] 轮询超时：cityId=$cityId, 已轮询 $pollCount 次');
+        timer.cancel();
+        _imageTaskPollingTimers.remove(cityId);
+        generatingImageCityIds.remove(cityId);
+        AppToast.error(AppLocalizations.of(Get.context!)!.imageGenTimeout,
+            title: AppLocalizations.of(Get.context!)!.genTimeout);
+        return;
+      }
+
+      // 查询任务状态
+      try {
+        final statusResult = await _cityRepository.checkImageTaskStatus(taskId);
+        statusResult.fold(
+          onSuccess: (statusData) {
+            final taskData = statusData['data'] as Map<String, dynamic>?;
+            final status = taskData?['status'] as String? ?? '';
+
+            log('🔍 [CityStateController] 轮询任务状态 ($pollCount/$maxPolls): taskId=$taskId, status=$status');
+
+            if (status == 'completed') {
+              log('✅ [CityStateController] 轮询检测到任务完成: cityId=$cityId');
+              timer.cancel();
+              _imageTaskPollingTimers.remove(cityId);
+
+              // 处理完成：从生成列表移除，刷新城市数据
+              generatingImageCityIds.remove(cityId);
+              _refreshCityAfterImageGeneration(cityId);
+            } else if (status == 'failed') {
+              log('❌ [CityStateController] 轮询检测到任务失败: cityId=$cityId');
+              timer.cancel();
+              _imageTaskPollingTimers.remove(cityId);
+
+              generatingImageCityIds.remove(cityId);
+              final l10n = AppLocalizations.of(Get.context!)!;
+              final errorMsg = taskData?['error'] as String? ?? l10n.imageGenFailedDefault;
+              AppToast.error(errorMsg, title: l10n.imageGenFailed);
+            }
+            // status == 'processing' 或其他状态，继续轮询
+          },
+          onFailure: (e) {
+            log('⚠️ [CityStateController] 轮询查询失败 ($pollCount): ${e.message}');
+            // 查询失败不终止轮询，继续尝试
+          },
+        );
+      } catch (e) {
+        log('⚠️ [CityStateController] 轮询异常 ($pollCount): $e');
+      }
+    });
+  }
+
+  /// 超时兜底（没有 taskId 时使用）
+  void _startTimeoutFallback(String cityId) {
+    _cancelPollingTimer(cityId);
+
+    _imageTaskPollingTimers[cityId] = Timer(const Duration(minutes: 5), () {
+      if (generatingImageCityIds.contains(cityId)) {
+        log('⏰ [CityStateController] 超时兜底触发: cityId=$cityId');
+        generatingImageCityIds.remove(cityId);
+        _imageTaskPollingTimers.remove(cityId);
+
+        // 尝试刷新城市数据（可能图片已生成但通知丢失）
+        _refreshCityAfterImageGeneration(cityId);
+      }
+    });
+  }
+
+  /// 取消指定城市的轮询定时器
+  void _cancelPollingTimer(String cityId) {
+    final timer = _imageTaskPollingTimers.remove(cityId);
+    if (timer != null) {
+      timer.cancel();
+      log('🛑 [CityStateController] 已取消轮询定时器: cityId=$cityId');
+    }
+  }
+
+  /// 图片生成完成后刷新城市数据
+  ///
+  /// 从后端重新获取城市最新数据（包含新生成的图片 URL）
+  Future<void> _refreshCityAfterImageGeneration(String cityId) async {
+    try {
+      log('🔄 [CityStateController] 刷新城市数据（图片生成后）: $cityId');
+      final result = await _cityRepository.getCityById(cityId);
+      result.fold(
+        onSuccess: (updatedCity) {
+          // 更新所有列表中的该城市
+          _updateCityInAllLists(cityId, updatedCity);
+          AppToast.success(AppLocalizations.of(Get.context!)!.cityImageUpdated(updatedCity.name),
+              title: AppLocalizations.of(Get.context!)!.imageGenComplete);
+          log('✅ [CityStateController] 城市数据已刷新: ${updatedCity.name}');
+        },
+        onFailure: (e) {
+          log('⚠️ [CityStateController] 刷新城市数据失败: ${e.message}');
+        },
+      );
+    } catch (e) {
+      log('⚠️ [CityStateController] 刷新城市数据异常: $e');
+    }
+  }
+
+  /// 更新所有列表中的城市数据
+  void _updateCityInAllLists(String cityId, City updatedCity) {
+    final index = cities.indexWhere((c) => c.id == cityId);
+    if (index != -1) {
+      cities[index] = updatedCity;
+      cities.refresh();
+    }
+
+    final recIndex = recommendedCities.indexWhere((c) => c.id == cityId);
+    if (recIndex != -1) {
+      recommendedCities[recIndex] = updatedCity;
+      recommendedCities.refresh();
+    }
+
+    final popIndex = popularCities.indexWhere((c) => c.id == cityId);
+    if (popIndex != -1) {
+      popularCities[popIndex] = updatedCity;
+      popularCities.refresh();
+    }
+
+    final favIndex = favoriteCities.indexWhere((c) => c.id == cityId);
+    if (favIndex != -1) {
+      favoriteCities[favIndex] = updatedCity;
+      favoriteCities.refresh();
     }
   }
 
@@ -756,8 +1060,15 @@ class CityStateController extends PaginatedRefreshableController {
 
   /// 切换城市收藏状态 - 兼容原控制器 API
   Future<Result<void>> toggleCityFavorite(String cityId) async {
+    // 从本地列表获取已知收藏状态，避免额外 HTTP 请求
+    final city = cities.firstWhereOrNull((c) => c.id == cityId) ??
+        recommendedCities.firstWhereOrNull((c) => c.id == cityId) ??
+        popularCities.firstWhereOrNull((c) => c.id == cityId);
     final result = await _toggleCityFavoriteUseCase.execute(
-      ToggleCityFavoriteParams(cityId: cityId),
+      ToggleCityFavoriteParams(
+        cityId: cityId,
+        currentIsFavorited: city?.isFavorite,
+      ),
     );
 
     return result.fold(
