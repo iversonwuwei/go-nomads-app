@@ -379,6 +379,14 @@ class ApiConfig {
   static const String aiOpenClawResearchEndpoint = '/ai/openclaw/research';
 
   // ============================================================
+  // OpenClaw Automation Endpoints - /api/v1/ai/openclaw
+  // ============================================================
+  static const String openClawExecuteEndpoint = '/ai/openclaw/execute';
+  static const String openClawReminderEndpoint = '/ai/openclaw/reminder';
+  static const String openClawVisaReminderEndpoint = '/ai/openclaw/visa-reminder';
+  static const String openClawAutomationEndpoint = '/ai/openclaw/automation/{scenario}';
+
+  // ============================================================
   // Travel History Endpoints - /api/v1/travel-history
   // ============================================================
   static const String travelHistoryEndpoint = '/travel-history';

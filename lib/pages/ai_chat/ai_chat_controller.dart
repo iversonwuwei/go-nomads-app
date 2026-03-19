@@ -6,7 +6,9 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/models/automation_scenario.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
+import 'package:go_nomads_app/services/openclaw_automation_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:uuid/uuid.dart';
@@ -16,11 +18,13 @@ class AiChatController extends GetxController {
     this._aiChatService,
     this._authController,
     this._signalRService,
+    this._openClawService,
   );
 
   final AiChatService _aiChatService;
   final AuthStateController _authController;
   final SignalRService _signalRService;
+  final OpenClawAutomationService _openClawService;
 
   final Rxn<AiConversation> conversation = Rxn<AiConversation>();
   final RxList<AiMessage> messages = <AiMessage>[].obs;
@@ -32,6 +36,8 @@ class AiChatController extends GetxController {
   final RxString streamingStatus = ''.obs;
   final RxBool hasInitError = false.obs;
   final RxString initErrorMessage = ''.obs;
+  final RxBool showQuickActions = true.obs;
+  final RxBool isOpenClawBusy = false.obs;
 
   final TextEditingController inputController = TextEditingController();
   final ScrollController scrollController = ScrollController();
@@ -459,5 +465,90 @@ class AiChatController extends GetxController {
     final chars = normalized.characters;
     if (chars.length <= 10) return normalized;
     return chars.take(10).toString();
+  }
+
+  // ── OpenClaw 自动化 ──────────────────────────────────────────────
+
+  /// 切换快捷操作面板的显示
+  void toggleQuickActions() {
+    showQuickActions.toggle();
+  }
+
+  /// 执行 OpenClaw 自然语言指令
+  Future<void> executeOpenClawCommand(String command) async {
+    if (command.trim().isEmpty || isOpenClawBusy.value) return;
+
+    // 添加用户消息
+    messages.add(AiMessage(
+      role: 'user',
+      content: '🤖 $command',
+      createdAt: DateTime.now(),
+    ));
+    _scrollToBottom();
+
+    isOpenClawBusy.value = true;
+
+    try {
+      final result = await _openClawService.executeCommand(command);
+      messages.add(AiMessage(
+        role: 'assistant',
+        content: result.success ? '✅ ${result.data ?? '指令已执行'}' : '❌ ${result.error ?? '执行失败'}',
+        isError: !result.success,
+        createdAt: DateTime.now(),
+      ));
+    } catch (e) {
+      log('❌ OpenClaw 执行失败: $e');
+      messages.add(AiMessage(
+        role: 'assistant',
+        content: '❌ 自动化执行出错，请稍后重试',
+        isError: true,
+        createdAt: DateTime.now(),
+      ));
+    } finally {
+      isOpenClawBusy.value = false;
+      _scrollToBottom();
+    }
+  }
+
+  /// 执行 OpenClaw 预设场景
+  Future<void> runOpenClawScenario(
+    AutomationScenario scenario,
+    Map<String, String> params,
+  ) async {
+    if (isOpenClawBusy.value) return;
+
+    // 添加用户消息
+    final paramDesc = params.entries.where((e) => e.value.isNotEmpty).map((e) => '${e.key}: ${e.value}').join(', ');
+    messages.add(AiMessage(
+      role: 'user',
+      content: '${scenario.icon} ${scenario.title}${paramDesc.isNotEmpty ? '（$paramDesc）' : ''}',
+      createdAt: DateTime.now(),
+    ));
+    _scrollToBottom();
+
+    isOpenClawBusy.value = true;
+
+    try {
+      final result = await _openClawService.runAutomation(scenario, params);
+      messages.add(AiMessage(
+        role: 'assistant',
+        content: result.success
+            ? '✅ ${result.data ?? '${scenario.title}已完成'}'
+            : '❌ ${result.error ?? '${scenario.title}执行失败'}',
+        isError: !result.success,
+        createdAt: DateTime.now(),
+      ));
+    } catch (e) {
+      log('❌ OpenClaw 场景执行失败: $e');
+      messages.add(AiMessage(
+        role: 'assistant',
+        content: '❌ ${scenario.title}执行出错，请稍后重试',
+        isError: true,
+        createdAt: DateTime.now(),
+      ));
+    } finally {
+      isOpenClawBusy.value = false;
+      _scrollToBottom();
+    }
   }
 }

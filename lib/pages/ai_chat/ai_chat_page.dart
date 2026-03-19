@@ -10,6 +10,7 @@ import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_hero_card.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_input_bar.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_message_list.dart';
 import 'package:go_nomads_app/pages/ai_chat/widgets/ai_chat_streaming_status.dart';
+import 'package:go_nomads_app/pages/ai_chat/widgets/openclaw_quick_actions.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
@@ -37,6 +38,16 @@ class AiChatPage extends GetView<AiChatController> {
             AiChatHeroCard(isMobile: isMobile),
             // 流式状态指示器
             const AiChatStreamingStatus(),
+            // OpenClaw 快捷操作面板
+            Obx(() => controller.showQuickActions.value
+                ? Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: OpenClawQuickActions(
+                      onScenarioSelected: controller.runOpenClawScenario,
+                      onCommandSubmit: controller.executeOpenClawCommand,
+                    ),
+                  )
+                : const SizedBox.shrink()),
             // 消息列表区域
             Expanded(child: _buildMessageArea(isMobile)),
             // 输入框
@@ -60,6 +71,13 @@ class AiChatPage extends GetView<AiChatController> {
       ),
       leading: embeddedInBottomNav ? null : const AppBackButton(),
       actions: [
+        Obx(() => IconButton(
+              tooltip: controller.showQuickActions.value ? '隐藏快捷操作' : '快捷操作',
+              icon: Icon(
+                controller.showQuickActions.value ? Icons.auto_fix_high_rounded : Icons.auto_fix_normal_rounded,
+              ),
+              onPressed: controller.toggleQuickActions,
+            )),
         IconButton(
           tooltip: l10n.aiChatHistoryTooltip,
           icon: const Icon(Icons.history_rounded),
