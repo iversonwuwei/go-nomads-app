@@ -8,7 +8,6 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/ai_chat_controller.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
-import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -23,23 +22,30 @@ class AiChatPage extends GetView<AiChatController> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.6,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
         title: const Text(
           'Nomads AI Copilot',
-          style: TextStyle(fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
         ),
         leading: const AppBackButton(),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            color: AppColors.border.withValues(alpha: 0.5),
+            height: 1.0,
+          ),
+        ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            _HeroCard(isMobile: isMobile),
-            _StreamingStatus(controller: controller),
             Expanded(
               child: Obx(() {
                 if (controller.isInitializing.value) {
-                  return const AppSceneLoading(scene: AppLoadingScene.generic, fullScreen: true);
+                  return const Center(child: CircularProgressIndicator(strokeWidth: 2));
                 }
 
                 // 显示初始化错误状态
@@ -60,7 +66,7 @@ class AiChatPage extends GetView<AiChatController> {
                   reverse: true, // 从底部开始显示，自动显示最新消息
                   padding: EdgeInsets.symmetric(
                     horizontal: isMobile ? 16 : 24,
-                    vertical: 12.h,
+                    vertical: 20.h,
                   ),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
@@ -84,114 +90,6 @@ class AiChatPage extends GetView<AiChatController> {
   }
 }
 
-class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.isMobile});
-
-  final bool isMobile;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      margin: EdgeInsets.fromLTRB(isMobile ? 16 : 24, 12, isMobile ? 16 : 24, 10),
-      padding: EdgeInsets.all(isMobile ? 14 : 18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0EA5E9), Color(0xFF2563EB)],
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.15),
-            blurRadius: 18.r,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            height: isMobile ? 48 : 56,
-            width: isMobile ? 48 : 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(14.r),
-            ),
-            child: Center(
-              child: FaIcon(FontAwesomeIcons.robot, color: Colors.white, size: 22.r),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '行途 AI 智能助手',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  '用流式对话聊攻略、问路线、生成行程草稿。',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.86),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StreamingStatus extends StatelessWidget {
-  const _StreamingStatus({required this.controller});
-  final AiChatController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      if (!controller.isStreaming.value && controller.streamingStatus.value.isEmpty) {
-        return const SizedBox.shrink();
-      }
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-        decoration: const BoxDecoration(
-          color: Color(0xFFF1F5F9),
-          border: Border(bottom: BorderSide(color: AppColors.border)),
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 18.w,
-              height: 18.h,
-              child: CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.cityPrimary),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Text(
-                controller.streamingStatus.value.isNotEmpty
-                    ? controller.streamingStatus.value
-                    : 'AI 正在输出，SignalR 实时传输…',
-                style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w500),
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-}
 
 class _MessageBubble extends StatelessWidget {
   const _MessageBubble({
@@ -221,22 +119,27 @@ class _MessageBubble extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 720),
         child: Container(
-          margin: EdgeInsets.only(left: 60.w, right: 12.w, bottom: 10.h),
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          margin: EdgeInsets.only(left: 64.w, right: 0, bottom: 16.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: AppColors.cityPrimary,
-            borderRadius: BorderRadius.circular(14.r),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16.r),
+              topRight: Radius.circular(4.r),
+              bottomLeft: Radius.circular(16.r),
+              bottomRight: Radius.circular(16.r),
+            ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.cityPrimary.withValues(alpha: 0.22),
-                blurRadius: 12.r,
-                offset: const Offset(0, 8),
+                color: AppColors.cityPrimary.withValues(alpha: 0.15),
+                blurRadius: 8.r,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Text(
             message.content.isNotEmpty ? message.content : '…',
-            style: TextStyle(color: Colors.white, height: 1.5),
+            style: TextStyle(color: Colors.white, height: 1.5, fontSize: 15.sp),
           ),
         ),
       ),
@@ -245,27 +148,60 @@ class _MessageBubble extends StatelessWidget {
 
   /// AI 消息气泡（支持 Markdown）
   Widget _buildAiMessage(BuildContext context) {
-    final bg = message.isError ? const Color(0xFFFFEAEA) : Colors.white;
+    // 错误消息背景稍微泛红，正常消息白色
+    final bg = message.isError ? const Color(0xFFFEF2F2) : Colors.white;
 
     return Align(
       alignment: Alignment.centerLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: 720),
         child: Container(
-          margin: EdgeInsets.only(left: 12.w, right: 60.w, bottom: 10.h),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          margin: EdgeInsets.only(left: 0, right: 48.w, bottom: 24.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(
-              color: message.isError ? const Color(0xFFFFB4B4) : AppColors.border,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(4.r),
+              topRight: Radius.circular(16.r),
+              bottomLeft: Radius.circular(16.r),
+              bottomRight: Radius.circular(16.r),
             ),
+            border: message.isError ? Border.all(color: const Color(0xFFFCA5A5)) : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10.r,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: isStreaming && message.content.isEmpty
               ? const _TypingDots()
-              : _AiMarkdownContent(
-                  content: message.content,
-                  isError: message.isError,
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (isStreaming) ...[
+                      Row(
+                        children: [
+                          Icon(Icons.auto_awesome, size: 14.sp, color: AppColors.cityPrimary),
+                          SizedBox(width: 6.w),
+                          Text(
+                            "AI Thinking...",
+                            style: TextStyle(
+                              fontSize: 12.sp, 
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                    ],
+                    _AiMarkdownContent(
+                      content: message.content,
+                      isError: message.isError,
+                    ),
+                  ],
                 ),
         ),
       ),
@@ -595,21 +531,22 @@ class _InputBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(isMobile ? 14 : 24, 8, isMobile ? 14 : 24, 14),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: AppColors.border.withValues(alpha: 0.6))),
+        ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(color: AppColors.border),
-                  boxShadow: [
-                    BoxShadow(color: Color(0x11000000), blurRadius: 12.r, offset: Offset(0, 4)),
-                  ],
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(24.r),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 14.w),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h), // adjusted vertical padding
                 child: Obx(() {
                   return TextField(
                     controller: controller.inputController,
@@ -617,29 +554,40 @@ class _InputBar extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: l10n.aiChatInputHint,
                       border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 10.h),
+                      isDense: true,
                     ),
+                    style: TextStyle(fontSize: 15.sp),
                     minLines: 1,
                     maxLines: 4,
+                    textInputAction: TextInputAction.send,
                     onSubmitted: (_) => controller.sendMessage(),
                   );
                 }),
               ),
             ),
-            SizedBox(width: 10.w),
+            SizedBox(width: 12.w),
             Obx(() {
-              final disabled = controller.isStreaming.value;
-              return ElevatedButton(
-                onPressed: disabled ? null : controller.sendMessage,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.cityPrimary,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 14 : 16,
-                    vertical: isMobile ? 12 : 14,
+              final isStreaming = controller.isStreaming.value;
+              
+              return Container(
+                margin: EdgeInsets.only(bottom: 2.h),
+                child: Material(
+                  color: isStreaming ? Colors.grey.shade300 : AppColors.cityPrimary,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    onTap: isStreaming ? null : controller.sendMessage,
+                    customBorder: const CircleBorder(),
+                    child: Padding(
+                      padding: EdgeInsets.all(10.r),
+                      child: FaIcon(
+                        FontAwesomeIcons.paperPlane, 
+                        color: Colors.white, 
+                        size: 18.r,
+                      ),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
-                  elevation: 0,
                 ),
-                child: FaIcon(FontAwesomeIcons.paperPlane, color: Colors.white, size: 16.r),
               );
             }),
           ],
@@ -661,27 +609,57 @@ class _EmptyHint extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(18.w),
+            padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: Color(0x11000000), blurRadius: 12.r, offset: Offset(0, 6))],
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.cityPrimary.withValues(alpha: 0.1),
+                  blurRadius: 20.r,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-            child: FaIcon(FontAwesomeIcons.solidComments, color: AppColors.cityPrimary, size: 28.r),
+            child: FaIcon(
+              FontAwesomeIcons.solidComments,
+              color: AppColors.cityPrimary,
+              size: 40.r,
+            ),
           ),
-          SizedBox(height: 18.h),
-          Text(l10n.aiChatEmptyHint, style: const TextStyle(fontWeight: FontWeight.w600)),
-          SizedBox(height: 10.h),
+          SizedBox(height: 24.h),
+          Text(
+            l10n.aiChatEmptyHint,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16.sp,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            "Start a conversation to get travel tips and more.", // Simplified fallback, original text used l10n
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          SizedBox(height: 32.h),
           ElevatedButton(
             onPressed: onStart,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.cityPrimary,
               foregroundColor: Colors.white,
               elevation: 0,
-              padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
             ),
-            child: Text(l10n.aiChatStartConversation),
+            child: Text(
+              l10n.aiChatStartConversation,
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

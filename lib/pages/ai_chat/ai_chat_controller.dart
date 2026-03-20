@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/membership/presentation/services/ai_planner_access_service.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/automation_scenario.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
@@ -490,6 +491,16 @@ class AiChatController extends GetxController {
 
     try {
       final result = await _openClawService.executeCommand(command);
+      if (result.isMembershipRequired) {
+        AiPlannerAccessService().redirectToMembership(featureName: 'OpenClaw 自动化');
+        messages.add(AiMessage(
+          role: 'assistant',
+          content: '🔒 ${result.error ?? 'OpenClaw 自动化功能仅对会员开放，请先开通会员'}',
+          isError: true,
+          createdAt: DateTime.now(),
+        ));
+        return;
+      }
       messages.add(AiMessage(
         role: 'assistant',
         content: result.success ? '✅ ${result.data ?? '指令已执行'}' : '❌ ${result.error ?? '执行失败'}',
@@ -530,6 +541,16 @@ class AiChatController extends GetxController {
 
     try {
       final result = await _openClawService.runAutomation(scenario, params);
+      if (result.isMembershipRequired) {
+        AiPlannerAccessService().redirectToMembership(featureName: 'OpenClaw 自动化');
+        messages.add(AiMessage(
+          role: 'assistant',
+          content: '🔒 ${result.error ?? 'OpenClaw 自动化功能仅对会员开放，请先开通会员'}',
+          isError: true,
+          createdAt: DateTime.now(),
+        ));
+        return;
+      }
       messages.add(AiMessage(
         role: 'assistant',
         content: result.success

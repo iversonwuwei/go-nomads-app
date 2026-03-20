@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// AI Chat 顶部 Hero 卡片
 class AiChatHeroCard extends StatelessWidget {
@@ -19,12 +19,12 @@ class AiChatHeroCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0EA5E9), Color(0xFF2563EB)],
+          colors: [Color(0xFF0EA5E9), Color(0xFF6366F1)],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+            color: const Color(0xFF6366F1).withValues(alpha: 0.15),
             blurRadius: 18.r,
             offset: const Offset(0, 10),
           ),
@@ -50,7 +50,7 @@ class AiChatHeroCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14.r),
       ),
       child: Center(
-        child: FaIcon(FontAwesomeIcons.robot, color: Colors.white, size: 22.r),
+        child: FaIcon(FontAwesomeIcons.wandMagicSparkles, color: Colors.white, size: 22.r),
       ),
     );
   }
@@ -59,17 +59,37 @@ class AiChatHeroCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '行途 AI 智能助手',
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
+        Row(
+          children: [
+            Text(
+              '行途 × OpenClaw',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(width: 6.w),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Text(
+                'AI 助理',
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 6.h),
         Text(
-          '用流式对话聊攻略、问路线、生成行程草稿。',
-          style: theme.textTheme.bodyMedium?.copyWith(
+          '差旅值机 · 远程办公 · 记账报销 · 签证提醒 · 万能自动化',
+          style: theme.textTheme.bodySmall?.copyWith(
             color: Colors.white.withValues(alpha: 0.86),
           ),
         ),

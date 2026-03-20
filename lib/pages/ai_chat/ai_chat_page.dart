@@ -193,9 +193,12 @@ class AiChatPage extends GetView<AiChatController> {
         );
       }
 
-      // 空状态
+      // 空状态 - 展示场景引导
       if (controller.messages.isEmpty) {
-        return AiChatEmptyHint(onStart: controller.sendMessage);
+        return AiChatEmptyHint(
+          onStart: controller.sendMessage,
+          onQuickCommand: controller.executeOpenClawCommand,
+        );
       }
 
       // 消息列表
