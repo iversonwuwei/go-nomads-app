@@ -1,50 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/automation_scenario.dart';
+import 'package:go_nomads_app/pages/ai_chat/ai_chat_theme.dart';
 
-/// AI Chat 空状态提示
-/// 展示场景分类快捷入口，引导用户使用 OpenClaw 功能
 class AiChatEmptyHint extends StatelessWidget {
   const AiChatEmptyHint({
     super.key,
-    required this.onStart,
     this.onQuickCommand,
   });
 
-  final VoidCallback onStart;
   final void Function(String command)? onQuickCommand;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildIcon(),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: AiChatTheme.surface.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(999.r),
+              border: Border.all(color: AiChatTheme.line),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildIcon(),
+                SizedBox(width: 10.w),
+                Text(
+                  '旅途指挥台已就绪',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
+                    color: AiChatTheme.ink,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            '选一个场景，直接开始。',
+            style: TextStyle(
+              fontSize: 18.sp,
+              height: 1.25,
+              fontWeight: FontWeight.w800,
+              color: AiChatTheme.ink,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            '把高频操作收成一组紧凑指令，少翻屏，直接触发。',
+            style: TextStyle(
+              fontSize: 12.sp,
+              height: 1.4,
+              color: AiChatTheme.inkSoft,
+            ),
+          ),
           SizedBox(height: 14.h),
-          Text(
-            '你的数字游民 AI 助理',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 16.sp,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            '输入任何指令，或选择以下场景快速开始',
-            style: TextStyle(
-              fontSize: 12.5.sp,
-              color: Colors.grey[500],
-            ),
-          ),
-          SizedBox(height: 20.h),
           _buildQuickScenarios(),
-          SizedBox(height: 20.h),
-          _buildStartButton(l10n),
         ],
       ),
     );
@@ -52,63 +70,78 @@ class AiChatEmptyHint extends StatelessWidget {
 
   Widget _buildIcon() {
     return Container(
-      padding: EdgeInsets.all(18.w),
+      width: 34.r,
+      height: 34.r,
       decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0x11000000),
-            blurRadius: 12.r,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AiChatTheme.teal, AiChatTheme.coral],
+        ),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: FaIcon(
         FontAwesomeIcons.wandMagicSparkles,
-        color: AppColors.cityPrimary,
-        size: 28.r,
+        color: Colors.white,
+        size: 14.r,
       ),
     );
   }
 
-  /// 场景快捷入口 - 每个分类展示一个代表性指令
   Widget _buildQuickScenarios() {
     final quickEntries = [
-      (ScenarioCategory.travel, AutomationScenario.flightCheckin),
-      (ScenarioCategory.remoteWork, AutomationScenario.workMode),
-      (ScenarioCategory.finance, AutomationScenario.expenseRecord),
-      (ScenarioCategory.visa, AutomationScenario.visaReminder),
-      (ScenarioCategory.universal, AutomationScenario.customScript),
+      (
+        ScenarioCategory.travel,
+        AutomationScenario.flightCheckin,
+        '值机提醒',
+        '核对航班状态并生成值机提醒',
+      ),
+      (
+        ScenarioCategory.remoteWork,
+        AutomationScenario.workMode,
+        '办公模式',
+        '整理今日远程办公节奏和地点',
+      ),
+      (
+        ScenarioCategory.finance,
+        AutomationScenario.expenseRecord,
+        '记账报销',
+        '快速记录支出并整理报销项',
+      ),
+      (
+        ScenarioCategory.visa,
+        AutomationScenario.visaReminder,
+        '签证提醒',
+        '跟进材料、时间点和续签节点',
+      ),
+      (
+        ScenarioCategory.universal,
+        AutomationScenario.customScript,
+        '自定义脚本',
+        '输入一句话，生成你的自动化流程',
+      ),
     ];
 
     return Column(
-      children: quickEntries.map((entry) {
-        final (category, scenario) = entry;
-        return _QuickEntryCard(
-          category: category,
-          scenario: scenario,
-          onTap: () {
-            onQuickCommand?.call(scenario.exampleCommand);
-          },
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildStartButton(AppLocalizations l10n) {
-    return ElevatedButton(
-      onPressed: onStart,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.cityPrimary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14.r),
-        ),
-      ),
-      child: Text(l10n.aiChatStartConversation),
+      children: [
+        for (final entry in quickEntries) ...[
+          Builder(
+            builder: (context) {
+              final (category, scenario, title, summary) = entry;
+              return _QuickEntryCard(
+                category: category,
+                scenario: scenario,
+                title: title,
+                summary: summary,
+                onTap: () {
+                  onQuickCommand?.call(scenario.exampleCommand);
+                },
+              );
+            },
+          ),
+          if (entry != quickEntries.last) SizedBox(height: 10.h),
+        ],
+      ],
     );
   }
 }
@@ -117,72 +150,124 @@ class _QuickEntryCard extends StatelessWidget {
   const _QuickEntryCard({
     required this.category,
     required this.scenario,
+    required this.title,
+    required this.summary,
     required this.onTap,
   });
 
   final ScenarioCategory category;
   final AutomationScenario scenario;
+  final String title;
+  final String summary;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12.r),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: category.color.withValues(alpha: 0.15)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 36.r,
-                  height: 36.r,
-                  decoration: BoxDecoration(
-                    color: category.color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Center(
-                    child: Text(category.icon, style: TextStyle(fontSize: 16.sp)),
-                  ),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(18.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18.r),
+        child: Container(
+          constraints: BoxConstraints(minHeight: 88.h),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(color: category.color.withValues(alpha: 0.18)),
+            boxShadow: [
+              BoxShadow(
+                color: AiChatTheme.shadow.withValues(alpha: 0.36),
+                blurRadius: 14.r,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 44.r,
+                height: 44.r,
+                decoration: BoxDecoration(
+                  color: category.color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        category.title,
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        '"${scenario.exampleCommand}"',
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: Colors.grey[400],
-                          fontStyle: FontStyle.italic,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+                child: Center(
+                  child: Text(category.icon, style: TextStyle(fontSize: 18.sp)),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded, size: 14.r, color: Colors.grey[300]),
-              ],
-            ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AiChatTheme.ink,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                          decoration: BoxDecoration(
+                            color: category.color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(999.r),
+                          ),
+                          child: Text(
+                            category.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w700,
+                              color: category.color,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      summary,
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: AiChatTheme.inkSoft,
+                        height: 1.35,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Container(
+                width: 34.r,
+                height: 34.r,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.82),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: AiChatTheme.line),
+                ),
+                child: Icon(
+                  Icons.north_east_rounded,
+                  size: 17.r,
+                  color: category.color,
+                ),
+              ),
+            ],
           ),
         ),
       ),

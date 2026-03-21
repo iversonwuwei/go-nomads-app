@@ -351,15 +351,15 @@ class AiChatController extends GetxController {
       if (!scrollController.hasClients) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!scrollController.hasClients) return;
-        // 使用 reverse: true 后，滚动到底部就是滚动到 0 位置
+        final target = scrollController.position.maxScrollExtent;
         if (animate) {
           scrollController.animateTo(
-            0,
+            target,
             duration: const Duration(milliseconds: 280),
             curve: Curves.easeOut,
           );
         } else {
-          scrollController.jumpTo(0);
+          scrollController.jumpTo(target);
         }
       });
     });
@@ -473,6 +473,24 @@ class AiChatController extends GetxController {
   /// 切换快捷操作面板的显示
   void toggleQuickActions() {
     showQuickActions.toggle();
+  }
+
+  Future<void> resetToEmptyState() async {
+    if (isStreaming.value || isOpenClawBusy.value) {
+      AppToast.warning('请等待当前任务完成后再开始新对话');
+      return;
+    }
+
+    _currentRequestId = null;
+    _streamingIndex = null;
+    streamingStatus.value = '';
+    inputController.clear();
+
+    await _cleanupPendingConversation();
+
+    conversation.value = null;
+    messages.clear();
+    showQuickActions.value = true;
   }
 
   /// 执行 OpenClaw 自然语言指令
