@@ -191,6 +191,7 @@ class HomeMeetupCard extends StatelessWidget {
   }
 
   Widget _buildDateLocation(DateTime date) {
+    final localDate = date.toLocal();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,7 +201,7 @@ class HomeMeetupCard extends StatelessWidget {
             SizedBox(width: 4.w),
             Expanded(
               child: Text(
-                '${_formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
+                '${_formatDate(localDate)} ${localDate.hour.toString().padLeft(2, '0')}:${localDate.minute.toString().padLeft(2, '0')}',
                 style: TextStyle(
                   fontSize: 11.sp,
                   color: AppColors.textSecondary,
@@ -443,7 +444,7 @@ class HomeMeetupCard extends StatelessWidget {
             Icon(FontAwesomeIcons.ban, size: 14.r),
             SizedBox(width: 4.w),
             Flexible(
-              child: Text(AppLocalizations.of(context)!.confirmCancelMeetupTitle,
+              child: Text(AppLocalizations.of(context)!.cancel,
                   style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600)),
             ),
           ],

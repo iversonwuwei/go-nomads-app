@@ -89,8 +89,9 @@ class CreateMeetupPageController extends GetxController {
     descriptionController.text = meetup.description;
     venueController.text = meetup.venue.name;
 
-    selectedDate.value = meetup.schedule.startTime;
-    selectedTime.value = TimeOfDay.fromDateTime(meetup.schedule.startTime);
+    final localStart = meetup.schedule.startTime.toLocal();
+    selectedDate.value = localStart;
+    selectedTime.value = TimeOfDay.fromDateTime(localStart);
     maxAttendees.value = meetup.capacity.maxAttendees.toDouble();
 
     selectedCity.value = meetup.location.city;
