@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// 普通 AppBar 的分享按钮
 /// 用于不带跑马灯效果的页面
@@ -48,7 +48,7 @@ class SliverShareButton extends StatelessWidget {
     final isScrolled = opacity > 0.5;
 
     return Container(
-      margin: EdgeInsets.all(8.w),
+      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.w),
       decoration: BoxDecoration(
         color: isScrolled
             ? Colors.grey.withValues(alpha: 0.1)
@@ -69,6 +69,8 @@ class SliverShareButton extends StatelessWidget {
           size: size,
         ),
         onPressed: onPressed,
+        padding: EdgeInsets.all(8.w),
+        constraints: const BoxConstraints(),
       ),
     );
   }

@@ -5887,7 +5887,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cancelled => '已取消';
 
   @override
-  String get cancelMeetup => '取消活动';
+  String get cancelMeetup => '取消';
 
   @override
   String get eventCancelled => '活动已取消';

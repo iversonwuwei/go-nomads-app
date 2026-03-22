@@ -40,8 +40,8 @@ class UpdateMeetupUseCase {
       if (venue != null) updates['location'] = venue;
       if (venueAddress != null) updates['address'] = venueAddress;
       if (category != null) updates['category'] = category;
-      if (startTime != null) updates['startTime'] = startTime.toIso8601String();
-      if (endTime != null) updates['endTime'] = endTime.toIso8601String();
+      if (startTime != null) updates['startTime'] = startTime.toUtc().toIso8601String();
+      if (endTime != null) updates['endTime'] = endTime.toUtc().toIso8601String();
       if (maxAttendees != null) updates['maxParticipants'] = maxAttendees;
       if (imageUrl != null) updates['imageUrl'] = imageUrl;
       if (images != null) updates['images'] = images;

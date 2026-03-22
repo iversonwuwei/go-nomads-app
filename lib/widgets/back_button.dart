@@ -1,8 +1,8 @@
-import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 
 /// 普通 AppBar 的回退按钮
 /// 用于不带跑马灯效果的页面
@@ -50,7 +50,7 @@ class SliverBackButton extends StatelessWidget {
     final isScrolled = opacity > 0.5;
     
     return Container(
-      margin: EdgeInsets.all(8.w),
+      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.w),
       decoration: BoxDecoration(
         color: isScrolled
             ? Colors.grey.withValues(alpha: 0.1)
@@ -71,6 +71,8 @@ class SliverBackButton extends StatelessWidget {
           size: size,
         ),
         onPressed: onPressed ?? () => Get.back(),
+        padding: EdgeInsets.all(8.w),
+        constraints: const BoxConstraints(),
       ),
     );
   }

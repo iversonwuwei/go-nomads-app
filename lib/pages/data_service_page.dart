@@ -2795,7 +2795,7 @@ class _MeetupCard extends StatelessWidget {
                     SizedBox(width: 4.w),
                     Flexible(
                       child: Text(
-                        '取消活动',
+                        '取消',
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,

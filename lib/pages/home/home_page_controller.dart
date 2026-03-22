@@ -37,7 +37,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
   // ==================== UI 控制器 ====================
   final ScrollController scrollController = ScrollController();
-  final GlobalKey citiesListKey = GlobalKey();
+  GlobalKey citiesListKey = GlobalKey();
 
   // ==================== 路由监听 ====================
   PageRoute<dynamic>? _currentRoute;

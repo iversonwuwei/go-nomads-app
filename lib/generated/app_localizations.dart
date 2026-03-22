@@ -11333,7 +11333,7 @@ abstract class AppLocalizations {
   /// No description provided for @cancelMeetup.
   ///
   /// In zh, this message translates to:
-  /// **'取消活动'**
+  /// **'取消'**
   String get cancelMeetup;
 
   /// No description provided for @eventCancelled.

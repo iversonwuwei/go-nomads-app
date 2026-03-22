@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// 普通 AppBar 的编辑按钮
 /// 用于不带跑马灯效果的页面，带有渐变背景和阴影
@@ -127,7 +127,7 @@ class SliverEditButton extends StatelessWidget {
     final isScrolled = opacity > 0.5;
 
     return Container(
-      margin: EdgeInsets.all(8.w),
+      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.w),
       decoration: BoxDecoration(
         color: isScrolled ? Colors.grey.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12.r),
@@ -147,6 +147,8 @@ class SliverEditButton extends StatelessWidget {
         ),
         onPressed: onPressed,
         tooltip: tooltip,
+        padding: EdgeInsets.all(8.w),
+        constraints: const BoxConstraints(),
       ),
     );
   }

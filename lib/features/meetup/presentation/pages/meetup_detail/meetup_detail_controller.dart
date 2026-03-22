@@ -342,7 +342,7 @@ class MeetupDetailController extends GetxController {
 
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('取消活动'),
+        title: Text(l10n.confirmCancelMeetupTitle),
         content: const Text('确定要取消这个活动吗？此操作无法撤销。'),
         actions: [
           TextButton(onPressed: () => Get.back(result: false), child: Text(l10n.cancel)),
@@ -434,7 +434,7 @@ class MeetupDetailController extends GetxController {
 
   /// 格式化日期时间
   String formatDateTime(DateTime dateTime) {
-    return DateFormat('EEEE, MMMM dd, yyyy \'at\' HH:mm').format(dateTime);
+    return DateFormat('EEEE, MMMM dd, yyyy \'at\' HH:mm').format(dateTime.toLocal());
   }
 
   /// 创建基本的 User 实体用于跳转到详情页

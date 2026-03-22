@@ -126,17 +126,19 @@ class MeetupHelpers {
 
   /// 格式化时间为 HH:mm 格式
   static String _formatTime(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
+    final local = time.toLocal();
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
 
   /// 格式化活动日期
   static String formatDate(DateTime date) {
+    final localDate = date.toLocal();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
-    final dateOnly = DateTime(date.year, date.month, date.day);
+    final dateOnly = DateTime(localDate.year, localDate.month, localDate.day);
 
     if (dateOnly == today) {
       return '今天';
