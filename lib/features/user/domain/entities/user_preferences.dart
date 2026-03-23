@@ -11,6 +11,10 @@ class UserPreferences {
   final String language;
   final bool privacyPolicyAccepted;
   final DateTime? privacyPolicyAcceptedAt;
+  final String privacyPolicyAcceptedVersion;
+  final bool termsOfServiceAccepted;
+  final DateTime? termsOfServiceAcceptedAt;
+  final String termsOfServiceAcceptedVersion;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -26,6 +30,10 @@ class UserPreferences {
     required this.language,
     this.privacyPolicyAccepted = false,
     this.privacyPolicyAcceptedAt,
+    this.privacyPolicyAcceptedVersion = '',
+    this.termsOfServiceAccepted = false,
+    this.termsOfServiceAcceptedAt,
+    this.termsOfServiceAcceptedVersion = '',
     required this.createdAt,
     required this.updatedAt,
   });
@@ -46,6 +54,11 @@ class UserPreferences {
       privacyPolicyAcceptedAt: json['privacyPolicyAcceptedAt'] != null
           ? DateTime.parse(json['privacyPolicyAcceptedAt'] as String)
           : null,
+      privacyPolicyAcceptedVersion: json['privacyPolicyAcceptedVersion'] as String? ?? '',
+      termsOfServiceAccepted: json['termsOfServiceAccepted'] as bool? ?? false,
+      termsOfServiceAcceptedAt:
+          json['termsOfServiceAcceptedAt'] != null ? DateTime.parse(json['termsOfServiceAcceptedAt'] as String) : null,
+      termsOfServiceAcceptedVersion: json['termsOfServiceAcceptedVersion'] as String? ?? '',
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : DateTime.now(),
     );
@@ -65,6 +78,10 @@ class UserPreferences {
       'language': language,
       'privacyPolicyAccepted': privacyPolicyAccepted,
       'privacyPolicyAcceptedAt': privacyPolicyAcceptedAt?.toIso8601String(),
+      'privacyPolicyAcceptedVersion': privacyPolicyAcceptedVersion,
+      'termsOfServiceAccepted': termsOfServiceAccepted,
+      'termsOfServiceAcceptedAt': termsOfServiceAcceptedAt?.toIso8601String(),
+      'termsOfServiceAcceptedVersion': termsOfServiceAcceptedVersion,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -84,6 +101,10 @@ class UserPreferences {
       language: 'en',
       privacyPolicyAccepted: false,
       privacyPolicyAcceptedAt: null,
+      privacyPolicyAcceptedVersion: '',
+      termsOfServiceAccepted: false,
+      termsOfServiceAcceptedAt: null,
+      termsOfServiceAcceptedVersion: '',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -102,6 +123,10 @@ class UserPreferences {
     String? language,
     bool? privacyPolicyAccepted,
     DateTime? privacyPolicyAcceptedAt,
+    String? privacyPolicyAcceptedVersion,
+    bool? termsOfServiceAccepted,
+    DateTime? termsOfServiceAcceptedAt,
+    String? termsOfServiceAcceptedVersion,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -117,6 +142,10 @@ class UserPreferences {
       language: language ?? this.language,
       privacyPolicyAccepted: privacyPolicyAccepted ?? this.privacyPolicyAccepted,
       privacyPolicyAcceptedAt: privacyPolicyAcceptedAt ?? this.privacyPolicyAcceptedAt,
+      privacyPolicyAcceptedVersion: privacyPolicyAcceptedVersion ?? this.privacyPolicyAcceptedVersion,
+      termsOfServiceAccepted: termsOfServiceAccepted ?? this.termsOfServiceAccepted,
+      termsOfServiceAcceptedAt: termsOfServiceAcceptedAt ?? this.termsOfServiceAcceptedAt,
+      termsOfServiceAcceptedVersion: termsOfServiceAcceptedVersion ?? this.termsOfServiceAcceptedVersion,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

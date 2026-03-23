@@ -216,12 +216,16 @@ class ApiConfig {
   static const String userUpdateMeEndpoint = '/users/me';
   static const String userDeleteEndpoint = '/users/{id}';
   static const String userBatchEndpoint = '/users/batch';
+  static const String userMePreferencesEndpoint = '/users/me/preferences';
+  static const String userMeAcceptPrivacyPolicyEndpoint = '/users/me/accept-privacy-policy';
+  static const String userMeAcceptTermsOfServiceEndpoint = '/users/me/accept-terms-of-service';
   static String get userProfileEndpoint => userMeEndpoint;
 
   // ============================================================
   // Legal Endpoints - /api/v1/users/legal
   // ============================================================
   static const String legalPrivacyPolicyEndpoint = '/users/legal/privacy-policy';
+  static const String legalTermsOfServiceEndpoint = '/users/legal/terms-of-service';
 
   // 首页相关
   static const String homeDataEndpoint = '/home/data';

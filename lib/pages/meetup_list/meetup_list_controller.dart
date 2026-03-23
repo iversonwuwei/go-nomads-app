@@ -6,10 +6,10 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/location_controller.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// Meetup List Tab 枚举
@@ -84,6 +84,9 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
   // 当前 Tab 索引
   final currentTabIndex = 0.obs;
 
+  // 已加入 Tab 需要刷新标记
+  bool _joinedTabNeedsRefresh = false;
+
   // DataEventBus 订阅
   StreamSubscription<DataChangedEvent>? _rsvpChangedSubscription;
 
@@ -154,12 +157,15 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
       final meetupId = event.entityId;
       final isJoining = event.changeType == DataChangeType.created;
 
-      // 刷新 "已加入" tab（如果当前不在该 tab 则刷新，否则由 handleToggleJoin 已刷新）
-      if (currentTab != MeetupListTab.joined) {
+      // 标记已加入 Tab 需要刷新
+      _joinedTabNeedsRefresh = true;
+
+      // 如果当前正在查看已加入 Tab，立即刷新
+      if (currentTab == MeetupListTab.joined) {
         loadTabData(MeetupListTab.joined, refresh: true);
       }
 
-      // 更新所有 tab 中对应活动的状态（除了已加入 tab，因为已刷新）
+      // 更新所有其他 tab 中对应活动的加入状态
       if (meetupId != null) {
         for (final tab in MeetupListTab.values) {
           if (tab != MeetupListTab.joined) {
@@ -215,8 +221,14 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
     if (!tabController.indexIsChanging) {
       final tab = MeetupListTab.values[tabController.index];
       currentTabIndex.value = tabController.index;
-      // 如果该 Tab 还没有数据，则加载
-      if (tabMeetups[tab]!.isEmpty && !tabLoading[tab]!.value) {
+
+      // 已加入 Tab：如果有 RSVP 变更待刷新，则重新加载
+      if (tab == MeetupListTab.joined && _joinedTabNeedsRefresh) {
+        log('🔄 [MeetupListController] 切换到已加入 Tab，需要刷新');
+        _joinedTabNeedsRefresh = false;
+        loadTabData(tab, refresh: true);
+      } else if (tabMeetups[tab]!.isEmpty && !tabLoading[tab]!.value) {
+        // 如果 Tab 还没有数据，则加载
         loadTabData(tab);
       }
     }
@@ -348,6 +360,11 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
       }
 
       log('✅ Tab $tab 加载了 ${meetups.length} 个活动 (页码: $page)');
+
+      // 已加入 Tab 加载成功后清除刷新标记
+      if (tab == MeetupListTab.joined) {
+        _joinedTabNeedsRefresh = false;
+      }
     } catch (e, stackTrace) {
       log('❌ Tab $tab 加载失败: $e');
       log('Stack trace: $stackTrace');
@@ -399,7 +416,7 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
         AppToast.success(_l10n.youLeftMeetup);
       }
 
-      // 发送 RSVP 变更事件，通知其他 tab 更新
+      // 发送 RSVP 变更事件，通知其他组件更新
       DataEventBus.instance.emit(DataChangedEvent(
         entityType: 'meetup_rsvp',
         entityId: meetup.id,
@@ -409,6 +426,12 @@ class MeetupListController extends GetxController with GetSingleTickerProviderSt
 
       // 刷新当前 tab
       await refreshCurrentTab();
+
+      // 显式刷新已加入 Tab（如果当前不在该 Tab）
+      if (currentTab != MeetupListTab.joined) {
+        log('🔄 [MeetupListController] RSVP 后显式刷新已加入 Tab');
+        await loadTabData(MeetupListTab.joined, refresh: true);
+      }
     } catch (e) {
       log('❌ 加入/退出活动失败: $e');
       final errorMessage = e.toString();

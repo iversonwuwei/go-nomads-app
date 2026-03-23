@@ -1,11 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 服务条款复选框
 class RegisterTermsCheckbox extends GetView<RegisterController> {
@@ -31,18 +31,27 @@ class RegisterTermsCheckbox extends GetView<RegisterController> {
                 style: TextStyle(fontSize: 14.sp, color: Colors.black87),
                 children: [
                   TextSpan(
-                    text: '${l10n.agreeToTerms} ',
+                    text: '我已阅读并同意 ',
                     recognizer: TapGestureRecognizer()..onTap = () => controller.toggleAgreeToTerms(),
                   ),
                   TextSpan(
-                    text: l10n.termsAndConditions,
+                    text: '《${l10n.termsAndConditions}》',
                     style: const TextStyle(
                       color: RegisterConstants.primaryColor,
                       decoration: TextDecoration.underline,
                     ),
                     recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.termsOfService),
                   ),
-                  TextSpan(text: ' ${l10n.and} '),
+                  const TextSpan(text: ' 和 '),
+                  TextSpan(
+                    text: '《${l10n.privacyPolicy}》',
+                    style: const TextStyle(
+                      color: RegisterConstants.primaryColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.privacyPolicy),
+                  ),
+                  const TextSpan(text: '，并遵守 '),
                   TextSpan(
                     text: l10n.communityGuidelines,
                     style: const TextStyle(
@@ -51,15 +60,7 @@ class RegisterTermsCheckbox extends GetView<RegisterController> {
                     ),
                     recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.communityGuidelinesPage),
                   ),
-                  TextSpan(text: ' ${l10n.and} '),
-                  TextSpan(
-                    text: l10n.privacyPolicy,
-                    style: const TextStyle(
-                      color: RegisterConstants.primaryColor,
-                      decoration: TextDecoration.underline,
-                    ),
-                    recognizer: TapGestureRecognizer()..onTap = () => Get.toNamed(AppRoutes.privacyPolicy),
-                  ),
+                  const TextSpan(text: '。'),
                 ],
               ),
             ),

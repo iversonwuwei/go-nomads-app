@@ -14,6 +14,7 @@ class LegalService {
 
   /// 内存缓存
   LegalDocument? _cachedPrivacyPolicy;
+  LegalDocument? _cachedTermsOfService;
 
   /// 获取隐私政策（优先缓存）
   Future<LegalDocument?> getPrivacyPolicy({String lang = 'zh', bool forceRefresh = false}) async {
@@ -39,8 +40,33 @@ class LegalService {
     return null;
   }
 
+  /// 获取用户协议（优先缓存）
+  Future<LegalDocument?> getTermsOfService({String lang = 'zh', bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedTermsOfService != null) {
+      return _cachedTermsOfService;
+    }
+
+    try {
+      final response = await _http.get(
+        ApiConfig.legalTermsOfServiceEndpoint,
+        queryParameters: {'lang': lang},
+      );
+
+      final data = response.data;
+      if (data != null && data is Map<String, dynamic>) {
+        _cachedTermsOfService = LegalDocument.fromJson(data);
+        log('✅ 用户协议加载成功: v${_cachedTermsOfService!.version}');
+        return _cachedTermsOfService;
+      }
+    } catch (e) {
+      log('❌ 获取用户协议失败: $e');
+    }
+    return null;
+  }
+
   /// 清除缓存
   void clearCache() {
     _cachedPrivacyPolicy = null;
+    _cachedTermsOfService = null;
   }
 }

@@ -42,6 +42,7 @@ class LegalLinksWidget extends StatelessWidget {
             height: 1.6,
           ),
           children: [
+            const TextSpan(text: '继续使用即表示您同意 '),
             TextSpan(
               text: l10n?.termsAndConditions ?? '用户协议',
               style: TextStyle(
@@ -52,7 +53,7 @@ class LegalLinksWidget extends StatelessWidget {
               recognizer: TapGestureRecognizer()
                 ..onTap = () => Get.toNamed(AppRoutes.termsOfService),
             ),
-            const TextSpan(text: ' | '),
+            const TextSpan(text: ' 与 '),
             TextSpan(
               text: l10n?.privacyPolicy ?? '隐私政策',
               style: TextStyle(
@@ -63,6 +64,7 @@ class LegalLinksWidget extends StatelessWidget {
               recognizer: TapGestureRecognizer()
                 ..onTap = () => Get.toNamed(AppRoutes.privacyPolicy),
             ),
+            const TextSpan(text: '。'),
           ],
         ),
       ),

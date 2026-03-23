@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/first_launch_privacy_dialog.dart';
 
 /// 注册页面控制器 - 使用响应式验证，无需 GlobalKey
 class RegisterController extends GetxController {
@@ -267,6 +269,13 @@ class RegisterController extends GetxController {
       if (success) {
         final user = authController.currentUser.value;
         log('✅ 注册成功: ${user?.name}');
+
+        await FirstLaunchPrivacyDialog.markConsented();
+        if (Get.isRegistered<IUserPreferencesRepository>()) {
+          final prefsRepo = Get.find<IUserPreferencesRepository>();
+          await prefsRepo.acceptPrivacyPolicy();
+          await prefsRepo.acceptTermsOfService();
+        }
 
         AppToast.success(
           welcomeToCommunity,
