@@ -44,13 +44,8 @@ class LocaleController extends GetxController {
       log('⚠️ 读取本地语言缓存失败: $e');
     }
 
-    // 无缓存，使用系统语言
-    final systemLocale = Get.deviceLocale;
-    if (systemLocale != null && systemLocale.languageCode == 'en') {
-      _applyUiLocale('en');
-    } else {
-      _applyUiLocale('zh');
-    }
+    // 无缓存，强制默认中文（无论系统语言）
+    _applyUiLocale('zh');
   }
 
   /// 从后端偏好设置同步语言（在加载 UserPreferences 后调用）
