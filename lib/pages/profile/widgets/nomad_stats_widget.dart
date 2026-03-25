@@ -31,7 +31,7 @@ class NomadStatsWidget extends StatelessWidget {
             title: l10n.profileNomadJourney,
           ),
           SizedBox(height: 16.h),
-          
+
           // === Bento 布局 ===
 
           // 1. 核心数据 (深邃太空风)
@@ -174,7 +174,7 @@ class _BentoHeroCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
