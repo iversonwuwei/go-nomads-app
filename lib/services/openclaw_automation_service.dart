@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:go_nomads_app/config/api_config.dart';
@@ -36,6 +37,20 @@ class OpenClawAutomationService {
     HttpService? httpService,
   }) : _httpService = httpService ?? HttpService();
 
+  /// 安全解析响应数据为 Map
+  Map<String, dynamic> _parseResponse(dynamic data) {
+    if (data is Map<String, dynamic>) return data;
+    if (data is String) {
+      // 尝试 JSON 解析，若为纯文本则包装为成功结果
+      try {
+        return jsonDecode(data) as Map<String, dynamic>;
+      } on FormatException {
+        return {'success': true, 'data': data};
+      }
+    }
+    throw FormatException('Unexpected response type: ${data.runtimeType}');
+  }
+
   /// 执行自然语言指令
   Future<OpenClawResult> executeCommand(String command, {String? sessionId}) async {
     try {
@@ -49,7 +64,7 @@ class OpenClawAutomationService {
         },
       );
 
-      return OpenClawResult.fromJson(response.data as Map<String, dynamic>);
+      return OpenClawResult.fromJson(_parseResponse(response.data));
     } catch (e, stack) {
       log('❌ OpenClaw 执行失败: $e\n$stack');
       return _handleError(e);
@@ -69,7 +84,7 @@ class OpenClawAutomationService {
         },
       );
 
-      return OpenClawResult.fromJson(response.data as Map<String, dynamic>);
+      return OpenClawResult.fromJson(_parseResponse(response.data));
     } catch (e, stack) {
       log('❌ OpenClaw 设置提醒失败: $e\n$stack');
       return _handleError(e);
@@ -89,7 +104,7 @@ class OpenClawAutomationService {
         },
       );
 
-      return OpenClawResult.fromJson(response.data as Map<String, dynamic>);
+      return OpenClawResult.fromJson(_parseResponse(response.data));
     } catch (e, stack) {
       log('❌ OpenClaw 设置签证提醒失败: $e\n$stack');
       return _handleError(e);
@@ -108,7 +123,7 @@ class OpenClawAutomationService {
         },
       );
 
-      return OpenClawResult.fromJson(response.data as Map<String, dynamic>);
+      return OpenClawResult.fromJson(_parseResponse(response.data));
     } catch (e, stack) {
       log('❌ OpenClaw 整理发票失败: $e\n$stack');
       return _handleError(e);
@@ -128,7 +143,7 @@ class OpenClawAutomationService {
         },
       );
 
-      return OpenClawResult.fromJson(response.data as Map<String, dynamic>);
+      return OpenClawResult.fromJson(_parseResponse(response.data));
     } catch (e, stack) {
       log('❌ OpenClaw 创建脚本失败: $e\n$stack');
       return _handleError(e);
@@ -153,7 +168,7 @@ class OpenClawAutomationService {
         data: params,
       );
 
-      return OpenClawResult.fromJson(response.data as Map<String, dynamic>);
+      return OpenClawResult.fromJson(_parseResponse(response.data));
     } catch (e, stack) {
       log('❌ OpenClaw 执行场景失败: $e\n$stack');
       return _handleError(e);
