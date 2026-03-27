@@ -4,6 +4,12 @@ applyTo: "lib/**/*.dart"
 
 # Flutter App 开发规范
 
+## Harness Engineering 基线
+- 本工程默认遵循根目录 `HARNESS_ENGINEERING_CHECKLIST.md`。
+- 交付说明默认遵循根目录 `HARNESS_DELIVERY_TEMPLATE.md`。
+- 需求实现前先明确页面状态、接口契约、登录态、失败恢复和验证路径。
+- 交付时必须说明已验证设备/场景、未验证风险，以及是否影响路由、状态管理或平台差异行为。
+
 ## 状态管理：GetX
 - 每个 feature 使用独立的 Controller + Binding
 - Controller 继承 `GetxController`，使用 `.obs` 响应式变量

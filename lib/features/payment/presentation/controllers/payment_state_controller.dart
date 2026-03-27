@@ -64,7 +64,7 @@ class PaymentStateController extends GetxController {
 
   /// 确认支付
   Future<PaymentResult?> capturePayment({
-    required String paypalOrderId,
+    required String externalPaymentOrderId,
     String? payerId,
   }) async {
     if (currentOrder.value == null) {
@@ -78,7 +78,7 @@ class PaymentStateController extends GetxController {
     try {
       final result = await _paymentRepository.capturePayment(
         orderId: currentOrder.value!.id,
-        paypalOrderId: paypalOrderId,
+        externalPaymentOrderId: externalPaymentOrderId,
         payerId: payerId,
       );
 
