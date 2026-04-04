@@ -3194,7 +3194,7 @@
   "noUnreadNotifications": "No unread notifications",
   "cancelled": "Cancelled",
   "ended": "Ended",
-  "cancelMeetup": "Cancel Meetup",
+  "cancelMeetup": "Cancel",
   "eventCancelled": "Event cancelled",
   "eventEnded": "Event ended",
   "cancelledTab": "Cancelled",

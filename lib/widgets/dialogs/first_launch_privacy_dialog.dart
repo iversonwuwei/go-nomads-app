@@ -10,11 +10,17 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/models/legal_document.dart';
 import 'package:go_nomads_app/pages/legal/privacy_policy_page.dart';
 import 'package:go_nomads_app/pages/legal/sdk_list_page.dart';
+import 'package:go_nomads_app/pages/legal/terms_of_service_page.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 首次启动隐私政策弹窗 key
 const String _kPrivacyConsentKey = 'first_launch_privacy_consented';
+const String _kTermsConsentKey = 'first_launch_terms_consented';
+const String _kPrivacyConsentVersionKey = 'first_launch_privacy_consented_version';
+const String _kTermsConsentVersionKey = 'first_launch_terms_consented_version';
+const String _kCurrentPrivacyPolicyVersion = '1.0.0';
+const String _kCurrentTermsOfServiceVersion = '1.0.0';
 
 /// 首次启动隐私政策同意对话框
 ///
@@ -24,27 +30,43 @@ const String _kPrivacyConsentKey = 'first_launch_privacy_consented';
 /// - 用户点击"不同意" → 可合理挽留（再次询问），若仍不同意则退出应用
 /// - 不可出现死循环弹窗
 class FirstLaunchPrivacyDialog {
-  /// 检查用户是否已在本地同意过首次启动隐私政策
+  /// 检查用户是否已在本地同意过首次启动法律文档
   static Future<bool> hasConsented() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_kPrivacyConsentKey) ?? false;
+    final privacyConsented = prefs.getBool(_kPrivacyConsentKey) ?? false;
+    final termsConsented = prefs.getBool(_kTermsConsentKey) ?? false;
+    final privacyVersion = prefs.getString(_kPrivacyConsentVersionKey) ?? '';
+    final termsVersion = prefs.getString(_kTermsConsentVersionKey) ?? '';
+    return privacyConsented && termsConsented && privacyVersion.isNotEmpty && termsVersion.isNotEmpty;
   }
 
-  /// 记录用户已同意
-  static Future<void> _saveConsent() async {
+  /// 记录用户已同意隐私政策和用户协议
+  static Future<void> _saveConsent({
+    String privacyVersion = _kCurrentPrivacyPolicyVersion,
+    String termsVersion = _kCurrentTermsOfServiceVersion,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kPrivacyConsentKey, true);
+    await prefs.setBool(_kTermsConsentKey, true);
+    await prefs.setString(_kPrivacyConsentVersionKey, privacyVersion);
+    await prefs.setString(_kTermsConsentVersionKey, termsVersion);
   }
 
-  /// 外部调用：标记本地已同意隐私政策（用于后端已同意但本地未记录的场景）
-  static Future<void> markConsented() async {
-    await _saveConsent();
+  /// 外部调用：标记本地已同意法律文档（用于后端已同意但本地未记录的场景）
+  static Future<void> markConsented({
+    String privacyVersion = _kCurrentPrivacyPolicyVersion,
+    String termsVersion = _kCurrentTermsOfServiceVersion,
+  }) async {
+    await _saveConsent(privacyVersion: privacyVersion, termsVersion: termsVersion);
   }
 
-  /// 清除本地同意状态（用于后端重置/隐私政策版本更新时强制重新确认）
+  /// 清除本地同意状态（用于后端重置/文档版本更新时强制重新确认）
   static Future<void> clearConsent() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kPrivacyConsentKey);
+    await prefs.remove(_kTermsConsentKey);
+    await prefs.remove(_kPrivacyConsentVersionKey);
+    await prefs.remove(_kTermsConsentVersionKey);
   }
 
   /// 显示首次启动隐私政策弹窗
@@ -59,11 +81,11 @@ class FirstLaunchPrivacyDialog {
 
     if (result == true) {
       await _saveConsent();
-      log('✅ 用户同意首次启动隐私政策');
+      log('✅ 用户同意首次启动法律文档');
       return true;
     }
 
-    log('❌ 用户拒绝首次启动隐私政策');
+    log('❌ 用户拒绝首次启动法律文档');
     return false;
   }
 }
@@ -78,6 +100,8 @@ class _FirstLaunchPrivacyDialogWidget extends StatefulWidget {
 class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDialogWidget> {
   List<LegalSummary>? _summaryItems;
   bool _isLoading = true;
+  bool _privacyChecked = false;
+  bool _termsChecked = false;
 
   @override
   void initState() {
@@ -149,7 +173,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              l10n?.privacyPolicy ?? '隐私政策',
+              '服务协议与隐私政策',
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
@@ -169,7 +193,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n?.privacyPolicyIntro ?? '欢迎使用行途（Go-Nomads）！为了为您提供更好的服务，我们需要您了解并同意以下隐私政策：',
+            '欢迎使用行途（Go-Nomads）！为了继续使用应用，请您阅读并同意《隐私政策》和《用户协议》。',
             style: TextStyle(
               fontSize: 14.sp,
               color: AppColors.textPrimary,
@@ -194,9 +218,35 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
             // API 加载失败时的兜底文案
             _buildSection(
               icon: Icons.info_outline,
-              title: '隐私保护',
-              content: '我们重视您的隐私安全。点击下方链接查看完整隐私政策以了解详情。',
+              title: '法律文档说明',
+              content: '我们重视您的隐私与使用权益。请查看完整隐私政策、用户协议和第三方 SDK 清单。',
             ),
+
+          SizedBox(height: 12.h),
+
+          _buildConsentCheckbox(
+            checked: _privacyChecked,
+            onChanged: (value) {
+              setState(() {
+                _privacyChecked = value ?? false;
+              });
+            },
+            leadingText: '我已阅读并同意',
+            linkText: '《隐私政策》',
+            onTapLink: () => _openPrivacyPolicyUrl(context),
+          ),
+          SizedBox(height: 8.h),
+          _buildConsentCheckbox(
+            checked: _termsChecked,
+            onChanged: (value) {
+              setState(() {
+                _termsChecked = value ?? false;
+              });
+            },
+            leadingText: '我已阅读并同意',
+            linkText: '《用户协议》',
+            onTapLink: () => _openTermsOfServiceUrl(context),
+          ),
 
           SizedBox(height: 12.h),
 
@@ -223,7 +273,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                       ),
                       children: [
                         TextSpan(
-                          text: l10n?.privacyPolicyNote ?? '如果您不同意以上隐私政策，将无法继续使用本应用。您可以随时在设置中查看完整的',
+                          text: '如果您不同意上述法律文档，将无法继续使用本应用。您可以随时在设置中查看完整的',
                         ),
                         TextSpan(
                           text: l10n?.privacyPolicy ?? '隐私政策',
@@ -236,6 +286,20 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               _openPrivacyPolicyUrl(context);
+                            },
+                        ),
+                        const TextSpan(text: '、'),
+                        TextSpan(
+                          text: '用户协议',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.amber[900],
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              _openTermsOfServiceUrl(context);
                             },
                         ),
                         const TextSpan(text: '和'),
@@ -262,6 +326,52 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildConsentCheckbox({
+    required bool checked,
+    required ValueChanged<bool?> onChanged,
+    required String leadingText,
+    required String linkText,
+    required VoidCallback onTapLink,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Checkbox(
+          value: checked,
+          onChanged: onChanged,
+          activeColor: AppColors.cityPrimary,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(top: 11.h),
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                children: [
+                  TextSpan(text: leadingText),
+                  TextSpan(
+                    text: linkText,
+                    style: TextStyle(
+                      color: AppColors.cityPrimary,
+                      decoration: TextDecoration.underline,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    recognizer: TapGestureRecognizer()..onTap = onTapLink,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -325,7 +435,9 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
             height: 44.h,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop(true);
+                if (_privacyChecked && _termsChecked) {
+                  Navigator.of(context).pop(true);
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.cityPrimary,
@@ -377,7 +489,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
         ),
         content: Text(
           l10n?.privacyDeclineMessage ??
-              '如果您不同意隐私政策，将无法使用本应用的相关功能。'
+              '如果您不同意隐私政策和用户协议，将无法使用本应用的相关功能。'
                   '\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。'
                   '\n\n您确定不同意吗？',
           style: TextStyle(fontSize: 14.sp, height: 1.5),
@@ -430,6 +542,16 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const PrivacyPolicyPage(),
+      ),
+    );
+  }
+
+  /// 打开用户协议页面
+  void _openTermsOfServiceUrl(BuildContext context) {
+    log('🔗 用户点击查看用户协议');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const TermsOfServicePage(),
       ),
     );
   }

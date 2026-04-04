@@ -1,43 +1,41 @@
 # TOOLS.md - Local Notes
 
-Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
+## 开发环境
 
-## What Goes Here
+- Flutter SDK: 3.x, Dart SDK `>=3.4.0 <4.0.0`
+- 状态管理: GetX
+- 包管理: `flutter pub get`
+- 构建: `flutter build apk` / `flutter build ios`
 
-Things like:
+## 常用命令
 
-- Camera names and locations
-- SSH hosts and aliases
-- Preferred voices for TTS
-- Speaker/room names
-- Device nicknames
-- Anything environment-specific
+```bash
+# 开发运行
+flutter run
 
-## Examples
+# 生成国际化文件
+flutter gen-l10n
 
-```markdown
-### Cameras
+# 清理缓存
+flutter clean && flutter pub get
 
-- living-room → Main area, 180° wide angle
-- front-door → Entrance, motion-triggered
-
-### SSH
-
-- home-server → 192.168.1.100, user: admin
-
-### TTS
-
-- Preferred voice: "Nova" (warm, slightly British)
-- Default speaker: Kitchen HomePod
+# 分析
+flutter analyze
 ```
 
-## Why Separate?
+## API 环境切换
 
-Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+- 编辑 `lib/config/api_config.dart`
+- `kIsProduction = true/false`
+- `deploymentEnvironment` = docker / k8s / direct
+- 真机调试: `usePhysicalDevice = true`, IP `192.168.110.67`
 
----
+## 社交登录配置
 
-Add whatever helps you do your job. This is your cheat sheet.
+- 微信: fluwx（需配置 AppID）
+- QQ: tencent_kit
+- Google: google_sign_in
+- Apple: sign_in_with_apple
 
 ## OpenClaw Local Commands
 

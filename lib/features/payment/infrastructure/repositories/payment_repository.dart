@@ -60,10 +60,10 @@ class PaymentRepository implements IPaymentRepository {
   @override
   Future<PaymentResult> capturePayment({
     required String orderId,
-    required String paypalOrderId,
+    required String externalPaymentOrderId,
     String? payerId,
   }) async {
-    log('💳 确认支付: orderId=$orderId, paypalOrderId=$paypalOrderId');
+    log('💳 确认支付: orderId=$orderId, externalPaymentOrderId=$externalPaymentOrderId');
 
     try {
       final token = await _tokenService.getAccessToken();
@@ -71,7 +71,8 @@ class PaymentRepository implements IPaymentRepository {
       final response = await _dio.post(
         '${ApiConfig.currentApiBaseUrl}/payments/orders/$orderId/capture',
         data: {
-          'payPalOrderId': paypalOrderId,
+          // 后端当前请求契约仍使用 payPalOrderId 字段名，这里先做兼容映射。
+          'payPalOrderId': externalPaymentOrderId,
           if (payerId != null) 'payerId': payerId,
         },
         options: Options(

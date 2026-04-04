@@ -25,6 +25,7 @@ import 'services/amap_native_location_service.dart';
 import 'services/app_init_service.dart';
 import 'services/background_task_service.dart';
 import 'services/image_upload_service.dart';
+import 'services/legal_service.dart';
 import 'services/location_service.dart';
 import 'services/notification_service.dart';
 import 'services/signalr_service.dart';
@@ -37,10 +38,10 @@ final _initCompleter = ValueNotifier<bool>(false);
 /// 全局变量：标记是否已从 AppWrapper 导航到目标页面
 var _hasNavigatedFromAppWrapper = false;
 
-/// 全局变量：标记首次启动隐私政策是否需要展示
+/// 全局变量：标记首次启动法律文档同意弹窗是否需要展示
 var _needsFirstLaunchPrivacyConsent = false;
 
-/// 全局变量：标记首次启动隐私政策已通过（用于控制SDK初始化时机）
+/// 全局变量：标记首次启动法律文档同意已通过（用于控制SDK初始化时机）
 var _privacyConsentCompleted = false;
 
 void main() async {
@@ -53,17 +54,17 @@ void main() async {
   _initCompleter.value = false;
   _privacyConsentCompleted = false;
 
-  // 工信部合规：在初始化任何SDK之前，先检查用户是否已同意隐私政策
+  // 工信部合规：在初始化任何SDK之前，先检查用户是否已同意法律文档
   final hasConsented = await FirstLaunchPrivacyDialog.hasConsented();
   _needsFirstLaunchPrivacyConsent = !hasConsented;
 
   if (_needsFirstLaunchPrivacyConsent) {
-    log('📋 首次启动，需要展示隐私政策同意弹窗（在SDK初始化之前）');
+    log('📋 首次启动，需要展示法律文档同意弹窗（在SDK初始化之前）');
     // 先启动UI显示启动页，等待用户同意后再初始化SDK
     runApp(const MyApp());
     // 不在这里执行 _performInitialization()，而是等用户同意后由 AppWrapper 触发
   } else {
-    log('✅ 用户已同意隐私政策，正常初始化');
+    log('✅ 用户已同意法律文档，正常初始化');
     _privacyConsentCompleted = true;
 
     // 立即启动 UI（显示启动页）
@@ -74,11 +75,11 @@ void main() async {
   }
 }
 
-/// 当用户在首次启动隐私弹窗中同意后，执行完整初始化
+/// 当用户在首次启动法律文档弹窗中同意后，执行完整初始化
 Future<void> performInitializationAfterConsent() async {
   if (_privacyConsentCompleted) return;
   _privacyConsentCompleted = true;
-  log('✅ 用户同意隐私政策，开始完整初始化...');
+  log('✅ 用户同意法律文档，开始完整初始化...');
   await _performInitialization();
 }
 
@@ -333,9 +334,9 @@ class _AppWrapperState extends State<AppWrapper> {
 
     log('📱 AppWrapper initState - _initCompleter.value = ${_initCompleter.value}');
 
-    // 如果需要首次启动隐私政策弹窗，等 UI 渲染后显示
+    // 如果需要首次启动法律文档弹窗，等 UI 渲染后显示
     if (_needsFirstLaunchPrivacyConsent) {
-      log('📋 等待 UI 渲染后显示首次启动隐私政策弹窗');
+      log('📋 等待 UI 渲染后显示首次启动法律文档弹窗');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showFirstLaunchPrivacyDialog();
       });
@@ -368,7 +369,7 @@ class _AppWrapperState extends State<AppWrapper> {
     super.dispose();
   }
 
-  /// 显示首次启动隐私政策弹窗（工信部合规要求）
+  /// 显示首次启动法律文档弹窗（工信部合规要求）
   Future<void> _showFirstLaunchPrivacyDialog() async {
     if (!mounted) return;
 
@@ -441,48 +442,72 @@ class _AppWrapperState extends State<AppWrapper> {
     }
   }
 
-  /// 双向同步隐私政策同意状态（后端为 source of truth）
+  /// 双向同步法律文档同意状态（后端为 source of truth）
   ///
-  /// - 后端未同意 + 本地已同意 → 清除本地缓存，重新弹窗
-  /// - 后端已同意 + 本地未同意 → 补写本地缓存（换设备场景）
-  /// - 本地已同意 + 后端未记录 → 静默推送到后端
+  /// - 任一文档后端未同意 + 本地已同意 → 清除本地缓存，重新弹窗
+  /// - 后端都已同意 + 本地未同意 → 补写本地缓存（换设备场景）
+  /// - 本地已同意 + 后端缺失任一状态 → 静默推送缺失项到后端
   Future<void> _syncPrivacyConsentToBackend() async {
     try {
       final prefsRepo = Get.find<IUserPreferencesRepository>();
       final preferences = await prefsRepo.getCurrentUserPreferences();
+      final legalService = LegalService();
+      final privacyDoc = await legalService.getPrivacyPolicy(forceRefresh: true);
+      final termsDoc = await legalService.getTermsOfService(forceRefresh: true);
+      final currentPrivacyVersion = privacyDoc?.version ?? preferences.privacyPolicyAcceptedVersion;
+      final currentTermsVersion = termsDoc?.version ?? preferences.termsOfServiceAcceptedVersion;
+      final backendFullyConsented = preferences.privacyPolicyAccepted && preferences.termsOfServiceAccepted;
+      final backendVersionsMatched = preferences.privacyPolicyAcceptedVersion == currentPrivacyVersion &&
+          preferences.termsOfServiceAcceptedVersion == currentTermsVersion;
+      final localConsented = await FirstLaunchPrivacyDialog.hasConsented();
 
-      if (!preferences.privacyPolicyAccepted) {
-        final localConsented = await FirstLaunchPrivacyDialog.hasConsented();
-
+      if (!backendFullyConsented || !backendVersionsMatched) {
         if (localConsented) {
-          // 后端标记为未同意（可能是管理员重置了），清除本地缓存并重新弹窗
-          log('⚠️ 后端隐私政策状态为未同意，需要重新确认');
+          // 后端任一法律文档标记为未同意，或接受版本已过期
+          log('⚠️ 后端法律文档状态或版本不一致，需要重新确认');
           await FirstLaunchPrivacyDialog.clearConsent();
 
           if (mounted) {
             final consented = await FirstLaunchPrivacyDialog.show(context);
             if (consented) {
               await prefsRepo.acceptPrivacyPolicy();
-              log('✅ 用户重新同意隐私政策，已同步到后端');
+              await prefsRepo.acceptTermsOfService();
+              await FirstLaunchPrivacyDialog.markConsented(
+                privacyVersion: currentPrivacyVersion,
+                termsVersion: currentTermsVersion,
+              );
+              log('✅ 用户重新同意法律文档，已同步到后端');
             }
             // 不同意则 dialog 内部会退出应用
           }
         } else {
-          // 本地也没同意过（不应出现在这里，但防御性处理）
-          log('🔄 静默同步隐私政策同意状态到后端...');
-          await prefsRepo.acceptPrivacyPolicy();
-          log('✅ 隐私政策同意状态已同步到后端');
+          // 本地也没同意过（理论上不应出现在这里），重新弹窗而不是静默接受
+          log('⚠️ 本地无法律文档同意记录，重新弹窗确认');
+          if (mounted) {
+            final consented = await FirstLaunchPrivacyDialog.show(context);
+            if (consented) {
+              await prefsRepo.acceptPrivacyPolicy();
+              await prefsRepo.acceptTermsOfService();
+              await FirstLaunchPrivacyDialog.markConsented(
+                privacyVersion: currentPrivacyVersion,
+                termsVersion: currentTermsVersion,
+              );
+              log('✅ 法律文档同意状态已同步到后端');
+            }
+          }
         }
       } else {
         // 后端已同意，确保本地也有记录（换设备场景）
-        final localConsented = await FirstLaunchPrivacyDialog.hasConsented();
         if (!localConsented) {
-          await FirstLaunchPrivacyDialog.markConsented();
-          log('✅ 后端已同意，补写本地缓存');
+          await FirstLaunchPrivacyDialog.markConsented(
+            privacyVersion: currentPrivacyVersion,
+            termsVersion: currentTermsVersion,
+          );
+          log('✅ 后端法律文档已同意，补写本地缓存');
         }
       }
     } catch (e) {
-      log('⚠️ 同步隐私政策状态失败（不影响使用）: $e');
+      log('⚠️ 同步法律文档状态失败（不影响使用）: $e');
     }
   }
 

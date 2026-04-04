@@ -1,15 +1,15 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 /// 底部操作栏组件
 ///
@@ -87,7 +87,7 @@ class MeetupBottomActionBar extends GetView<MeetupDetailController> {
               : () => controller.cancelMeetup(context),
           icon: Icon(FontAwesomeIcons.ban, size: 20.sp),
           label: Text(
-            meetup.status == MeetupStatus.cancelled ? '已取消' : '取消活动',
+            meetup.status == MeetupStatus.cancelled ? '已取消' : '取消',
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,

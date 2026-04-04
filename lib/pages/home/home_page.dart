@@ -27,6 +27,9 @@ class HomePage extends GetView<HomePageController> {
       });
     }
 
+    // 重置 GlobalKey 避免 permanent 控制器在页面重建时产生重复 key
+    controller.citiesListKey = GlobalKey();
+
     // 首页重新可见时执行一次轻量数据自愈检查。
     // 控制器内部有节流，不会因 build 频繁导致重复请求。
     WidgetsBinding.instance.addPostFrameCallback((_) {

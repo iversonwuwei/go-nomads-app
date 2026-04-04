@@ -15,6 +15,7 @@ import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
+import 'package:go_nomads_app/widgets/dialogs/first_launch_privacy_dialog.dart';
 
 /// 登录模式
 enum LoginMode { email, phone }
@@ -290,7 +291,7 @@ class LoginController extends GetxController {
         // 先导航到首页（正确卸载登录页，避免 TextEditingController disposed 错误）
         Get.offAllNamed(AppRoutes.home);
         // 在独立上下文中延迟检查隐私政策（不依赖已 dispose 的 LoginController）
-        _schedulePrivacyPolicyCheck();
+        _schedulePrivacyPolicyCheck(markLocalConsent: true);
       } else {
         AppToast.error(_l10n.loginInvalidEmailOrPassword, title: _l10n.loginFailedTitle);
       }
@@ -334,7 +335,7 @@ class LoginController extends GetxController {
         // 先导航到首页（正确卸载登录页）
         Get.offAllNamed(AppRoutes.home);
         // 在独立上下文中延迟检查隐私政策
-        _schedulePrivacyPolicyCheck();
+        _schedulePrivacyPolicyCheck(markLocalConsent: true);
       } else {
         AppToast.error(_l10n.loginFailedRetry, title: _l10n.error);
       }
@@ -383,7 +384,7 @@ class LoginController extends GetxController {
         // 先导航到首页（正确卸载登录页）
         Get.offAllNamed(AppRoutes.home);
         // 在独立上下文中延迟检查隐私政策
-        _schedulePrivacyPolicyCheck();
+        _schedulePrivacyPolicyCheck(markLocalConsent: true);
       }
     } catch (e) {
       // 关闭加载对话框
@@ -416,20 +417,44 @@ class LoginController extends GetxController {
 
   /// 登录成功后，静默同步隐私政策同意状态到后端
   ///
-  /// 用户在首次启动时已通过 FirstLaunchPrivacyDialog 同意过隐私政策，
+  /// 用户在首次启动时已通过 FirstLaunchPrivacyDialog 同意过法律文档，
   /// 这里只需要静默将同意状态同步到后端，不再弹窗。
-  static void _schedulePrivacyPolicyCheck() {
+  static void _schedulePrivacyPolicyCheck({bool markLocalConsent = false}) {
     Future.delayed(const Duration(milliseconds: 800), () async {
       try {
         final prefsRepo = Get.find<IUserPreferencesRepository>();
+        if (markLocalConsent) {
+          await FirstLaunchPrivacyDialog.markConsented();
+        }
+        final localConsented = await FirstLaunchPrivacyDialog.hasConsented();
+        if (!localConsented) {
+          log('⚠️ 本地未找到法律文档同意记录，跳过登录后静默同步');
+          return;
+        }
+
+        if (markLocalConsent) {
+          log('🔄 登录后按用户勾选显式同步法律文档状态到后端...');
+          await prefsRepo.acceptPrivacyPolicy();
+          await prefsRepo.acceptTermsOfService();
+          log('✅ 登录后法律文档同意状态已显式同步到后端');
+          return;
+        }
+
         final preferences = await prefsRepo.getCurrentUserPreferences();
+
         if (!preferences.privacyPolicyAccepted) {
           log('🔄 登录后静默同步隐私政策同意状态到后端...');
           await prefsRepo.acceptPrivacyPolicy();
           log('✅ 隐私政策同意状态已同步到后端');
         }
+
+        if (!preferences.termsOfServiceAccepted) {
+          log('🔄 登录后静默同步用户协议同意状态到后端...');
+          await prefsRepo.acceptTermsOfService();
+          log('✅ 用户协议同意状态已同步到后端');
+        }
       } catch (e) {
-        log('⚠️ 登录后同步隐私政策状态失败（不影响使用）: $e');
+        log('⚠️ 登录后同步法律文档状态失败（不影响使用）: $e');
       }
     });
   }

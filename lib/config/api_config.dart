@@ -216,12 +216,16 @@ class ApiConfig {
   static const String userUpdateMeEndpoint = '/users/me';
   static const String userDeleteEndpoint = '/users/{id}';
   static const String userBatchEndpoint = '/users/batch';
+  static const String userMePreferencesEndpoint = '/users/me/preferences';
+  static const String userMeAcceptPrivacyPolicyEndpoint = '/users/me/accept-privacy-policy';
+  static const String userMeAcceptTermsOfServiceEndpoint = '/users/me/accept-terms-of-service';
   static String get userProfileEndpoint => userMeEndpoint;
 
   // ============================================================
   // Legal Endpoints - /api/v1/users/legal
   // ============================================================
   static const String legalPrivacyPolicyEndpoint = '/users/legal/privacy-policy';
+  static const String legalTermsOfServiceEndpoint = '/users/legal/terms-of-service';
 
   // 首页相关
   static const String homeDataEndpoint = '/home/data';
@@ -377,6 +381,16 @@ class ApiConfig {
   static const String aiMessageStreamEndpoint = '/ai/conversations/{conversationId}/messages/stream';
   static const String aiMessageSignalRStreamEndpoint = '/ai/conversations/{conversationId}/messages/signalr-stream';
   static const String aiOpenClawResearchEndpoint = '/ai/openclaw/research';
+
+  // ============================================================
+  // OpenClaw Automation Endpoints - /api/v1/ai/openclaw
+  // ============================================================
+  static const String openClawExecuteEndpoint = '/ai/openclaw/execute';
+  static const String openClawReminderEndpoint = '/ai/openclaw/reminder';
+  static const String openClawVisaReminderEndpoint = '/ai/openclaw/visa-reminder';
+  static const String openClawAutomationEndpoint = '/ai/openclaw/automation/{scenario}';
+  static const String openClawInvoiceEndpoint = '/ai/openclaw/invoice-organize';
+  static const String openClawScriptEndpoint = '/ai/openclaw/script';
 
   // ============================================================
   // Travel History Endpoints - /api/v1/travel-history

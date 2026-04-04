@@ -6021,7 +6021,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelled => 'Cancelled';
 
   @override
-  String get cancelMeetup => 'Cancel Meetup';
+  String get cancelMeetup => 'Cancel';
 
   @override
   String get eventCancelled => 'Event cancelled';

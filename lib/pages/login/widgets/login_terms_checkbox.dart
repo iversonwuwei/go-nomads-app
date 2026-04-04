@@ -1,11 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 登录页用户协议勾选框（工信部/腾讯合规要求）
 /// Login page terms checkbox (required for Tencent app store compliance)
@@ -32,12 +32,12 @@ class LoginTermsCheckbox extends GetView<LoginController> {
                 style: TextStyle(fontSize: 14.sp, color: Colors.black87),
                 children: [
                   TextSpan(
-                    text: '${l10n.agreeToTerms} ',
+                    text: '我已阅读并同意 ',
                     recognizer: TapGestureRecognizer()
                       ..onTap = () => controller.toggleAgreeToTerms(),
                   ),
                   TextSpan(
-                    text: l10n.termsAndConditions,
+                    text: '《${l10n.termsAndConditions}》',
                     style: const TextStyle(
                       color: LoginConstants.primaryColor,
                       decoration: TextDecoration.underline,
@@ -45,9 +45,9 @@ class LoginTermsCheckbox extends GetView<LoginController> {
                     recognizer: TapGestureRecognizer()
                       ..onTap = () => Get.toNamed(AppRoutes.termsOfService),
                   ),
-                  TextSpan(text: ' ${l10n.and} '),
+                  const TextSpan(text: ' 和 '),
                   TextSpan(
-                    text: l10n.privacyPolicy,
+                    text: '《${l10n.privacyPolicy}》',
                     style: const TextStyle(
                       color: LoginConstants.primaryColor,
                       decoration: TextDecoration.underline,
@@ -55,6 +55,7 @@ class LoginTermsCheckbox extends GetView<LoginController> {
                     recognizer: TapGestureRecognizer()
                       ..onTap = () => Get.toNamed(AppRoutes.privacyPolicy),
                   ),
+                  const TextSpan(text: '。'),
                 ],
               ),
             ),

@@ -218,6 +218,11 @@ class MeetupListView extends GetView<MeetupListController> {
         if (result.hasData) {
           controller.updateMeetup(result.data!);
         }
+        // 从详情页返回时，标记已加入 Tab 需要刷新
+        // （无论是否有数据变更，都刷新以确保一致性）
+        if (result.needsRefresh || (result.hasData && result.data!.isJoined != meetup.isJoined)) {
+          controller.loadTabData(MeetupListTab.joined, refresh: true);
+        }
       },
     );
   }

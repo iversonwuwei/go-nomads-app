@@ -13,7 +13,7 @@ abstract class IPaymentRepository {
   /// 确认支付
   Future<PaymentResult> capturePayment({
     required String orderId,
-    required String paypalOrderId,
+    required String externalPaymentOrderId,
     String? payerId,
   });
 

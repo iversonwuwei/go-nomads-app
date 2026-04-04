@@ -3179,7 +3179,7 @@
   "noUnreadNotifications": "暂无未读通知",
   "cancelled": "已取消",
   "ended": "已结束",
-  "cancelMeetup": "取消活动",
+  "cancelMeetup": "取消",
   "eventCancelled": "活动已取消",
   "eventEnded": "活动已结束",
   "cancelledTab": "已取消",

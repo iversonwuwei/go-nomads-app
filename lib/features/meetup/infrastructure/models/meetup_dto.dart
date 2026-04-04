@@ -59,6 +59,16 @@ class MeetupDto {
     required this.createdAt,
   });
 
+  /// 解析时间字符串，确保结果为 UTC
+  /// 后端可能返回不带 Z 的 ISO 8601 字符串（如 "2024-03-22T04:00:00"），
+  /// DateTime.parse 会将其视为本地时间。此方法强制视为 UTC。
+  static DateTime _parseUtc(String dateStr) {
+    final dt = DateTime.parse(dateStr);
+    if (dt.isUtc) return dt;
+    // 没有时区标记 → 后端存的是 UTC，强制按 UTC 处理
+    return DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.millisecond, dt.microsecond);
+  }
+
   factory MeetupDto.fromJson(Map<String, dynamic> json) {
     // 处理 organizer 对象
     String? organizerName;
@@ -111,11 +121,11 @@ class MeetupDto {
       venue: json['location'] as String? ?? json['venue'] as String? ?? '',
       venueAddress: json['address'] as String? ?? json['venueAddress'] as String? ?? '',
       dateTime: json['dateTime'] != null
-          ? DateTime.parse(json['dateTime'] as String)
+          ? _parseUtc(json['dateTime'] as String)
           : json['startTime'] != null
-              ? DateTime.parse(json['startTime'] as String)
-              : DateTime.now(),
-      endTime: json['endTime'] != null ? DateTime.parse(json['endTime'] as String) : null,
+              ? _parseUtc(json['startTime'] as String)
+              : DateTime.now().toUtc(),
+      endTime: json['endTime'] != null ? _parseUtc(json['endTime'] as String) : null,
       maxAttendees: (json['maxAttendees'] as num?)?.toInt() ?? (json['maxParticipants'] as num?)?.toInt() ?? 0,
       currentAttendees: (json['currentAttendees'] as num?)?.toInt() ??
           (json['participantCount'] as num?)?.toInt() ??
@@ -130,7 +140,7 @@ class MeetupDto {
       isJoined: json['isJoined'] as bool? ?? json['isParticipant'] as bool? ?? false,
       isOrganizer: json['isOrganizer'] as bool? ?? false,
       status: json['status'] as String? ?? 'upcoming',
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
+      createdAt: json['createdAt'] != null ? _parseUtc(json['createdAt'] as String) : DateTime.now().toUtc(),
     )..printDebugInfo();
   }
 

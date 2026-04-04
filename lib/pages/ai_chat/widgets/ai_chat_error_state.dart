@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/ai_chat/ai_chat_theme.dart';
 
-/// AI Chat 错误状态组件
 class AiChatErrorState extends StatelessWidget {
   const AiChatErrorState({
     super.key,
@@ -20,17 +19,25 @@ class AiChatErrorState extends StatelessWidget {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildIcon(),
-            SizedBox(height: 18.h),
-            _buildMessage(),
-            SizedBox(height: 8.h),
-            _buildSubMessage(),
-            SizedBox(height: 20.h),
-            _buildRetryButton(context),
-          ],
+        child: Container(
+          padding: EdgeInsets.all(24.r),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.82),
+            borderRadius: BorderRadius.circular(28.r),
+            border: Border.all(color: AiChatTheme.line),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildIcon(),
+              SizedBox(height: 18.h),
+              _buildMessage(),
+              SizedBox(height: 8.h),
+              _buildSubMessage(),
+              SizedBox(height: 20.h),
+              _buildRetryButton(context),
+            ],
+          ),
         ),
       ),
     );
@@ -40,12 +47,12 @@ class AiChatErrorState extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        shape: BoxShape.circle,
+        color: AiChatTheme.errorSoft,
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: FaIcon(
         FontAwesomeIcons.triangleExclamation,
-        color: Colors.red.shade400,
+        color: AiChatTheme.error,
         size: 28.r,
       ),
     );
@@ -55,9 +62,9 @@ class AiChatErrorState extends StatelessWidget {
     return Text(
       message.isNotEmpty ? message : 'AI 服务暂时不可用',
       textAlign: TextAlign.center,
-      style: TextStyle(
-        fontWeight: FontWeight.w600,
-        color: Colors.grey.shade700,
+      style: const TextStyle(
+        fontWeight: FontWeight.w700,
+        color: AiChatTheme.ink,
       ),
     );
   }
@@ -68,7 +75,7 @@ class AiChatErrorState extends StatelessWidget {
       textAlign: TextAlign.center,
       style: TextStyle(
         fontSize: 13.sp,
-        color: Colors.grey.shade500,
+        color: AiChatTheme.inkSoft,
       ),
     );
   }
@@ -80,12 +87,12 @@ class AiChatErrorState extends StatelessWidget {
       icon: FaIcon(FontAwesomeIcons.arrowRotateRight, size: 14.r),
       label: Text(l10n.retry),
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.cityPrimary,
+        backgroundColor: AiChatTheme.teal,
         foregroundColor: Colors.white,
         elevation: 0,
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14.r),
+          borderRadius: BorderRadius.circular(16.r),
         ),
       ),
     );

@@ -222,7 +222,7 @@ class Schedule {
 
   /// 格式化开始时间
   String get formattedStartTime {
-    final date = startTime;
+    final date = startTime.toLocal();
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     final hour = date.hour.toString().padLeft(2, '0');

@@ -18,4 +18,7 @@ abstract class IUserPreferencesRepository {
 
   /// 接受隐私政策
   Future<UserPreferences> acceptPrivacyPolicy();
+
+  /// 接受用户协议
+  Future<UserPreferences> acceptTermsOfService();
 }

@@ -25,7 +25,7 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.get(
-        '${ApiConfig.currentApiBaseUrl}/users/me/preferences',
+        '${ApiConfig.currentApiBaseUrl}${ApiConfig.userMePreferencesEndpoint}',
         options: Options(
           headers: {
             if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
@@ -86,7 +86,7 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       }
 
       final response = await _dio.patch(
-        '${ApiConfig.currentApiBaseUrl}/users/me/preferences',
+        '${ApiConfig.currentApiBaseUrl}${ApiConfig.userMePreferencesEndpoint}',
         data: requestBody,
         options: Options(
           headers: {
@@ -116,7 +116,7 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.post(
-        '${ApiConfig.currentApiBaseUrl}/users/me/accept-privacy-policy',
+        '${ApiConfig.currentApiBaseUrl}${ApiConfig.userMeAcceptPrivacyPolicyEndpoint}',
         options: Options(
           headers: {
             if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
@@ -133,6 +133,35 @@ class UserPreferencesRepository implements IUserPreferencesRepository {
       throw Exception('接受隐私政策失败');
     } catch (e) {
       log('❌ 接受隐私政策失败: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<UserPreferences> acceptTermsOfService() async {
+    log('📋 接受用户协议');
+
+    try {
+      final token = await _tokenService.getAccessToken();
+
+      final response = await _dio.post(
+        '${ApiConfig.currentApiBaseUrl}${ApiConfig.userMeAcceptTermsOfServiceEndpoint}',
+        options: Options(
+          headers: {
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final preferences = UserPreferences.fromJson(response.data['data'] as Map<String, dynamic>);
+        log('✅ 成功接受用户协议');
+        return preferences;
+      }
+
+      throw Exception('接受用户协议失败');
+    } catch (e) {
+      log('❌ 接受用户协议失败: $e');
       rethrow;
     }
   }

@@ -3,6 +3,7 @@ import 'package:go_nomads_app/core/lifecycle/binding_helper.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/pages/ai_chat/ai_chat_controller.dart';
 import 'package:go_nomads_app/services/ai_chat_service.dart';
+import 'package:go_nomads_app/services/openclaw_automation_service.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
 
 /// AI Chat 页面绑定
@@ -17,6 +18,12 @@ class AiChatBinding extends Bindings {
     }
     Get.lazyPut<AiChatService>(() => AiChatService());
 
+    // OpenClaw Automation Service（每次全新创建）
+    if (Get.isRegistered<OpenClawAutomationService>()) {
+      Get.delete<OpenClawAutomationService>(force: true);
+    }
+    Get.lazyPut<OpenClawAutomationService>(() => OpenClawAutomationService());
+
     // SignalR Service (单例，持久化)
     if (!Get.isRegistered<SignalRService>()) {
       Get.put<SignalRService>(SignalRService(), permanent: true);
@@ -28,6 +35,7 @@ class AiChatBinding extends Bindings {
         Get.find<AiChatService>(),
         Get.find<AuthStateController>(),
         Get.find<SignalRService>(),
+        Get.find<OpenClawAutomationService>(),
       ),
     );
   }

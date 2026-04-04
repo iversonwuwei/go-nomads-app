@@ -14,6 +14,31 @@
     
     // Dart 格式化和编码设置
     "dart.lineLength": 120,
+    "dart.analysisExcludedFolders": [
+        "${workspaceFolder}/.dart_tool",
+        "${workspaceFolder}/build",
+        "${workspaceFolder}/ios/Pods",
+        "${workspaceFolder}/macos/Pods",
+        "${workspaceFolder}/android/.gradle",
+        "${workspaceFolder}/android/build",
+        "${workspaceFolder}/.openclaw"
+    ],
+    "files.watcherExclude": {
+        "**/.dart_tool/**": true,
+        "**/build/**": true,
+        "**/ios/Pods/**": true,
+        "**/macos/Pods/**": true,
+        "**/android/.gradle/**": true,
+        "**/android/build/**": true
+    },
+    "search.exclude": {
+        "**/.dart_tool": true,
+        "**/build": true,
+        "**/ios/Pods": true,
+        "**/macos/Pods": true,
+        "**/android/.gradle": true,
+        "**/android/build": true
+    },
     "[dart]": {
         "files.encoding": "utf8",
         "editor.formatOnSave": true,

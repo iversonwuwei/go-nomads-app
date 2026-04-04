@@ -165,9 +165,9 @@ class PaymentService extends GetxService {
 
     log('💳 处理支付回调: token=$token, payerId=$payerId');
 
-    // token 就是 PayPal 的 order ID
+    // token 是支付提供方返回的订单标识；当前 PayPal 回调场景会传回 provider order ID。
     final result = await controller.capturePayment(
-      paypalOrderId: token,
+      externalPaymentOrderId: token,
       payerId: payerId,
     );
 
