@@ -1,9 +1,13 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/migration_workspace/presentation/widgets/workspace_plan_editor_sheet.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/travel_plan/travel_plan_page_controller.dart';
 import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_accommodation_card.dart';
@@ -14,6 +18,9 @@ import 'package:go_nomads_app/pages/travel_plan/widgets/travel_plan_recommendati
 import 'package:go_nomads_app/utils/share_link_util.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/cockpit/cockpit_glass_icon_button.dart';
+import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
+import 'package:go_nomads_app/widgets/planning/planning_launch_components.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
 import 'package:go_nomads_app/widgets/share_button.dart';
 
@@ -33,6 +40,7 @@ class TravelPlanPage extends GetView<TravelPlanPageController> {
   final List<String>? interests;
   final String? departureLocation;
   final DateTime? departureDate;
+  final TravelPlanSummary? workspaceSummary;
 
   const TravelPlanPage({
     super.key,
@@ -48,6 +56,7 @@ class TravelPlanPage extends GetView<TravelPlanPageController> {
     this.interests,
     this.departureLocation,
     this.departureDate,
+    this.workspaceSummary,
   });
 
   @override
@@ -91,7 +100,10 @@ class TravelPlanPage extends GetView<TravelPlanPageController> {
           });
         }
       },
-      child: _TravelPlanPageContent(controllerTag: uniqueTag),
+      child: _TravelPlanPageContent(
+        controllerTag: uniqueTag,
+        workspaceSummary: workspaceSummary,
+      ),
     );
   }
 }
@@ -99,8 +111,12 @@ class TravelPlanPage extends GetView<TravelPlanPageController> {
 /// 页面内容组件
 class _TravelPlanPageContent extends StatelessWidget {
   final String controllerTag;
+  final TravelPlanSummary? workspaceSummary;
 
-  const _TravelPlanPageContent({required this.controllerTag});
+  const _TravelPlanPageContent({
+    required this.controllerTag,
+    required this.workspaceSummary,
+  });
 
   TravelPlanPageController get controller => Get.find<TravelPlanPageController>(tag: controllerTag);
 
@@ -109,7 +125,10 @@ class _TravelPlanPageContent extends StatelessWidget {
     return Obx(() {
       final content = controller.plan.value == null
           ? const TravelPlanErrorView()
-          : _TravelPlanContentView(controllerTag: controllerTag);
+          : _TravelPlanContentView(
+              controllerTag: controllerTag,
+              workspaceSummary: workspaceSummary,
+            );
 
       return AppLoadingSwitcher(
         isLoading: controller.isLoading.value,
@@ -233,8 +252,12 @@ class _SkeletonListView extends StatelessWidget {
 /// 内容视图组件
 class _TravelPlanContentView extends StatelessWidget {
   final String controllerTag;
+  final TravelPlanSummary? workspaceSummary;
 
-  const _TravelPlanContentView({required this.controllerTag});
+  const _TravelPlanContentView({
+    required this.controllerTag,
+    required this.workspaceSummary,
+  });
 
   TravelPlanPageController get controller => Get.find<TravelPlanPageController>(tag: controllerTag);
 
@@ -265,6 +288,17 @@ class _TravelPlanContentView extends StatelessWidget {
           if (controller.showsOpenClawResearchCard)
             SliverToBoxAdapter(
               child: _OpenClawResearchCard(controllerTag: controllerTag),
+            ),
+
+          if (workspaceSummary != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                child: _MigrationWorkspaceFocusCard(
+                  summary: workspaceSummary!,
+                  controllerTag: controllerTag,
+                ),
+              ),
             ),
 
           // Budget Breakdown
@@ -486,36 +520,44 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
             padding: EdgeInsets.only(bottom: mediaQuery.viewInsets.bottom),
             child: SafeArea(
               top: false,
-              child: Container(
-                constraints: BoxConstraints(maxHeight: maxSheetHeight),
-                padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                  child: Container(
+                    constraints: BoxConstraints(maxHeight: maxSheetHeight),
+                    padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 24.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.74),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 44.w,
+                              height: 4.h,
+                              decoration: BoxDecoration(
+                                color: AppColors.textTertiary.withValues(alpha: 0.45),
+                                borderRadius: BorderRadius.circular(999.r),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 14.h),
                       Text(
-                        '重排第${dayItinerary.day}天',
-                        style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87),
+                            '重排第${dayItinerary.day}天',
+                            style:
+                                TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                       ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        '当前主题：${dayItinerary.theme}。你可以直接调全天，也可以只改上午、下午或晚上。',
-                        style: TextStyle(fontSize: 12.sp, height: 1.5, color: Colors.grey[700]),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        '当前会重点影响：第${dayItinerary.day}天$selectedScopeLabel。',
-                        style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: const Color(0xFFFF7A57)),
-                      ),
-                      SizedBox(height: 16.h),
+                          SizedBox(height: 14.h),
                       Text(
                         '调整范围',
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
+                            style:
+                                TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                       ),
                       SizedBox(height: 10.h),
                       Wrap(
@@ -540,7 +582,8 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
                       SizedBox(height: 16.h),
                       Text(
                         '快捷调整',
-                        style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
+                            style:
+                                TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                       ),
                       SizedBox(height: 10.h),
                       Wrap(
@@ -572,7 +615,8 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
                         SizedBox(height: 16.h),
                         Text(
                           '当前命中活动',
-                          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
+                              style:
+                                  TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                         ),
                         SizedBox(height: 10.h),
                         Wrap(
@@ -584,16 +628,16 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
                                 (activity) => Container(
                                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFFF6EF),
+                                        color: Colors.white.withValues(alpha: 0.56),
                                     borderRadius: BorderRadius.circular(999.r),
-                                    border: Border.all(color: const Color(0xFFFFE0CC)),
+                                        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
                                   ),
                                   child: Text(
                                     '${activity.time} ${activity.name}',
                                     style: TextStyle(
                                       fontSize: 11.sp,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
+                                          color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ),
@@ -604,7 +648,7 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
                           SizedBox(height: 8.h),
                           Text(
                             '还有 ${scopedActivities.length - 5} 个活动会被一起考虑。',
-                            style: TextStyle(fontSize: 11.sp, color: Colors.grey[700]),
+                                style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary),
                           ),
                         ],
                       ],
@@ -615,12 +659,17 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
                         minLines: 3,
                         decoration: InputDecoration(
                           hintText: selectedScope == 'day'
-                              ? '例如：把这一天改成半天办公 + 半天博物馆，晚上安排安静餐厅'
-                              : '例如：把$selectedScopeLabel改成更轻松，减少打卡点并留出咖啡休息时间',
+                              ? '输入你想保留或调整的重点' : '输入$selectedScopeLabel的调整要求',
+                              filled: true,
+                              fillColor: Colors.white.withValues(alpha: 0.62),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14.r)),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14.r),
-                            borderSide: const BorderSide(color: Color(0xFFFF4458), width: 1.4),
+                                borderSide: const BorderSide(color: AppColors.cityPrimary, width: 1.4),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14.r),
+                                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.72)),
                           ),
                         ),
                       ),
@@ -638,15 +687,17 @@ Future<void> _showDayReplanSheet(BuildContext context, TravelPlanPageController 
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF4458),
+                                backgroundColor: AppColors.cityPrimary,
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(vertical: 14.h),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                           ),
                           child: Text('生成第${dayItinerary.day}天$selectedScopeLabel新版本'),
                         ),
                       ),
                     ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -784,110 +835,211 @@ class _OverviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final departureLocation = controller.effectiveDepartureLocation;
+    final preferenceCount = plan.metadata.interests.where((item) => !item.startsWith('openclaw_')).length;
 
     return Container(
-      margin: EdgeInsets.all(16.w),
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 标题行
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r),
+      margin: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
+      child: CockpitPanel(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF102542), Color(0xFF264653)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Icon(
-                  FontAwesomeIcons.wandMagicSparkles,
-                  color: Color(0xFFFF4458),
-                  size: 20.r,
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
               ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.aiGeneratedPlan,
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'TRAVEL BRIEF',
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      letterSpacing: 1.1,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
-                    Text(
-                      l10n.personalizedForYou,
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.grey,
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        child: Icon(
+                          FontAwesomeIcons.wandMagicSparkles,
+                          color: Colors.white,
+                          size: 18.r,
+                        ),
                       ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Text(
+                          'Travel Brief',
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    '${plan.destination.cityName} · ${controller.planningModeLabel} · ${controller.planningObjectiveLabel}',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      height: 1.4,
+                      color: Colors.white.withValues(alpha: 0.78),
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 8.h,
+                    children: [
+                      PlanningStageChip(
+                        label: 'Travel Brief',
+                        value: l10n.durationDays('${plan.metadata.duration}'),
+                        minWidth: 104.w,
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        borderColor: Colors.white.withValues(alpha: 0.16),
+                        labelColor: Colors.white.withValues(alpha: 0.72),
+                        valueColor: Colors.white,
+                      ),
+                      PlanningStageChip(
+                        label: 'Preference Stack',
+                        value: '$preferenceCount picks · ${plan.metadata.style.name}',
+                        minWidth: 104.w,
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        borderColor: Colors.white.withValues(alpha: 0.16),
+                        labelColor: Colors.white.withValues(alpha: 0.72),
+                        valueColor: Colors.white,
+                      ),
+                      PlanningStageChip(
+                        label: 'Research Launch',
+                        value: controller.planningModeLabel,
+                        minWidth: 104.w,
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        borderColor: Colors.white.withValues(alpha: 0.16),
+                        labelColor: Colors.white.withValues(alpha: 0.72),
+                        valueColor: Colors.white,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Wrap(
+                spacing: 10.w,
+                runSpacing: 10.h,
+                children: [
+                  if (departureLocation != null && departureLocation.isNotEmpty) ...[
+                    _OverviewMetricTile(
+                      icon: FontAwesomeIcons.plane,
+                      label: l10n.from,
+                      value: departureLocation,
                     ),
                   ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          const Divider(),
-          SizedBox(height: 16.h),
-          // 信息标签
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                if (departureLocation != null && departureLocation.isNotEmpty) ...[
-                  _buildInfoChip(FontAwesomeIcons.plane, '${l10n.from}: $departureLocation'),
-                  SizedBox(width: 12.w),
+                  _OverviewMetricTile(
+                    icon: FontAwesomeIcons.calendar,
+                    label: l10n.duration,
+                    value: '${plan.metadata.duration}',
+                  ),
+                  _OverviewMetricTile(
+                    icon: FontAwesomeIcons.dollarSign,
+                    label: l10n.budget,
+                    value: plan.metadata.budgetLevel.displayName,
+                  ),
+                  _OverviewMetricTile(
+                    icon: FontAwesomeIcons.paintbrush,
+                    label: l10n.travelStyle,
+                    value: plan.metadata.style.name,
+                  ),
+                  _OverviewMetricTile(
+                    icon: FontAwesomeIcons.binoculars,
+                    label: 'Research Launch',
+                    value: controller.planningModeLabel,
+                  ),
+                  _OverviewMetricTile(
+                    icon: FontAwesomeIcons.bullseye,
+                    label: 'Preference Stack',
+                    value: controller.planningObjectiveLabel,
+                  ),
                 ],
-                _buildInfoChip(FontAwesomeIcons.calendar, '${plan.metadata.duration} ${l10n.days}'),
-                SizedBox(width: 12.w),
-                _buildInfoChip(FontAwesomeIcons.dollarSign, plan.metadata.budgetLevel.displayName),
-                SizedBox(width: 12.w),
-                _buildInfoChip(FontAwesomeIcons.paintbrush, plan.metadata.style.name),
-                SizedBox(width: 12.w),
-                _buildInfoChip(FontAwesomeIcons.binoculars, controller.planningModeLabel),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildInfoChip(IconData icon, String label) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14.r, color: const Color(0xFFFF4458)),
-          SizedBox(width: 4.w),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
+class _OverviewMetricTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _OverviewMetricTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 145.w,
+      child: Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 13.r, color: AppColors.cityPrimary),
+            SizedBox(height: 10.h),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: 4.h),
+            Text(
+              value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+                height: 1.25,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -935,7 +1087,7 @@ class _OpenClawResearchCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'OpenClaw 实验研究层',
+                      'Research launch context',
                       style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
                     Text(
@@ -986,8 +1138,8 @@ class _OpenClawResearchCard extends StatelessWidget {
                 Text(
                   controller.openClawSummary ??
                       (signalLabels.isEmpty
-                          ? '当前方案没有附加实时核对项，因此更偏向静态偏好驱动的路线生成。'
-                          : '本次规划会把 ${signalLabels.join('、')} 作为高优先级研究线索，帮助 AI 更贴近远程工作和城市探索的真实场景。'),
+                          ? 'The current draft is leaning on static preferences only, so this round will stay close to your existing brief.'
+                          : 'This round promotes ${signalLabels.join('、')} into active research signals so the next draft can react to real on-the-ground context.'),
                   style: TextStyle(fontSize: 13.sp, height: 1.55, color: Colors.black87),
                 ),
                 SizedBox(height: 10.h),
@@ -1006,7 +1158,7 @@ class _OpenClawResearchCard extends StatelessWidget {
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
-                          '${controller.replanScopeLabel}：${controller.replanScopeDescription}',
+                          '${controller.replanScopeLabel}: ${controller.replanScopeDescription}',
                           style: TextStyle(fontSize: 12.sp, height: 1.45, color: Colors.black87),
                         ),
                       ),
@@ -1016,7 +1168,7 @@ class _OpenClawResearchCard extends StatelessWidget {
                 if (controller.activeResearchSignalLabels.isNotEmpty) ...[
                   SizedBox(height: 12.h),
                   _ResearchListBlock(
-                    title: '本次启用信号',
+                    title: 'Active signals',
                     icon: FontAwesomeIcons.satelliteDish,
                     items: controller.activeResearchSignalLabels,
                   ),
@@ -1024,7 +1176,7 @@ class _OpenClawResearchCard extends StatelessWidget {
                 if (controller.openClawInsights.isNotEmpty) ...[
                   SizedBox(height: 12.h),
                   _ResearchListBlock(
-                    title: '研究发现',
+                    title: 'Research findings',
                     icon: FontAwesomeIcons.magnifyingGlass,
                     items: controller.openClawInsights,
                   ),
@@ -1032,7 +1184,7 @@ class _OpenClawResearchCard extends StatelessWidget {
                 if (controller.openClawChecks.isNotEmpty) ...[
                   SizedBox(height: 12.h),
                   _ResearchListBlock(
-                    title: '落地核对',
+                    title: 'Execution checks',
                     icon: FontAwesomeIcons.clipboardCheck,
                     items: controller.openClawChecks,
                   ),
@@ -1042,6 +1194,328 @@ class _OpenClawResearchCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MigrationWorkspaceFocusCard extends StatelessWidget {
+  final TravelPlanSummary summary;
+  final String controllerTag;
+
+  const _MigrationWorkspaceFocusCard({
+    required this.summary,
+    required this.controllerTag,
+  });
+
+  TravelPlanPageController get controller => Get.find<TravelPlanPageController>(tag: controllerTag);
+
+  Future<void> _editWorkspace(BuildContext context) async {
+    final result = await showWorkspacePlanEditor(context, summary);
+    if (result == null) {
+      return;
+    }
+
+    await controller.saveWorkspaceState(
+      plan: summary,
+      stage: result.stage,
+      focusNote: result.focusNote,
+      checklist: result.checklist,
+      timeline: result.timeline,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final checklistPreview = summary.checklist.take(3).toList(growable: false);
+    final timelinePreview = summary.timeline.take(3).toList(growable: false);
+    final totalTasks = summary.totalTaskCount == 0 ? summary.checklist.length : summary.totalTaskCount;
+    final completedTasks = summary.completedTaskCount == 0
+        ? summary.checklist.where((item) => item.isCompleted).length
+        : summary.completedTaskCount;
+
+    return CockpitPanel(
+      padding: EdgeInsets.all(18.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.migrationWorkspaceFocusTitle,
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      summary.focusNote?.trim().isNotEmpty == true
+                          ? summary.focusNote!.trim()
+                          : 'Keep the move plan visible so the trip brief, checklist, and timeline stay aligned.',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        height: 1.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Obx(
+                () => controller.isSavingWorkspace.value
+                    ? Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(16.r),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(10.w),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.cityPrimary),
+                          ),
+                        ),
+                      )
+                    : CockpitGlassIconButton(
+                        icon: FontAwesomeIcons.penToSquare,
+                        iconColor: AppColors.textPrimary,
+                        onTap: () => _editWorkspace(context),
+                      ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              if (summary.migrationStage.isNotEmpty)
+                _WorkspaceSignalPill(
+                  icon: FontAwesomeIcons.flagCheckered,
+                  label: '${l10n.migrationWorkspaceStageLabel} ${summary.migrationStage}',
+                ),
+              _WorkspaceSignalPill(
+                icon: FontAwesomeIcons.listCheck,
+                label:
+                    '$completedTasks/${totalTasks == 0 ? checklistPreview.length : totalTasks} ${l10n.migrationWorkspaceChecklistLabel}',
+              ),
+              if (summary.departureDate != null)
+                _WorkspaceSignalPill(
+                  icon: FontAwesomeIcons.planeDeparture,
+                  label: '${l10n.migrationWorkspaceDepartureDate} ${summary.formattedDepartureDate}',
+                ),
+              if (summary.timeline.isNotEmpty)
+                _WorkspaceSignalPill(
+                  icon: FontAwesomeIcons.clockRotateLeft,
+                  label: '${summary.timeline.length} ${l10n.migrationWorkspaceTimelineLabel}',
+                ),
+            ],
+          ),
+          if (checklistPreview.isNotEmpty) ...[
+            SizedBox(height: 16.h),
+            _WorkspaceBlock(
+              title: l10n.migrationWorkspaceChecklistLabel,
+              icon: FontAwesomeIcons.listCheck,
+              child: Column(
+                children: checklistPreview
+                    .map(
+                      (item) => Padding(
+                        padding: EdgeInsets.only(bottom: 8.h),
+                        child: _WorkspaceChecklistRow(item: item),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ),
+          ],
+          if (timelinePreview.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            _WorkspaceBlock(
+              title: l10n.migrationWorkspaceTimelineLabel,
+              icon: FontAwesomeIcons.clockRotateLeft,
+              child: Column(
+                children: timelinePreview
+                    .map(
+                      (item) => Padding(
+                        padding: EdgeInsets.only(bottom: 8.h),
+                        child: _WorkspaceTimelineRow(item: item),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkspaceSignalPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _WorkspaceSignalPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.58),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12.r, color: AppColors.cityPrimary),
+          SizedBox(width: 6.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkspaceBlock extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  const _WorkspaceBlock({required this.title, required this.icon, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14.r, color: AppColors.cityPrimary),
+              SizedBox(width: 8.w),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkspaceChecklistRow extends StatelessWidget {
+  final MigrationChecklistItem item;
+
+  const _WorkspaceChecklistRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          item.isCompleted ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circle,
+          size: 14.r,
+          color: item.isCompleted ? const Color(0xFF10B981) : AppColors.textTertiary,
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Text(
+            item.title,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+              decoration: item.isCompleted ? TextDecoration.lineThrough : null,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _WorkspaceTimelineRow extends StatelessWidget {
+  final MigrationTimelineItem item;
+
+  const _WorkspaceTimelineRow({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final dateLabel = item.targetDate == null
+        ? item.status
+        : '${item.targetDate!.month.toString().padLeft(2, '0')}/${item.targetDate!.day.toString().padLeft(2, '0')}';
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 52.w,
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: AppColors.cityPrimaryLight.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Text(
+            dateLabel,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.cityPrimary,
+            ),
+          ),
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(top: 4.h),
+            child: Text(
+              item.title,
+              style: TextStyle(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1090,6 +1564,8 @@ class _ReplanActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final signalLabels = controller.activeResearchSignalLabels;
+
     return Container(
       margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
       decoration: BoxDecoration(
@@ -1146,7 +1622,7 @@ class _ReplanActionCard extends StatelessWidget {
                         Icon(FontAwesomeIcons.wandMagicSparkles, size: 12.r, color: Colors.white),
                         SizedBox(width: 6.w),
                         Text(
-                          'Next Draft',
+                          'Research Launch',
                           style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: Colors.white),
                         ),
                       ],
@@ -1170,7 +1646,7 @@ class _ReplanActionCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '二次重规划',
+                              '发起下一轮调整',
                               style: TextStyle(
                                 fontSize: 20.sp,
                                 fontWeight: FontWeight.bold,
@@ -1180,11 +1656,11 @@ class _ReplanActionCard extends StatelessWidget {
                             ),
                             SizedBox(height: 6.h),
                             Text(
-                              '在不推翻整份路线的前提下，把这一版往更明确的目标继续推进。',
+                              controller.replanScopeDescription,
                               style: TextStyle(
                                 fontSize: 12.sp,
-                                height: 1.5,
-                                color: Colors.white.withValues(alpha: 0.92),
+                                height: 1.45,
+                                color: Colors.white.withValues(alpha: 0.84),
                               ),
                             ),
                           ],
@@ -1196,10 +1672,55 @@ class _ReplanActionCard extends StatelessWidget {
                   Wrap(
                     spacing: 8.w,
                     runSpacing: 8.h,
-                    children: const [
-                      _ReplanMetaChip(label: '保留城市上下文'),
-                      _ReplanMetaChip(label: '沿用 OpenClaw 线索'),
-                      _ReplanMetaChip(label: '生成下一版方案'),
+                    children: [
+                      _ResearchChip(icon: FontAwesomeIcons.route, label: controller.replanScopeLabel),
+                      _ResearchChip(icon: FontAwesomeIcons.bullseye, label: controller.planningObjectiveLabel),
+                      _ResearchChip(icon: FontAwesomeIcons.magnifyingGlassChart, label: controller.planningModeLabel),
+                      if (signalLabels.isNotEmpty)
+                        _ResearchChip(
+                          icon: FontAwesomeIcons.waveSquare,
+                          label: signalLabels.join(' · '),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 14.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: PlanningStageChip(
+                          label: 'Travel Brief',
+                          value: controller.replanScopeLabel,
+                          backgroundColor: Colors.white.withValues(alpha: 0.16),
+                          borderColor: Colors.white.withValues(alpha: 0.14),
+                          labelColor: Colors.white.withValues(alpha: 0.72),
+                          valueColor: Colors.white,
+                          padding: EdgeInsets.all(12.w),
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: PlanningStageChip(
+                          label: 'Preference Stack',
+                          value: controller.planningObjectiveLabel,
+                          backgroundColor: Colors.white.withValues(alpha: 0.16),
+                          borderColor: Colors.white.withValues(alpha: 0.14),
+                          labelColor: Colors.white.withValues(alpha: 0.72),
+                          valueColor: Colors.white,
+                          padding: EdgeInsets.all(12.w),
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: PlanningStageChip(
+                          label: 'Research Launch',
+                          value: controller.planningModeLabel,
+                          backgroundColor: Colors.white.withValues(alpha: 0.16),
+                          borderColor: Colors.white.withValues(alpha: 0.14),
+                          labelColor: Colors.white.withValues(alpha: 0.72),
+                          valueColor: Colors.white,
+                          padding: EdgeInsets.all(12.w),
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -1211,40 +1732,27 @@ class _ReplanActionCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      '快捷策略',
-                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: Colors.black87),
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Text(
-                        '先定方向，再出下一稿。',
-                        style: TextStyle(fontSize: 11.sp, color: Colors.grey[700]),
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'Launch lanes',
+                  style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w800, color: Colors.black87),
                 ),
-                SizedBox(height: 12.h),
+                SizedBox(height: 10.h),
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final spacing = 10.w;
-                    final itemWidth = (constraints.maxWidth - spacing) / 2;
+                    final presetWidth = (constraints.maxWidth - 12.w) / 2;
 
                     return Wrap(
-                      spacing: spacing,
-                      runSpacing: 10.h,
+                      spacing: 12.w,
+                      runSpacing: 12.h,
                       children: _presets
                           .map(
                             (preset) => _ReplanPresetButton(
-                              width: itemWidth,
+                              width: presetWidth,
                               preset: preset,
                               onTap: () => controller.replanWithPreset(preset.key),
                             ),
                           )
-                          .toList(),
+                          .toList(growable: false),
                     );
                   },
                 ),
@@ -1252,16 +1760,14 @@ class _ReplanActionCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.82),
+                    color: const Color(0xFFFFFBF7),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: const Color(0xFFFFE6D8)),
+                    border: Border.all(color: const Color(0xFFFFE3D6)),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        width: 38.w,
-                        height: 38.w,
+                        padding: EdgeInsets.all(10.w),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFF1E8),
                           borderRadius: BorderRadius.circular(12.r),
@@ -1274,13 +1780,19 @@ class _ReplanActionCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '需要更细的要求？',
+                              'Prompt override',
                               style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87),
                             ),
                             SizedBox(height: 4.h),
                             Text(
-                              '比如只强调预算、远程工作窗口，或者让某一天更轻松一些。',
-                              style: TextStyle(fontSize: 11.sp, height: 1.45, color: Colors.grey[700]),
+                              controller.planningModeDescription,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                height: 1.4,
+                                color: Colors.grey[700],
+                              ),
                             ),
                           ],
                         ),
@@ -1338,13 +1850,8 @@ class _ReplanActionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '你想怎么改这份路线？',
+                      '调整路线',
                       style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      '例如：把白天改成工作优先，晚上安排城市夜生活；或者把第三天改成更轻松的节奏。',
-                      style: TextStyle(fontSize: 12.sp, height: 1.5, color: Colors.grey[700]),
                     ),
                     SizedBox(height: 16.h),
                     TextField(
@@ -1400,7 +1907,6 @@ class _ReplanSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final request = controller.currentReplanRequest;
     final activities = controller.currentReplanActivities;
-    final signalLabels = controller.activeResearchSignalLabels;
     final strategyHighlights = controller.replanStrategyHighlights;
     final impactPreviews = controller.replanImpactPreviews;
     final actualDiffHeadline = controller.actualReplanDiffHeadline;
@@ -1425,7 +1931,7 @@ class _ReplanSummaryCard extends StatelessWidget {
               Icon(FontAwesomeIcons.sliders, size: 15.r, color: const Color(0xFFFF7A57)),
               SizedBox(width: 8.w),
               Text(
-                '本次调整摘要',
+                'Research outcome',
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
             ],
@@ -1437,12 +1943,17 @@ class _ReplanSummaryCard extends StatelessWidget {
             children: [
               _ResearchChip(icon: FontAwesomeIcons.route, label: controller.replanScopeLabel),
               _ResearchChip(icon: FontAwesomeIcons.bullseye, label: controller.planningObjectiveLabel),
-              ...signalLabels.map(
-                (label) => _ResearchChip(
-                  icon: FontAwesomeIcons.satelliteDish,
-                  label: label,
-                ),
-              ),
+              _ResearchChip(icon: FontAwesomeIcons.magnifyingGlassChart, label: controller.planningModeLabel),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              PlanningStageChip(label: 'Travel Brief', value: controller.replanScopeLabel, minWidth: 104.w),
+              PlanningStageChip(label: 'Preference Stack', value: controller.planningObjectiveLabel, minWidth: 104.w),
+              PlanningStageChip(label: 'Research Launch', value: controller.planningModeLabel, minWidth: 104.w),
             ],
           ),
           SizedBox(height: 12.h),
@@ -1469,7 +1980,7 @@ class _ReplanSummaryCard extends StatelessWidget {
           if (actualDiffItems.isNotEmpty) ...[
             SizedBox(height: 12.h),
             _ActualDiffListBlock(
-              title: '实际变化',
+              title: 'Travel Brief delta',
               icon: FontAwesomeIcons.arrowsRotate,
               items: actualDiffItems,
             ),
@@ -1477,7 +1988,7 @@ class _ReplanSummaryCard extends StatelessWidget {
           if (strategyHighlights.isNotEmpty) ...[
             SizedBox(height: 12.h),
             _StrategyInsightListBlock(
-              title: '本次策略重点',
+              title: 'Preference Stack logic',
               icon: FontAwesomeIcons.wandMagicSparkles,
               items: strategyHighlights,
               resolveSourceLabels: controller.strategySourceLabels,
@@ -1486,7 +1997,7 @@ class _ReplanSummaryCard extends StatelessWidget {
           if (impactPreviews.isNotEmpty) ...[
             SizedBox(height: 12.h),
             _ImpactPreviewListBlock(
-              title: '预计变化',
+              title: 'Research impact preview',
               icon: FontAwesomeIcons.arrowsTurnToDots,
               items: impactPreviews,
               resolveSourceLabels: controller.strategySourceLabels,
@@ -1502,7 +2013,7 @@ class _ReplanSummaryCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Text(
-                '本次重点活动：$activities',
+                'Focus lane: $activities',
                 style: TextStyle(fontSize: 12.sp, height: 1.45, color: Colors.grey[800]),
               ),
             ),
@@ -1595,48 +2106,14 @@ class _ReplanPresetButton extends StatelessWidget {
               style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: Colors.black87, height: 1.3),
             ),
             SizedBox(height: 6.h),
-            Text(
-              preset.subtitle,
-              style: TextStyle(fontSize: 11.sp, height: 1.45, color: Colors.grey[700]),
-            ),
-            SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
-              decoration: BoxDecoration(
-                color: preset.accentColor.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(999.r),
+            if (preset.subtitle.isNotEmpty) ...[
+              SizedBox(height: 6.h),
+              Text(
+                preset.subtitle,
+                style: TextStyle(fontSize: 11.sp, height: 1.45, color: Colors.grey[700]),
               ),
-              child: Text(
-                '点击生成这一方向',
-                style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w700, color: preset.accentColor),
-              ),
-            ),
+            ],
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ReplanMetaChip extends StatelessWidget {
-  final String label;
-
-  const _ReplanMetaChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999.r),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
         ),
       ),
     );

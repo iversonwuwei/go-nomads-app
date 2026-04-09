@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/payment/application/services/paypal_servi
 import 'package:go_nomads_app/features/payment/domain/entities/order.dart';
 import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// 支付服务 - 处理支付流程
@@ -181,30 +182,30 @@ class PaymentService extends GetxService {
     String? message,
     VoidCallback? onDismiss,
   }) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              success ? Icons.check_circle : Icons.error,
-              color: success ? Colors.green : Colors.red,
-            ),
-            SizedBox(width: 8.w),
-            Text(success ? '支付成功' : '支付失败'),
-          ],
+    AppBottomDrawer.show<void>(
+      context,
+      title: success ? '支付成功' : '支付失败',
+      subtitle: message ?? (success ? '您的会员已激活！' : '支付未完成，请重试。'),
+      maxHeightFactor: 0.42,
+      showHandle: false,
+      isDismissible: false,
+      enableDrag: false,
+      child: Center(
+        child: Icon(
+          success ? Icons.check_circle : Icons.error,
+          color: success ? Colors.green : Colors.red,
+          size: 52.r,
         ),
-        content: Text(message ?? (success ? '您的会员已激活！' : '支付未完成，请重试。')),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              onDismiss?.call();
-            },
-            child: const Text('确定'),
-          ),
-        ],
+      ),
+      footer: SizedBox(
+        width: double.infinity,
+        child: FilledButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            onDismiss?.call();
+          },
+          child: const Text('确定'),
+        ),
       ),
     );
   }

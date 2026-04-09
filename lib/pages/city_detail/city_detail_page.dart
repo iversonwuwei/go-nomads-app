@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,18 +15,17 @@ import '../../features/city/presentation/controllers/city_detail_state_controlle
 import '../../features/membership/presentation/services/ai_quota_service.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/app_toast.dart';
+import '../../widgets/dialogs/app_bottom_drawer.dart';
 import '../../widgets/share_bottom_sheet.dart';
 import '../add_coworking/add_coworking_page.dart';
 import '../city_photo_submission_page.dart';
 import '../manage_pros_cons_page.dart';
 import '../pros_and_cons_add_page.dart';
 import 'city_detail_controller.dart';
-import 'widgets/ai_travel_plan_fab.dart';
 import 'widgets/city_detail_app_bar.dart';
-import 'widgets/city_detail_tab_bar.dart';
-import 'widgets/moderator_info_card.dart';
 import 'widgets/tabs/cost_tab.dart';
 import 'widgets/tabs/coworking_tab.dart';
+import 'widgets/tabs/decision_tab.dart';
 import 'widgets/tabs/guide_tab.dart';
 import 'widgets/tabs/hotels_tab.dart';
 import 'widgets/tabs/neighborhoods_tab.dart';
@@ -100,6 +100,175 @@ class CityDetailPage extends StatelessWidget {
   }
 }
 
+class _CitySectionNavItem {
+  const _CitySectionNavItem({
+    required this.index,
+    required this.label,
+    required this.icon,
+    required this.subtitle,
+    required this.accent,
+    this.onAddPressed,
+  });
+
+  final int index;
+  final String label;
+  final IconData icon;
+  final String subtitle;
+  final Color accent;
+  final VoidCallback? onAddPressed;
+}
+
+class _SectionPill extends StatelessWidget {
+  const _SectionPill({
+    required this.item,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final _CitySectionNavItem item;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            gradient: isActive
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFFF6B7A), Color(0xFFFF4458)],
+                  )
+                : null,
+            color: isActive ? null : Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: isActive ? Colors.transparent : const Color(0xFFE8E1D6),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                item.icon,
+                size: 12.r,
+                color: isActive ? Colors.white : const Color(0xFF5B6470),
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  color: isActive ? Colors.white : const Color(0xFF2A313A),
+                ),
+              ),
+              if (item.onAddPressed != null) ...[
+                SizedBox(width: 6.w),
+                GestureDetector(
+                  onTap: item.onAddPressed,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 16.w,
+                    height: 16.w,
+                    decoration: BoxDecoration(
+                      color: isActive ? Colors.white.withValues(alpha: 0.22) : const Color(0xFFFFEFF1),
+                      borderRadius: BorderRadius.circular(5.r),
+                    ),
+                    child: Icon(
+                      FontAwesomeIcons.plus,
+                      size: 8.r,
+                      color: isActive ? Colors.white : const Color(0xFFFF4458),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavigatorIconButton extends StatelessWidget {
+  const _NavigatorIconButton({
+    required this.icon,
+    required this.onTap,
+    this.highlighted = false,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    final isEnabled = onTap != null;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14.r),
+      child: Opacity(
+        opacity: isEnabled ? 1 : 0.36,
+        child: Container(
+          width: 32.w,
+          height: 32.w,
+          decoration: BoxDecoration(
+            color: highlighted ? const Color(0xFFFF4458) : Colors.white.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+          child: Icon(
+            icon,
+            size: 13.r,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CityStickySectionNavigatorDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  const _CityStickySectionNavigatorDelegate({
+    required this.child,
+    this.height = 148,
+  });
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          color: Colors.white.withAlpha(200),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  bool shouldRebuild(covariant _CityStickySectionNavigatorDelegate oldDelegate) {
+    return height != oldDelegate.height || child != oldDelegate.child;
+  }
+}
+
 /// 城市详情页内容组件
 class _CityDetailPageContent extends GetView<CityDetailController> {
   const _CityDetailPageContent({required this.controllerTag});
@@ -115,19 +284,17 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _buildBody(context),
-      floatingActionButton: AiTravelPlanFab(
-        cityId: controller.cityId,
-        cityName: controller.cityName,
-      ),
     );
   }
 
   Widget _buildBody(BuildContext context) {
+    final items = _buildSectionItems(context);
+    final tabViews = _buildTabViews(context);
+
     return NestedScrollView(
       controller: controller.scrollController,
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
-          // 自定义 AppBar
           CityDetailAppBar(
             controller: controller,
             cityName: controller.cityName,
@@ -136,33 +303,51 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
             reviewCount: controller.reviewCount,
             onShare: () => _shareCityInfo(context),
           ),
-          // 版主信息卡片
-          const SliverToBoxAdapter(
-            child: ModeratorInfoCard(),
-          ),
-          // 固定的 TabBar
           SliverPersistentHeader(
             pinned: true,
-            delegate: CityDetailTabBarDelegate(
-              _buildTabBar(context),
+            delegate: _CityStickySectionNavigatorDelegate(
+              child: _buildSectionNavigator(context, items),
+              height: 112,
             ),
           ),
         ];
       },
-      body: TabBarView(
-        controller: controller.tabController,
-        children: _buildTabViews(context),
+      body: AnimatedBuilder(
+        animation: controller.tabController,
+        builder: (context, _) {
+          final currentIndex = controller.tabController.index;
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 320),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) {
+              final offsetAnimation = Tween<Offset>(
+                begin: const Offset(0.05, 0),
+                end: Offset.zero,
+              ).animate(animation);
+
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: offsetAnimation,
+                  child: child,
+                ),
+              );
+            },
+            child: KeyedSubtree(
+              key: ValueKey<int>(currentIndex),
+              child: tabViews[currentIndex],
+            ),
+          );
+        },
       ),
     );
   }
 
-  /// 构建 TabBar，支持可添加内容的 Tab 显示 + 图标
-  Widget _buildTabBar(BuildContext context) {
+  List<_CitySectionNavItem> _buildSectionItems(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    // 定义哪些 tab 索引需要显示 + 图标及其点击回调
     final addableTabs = {
-      // CityDetailController.tabScores: () => _onTabAddPressed(context, CityDetailController.tabScores), // 暂时隐藏
       CityDetailController.tabProsCons: () => _onTabAddPressed(context, CityDetailController.tabProsCons),
       CityDetailController.tabReviews: () => _onTabAddPressed(context, CityDetailController.tabReviews),
       CityDetailController.tabCost: () => _onTabAddPressed(context, CityDetailController.tabCost),
@@ -172,6 +357,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
     };
 
     final tabLabels = [
+      l10n.cityDecisionTitle,
       l10n.scores,
       l10n.guide,
       l10n.prosAndCons,
@@ -184,80 +370,312 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
       l10n.coworking,
     ];
 
-    final tabBar = TabBar(
-      controller: controller.tabController,
-      isScrollable: true,
-      labelColor: const Color(0xFFFF4458),
-      unselectedLabelColor: Colors.grey[600],
-      labelStyle: TextStyle(
-        fontWeight: FontWeight.w600,
-        fontSize: 14.sp,
-      ),
-      unselectedLabelStyle: TextStyle(
-        fontWeight: FontWeight.w500,
-        fontSize: 14.sp,
-      ),
-      indicatorSize: TabBarIndicatorSize.label,
-      indicator: UnderlineTabIndicator(
-        borderSide: BorderSide(color: Color(0xFFFF4458), width: 2.5),
-        insets: EdgeInsets.symmetric(horizontal: 12.w),
-      ),
-      tabAlignment: TabAlignment.start,
-      padding: EdgeInsets.symmetric(horizontal: 12.w),
-      labelPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 0),
-      tabs: List.generate(tabLabels.length, (index) {
-        final hasAdd = addableTabs.containsKey(index);
-        return Tab(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+    return List.generate(tabLabels.length, (index) {
+      return _CitySectionNavItem(
+        index: index,
+        label: tabLabels[index],
+        icon: _iconForSection(index),
+        subtitle: _subtitleForSection(index),
+        accent: _accentForSection(index),
+        onAddPressed: addableTabs[index],
+      );
+    });
+  }
+
+  Widget _buildSectionNavigator(BuildContext context, List<_CitySectionNavItem> items) {
+    return AnimatedBuilder(
+      animation: controller.tabController,
+      builder: (context, _) {
+        final currentIndex = controller.tabController.index;
+        final currentItem = items[currentIndex];
+        final canGoPrev = currentIndex > 0;
+        final canGoNext = currentIndex < items.length - 1;
+
+        return Container(
+          padding: EdgeInsets.fromLTRB(10.w, 8.h, 10.w, 6.h),
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Color(0x11000000), width: 1),
+            ),
+          ),
+          child: Column(
             children: [
-              Text(tabLabels[index]),
-              if (hasAdd) ...[
-                SizedBox(width: 5.w),
-                GestureDetector(
-                  onTap: addableTabs[index],
-                  behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    width: 14.w,
-                    height: 14.h,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFF6B7A), Color(0xFFFF4458)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(4.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF4458).withValues(alpha: 0.25),
-                          blurRadius: 3.r,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      FontAwesomeIcons.plus,
-                      size: 7.r,
-                      color: Colors.white,
-                    ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF17191D), Color(0xFF2A2E35)],
                   ),
+                  borderRadius: BorderRadius.circular(22.r),
                 ),
-              ],
+                child: Row(
+                  children: [
+                    Container(
+                      width: 30.w,
+                      height: 30.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Icon(currentItem.icon, size: 13.r, color: Colors.white),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                '${currentIndex + 1}/${items.length}',
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white60,
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Text(
+                                  currentItem.label,
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    _NavigatorIconButton(
+                      icon: FontAwesomeIcons.grip,
+                      onTap: () => _showSectionJumpSheet(context, items),
+                    ),
+                    SizedBox(width: 6.w),
+                    if (currentItem.onAddPressed != null) ...[
+                      _NavigatorIconButton(
+                        icon: FontAwesomeIcons.plus,
+                        onTap: currentItem.onAddPressed!,
+                        highlighted: true,
+                      ),
+                      SizedBox(width: 6.w),
+                    ],
+                    _NavigatorIconButton(
+                      icon: FontAwesomeIcons.chevronLeft,
+                      onTap: canGoPrev ? () => controller.tabController.animateTo(currentIndex - 1) : null,
+                    ),
+                    SizedBox(width: 6.w),
+                    _NavigatorIconButton(
+                      icon: FontAwesomeIcons.chevronRight,
+                      onTap: canGoNext ? () => controller.tabController.animateTo(currentIndex + 1) : null,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 4.h),
+              SizedBox(
+                height: 32.h,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final isActive = index == currentIndex;
+                    return _SectionPill(
+                      item: item,
+                      isActive: isActive,
+                      onTap: () => controller.tabController.animateTo(index),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         );
-      }),
+      },
     );
+  }
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0x11000000), width: 1),
-        ),
+  IconData _iconForSection(int index) {
+    switch (index) {
+      case CityDetailController.tabDecision:
+        return FontAwesomeIcons.compass;
+      case CityDetailController.tabScores:
+        return FontAwesomeIcons.chartSimple;
+      case CityDetailController.tabGuide:
+        return FontAwesomeIcons.solidMap;
+      case CityDetailController.tabProsCons:
+        return FontAwesomeIcons.scaleBalanced;
+      case CityDetailController.tabReviews:
+        return FontAwesomeIcons.commentDots;
+      case CityDetailController.tabCost:
+        return FontAwesomeIcons.wallet;
+      case CityDetailController.tabPhotos:
+        return FontAwesomeIcons.images;
+      case CityDetailController.tabWeather:
+        return FontAwesomeIcons.cloudSun;
+      case CityDetailController.tabHotels:
+        return FontAwesomeIcons.hotel;
+      case CityDetailController.tabNeighborhoods:
+        return FontAwesomeIcons.mapLocationDot;
+      case CityDetailController.tabCoworking:
+        return FontAwesomeIcons.laptop;
+      default:
+        return FontAwesomeIcons.circle;
+    }
+  }
+
+  String _subtitleForSection(int index) {
+    switch (index) {
+      case CityDetailController.tabDecision:
+        return 'Start with the city fit, signals, and recommended next moves.';
+      case CityDetailController.tabScores:
+        return 'See category ratings without mixing them into the decision brief.';
+      case CityDetailController.tabGuide:
+        return 'Read the narrative guide, local context, and AI-generated framing.';
+      case CityDetailController.tabProsCons:
+        return 'Balance field-reported upsides and tradeoffs before committing.';
+      case CityDetailController.tabReviews:
+        return 'Check firsthand reports and add your own city experience.';
+      case CityDetailController.tabCost:
+        return 'Estimate the monthly burn and compare core spending categories.';
+      case CityDetailController.tabPhotos:
+        return 'Scan the visual moodboard and contribute fresh city images.';
+      case CityDetailController.tabWeather:
+        return 'Understand seasonality, forecast, and climate comfort.';
+      case CityDetailController.tabHotels:
+        return 'Scout sleep bases, price ranges, and remote-work-friendly stays.';
+      case CityDetailController.tabNeighborhoods:
+        return 'Explore nearby areas and adjacent places worth comparing.';
+      case CityDetailController.tabCoworking:
+        return 'Review work hubs, network quality, and workspace trust signals.';
+      default:
+        return '';
+    }
+  }
+
+  Color _accentForSection(int index) {
+    switch (index) {
+      case CityDetailController.tabDecision:
+        return const Color(0xFF1E5C7A);
+      case CityDetailController.tabScores:
+        return const Color(0xFF7A4A1E);
+      case CityDetailController.tabGuide:
+        return const Color(0xFF2F6A48);
+      case CityDetailController.tabProsCons:
+        return const Color(0xFF7B3559);
+      case CityDetailController.tabReviews:
+        return const Color(0xFF6A4A8C);
+      case CityDetailController.tabCost:
+        return const Color(0xFF7B5A24);
+      case CityDetailController.tabPhotos:
+        return const Color(0xFF235D5D);
+      case CityDetailController.tabWeather:
+        return const Color(0xFF3C73A8);
+      case CityDetailController.tabHotels:
+        return const Color(0xFF8A4D2A);
+      case CityDetailController.tabNeighborhoods:
+        return const Color(0xFF3E6F60);
+      case CityDetailController.tabCoworking:
+        return const Color(0xFF5B3D87);
+      default:
+        return const Color(0xFF5B6470);
+    }
+  }
+
+  void _showSectionJumpSheet(BuildContext context, List<_CitySectionNavItem> items) {
+    AppBottomDrawer.show<void>(
+      context,
+      title: 'Browse Sections',
+      maxHeightFactor: 0.72,
+      child: AnimatedBuilder(
+        animation: controller.tabController,
+        builder: (context, _) {
+          final currentIndex = controller.tabController.index;
+          return ListView.separated(
+            shrinkWrap: true,
+            itemCount: items.length,
+            separatorBuilder: (_, __) => Divider(height: 1.h, color: const Color(0xFFEAE3D8)),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              final isActive = currentIndex == index;
+
+              return ListTile(
+                onTap: () {
+                  Get.back<void>();
+                  controller.tabController.animateTo(index);
+                },
+                contentPadding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+                leading: Container(
+                  width: 38.w,
+                  height: 38.w,
+                  decoration: BoxDecoration(
+                    color: isActive ? const Color(0xFFFFEFF1) : const Color(0xFFF5F1EA),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(
+                    item.icon,
+                    size: 16.r,
+                    color: isActive ? const Color(0xFFFF4458) : const Color(0xFF5B6470),
+                  ),
+                ),
+                title: Text(
+                  item.label,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: isActive ? const Color(0xFFFF4458) : const Color(0xFF20262E),
+                  ),
+                ),
+                subtitle: Padding(
+                  padding: EdgeInsets.only(top: 4.h),
+                  child: Text(
+                    item.subtitle,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      height: 1.35,
+                      color: const Color(0xFF66707D),
+                    ),
+                  ),
+                ),
+                trailing: isActive
+                    ? Container(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEFF1),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                        child: Text(
+                          'Current',
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFFFF4458),
+                          ),
+                        ),
+                      )
+                    : Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF8A94A1),
+                        ),
+                      ),
+              );
+            },
+          );
+        },
       ),
-      child: tabBar,
     );
   }
 
@@ -349,6 +767,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
 
   List<Widget> _buildTabViews(BuildContext context) {
     return [
+      DecisionTab(tag: controllerTag),
       ScoresTab(tag: controllerTag),
       GuideTab(tag: controllerTag), // GuideTab 内部已有完整的 AI 生成逻辑
       ProsConsTab(tag: controllerTag), // ProsConsTab 内部已有导航和投票逻辑
@@ -514,82 +933,73 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
 
     Worker? statusWorker;
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (statusWorker == null) {
-            final aiController = Get.find<AiStateController>();
-            statusWorker = ever(
-              aiController.isNearbyCitiesCompletedRx,
-              (completed) {
-                if (completed) {
-                  Future.delayed(const Duration(milliseconds: 800), () {
-                    if (dialogContext.mounted && Navigator.of(dialogContext).canPop()) {
-                      Navigator.of(dialogContext).pop();
-                      statusWorker?.dispose();
-                      statusWorker = null;
-                      Future.delayed(const Duration(milliseconds: 500), onComplete);
-                    }
-                  });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (statusWorker == null) {
+        final aiController = Get.find<AiStateController>();
+        statusWorker = ever(
+          aiController.isNearbyCitiesCompletedRx,
+          (completed) {
+            if (completed) {
+              Future.delayed(const Duration(milliseconds: 800), () {
+                if ((Get.isBottomSheetOpen ?? false)) {
+                  Get.back<void>();
                 }
-              },
-            );
-          }
-        });
+                statusWorker?.dispose();
+                statusWorker = null;
+                Future.delayed(const Duration(milliseconds: 500), onComplete);
+              });
+            }
+          },
+        );
+      }
+    });
 
-        return Obx(() {
-          final progress = progressGetter();
-          final message = messageGetter();
+    AppBottomDrawer.show<void>(
+      context,
+      title: title,
+      maxHeightFactor: 0.44,
+      isDismissible: false,
+      enableDrag: false,
+      child: Obx(() {
+        final progress = progressGetter();
+        final message = messageGetter();
 
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            title: Row(
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
               children: [
                 Icon(icon, color: const Color(0xFFFF4458), size: 28.r),
                 SizedBox(width: 12.w),
                 Expanded(
-                  child: Text(title, style: TextStyle(fontSize: 18.sp)),
+                  child: Text(
+                    message,
+                    style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                  ),
                 ),
               ],
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(height: 16.h),
-                LinearProgressIndicator(
-                  value: progress / 100,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
-                ),
-                SizedBox(height: 16.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      '$progress%',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.sp,
-                        color: Color(0xFFFF4458),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  message,
-                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            SizedBox(height: 20.h),
+            LinearProgressIndicator(
+              value: progress / 100,
+              backgroundColor: Colors.grey[200],
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
             ),
-          );
-        });
-      },
+            SizedBox(height: 16.h),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '$progress%',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
+                  color: const Color(0xFFFF4458),
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 }

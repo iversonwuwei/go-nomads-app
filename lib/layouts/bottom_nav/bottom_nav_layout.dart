@@ -45,30 +45,25 @@ class BottomNavLayout extends GetView<BottomNavController> {
         return ModernBottomNavBar(
           items: [
             NavBarItem(
-              icon: FontAwesomeIcons.house,
-              label: l10n.home,
+              icon: FontAwesomeIcons.compass,
+              label: l10n.explore,
             ),
             NavBarItem(
-              icon: FontAwesomeIcons.solidCommentDots,
-              label: '消息',
-              badge: controller.imUnreadCount.value,
+              icon: FontAwesomeIcons.suitcaseRolling,
+              label: l10n.land,
             ),
             NavBarItem(
-              icon: FontAwesomeIcons.wandMagicSparkles,
-              label: l10n.aiChat,
+              icon: FontAwesomeIcons.users,
+              label: l10n.community,
             ),
             NavBarItem(
-              icon: FontAwesomeIcons.route,
-              label: l10n.aiTravelPlanner,
+              icon: FontAwesomeIcons.inbox,
+              label: l10n.inbox,
+              badge: controller.totalInboxUnreadCount,
             ),
             NavBarItem(
-              icon: FontAwesomeIcons.solidBell,
-              label: '通知',
-              badge: controller.unreadCount.value,
-            ),
-            const NavBarItem(
               icon: FontAwesomeIcons.user,
-              label: '我的',
+              label: l10n.profile,
             ),
           ],
         );

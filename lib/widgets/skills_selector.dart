@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/skill/domain/entities/skill.dart';
 import 'package:go_nomads_app/features/skill/presentation/controllers/skill_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 /// 技能选择器组件
 class SkillsSelector extends StatefulWidget {
@@ -57,7 +58,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
   void didUpdateWidget(covariant SkillsSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (!setEquals(widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
+    if (!setEquals(
+        widget.selectedSkillIds.toSet(), oldWidget.selectedSkillIds.toSet())) {
       _restoreSelectionFromWidget(force: true);
     }
   }
@@ -95,8 +97,10 @@ class _SkillsSelectorState extends State<SkillsSelector> {
       widget.onChanged(_selectedSkills);
     } else {
       // 检查是否超过最大选择数
-      if (widget.maxSelection > 0 && _selectedSkills.length >= widget.maxSelection) {
-        AppToast.error(AppLocalizations.of(Get.context!)!.maxSkillsReached(widget.maxSelection.toString()));
+      if (widget.maxSelection > 0 &&
+          _selectedSkills.length >= widget.maxSelection) {
+        AppToast.error(AppLocalizations.of(Get.context!)!
+            .maxSkillsReached(widget.maxSelection.toString()));
         return;
       }
 
@@ -205,13 +209,12 @@ class _SkillsSelectorState extends State<SkillsSelector> {
     String? selectedProficiency = 'Intermediate';
     int selectedYears = 1;
 
-    Get.dialog(
-      AlertDialog(
-        title: Text('${skill.icon ?? '💼'} ${skill.name}'),
-        content: StatefulBuilder(
+    Get.bottomSheet(
+      AppBottomDrawer(
+        title: '${skill.icon ?? '💼'} ${skill.name}',
+        child: StatefulBuilder(
           builder: (context, setState) {
             return Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(AppLocalizations.of(Get.context!)!.proficiencyTitle,
@@ -219,7 +222,9 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                 SizedBox(height: 8.h),
                 Wrap(
                   spacing: 8.w,
-                  children: ['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((level) {
+                  runSpacing: 8.h,
+                  children: ['Beginner', 'Intermediate', 'Advanced', 'Expert']
+                      .map((level) {
                     return ChoiceChip(
                       label: Text(_getProficiencyText(level)),
                       selected: selectedProficiency == level,
@@ -228,13 +233,16 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       },
                       selectedColor: AppColors.accent,
                       labelStyle: TextStyle(
-                        color: selectedProficiency == level ? Colors.white : AppColors.textPrimary,
+                        color: selectedProficiency == level
+                            ? Colors.white
+                            : AppColors.textPrimary,
                       ),
                     );
                   }).toList(),
                 ),
                 SizedBox(height: 16.h),
-                Text(AppLocalizations.of(Get.context!)!.experienceYears, style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(Get.context!)!.experienceYears,
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 8.h),
                 Row(
                   children: [
@@ -246,7 +254,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                         divisions: 20,
                         label: selectedYears == 0
                             ? AppLocalizations.of(Get.context!)!.lessThanOneYear
-                            : AppLocalizations.of(Get.context!)!.yearsCount(selectedYears.toString()),
+                            : AppLocalizations.of(Get.context!)!
+                                .yearsCount(selectedYears.toString()),
                         onChanged: (value) {
                           setState(() => selectedYears = value.toInt());
                         },
@@ -257,7 +266,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       child: Text(
                         selectedYears == 0
                             ? AppLocalizations.of(Get.context!)!.lessThanOneYear
-                            : AppLocalizations.of(Get.context!)!.yearsCount(selectedYears.toString()),
+                            : AppLocalizations.of(Get.context!)!
+                                .yearsCount(selectedYears.toString()),
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -268,24 +278,22 @@ class _SkillsSelectorState extends State<SkillsSelector> {
             );
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(AppLocalizations.of(Get.context!)!.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Get.back();
-              _addSkill(
-                skill,
-                selectedProficiency,
-                selectedYears == 0 ? null : selectedYears,
-              );
-            },
-            child: Text(AppLocalizations.of(Get.context!)!.confirm),
-          ),
-        ],
+        footer: AppBottomDrawerActionRow(
+          secondaryLabel: AppLocalizations.of(Get.context!)!.cancel,
+          onSecondaryPressed: () => Get.back<void>(),
+          primaryLabel: AppLocalizations.of(Get.context!)!.confirm,
+          onPrimaryPressed: () {
+            Get.back<void>();
+            _addSkill(
+              skill,
+              selectedProficiency,
+              selectedYears == 0 ? null : selectedYears,
+            );
+          },
+        ),
       ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 
@@ -382,7 +390,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                     child: _CategoryChip(
                       label: _getCategoryText(category.category),
                       isSelected: _selectedCategory == category.category,
-                      onTap: () => setState(() => _selectedCategory = category.category),
+                      onTap: () =>
+                          setState(() => _selectedCategory = category.category),
                     ),
                   );
                 }),
@@ -443,7 +452,8 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       deleteIcon: Icon(FontAwesomeIcons.xmark, size: 18.r),
                       onDeleted: () {
                         setState(() {
-                          _selectedSkills.removeWhere((s) => s.skillId == userSkill.skillId);
+                          _selectedSkills.removeWhere(
+                              (s) => s.skillId == userSkill.skillId);
                         });
                         widget.onChanged(_selectedSkills);
                       },
@@ -475,17 +485,21 @@ class _SkillsSelectorState extends State<SkillsSelector> {
                       spacing: 8.w,
                       runSpacing: 8.w,
                       children: filteredSkills.map((skill) {
-                        final isSelected = _selectedSkills.any((s) => s.skillId == skill.id);
+                        final isSelected =
+                            _selectedSkills.any((s) => s.skillId == skill.id);
                         return FilterChip(
                           avatar: Text(skill.icon ?? '💼'),
                           label: Text(skill.name),
                           selected: isSelected,
                           onSelected: (_) => _toggleSkill(skill),
-                          selectedColor: AppColors.accent.withValues(alpha: 0.2),
+                          selectedColor:
+                              AppColors.accent.withValues(alpha: 0.2),
                           checkmarkColor: AppColors.accent,
                           backgroundColor: AppColors.white,
                           side: BorderSide(
-                            color: isSelected ? AppColors.accent : AppColors.border,
+                            color: isSelected
+                                ? AppColors.accent
+                                : AppColors.border,
                           ),
                         );
                       }).toList(),

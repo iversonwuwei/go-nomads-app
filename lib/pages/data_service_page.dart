@@ -1763,45 +1763,6 @@ class _DataCardState extends State<_DataCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // 左侧：版主状态徽章
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 6, vertical: isMobile ? 2 : 3),
-                              decoration: BoxDecoration(
-                                color: widget.data.moderatorId != null
-                                    ? const Color(0xFF10B981).withValues(alpha: 0.9)
-                                    : Colors.orange.withValues(alpha: 0.9),
-                                borderRadius: BorderRadius.circular(4.r),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    widget.data.moderatorId != null
-                                        ? FontAwesomeIcons.userCheck
-                                        : FontAwesomeIcons.userXmark,
-                                    color: Colors.white,
-                                    size: isMobile ? 8 : 10,
-                                  ),
-                                  SizedBox(width: isMobile ? 2 : 4),
-                                  Text(
-                                    widget.data.moderatorId != null ? '已指定版主' : '待指定版主',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: isMobile ? 8 : 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: isMobile ? 3 : 8),
                       // 右侧：刷新按钮 + 网络
                       Row(
                         mainAxisSize: MainAxisSize.min,

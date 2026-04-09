@@ -1,5 +1,9 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
@@ -10,12 +14,8 @@ import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
 import 'city_detail/city_detail.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 收藏夹页面 - 管理收藏的城市
 class FavoritesPage extends StatefulWidget {
@@ -349,8 +349,6 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                               ),
                               SizedBox(width: 8.w),
                             ],
-                            // 版主状态徽章
-                            _buildModeratorBadge(city, isMobile),
                           ],
                         ),
 
@@ -460,44 +458,6 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  /// 版主状态徽章
-  Widget _buildModeratorBadge(City city, bool isMobile) {
-    final hasModerator = city.moderatorId != null;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 5 : 6,
-        vertical: isMobile ? 2 : 3,
-      ),
-      decoration: BoxDecoration(
-        color: hasModerator ? const Color(0xFF10B981).withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(4.r),
-        border: Border.all(
-          color: hasModerator ? const Color(0xFF10B981) : Colors.orange,
-          width: 0.5,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            hasModerator ? FontAwesomeIcons.userCheck : FontAwesomeIcons.userXmark,
-            color: hasModerator ? const Color(0xFF10B981) : Colors.orange,
-            size: isMobile ? 8 : 10,
-          ),
-          SizedBox(width: isMobile ? 3 : 4),
-          Text(
-            hasModerator ? '版主' : '待版主',
-            style: TextStyle(
-              color: hasModerator ? const Color(0xFF10B981) : Colors.orange,
-              fontSize: isMobile ? 9 : 10,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }

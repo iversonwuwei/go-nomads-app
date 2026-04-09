@@ -6,6 +6,7 @@ import 'package:go_nomads_app/features/membership/presentation/controllers/membe
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 /// AI 配额检查服务
 ///
@@ -82,28 +83,11 @@ class AiQuotaService {
   void _showQuotaExhaustedDialog(AiUsageCheck check, String? featureName) {
     final feature = featureName ?? 'AI 功能';
 
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        titlePadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
-        contentPadding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
-        actionsPadding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
-        title: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange[700], size: 24.r),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: Text(
-                'AI 配额已用完',
-                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+    Get.bottomSheet(
+      AppBottomDrawer(
+        title: 'AI 配额已用完',
+        maxHeightFactor: 0.66,
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -143,29 +127,18 @@ class AiQuotaService {
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text('稍后再说', style: TextStyle(fontSize: 14.sp)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Get.back();
-              Get.toNamed(AppRoutes.membershipPlan);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-            ),
-            child: Text('升级会员', style: TextStyle(fontSize: 14.sp)),
-          ),
-        ],
+        footer: AppBottomDrawerActionRow(
+          secondaryLabel: '稍后再说',
+          onSecondaryPressed: () => Get.back<void>(),
+          primaryLabel: '升级会员',
+          onPrimaryPressed: () {
+            Get.back<void>();
+            Get.toNamed(AppRoutes.membershipPlan);
+          },
+        ),
       ),
-      barrierDismissible: false,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 

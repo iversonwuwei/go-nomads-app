@@ -3,6 +3,7 @@ import 'package:go_nomads_app/controllers/osm_navigation_page_controller.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -435,34 +436,18 @@ class OSMNavigationPage extends StatelessWidget {
       (v) => l10n.kilometers(v),
     );
 
-    showDialog(
-      context: Get.context!,
-      barrierColor: Colors.black.withValues(alpha: 0.5),
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: EdgeInsets.symmetric(horizontal: 24.w),
-        child: Container(
-          constraints: BoxConstraints(maxWidth: 400.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 20.r,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildPOITop(poi, controller),
-              _buildPOIBody(poi, controller, l10n, distance),
-              _buildPOIFooter(poi, controller, l10n),
-            ],
-          ),
-        ),
+    AppBottomDrawer.show<void>(
+      Get.context!,
+      maxHeightFactor: 0.82,
+      contentPadding: EdgeInsets.zero,
+      showHandle: false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildPOITop(poi, controller),
+          _buildPOIBody(poi, controller, l10n, distance),
+          _buildPOIFooter(poi, controller, l10n),
+        ],
       ),
     );
   }
@@ -645,7 +630,7 @@ class OSMNavigationPage extends StatelessWidget {
         children: [
           Expanded(
             child: OutlinedButton(
-              onPressed: () => Navigator.pop(Get.context!),
+              onPressed: () => Get.back<void>(),
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 side: BorderSide(color: Colors.grey[300]!),
@@ -666,7 +651,7 @@ class OSMNavigationPage extends StatelessWidget {
             flex: 2,
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.pop(Get.context!);
+                Get.back<void>();
                 controller.focusOnLocation(poi.position);
               },
               icon: Icon(FontAwesomeIcons.locationCrosshairs, size: 20.r),

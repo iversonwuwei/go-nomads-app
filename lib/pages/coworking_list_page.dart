@@ -200,69 +200,73 @@ class _CoworkingListPageState extends State<CoworkingListPage> with RouteAwareRe
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Obx(() {
-              final isLoading = controller.isLoading.value && controller.filteredSpaces.isEmpty;
+      body: Obx(() {
+        final isLoading = controller.isLoading.value && controller.filteredSpaces.isEmpty;
+        final hasSpaces = controller.filteredSpaces.isNotEmpty;
 
-              Widget content;
-              if (controller.filteredSpaces.isEmpty) {
-                content = Builder(
-                  builder: (context) {
-                    final l10n = AppLocalizations.of(context)!;
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            FontAwesomeIcons.magnifyingGlass,
-                            size: 80.r,
-                            color: Colors.grey[400],
-                          ),
-                          SizedBox(height: 16.h),
-                          Text(
-                            l10n.noData,
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              color: Colors.grey[600],
+        final content = RefreshIndicator(
+          onRefresh: _refreshData,
+          child: CustomScrollView(
+            controller: _scrollController,
+            cacheExtent: 500,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              if (!hasSpaces)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Builder(
+                    builder: (context) {
+                      final l10n = AppLocalizations.of(context)!;
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              FontAwesomeIcons.magnifyingGlass,
+                              size: 80.r,
+                              color: Colors.grey[400],
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              } else {
-                content = RefreshIndicator(
-                  onRefresh: _refreshData,
-                  child: ListView.builder(
-                    controller: _scrollController, // 添加滚动控制器
-                    cacheExtent: 500, // 增加缓存范围，提升滚动性能
-                    padding: EdgeInsets.all(16.w),
-                    itemCount: controller.filteredSpaces.length + 1, // +1 用于底部加载指示器
-                    itemBuilder: (context, index) {
-                      // 最后一项显示加载指示器
-                      if (index == controller.filteredSpaces.length) {
-                        return _buildLoadMoreIndicator();
-                      }
-
-                      final space = controller.filteredSpaces[index];
-                      return _buildCoworkingCard(context, space);
+                            SizedBox(height: 16.h),
+                            Text(
+                              l10n.noData,
+                              style: TextStyle(
+                                fontSize: 18.sp,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     },
                   ),
-                );
-              }
-
-              return AppLoadingSwitcher(
-                isLoading: isLoading,
-                loading: _buildSkeletonList(),
-                child: content,
-              );
-            }),
+                )
+              else ...[
+                SliverPadding(
+                  padding: EdgeInsets.all(16.w),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final space = controller.filteredSpaces[index];
+                        return _buildCoworkingCard(context, space);
+                      },
+                      childCount: controller.filteredSpaces.length,
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _buildLoadMoreIndicator(),
+                ),
+              ],
+            ],
           ),
-        ],
-      ),
+        );
+
+        return AppLoadingSwitcher(
+          isLoading: isLoading,
+          loading: _buildSkeletonList(),
+          child: content,
+        );
+      }),
     );
   }
 

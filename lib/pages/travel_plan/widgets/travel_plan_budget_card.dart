@@ -1,7 +1,9 @@
-import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
 
 /// 预算卡片组件 - 无状态组件
 class TravelPlanBudgetCard extends StatelessWidget {
@@ -26,44 +28,48 @@ class TravelPlanBudgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CockpitPanel(
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
       child: Column(
         children: [
           _buildBudgetRow(transportationLabel, budget.transportation),
-          Divider(height: 24.h),
+          _DividerLine(),
           _buildBudgetRow(accommodationLabel, budget.accommodation),
-          Divider(height: 24.h),
+          _DividerLine(),
           _buildBudgetRow(foodLabel, budget.food),
-          Divider(height: 24.h),
+          _DividerLine(),
           _buildBudgetRow(activitiesLabel, budget.activities),
-          Divider(height: 24.h),
+          _DividerLine(),
           _buildBudgetRow(miscellaneousLabel, budget.miscellaneous),
-          Divider(height: 24.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                totalLabel,
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
+          SizedBox(height: 16.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+            decoration: BoxDecoration(
+              color: AppColors.cityPrimary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  totalLabel,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ),
-              Text(
-                '\$${budget.total.toStringAsFixed(0)}',
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFFF4458),
+                Text(
+                  '\$${budget.total.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.cityPrimary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -78,7 +84,7 @@ class TravelPlanBudgetCard extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 14.sp,
-            color: Colors.grey[700],
+            color: AppColors.textSecondary,
           ),
         ),
         Text(
@@ -86,9 +92,21 @@ class TravelPlanBudgetCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 15.sp,
             fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DividerLine extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 16.h),
+      height: 1,
+      color: AppColors.borderLight,
     );
   }
 }
@@ -119,26 +137,30 @@ class TravelPlanTransportationCard extends StatelessWidget {
       flights = flightSection.split('\n').where((line) => line.trim().isNotEmpty).toList();
     }
 
-    return Container(
+    return CockpitPanel(
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 到达交通
           Row(
             children: [
-              Icon(FontAwesomeIcons.plane, color: Color(0xFFFF4458), size: 20.r),
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: AppColors.cityPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+                ),
+                child: Icon(FontAwesomeIcons.plane, color: AppColors.cityPrimary, size: 16.r),
+              ),
               SizedBox(width: 8.w),
               Text(
                 transportation.arrival?.method ?? 'N/A',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -148,7 +170,8 @@ class TravelPlanTransportationCard extends StatelessWidget {
             generalInfo,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
+              height: 1.6,
             ),
           ),
 
@@ -163,37 +186,50 @@ class TravelPlanTransportationCard extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF4458).withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(8.r),
+              color: Colors.white.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(estimatedCostLabel),
+                Text(
+                  estimatedCostLabel,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13.sp),
+                ),
                 Text(
                   '\$${transportation.arrival?.estimatedCost.toStringAsFixed(0) ?? '0'}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFF4458),
+                    color: AppColors.cityPrimary,
                   ),
                 ),
               ],
             ),
           ),
           SizedBox(height: 16.h),
-          const Divider(),
+          _DividerLine(),
           SizedBox(height: 16.h),
 
           // 本地交通
           Row(
             children: [
-              Icon(FontAwesomeIcons.trainSubway, color: Color(0xFFFF4458), size: 20.r),
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF60A5FA).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+                ),
+                child: Icon(FontAwesomeIcons.trainSubway, color: const Color(0xFF3B82F6), size: 16.r),
+              ),
               SizedBox(width: 8.w),
               Text(
                 transportation.localTransport?.method ?? 'N/A',
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -203,7 +239,8 @@ class TravelPlanTransportationCard extends StatelessWidget {
             transportation.localTransport?.details ?? 'No details available',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
+              height: 1.6,
             ),
           ),
         ],
@@ -225,13 +262,13 @@ class _FlightRecommendations extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFFFF4458).withValues(alpha: 0.05),
-            const Color(0xFFFF6B7A).withValues(alpha: 0.05),
+            AppColors.cityPrimary.withValues(alpha: 0.08),
+            const Color(0xFFFF8C69).withValues(alpha: 0.06),
           ],
         ),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFFFF4458).withValues(alpha: 0.2),
+          color: Colors.white.withValues(alpha: 0.72),
         ),
       ),
       child: Column(
@@ -241,7 +278,7 @@ class _FlightRecommendations extends StatelessWidget {
             children: [
               Icon(
                 FontAwesomeIcons.plane,
-                color: Color(0xFFFF4458),
+                color: AppColors.cityPrimary,
                 size: 18.r,
               ),
               SizedBox(width: 6.w),
@@ -250,7 +287,7 @@ class _FlightRecommendations extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFFF4458),
+                  color: AppColors.cityPrimary,
                 ),
               ),
               const Spacer(),
@@ -260,7 +297,7 @@ class _FlightRecommendations extends StatelessWidget {
                   vertical: 2.h,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF4458),
+                  color: AppColors.cityPrimary,
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(

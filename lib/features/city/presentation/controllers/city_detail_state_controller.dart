@@ -6,6 +6,7 @@ import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/city/application/use_cases/city_use_cases.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_nomad_summary.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -21,6 +22,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 class CityDetailStateController extends GetxController {
   // ==================== Dependencies ====================
   final GetCityByIdUseCase _getCityByIdUseCase;
+  final GetCityNomadSummaryUseCase _getCityNomadSummaryUseCase;
   final ToggleCityFavoriteUseCase _toggleCityFavoriteUseCase;
   final ICityRepository _cityRepository;
 
@@ -36,9 +38,11 @@ class CityDetailStateController extends GetxController {
 
   CityDetailStateController({
     required GetCityByIdUseCase getCityByIdUseCase,
+    required GetCityNomadSummaryUseCase getCityNomadSummaryUseCase,
     required ToggleCityFavoriteUseCase toggleCityFavoriteUseCase,
     required ICityRepository cityRepository,
   })  : _getCityByIdUseCase = getCityByIdUseCase,
+        _getCityNomadSummaryUseCase = getCityNomadSummaryUseCase,
         _toggleCityFavoriteUseCase = toggleCityFavoriteUseCase,
         _cityRepository = cityRepository;
 
@@ -46,11 +50,14 @@ class CityDetailStateController extends GetxController {
 
   // 城市数据
   final Rx<City?> currentCity = Rx<City?>(null);
+  final Rx<CityNomadSummary?> currentNomadSummary = Rx<CityNomadSummary?>(null);
 
   // 加载状态
   final RxBool isLoading = false.obs;
   final RxBool hasError = false.obs;
   final Rx<String?> errorMessage = Rx<String?>(null);
+  final RxBool isNomadSummaryLoading = false.obs;
+  final Rx<String?> nomadSummaryError = Rx<String?>(null);
 
   // 收藏状态
   final RxBool isFavorited = false.obs;
@@ -404,6 +411,7 @@ class CityDetailStateController extends GetxController {
     // 如果切换到不同城市，立即清除旧数据，避免显示上一个城市的信息
     if (cityId != _lastLoadedCityId) {
       currentCity.value = null;
+      currentNomadSummary.value = null;
       isFavorited.value = false;
       log('🔄 [城市详情] 切换城市，清除旧数据');
     }
@@ -413,10 +421,17 @@ class CityDetailStateController extends GetxController {
     isLoading.value = true;
     hasError.value = false;
     errorMessage.value = null;
+    isNomadSummaryLoading.value = true;
+    nomadSummaryError.value = null;
 
-    final result = await _getCityByIdUseCase.execute(
+    final cityResultFuture = _getCityByIdUseCase.execute(
       GetCityByIdParams(cityId: cityId),
     );
+    final nomadSummaryResultFuture = _getCityNomadSummaryUseCase.execute(
+      GetCityNomadSummaryParams(cityId: cityId),
+    );
+
+    final result = await cityResultFuture;
 
     result.fold(
       onSuccess: (city) {
@@ -435,6 +450,22 @@ class CityDetailStateController extends GetxController {
         errorMessage.value = exception.message;
         isLoading.value = false;
         AppToast.error(exception.message, title: AppLocalizations.of(Get.context!)!.loadFailedTitle);
+      },
+    );
+
+    final nomadSummaryResult = await nomadSummaryResultFuture;
+    nomadSummaryResult.fold(
+      onSuccess: (summary) {
+        currentNomadSummary.value = summary;
+        isNomadSummaryLoading.value = false;
+        nomadSummaryError.value = null;
+        log('✅ [城市详情] City Nomad Summary 加载成功: ${summary.cityName}');
+      },
+      onFailure: (exception) {
+        currentNomadSummary.value = null;
+        isNomadSummaryLoading.value = false;
+        nomadSummaryError.value = exception.message;
+        log('⚠️ [城市详情] City Nomad Summary 加载失败，将回退现有信号: ${exception.message}');
       },
     );
   }

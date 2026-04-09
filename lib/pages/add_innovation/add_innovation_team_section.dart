@@ -1,10 +1,11 @@
-import 'package:go_nomads_app/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/controllers/add_innovation_page_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/controllers/add_innovation_page_controller.dart';
+import 'package:go_nomads_app/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 class AddInnovationTeamSection extends StatelessWidget {
   final String controllerTag;
@@ -123,24 +124,12 @@ class AddInnovationTeamSection extends StatelessWidget {
     final roleController = TextEditingController();
     final l10n = AppLocalizations.of(context)!;
 
-    Get.dialog(
-      AlertDialog(
-        title: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withAlpha(25), borderRadius: BorderRadius.circular(8.r)),
-              child: Icon(FontAwesomeIcons.userPlus, size: 18.r, color: Color(0xFF8B5CF6)),
-            ),
-            SizedBox(width: 12.w),
-            Text(l10n.addTeamMember),
-          ],
-        ),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+    AppBottomDrawer.show<void>(
+      context,
+      title: l10n.addTeamMember,
+      maxHeightFactor: 0.56,
+      child: Column(
+        children: [
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
@@ -160,21 +149,21 @@ class AddInnovationTeamSection extends StatelessWidget {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
                 ),
               ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: Text(l10n.cancel)),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty) {
-                _c.addTeamMember(TeamMemberDto(id: DateTime.now().millisecondsSinceEpoch.toString(), name: nameController.text.trim(), role: roleController.text.trim()));
-                Get.back();
-              }
-            },
-            child: Text(l10n.add),
-          ),
         ],
+      ),
+      footer: AppBottomDrawerActionRow(
+        secondaryLabel: l10n.cancel,
+        onSecondaryPressed: () => Get.back<void>(),
+        primaryLabel: l10n.add,
+        onPrimaryPressed: () {
+          if (nameController.text.isNotEmpty) {
+            _c.addTeamMember(TeamMemberDto(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                name: nameController.text.trim(),
+                role: roleController.text.trim()));
+            Get.back<void>();
+          }
+        },
       ),
     );
   }
@@ -184,24 +173,12 @@ class AddInnovationTeamSection extends StatelessWidget {
     final roleController = TextEditingController(text: member.role);
     final l10n = AppLocalizations.of(context)!;
 
-    Get.dialog(
-      AlertDialog(
-        title: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withAlpha(25), borderRadius: BorderRadius.circular(8.r)),
-              child: Icon(FontAwesomeIcons.penToSquare, size: 18.r, color: Color(0xFF8B5CF6)),
-            ),
-            SizedBox(width: 12.w),
-            Text(l10n.editTeamMember),
-          ],
-        ),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+    AppBottomDrawer.show<void>(
+      context,
+      title: l10n.editTeamMember,
+      maxHeightFactor: 0.56,
+      child: Column(
+        children: [
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
@@ -219,21 +196,19 @@ class AddInnovationTeamSection extends StatelessWidget {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
                 ),
               ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: Text(l10n.cancel)),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty) {
-                _c.updateTeamMember(member, TeamMemberDto(id: member.id, name: nameController.text.trim(), role: roleController.text.trim()));
-                Get.back();
-              }
-            },
-            child: Text(l10n.save),
-          ),
         ],
+      ),
+      footer: AppBottomDrawerActionRow(
+        secondaryLabel: l10n.cancel,
+        onSecondaryPressed: () => Get.back<void>(),
+        primaryLabel: l10n.save,
+        onPrimaryPressed: () {
+          if (nameController.text.isNotEmpty) {
+            _c.updateTeamMember(member,
+                TeamMemberDto(id: member.id, name: nameController.text.trim(), role: roleController.text.trim()));
+            Get.back<void>();
+          }
+        },
       ),
     );
   }

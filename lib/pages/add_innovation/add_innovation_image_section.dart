@@ -7,6 +7,7 @@ import 'package:go_nomads_app/features/membership/presentation/controllers/membe
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 class AddInnovationImageSection extends StatelessWidget {
   final String controllerTag;
@@ -281,50 +282,31 @@ class AddInnovationImageSection extends StatelessWidget {
   }
 
   void _showMembershipRequiredDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          constraints: BoxConstraints(maxWidth: 380.w),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24.r), boxShadow: [BoxShadow(color: Colors.black.withAlpha(30), blurRadius: 30.r, offset: const Offset(0, 10))]),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 120.h,
-                decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA), Color(0xFFC4B5FD)]), borderRadius: BorderRadius.vertical(top: Radius.circular(24.r))),
-                child: Center(child: Icon(Icons.auto_awesome_rounded, size: 48.r, color: Colors.white)),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-                child: Column(
-                  children: [
-                    Text(AppLocalizations.of(context)!.addInnovationAiImageGeneration,
-                        style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
-                    SizedBox(height: 8.h),
-                    Text(AppLocalizations.of(context)!.addInnovationMemberExclusive,
-                        style: TextStyle(fontSize: 14.sp, color: Colors.grey.shade500)),
-                    SizedBox(height: 24.h),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () { Navigator.of(dialogContext).pop(); Get.toNamed(AppRoutes.membershipPlan); },
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B5CF6), foregroundColor: Colors.white, padding: EdgeInsets.symmetric(vertical: 16.h), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)), elevation: 0),
-                        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(FontAwesomeIcons.crown, size: 16.r), SizedBox(width: 8.w), Text(AppLocalizations.of(context)!.addInnovationUpgradeMembershipUnlock, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold))]),
-                      ),
-                    ),
-                    SizedBox(height: 12.h),
-                    TextButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        child: Text(AppLocalizations.of(context)!.addInnovationMaybeLater,
-                            style: TextStyle(color: Colors.grey.shade500, fontSize: 14.sp))),
-                  ],
-                ),
-              ),
-            ],
+    AppBottomDrawer.show<void>(
+      context,
+      title: AppLocalizations.of(context)!.addInnovationAiImageGeneration,
+      subtitle: AppLocalizations.of(context)!.addInnovationMemberExclusive,
+      maxHeightFactor: 0.6,
+      child: Container(
+        height: 120.h,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA), Color(0xFFC4B5FD)],
           ),
+          borderRadius: BorderRadius.circular(24.r),
         ),
+        child: Center(child: Icon(Icons.auto_awesome_rounded, size: 48.r, color: Colors.white)),
+      ),
+      footer: AppBottomDrawerActionRow(
+        secondaryLabel: AppLocalizations.of(context)!.addInnovationMaybeLater,
+        onSecondaryPressed: () => Navigator.of(context).pop(),
+        primaryLabel: AppLocalizations.of(context)!.addInnovationUpgradeMembershipUnlock,
+        onPrimaryPressed: () {
+          Navigator.of(context).pop();
+          Get.toNamed(AppRoutes.membershipPlan);
+        },
       ),
     );
   }
@@ -335,20 +317,13 @@ class AddInnovationImageSection extends StatelessWidget {
 
     final promptTemplates = ['一个现代化的科技创业项目封面，蓝色渐变背景，极简风格', '创新与科技结合的抽象图像，充满活力的色彩', '数字化转型概念图，展现连接与协作', '绿色环保主题的创业项目封面，自然与科技融合'];
 
-    Get.dialog(
-      AlertDialog(
-        title: Row(children: [
-          Icon(Icons.auto_awesome, color: Theme.of(context).primaryColor),
-          SizedBox(width: 8.w),
-          Text(l10n.addInnovationAiGenerateCover)
-        ]),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.8,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+    AppBottomDrawer.show<void>(
+      context,
+      title: l10n.addInnovationAiGenerateCover,
+      maxHeightFactor: 0.82,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
                 TextField(
                     controller: _c.aiPromptController,
                     maxLines: 3,
@@ -378,18 +353,20 @@ class AddInnovationImageSection extends StatelessWidget {
                           ))
                       .toList(),
                 ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: Text(l10n.cancel)),
-          Obx(() => ElevatedButton.icon(
-            onPressed: _c.isGeneratingImage.value ? null : () { Get.back(); _c.generateImageWithAI(_c.aiPromptController.text); },
-            icon: _c.isGeneratingImage.value ? SizedBox(width: 16.w, height: 16.h, child: CircularProgressIndicator(strokeWidth: 2)) : Icon(Icons.auto_awesome, size: 18.r),
-                label: Text(_c.isGeneratingImage.value ? l10n.addInnovationGenerating : l10n.generate),
-          )),
         ],
+      ),
+      footer: Obx(
+        () => AppBottomDrawerActionRow(
+          secondaryLabel: l10n.cancel,
+          onSecondaryPressed: _c.isGeneratingImage.value ? null : () => Get.back<void>(),
+          primaryLabel: _c.isGeneratingImage.value ? l10n.addInnovationGenerating : l10n.generate,
+          onPrimaryPressed: _c.isGeneratingImage.value
+              ? null
+              : () {
+                  Get.back<void>();
+                  _c.generateImageWithAI(_c.aiPromptController.text);
+                },
+        ),
       ),
     );
   }

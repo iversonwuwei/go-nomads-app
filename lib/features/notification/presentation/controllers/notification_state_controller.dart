@@ -13,13 +13,13 @@ class NotificationStateController extends GetxController {
 
   // 通知列表
   final notifications = <AppNotification>[].obs;
-  
+
   // 未读数量
   final unreadCount = 0.obs;
-  
+
   // 加载状态
   final isLoading = false.obs;
-  
+
   // 错误信息
   final errorMessage = ''.obs;
 
@@ -65,7 +65,7 @@ class NotificationStateController extends GetxController {
   Future<void> refreshUnreadCount() async {
     log('🔔 刷新未读数量');
     final result = await _repository.getUnreadCount();
-    
+
     result.fold(
       onSuccess: (count) {
         log('✅ 未读数量: $count');
@@ -81,7 +81,7 @@ class NotificationStateController extends GetxController {
   /// 标记为已读
   Future<bool> markAsRead(String notificationId) async {
     final result = await _repository.markAsRead(notificationId);
-    
+
     return result.fold(
       onSuccess: (_) {
         // 更新本地状态
@@ -90,12 +90,12 @@ class NotificationStateController extends GetxController {
           notifications[index] = notifications[index].markAsRead();
           notifications.refresh();
         }
-        
+
         // 更新未读数量
         if (unreadCount.value > 0) {
           unreadCount.value--;
         }
-        
+
         return true;
       },
       onFailure: (_) => false,
@@ -105,7 +105,7 @@ class NotificationStateController extends GetxController {
   /// 标记所有为已读
   Future<bool> markAllAsRead() async {
     final result = await _repository.markAllAsRead();
-    
+
     return result.fold(
       onSuccess: (_) {
         // 更新所有通知为已读
@@ -122,20 +122,20 @@ class NotificationStateController extends GetxController {
   /// 删除通知
   Future<bool> deleteNotification(String notificationId) async {
     final result = await _repository.deleteNotification(notificationId);
-    
+
     return result.fold(
       onSuccess: (_) {
         // 从列表中移除
         final wasUnread = notifications
             .firstWhere((n) => n.id == notificationId, orElse: () => notifications.first)
             .isRead == false;
-        
+
         notifications.removeWhere((n) => n.id == notificationId);
-        
+
         if (wasUnread && unreadCount.value > 0) {
           unreadCount.value--;
         }
-        
+
         return true;
       },
       onFailure: (_) => false,
@@ -151,7 +151,7 @@ class NotificationStateController extends GetxController {
     Map<String, dynamic>? metadata,
   }) async {
     log('🔔 Controller.sendToAdmins 开始: title=$title');
-    
+
     final result = await _repository.sendToAdmins(
       title: title,
       message: message,
@@ -179,7 +179,7 @@ class NotificationStateController extends GetxController {
     required bool accepted,
   }) async {
     log('🔔 响应活动邀请: invitationId=$invitationId, accepted=$accepted');
-    
+
     final result = await _repository.respondToEventInvitation(
       notificationId: notificationId,
       invitationId: invitationId,
@@ -207,41 +207,6 @@ class NotificationStateController extends GetxController {
     );
   }
 
-  /// 响应版主转让请求
-  Future<bool> respondToModeratorTransfer({
-    required String notificationId,
-    required String transferId,
-    required bool accepted,
-  }) async {
-    log('🔔 响应版主转让: transferId=$transferId, accepted=$accepted');
-    
-    final result = await _repository.respondToModeratorTransfer(
-      notificationId: notificationId,
-      transferId: transferId,
-      accepted: accepted,
-    );
-
-    return result.fold(
-      onSuccess: (_) {
-        log('✅ 响应版主转让成功');
-        // 更新本地通知状态
-        final index = notifications.indexWhere((n) => n.id == notificationId);
-        if (index != -1) {
-          notifications[index] = notifications[index].markAsRead();
-          notifications.refresh();
-        }
-        if (unreadCount.value > 0) {
-          unreadCount.value--;
-        }
-        return true;
-      },
-      onFailure: (failure) {
-        log('❌ 响应版主转让失败: ${failure.message}');
-        return false;
-      },
-    );
-  }
-
   /// 刷新（下拉刷新）
   @override
   Future<void> refresh() async {
@@ -264,7 +229,7 @@ class NotificationStateController extends GetxController {
     unreadCount.value = 0;
     isLoading.value = false;
     errorMessage.value = '';
-    
+
     super.onClose();
   }
 }

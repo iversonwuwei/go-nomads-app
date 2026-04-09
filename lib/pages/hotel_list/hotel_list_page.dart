@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
 import 'package:go_nomads_app/pages/hotel_list/hotel_card.dart';
 import 'package:go_nomads_app/pages/hotel_list/hotel_empty_state.dart';
 import 'package:go_nomads_app/pages/hotel_list/hotel_search_bar.dart';
+import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 酒店列表页面（简化版，用于城市详情页的Hotels标签）
@@ -40,7 +42,22 @@ class HotelListPage extends StatelessWidget {
       tag: _tag,
     );
 
-    return RefreshIndicator(
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: const AppBackButton(color: Colors.black87),
+        title: Text(
+          cityName ?? '',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: RefreshIndicator(
       onRefresh: controller.loadHotels,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -82,6 +99,7 @@ class HotelListPage extends StatelessWidget {
             );
           }),
         ],
+      ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -112,69 +113,70 @@ class MeetupAttendeesSection extends GetView<MeetupDetailController> {
   }
 
   void _showAllAttendees(BuildContext context, AppLocalizations l10n) {
-    Get.dialog(
-      AlertDialog(
-        title: Text(l10n.allAttendees, style: TextStyle(fontSize: 18.sp)),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Obx(() {
-            if (controller.participants.isEmpty) {
-              return Padding(
-                padding: EdgeInsets.symmetric(vertical: 20.h),
-                child: Center(
-                  child: Text(
-                    l10n.noAttendeesYet,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppColors.textSecondary,
-                    ),
+    Get.bottomSheet(
+      AppBottomDrawer(
+        title: l10n.allAttendees,
+        maxHeightFactor: 0.72,
+        child: Obx(() {
+          if (controller.participants.isEmpty) {
+            return Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: Center(
+                child: Text(
+                  l10n.noAttendeesYet,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: AppColors.textSecondary,
                   ),
                 ),
-              );
-            }
-
-            return ListView.builder(
-              shrinkWrap: true,
-              itemCount: controller.participants.length,
-              itemBuilder: (context, index) {
-                final participant = controller.participants[index];
-                final userId = participant['userId']?.toString() ?? '';
-                final userInfo = participant['user'] as Map<String, dynamic>?;
-                final userName = userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
-                final userEmail = userInfo?['email'] as String?;
-                final userAvatar = userInfo?['avatar'] as String?;
-
-                return ListTile(
-                  onTap: () {
-                    final participantUser = controller.createBasicUserModel(
-                      userId,
-                      userName,
-                      userAvatar ?? '',
-                    );
-                    Get.back();
-                    Get.to(() => MemberDetailPage(user: participantUser));
-                  },
-                  leading: SafeCircleAvatar(
-                    imageUrl: userAvatar,
-                    radius: 20,
-                  ),
-                  title: Text(userName, style: TextStyle(fontSize: 14.sp)),
-                  subtitle: Text(
-                    userEmail ?? l10n.digitalNomad,
-                    style: TextStyle(fontSize: 12.sp),
-                  ),
-                );
-              },
+              ),
             );
-          }),
+          }
+
+          return ListView.builder(
+            shrinkWrap: true,
+            itemCount: controller.participants.length,
+            itemBuilder: (context, index) {
+              final participant = controller.participants[index];
+              final userId = participant['userId']?.toString() ?? '';
+              final userInfo = participant['user'] as Map<String, dynamic>?;
+              final userName = userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
+              final userEmail = userInfo?['email'] as String?;
+              final userAvatar = userInfo?['avatar'] as String?;
+
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
+                  final participantUser = controller.createBasicUserModel(
+                    userId,
+                    userName,
+                    userAvatar ?? '',
+                  );
+                  Get.back();
+                  Get.to(() => MemberDetailPage(user: participantUser));
+                },
+                leading: SafeCircleAvatar(
+                  imageUrl: userAvatar,
+                  radius: 20,
+                ),
+                title: Text(userName, style: TextStyle(fontSize: 14.sp)),
+                subtitle: Text(
+                  userEmail ?? l10n.digitalNomad,
+                  style: TextStyle(fontSize: 12.sp),
+                ),
+              );
+            },
+          );
+        }),
+        footer: AppBottomDrawerActionRow(
+          secondaryLabel: l10n.close,
+          onSecondaryPressed: () => Get.back<void>(),
+          primaryLabel: l10n.close,
+          onPrimaryPressed: () => Get.back<void>(),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(l10n.close, style: TextStyle(fontSize: 14.sp)),
-          ),
-        ],
       ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
     );
   }
 }

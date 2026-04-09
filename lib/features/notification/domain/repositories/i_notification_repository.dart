@@ -67,11 +67,4 @@ abstract class INotificationRepository {
     required String invitationId,
     required bool accepted,
   });
-
-  /// 响应版主转让请求
-  Future<Result<bool>> respondToModeratorTransfer({
-    required String notificationId,
-    required String transferId,
-    required bool accepted,
-  });
 }

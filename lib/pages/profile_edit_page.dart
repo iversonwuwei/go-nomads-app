@@ -304,13 +304,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
   // 处理通知开关变化
   Future<void> _handleNotificationToggle(bool value) async {
     final notificationService = Get.isRegistered<NotificationService>() ? Get.find<NotificationService>() : null;
+    final l10n = AppLocalizations.of(context)!;
 
     if (value && notificationService != null) {
       // 用户想要开启通知，检查系统权限
       final hasPermission = await notificationService.checkPermissionStatus();
 
       if (!hasPermission) {
-        final l10n = AppLocalizations.of(context)!;
         // 没有系统权限，提示用户并引导到系统设置
         final shouldOpenSettings = await Get.dialog<bool>(
           AlertDialog(
@@ -1771,8 +1771,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> with RouteAwareRefres
         roleText = l10n.profileRoleAdmin;
         break;
       case 'moderator':
-        badgeColor = Colors.orange;
-        roleText = l10n.profileRoleModerator;
+        badgeColor = Colors.grey;
+        roleText = l10n.profileRoleUser;
         break;
       default:
         badgeColor = Colors.grey;

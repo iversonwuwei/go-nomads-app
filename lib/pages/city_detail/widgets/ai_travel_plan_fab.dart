@@ -8,6 +8,32 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_planner_access_service.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 
+Future<void> openAiTravelPlanEntry(
+  BuildContext context, {
+  required String cityId,
+  required String cityName,
+}) async {
+  try {
+    final allowed = await AiPlannerAccessService().ensureAccess(
+      featureName: 'AI 旅行规划师',
+    );
+
+    if (!allowed) {
+      return;
+    }
+  } catch (e) {
+    log('⚠️ AI 旅行规划师会员检查异常: $e');
+  }
+
+  Get.toNamed(
+    AppRoutes.createTravelPlan,
+    arguments: {
+      'cityId': cityId,
+      'cityName': cityName,
+    },
+  );
+}
+
 /// AI 旅行计划浮动按钮
 class AiTravelPlanFab extends StatelessWidget {
   final String cityId;
@@ -89,25 +115,10 @@ class AiTravelPlanFab extends StatelessWidget {
   }
 
   void _onTap(BuildContext context) async {
-    try {
-      final allowed = await AiPlannerAccessService().ensureAccess(
-        featureName: 'AI 旅行规划师',
-      );
-
-      if (!allowed) {
-        return;
-      }
-    } catch (e) {
-      log('⚠️ AI 旅行规划师会员检查异常: $e');
-    }
-
-    // 跳转到创建旅行计划页面
-    Get.toNamed(
-      AppRoutes.createTravelPlan,
-      arguments: {
-        'cityId': cityId,
-        'cityName': cityName,
-      },
+    openAiTravelPlanEntry(
+      context,
+      cityId: cityId,
+      cityName: cityName,
     );
   }
 }

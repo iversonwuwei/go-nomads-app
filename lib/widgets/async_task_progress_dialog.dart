@@ -1,8 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 /// 异步任务进度对话框
 ///
@@ -25,95 +26,73 @@ class AsyncTaskProgressDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false, // 禁止返回键关闭
-      child: Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
+      child: AppBottomDrawer(
+        title: title,
+        maxHeightFactor: 0.52,
+        child: Column(
+          children: [
+            Obx(() {
+              final progressValue = progress.value / 100.0;
+              return Column(
+                children: [
+                  SizedBox(
+                    width: 80.w,
+                    height: 80.h,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          value: progressValue,
+                          strokeWidth: 8.w,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _getProgressColor(progress.value),
+                          ),
+                        ),
+                        Text(
+                          '${progress.value}%',
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  LinearProgressIndicator(
+                    value: progressValue,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _getProgressColor(progress.value),
+                    ),
+                  ),
+                ],
+              );
+            }),
+            SizedBox(height: 16.h),
+            Obx(() => Text(
+                  message.value.isEmpty ? '处理中...' : message.value,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.grey[600],
+                  ),
+                )),
+          ],
         ),
-        child: Padding(
-          padding: EdgeInsets.all(24.0.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 标题
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 24.h),
-
-              // 进度指示器
-              Obx(() {
-                final progressValue = progress.value / 100.0;
-                return Column(
-                  children: [
-                    // 圆形进度指示器
-                    SizedBox(
-                      width: 80.w,
-                      height: 80.h,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          CircularProgressIndicator(
-                            value: progressValue,
-                            strokeWidth: 8.w,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              _getProgressColor(progress.value),
-                            ),
-                          ),
-                          Text(
-                            '${progress.value}%',
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // 线性进度条
-                    LinearProgressIndicator(
-                      value: progressValue,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        _getProgressColor(progress.value),
-                      ),
-                    ),
-                  ],
-                );
-              }),
-
-              SizedBox(height: 16.h),
-
-              // 进度消息
-              Obx(() => Text(
-                    message.value.isEmpty ? '处理中...' : message.value,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: Colors.grey[600],
-                    ),
-                  )),
-
-              SizedBox(height: 24.h),
-
-              // 取消按钮
-              if (onCancel != null)
-                TextButton(
+        footer: onCancel == null
+            ? null
+            : SizedBox(
+                width: double.infinity,
+                child: TextButton(
                   onPressed: onCancel,
                   child: const Text(
                     'Cancel',
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
-            ],
-          ),
-        ),
+              ),
       ),
     );
   }
@@ -136,14 +115,17 @@ class AsyncTaskProgressDialog extends StatelessWidget {
     required RxString message,
     VoidCallback? onCancel,
   }) {
-    Get.dialog(
+    Get.bottomSheet(
       AsyncTaskProgressDialog(
         title: title,
         progress: progress,
         message: message,
         onCancel: onCancel,
       ),
-      barrierDismissible: false, // 点击外部不关闭
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 
@@ -153,12 +135,11 @@ class AsyncTaskProgressDialog extends StatelessWidget {
 
     try {
       // 只关闭最顶层的对话框，不影响 snackbar
-      if (Get.isDialogOpen == true) {
-        // 使用 closeAllDialogs 而不是 back，避免误关闭 snackbar
-        Get.until((route) => !Get.isDialogOpen!);
-        log('[AsyncTaskProgressDialog] ✅ 对话框已成功关闭');
+      if (Get.isDialogOpen == true || Get.isBottomSheetOpen == true) {
+        Get.back<void>();
+        log('[AsyncTaskProgressDialog] ✅ 抽屉已成功关闭');
       } else {
-        log('[AsyncTaskProgressDialog] ✅ 对话框已经关闭');
+        log('[AsyncTaskProgressDialog] ✅ 抽屉已经关闭');
       }
     } catch (e) {
       log('[AsyncTaskProgressDialog] ❌ 关闭失败: $e');
@@ -166,7 +147,8 @@ class AsyncTaskProgressDialog extends StatelessWidget {
   }
 
   /// 安全地关闭对话框（带延迟）
-  static Future<void> dismissSafely({Duration delay = const Duration(milliseconds: 100)}) async {
+  static Future<void> dismissSafely(
+      {Duration delay = const Duration(milliseconds: 100)}) async {
     await Future.delayed(delay);
     dismiss();
   }

@@ -41,7 +41,7 @@ class AppNotification extends Equatable {
       isRead: json['isRead'] as bool? ?? false, // API 字段: isRead
       createdAt:
           DateTime.parse(json['createdAt'] as String), // API 字段: createdAt
-      readAt: json['readAt'] != null 
+      readAt: json['readAt'] != null
           ? DateTime.parse(json['readAt'] as String) // API 字段: readAt
           : null,
     );
@@ -96,11 +96,6 @@ class AppNotification extends Equatable {
 
 /// 通知类型
 enum NotificationType {
-  moderatorApplication('moderator_application'), // 版主申请
-  moderatorApproved('moderator_approved'), // 版主申请通过
-  moderatorRejected('moderator_rejected'), // 版主申请被拒
-  moderatorTransfer('moderator_transfer'), // 版主转让请求
-  moderatorTransferResult('moderator_transfer_result'), // 版主转让结果通知
   cityUpdate('city_update'), // 城市信息更新
   systemAnnouncement('system_announcement'), // 系统公告
   eventInvitation('event_invitation'), // 活动邀请
@@ -113,6 +108,15 @@ enum NotificationType {
   const NotificationType(this.value);
 
   static NotificationType fromString(String value) {
+    switch (value) {
+      case 'moderator_application':
+      case 'moderator_approved':
+      case 'moderator_rejected':
+      case 'moderator_transfer':
+      case 'moderator_transfer_result':
+        return NotificationType.systemAnnouncement;
+    }
+
     return NotificationType.values.firstWhere(
       (type) => type.value == value,
       orElse: () => NotificationType.other,
@@ -122,16 +126,6 @@ enum NotificationType {
   /// 获取图标
   String get icon {
     switch (this) {
-      case NotificationType.moderatorApplication:
-        return '📝';
-      case NotificationType.moderatorApproved:
-        return '✅';
-      case NotificationType.moderatorRejected:
-        return '❌';
-      case NotificationType.moderatorTransfer:
-        return '🔄';
-      case NotificationType.moderatorTransferResult:
-        return '📋';
       case NotificationType.cityUpdate:
         return '🌆';
       case NotificationType.systemAnnouncement:
@@ -152,16 +146,6 @@ enum NotificationType {
   /// 获取颜色（返回颜色代码字符串）
   String get colorHex {
     switch (this) {
-      case NotificationType.moderatorApplication:
-        return '#FF9800'; // 橙色
-      case NotificationType.moderatorApproved:
-        return '#4CAF50'; // 绿色
-      case NotificationType.moderatorRejected:
-        return '#F44336'; // 红色
-      case NotificationType.moderatorTransfer:
-        return '#9C27B0'; // 紫色
-      case NotificationType.moderatorTransferResult:
-        return '#3B82F6'; // 蓝色
       case NotificationType.cityUpdate:
         return '#2196F3'; // 蓝色
       case NotificationType.systemAnnouncement:

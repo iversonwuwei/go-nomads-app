@@ -47,26 +47,18 @@ class ModernBottomNavBar extends GetView<BottomNavController> {
 
     return Obx(() {
       final currentIndex = controller.currentIndex.value;
-      final unreadCount = controller.unreadCount.value;
+      final inboxUnreadCount = controller.totalInboxUnreadCount;
 
       // 动态更新 items 中的 badge
       final updatedItems = items.asMap().entries.map((entry) {
         final index = entry.key;
         final item = entry.value;
-        // 消息会话页面（索引1）显示 IM 未读数量
-        if (index == 1) {
+        // 收件箱页面（索引3）显示聚合未读数量
+        if (index == 3) {
           return NavBarItem(
             icon: item.icon,
             label: item.label,
-            badge: controller.imUnreadCount.value,
-          );
-        }
-        // 通知页面（索引4）显示通知未读数量
-        if (index == 4) {
-          return NavBarItem(
-            icon: item.icon,
-            label: item.label,
-            badge: unreadCount,
+            badge: inboxUnreadCount,
           );
         }
         return item;

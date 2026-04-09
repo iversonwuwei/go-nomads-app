@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 
@@ -31,21 +32,21 @@ class TravelPlanDayCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: isHighlighted ? const Color(0xFFFFFBF7) : Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        color: isHighlighted ? const Color(0xFFFFF8F3).withValues(alpha: 0.88) : Colors.white.withValues(alpha: 0.68),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(
-          color: isHighlighted ? const Color(0xFFFFD9BF) : Colors.grey[200]!,
+          color: isHighlighted ? const Color(0xFFFFE0CC) : Colors.white.withValues(alpha: 0.72),
           width: isHighlighted ? 1.4 : 1,
         ),
-        boxShadow: isHighlighted
-            ? [
-                BoxShadow(
-                  color: const Color(0xFFFF7A57).withValues(alpha: 0.08),
-                  blurRadius: 12.r,
-                  offset: const Offset(0, 2),
+        boxShadow: [
+          BoxShadow(
+            color: (isHighlighted ? const Color(0xFFFF7A57) : AppColors.cityPrimary).withValues(
+              alpha: isHighlighted ? 0.1 : 0.05,
                 ),
-              ]
-            : null,
+            blurRadius: isHighlighted ? 18.r : 14.r,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,13 +56,14 @@ class TravelPlanDayCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF4458),
-                  borderRadius: BorderRadius.circular(20.r),
+                  color: AppColors.cityPrimary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999.r),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
                 ),
                 child: Text(
                   l10n.dayNumber(dayItinerary.day),
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.cityPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 13.sp,
                   ),
@@ -74,6 +76,7 @@ class TravelPlanDayCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -87,10 +90,12 @@ class TravelPlanDayCard extends StatelessWidget {
                     style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600),
                   ),
                   style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFFFF4458),
+                    foregroundColor: AppColors.cityPrimary,
+                    backgroundColor: Colors.white.withValues(alpha: 0.46),
                     padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     visualDensity: VisualDensity.compact,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                   ),
                 ),
               ],
@@ -101,8 +106,9 @@ class TravelPlanDayCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF1E8),
+                color: Colors.white.withValues(alpha: 0.58),
                 borderRadius: BorderRadius.circular(999.r),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
               ),
               child: Text(
                 highlightedPeriodKey == null ? '当前重点调整：这一天' : '当前重点调整：${_periodLabel(highlightedPeriodKey)}',
@@ -149,8 +155,9 @@ class TravelPlanDayCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
-                color: Colors.amber[50],
-                borderRadius: BorderRadius.circular(8.r),
+                color: const Color(0xFFFFFBEB).withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,7 +167,7 @@ class TravelPlanDayCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       dayItinerary.notes!,
-                      style: TextStyle(fontSize: 12.sp),
+                      style: TextStyle(fontSize: 12.sp, color: AppColors.textPrimary, height: 1.5),
                     ),
                   ),
                 ],
@@ -202,16 +209,16 @@ class _PeriodReplanChip extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
         decoration: BoxDecoration(
-          color: isHighlighted ? const Color(0xFFFF4458) : const Color(0xFFFFF4F6),
+          color: isHighlighted ? AppColors.cityPrimary : Colors.white.withValues(alpha: 0.52),
           borderRadius: BorderRadius.circular(999.r),
-          border: Border.all(color: isHighlighted ? const Color(0xFFFF4458) : const Color(0xFFFFD9DE)),
+          border: Border.all(color: isHighlighted ? AppColors.cityPrimary : Colors.white.withValues(alpha: 0.72)),
         ),
         child: Text(
           data.label,
           style: TextStyle(
             fontSize: 11.sp,
             fontWeight: FontWeight.w700,
-            color: isHighlighted ? Colors.white : const Color(0xFFFF4458),
+            color: isHighlighted ? Colors.white : AppColors.cityPrimary,
           ),
         ),
       ),
@@ -285,14 +292,18 @@ class _ActivityItem extends StatelessWidget {
             width: 60.w,
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: isHighlighted ? const Color(0xFFFFEDE4) : Colors.grey[100],
-              borderRadius: BorderRadius.circular(6.r),
+              color: isHighlighted
+                  ? const Color(0xFFFFEDE4).withValues(alpha: 0.92)
+                  : Colors.white.withValues(alpha: 0.52),
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
             ),
             child: Text(
               activity.time,
               style: TextStyle(
                 fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -303,9 +314,9 @@ class _ActivityItem extends StatelessWidget {
               padding: isHighlighted ? EdgeInsets.all(10.w) : EdgeInsets.zero,
               decoration: isHighlighted
                   ? BoxDecoration(
-                      color: const Color(0xFFFFFBF7),
-                      borderRadius: BorderRadius.circular(10.r),
-                      border: Border.all(color: const Color(0xFFFFE0CC)),
+                      color: Colors.white.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
                     )
                   : null,
               child: Column(
@@ -319,6 +330,7 @@ class _ActivityItem extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ),
@@ -326,8 +338,9 @@ class _ActivityItem extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF1E8),
+                            color: Colors.white.withValues(alpha: 0.62),
                             borderRadius: BorderRadius.circular(999.r),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
                           ),
                           child: Text(
                             '本次重点',
@@ -345,31 +358,32 @@ class _ActivityItem extends StatelessWidget {
                     activity.description,
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
+                      height: 1.5,
                     ),
                   ),
                   SizedBox(height: 4.h),
                   Row(
                     children: [
-                      Icon(FontAwesomeIcons.locationDot, size: 12.r, color: Colors.grey[500]),
+                      Icon(FontAwesomeIcons.locationDot, size: 12.r, color: AppColors.textSecondary),
                       SizedBox(width: 4.w),
                       Flexible(
                         child: Text(
                           activity.location,
                           style: TextStyle(
                             fontSize: 11.sp,
-                            color: Colors.grey[500],
+                            color: AppColors.textSecondary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       SizedBox(width: 12.w),
-                      Icon(FontAwesomeIcons.dollarSign, size: 12.r, color: Colors.grey[500]),
+                      Icon(FontAwesomeIcons.dollarSign, size: 12.r, color: AppColors.textSecondary),
                       Text(
                         '\$${activity.estimatedCost.toStringAsFixed(0)}',
                         style: TextStyle(
                           fontSize: 11.sp,
-                          color: Colors.grey[500],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],

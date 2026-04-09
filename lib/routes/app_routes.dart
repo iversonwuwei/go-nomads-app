@@ -3,13 +3,23 @@ import 'package:go_nomads_app/controllers/change_password_page_controller.dart';
 import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
 import 'package:go_nomads_app/core/lifecycle/binding_helper.dart';
 import 'package:go_nomads_app/core/lifecycle/page_lifecycle_middleware.dart';
+import 'package:go_nomads_app/features/budget/presentation/budget_center_binding.dart';
+import 'package:go_nomads_app/features/budget/presentation/pages/budget_center_page.dart';
 import 'package:go_nomads_app/features/city_list/city_list.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail.dart';
 import 'package:go_nomads_app/features/membership/presentation/pages/membership_plan_page.dart';
 import 'package:go_nomads_app/features/membership/presentation/widgets/ai_planner_membership_guard.dart';
-import 'package:go_nomads_app/features/moderator/presentation/pages/moderator_application_detail_page.dart';
+import 'package:go_nomads_app/features/migration_workspace/presentation/migration_workspace_binding.dart';
+import 'package:go_nomads_app/features/migration_workspace/presentation/pages/migration_workspace_page.dart';
+import 'package:go_nomads_app/features/navigation_hub/presentation/inbox_hub_binding.dart';
+import 'package:go_nomads_app/features/navigation_hub/presentation/land_hub_binding.dart';
+import 'package:go_nomads_app/features/navigation_hub/presentation/pages/inbox_hub_page.dart';
+import 'package:go_nomads_app/features/navigation_hub/presentation/pages/land_hub_page.dart';
 import 'package:go_nomads_app/features/travel_history/travel_history.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan_summary.dart';
+import 'package:go_nomads_app/features/visa/presentation/pages/visa_center_page.dart';
+import 'package:go_nomads_app/features/visa/presentation/visa_center_binding.dart';
 import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav.dart';
 import 'package:go_nomads_app/middlewares/auth_middleware.dart';
 import 'package:go_nomads_app/pages/add_cost/add_cost_page.dart';
@@ -52,6 +62,7 @@ import 'package:go_nomads_app/pages/meetup_list/meetup_list.dart';
 import 'package:go_nomads_app/pages/member_detail_page.dart';
 import 'package:go_nomads_app/pages/my_meetups_page.dart';
 import 'package:go_nomads_app/pages/notifications_page.dart';
+import 'package:go_nomads_app/pages/profile/profile_binding.dart';
 import 'package:go_nomads_app/pages/profile_edit_page.dart';
 import 'package:go_nomads_app/pages/profile_page.dart';
 import 'package:go_nomads_app/pages/pros_and_cons_add_page.dart';
@@ -71,11 +82,20 @@ class AppRoutes {
   // 白名单路由 - 不需要认证
   // ============================================================================
   static const String home = '/home';
+  static const String explore = '/explore';
   static const String login = '/login';
   static const String register = '/register';
   static const String termsOfService = '/terms-of-service';
   static const String communityGuidelinesPage = '/community-guidelines';
   static const String privacyPolicy = '/privacy-policy';
+
+  // ============================================================================
+  // 一级导航主入口路由
+  // ============================================================================
+  static const String land = '/land';
+  static const String communityHub = '/community-hub';
+  static const String inbox = '/inbox';
+  static const String me = '/me';
 
   // ============================================================================
   // 城市相关路由
@@ -118,6 +138,9 @@ class AppRoutes {
   // 旅行计划相关路由
   // ============================================================================
   static const String travelPlan = '/travel-plan';
+  static const String migrationWorkspace = '/migration-workspace';
+  static const String budgetCenter = '/budget-center';
+  static const String visaCenter = '/visa-center';
   static const String createTravelPlan = '/create-travel-plan';
   static const String aiPlannerTab = '/ai-planner-tab';
   static const String travelHistory = '/travel-history';
@@ -162,11 +185,6 @@ class AppRoutes {
   // 社区相关路由
   // ============================================================================
   static const String community = '/community';
-
-  // ============================================================================
-  // 管理员路由
-  // ============================================================================
-  static const String moderatorApplicationDetail = '/admin/moderator-application-detail';
 
   // ============================================================================
   // 其他路由
@@ -215,6 +233,35 @@ class AppRoutes {
       name: home,
       page: () => const BottomNavLayout(child: HomePage()),
       binding: HomePageBinding(),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: explore,
+      page: () => const BottomNavLayout(child: HomePage()),
+      binding: HomePageBinding(),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: land,
+      page: () => const BottomNavLayout(child: LandHubPage()),
+      binding: LandHubBinding(),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: communityHub,
+      page: () => const BottomNavLayout(child: CommunityPage()),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: inbox,
+      page: () => const BottomNavLayout(child: InboxHubPage()),
+      binding: InboxHubBinding(),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: me,
+      page: () => const BottomNavLayout(child: ProfilePage()),
+      binding: ProfileBinding(),
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
 
@@ -355,10 +402,10 @@ class AppRoutes {
     GetPage(
       name: coworkingList,
       page: () {
-        final args = Get.arguments as Map<String, dynamic>;
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
         return CoworkingListPage(
-          cityId: args['cityId'],
-          cityName: args['cityName'],
+          cityId: args['cityId'] ?? '',
+          cityName: args['cityName'] ?? '',
           countryName: args['countryName'],
         );
       },
@@ -389,10 +436,10 @@ class AppRoutes {
     GetPage(
       name: hotelList,
       page: () {
-        final args = Get.arguments as Map<String, dynamic>;
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
         return HotelListPage(
-          cityId: args['cityId'],
-          cityName: args['cityName'],
+          cityId: args['cityId'] ?? '',
+          cityName: args['cityName'] ?? '',
         );
       },
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
@@ -426,8 +473,27 @@ class AppRoutes {
           planId: args['planId'], // 从数据库加载时传入
           cityId: args['cityId'],
           cityName: args['cityName'],
+          workspaceSummary: args['summary'] as TravelPlanSummary?,
         );
       },
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: migrationWorkspace,
+      page: () => const MigrationWorkspacePage(),
+      binding: MigrationWorkspaceBinding(),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: budgetCenter,
+      page: () => const BudgetCenterPage(),
+      binding: BudgetCenterBinding(),
+      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
+    ),
+    GetPage(
+      name: visaCenter,
+      page: () => const VisaCenterPage(),
+      binding: VisaCenterBinding(),
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
@@ -483,6 +549,7 @@ class AppRoutes {
     GetPage(
       name: profile,
       page: () => const BottomNavLayout(child: ProfilePage()),
+      binding: ProfileBinding(),
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
     GetPage(
@@ -587,20 +654,6 @@ class AppRoutes {
     GetPage(
       name: community,
       page: () => const CommunityPage(),
-      middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
-    ),
-
-    // ============================================================================
-    // 🔒 管理员相关路由 - 需要认证
-    // ============================================================================
-    GetPage(
-      name: moderatorApplicationDetail,
-      page: () {
-        final args = Get.arguments as Map<String, dynamic>? ?? {};
-        return ModeratorApplicationDetailPage(
-          applicationId: args['applicationId'] ?? '',
-        );
-      },
       middlewares: [AuthMiddleware(), PageLifecycleMiddleware()],
     ),
   ];

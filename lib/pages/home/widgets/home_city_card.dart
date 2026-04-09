@@ -140,53 +140,9 @@ class HomeCityCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 版主状态徽章
-          _buildModeratorBadge(isMobile),
-          SizedBox(width: 3.w),
           // 右侧按钮组
           _buildTopRightButtons(isMobile),
         ],
-      ),
-    );
-  }
-
-  Widget _buildModeratorBadge(bool isMobile) {
-    final l10n = AppLocalizations.of(Get.context!)!;
-    return Flexible(
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 4 : 6,
-          vertical: isMobile ? 2 : 3,
-        ),
-        decoration: BoxDecoration(
-          color: city.moderatorId != null
-              ? const Color(0xFF10B981).withValues(alpha: 0.9)
-              : Colors.orange.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(4.r),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              city.moderatorId != null ? FontAwesomeIcons.userCheck : FontAwesomeIcons.userXmark,
-              color: Colors.white,
-              size: isMobile ? 8 : 10,
-            ),
-            SizedBox(width: isMobile ? 2 : 4),
-            Flexible(
-              child: Text(
-                city.moderatorId != null ? l10n.moderatorAssigned : l10n.moderatorPending,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isMobile ? 8 : 10,
-                  fontWeight: FontWeight.w600,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

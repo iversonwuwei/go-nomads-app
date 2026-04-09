@@ -57,7 +57,7 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<CityRatingController>();
-    
+
     return Obx(() {
       if (controller.isLoading.value) {
         return _buildSkeletonLoader();
@@ -68,10 +68,10 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
       }
 
       return Container(
-        margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(18.r),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(8),
@@ -81,14 +81,14 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(18.r),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 头部装饰
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -118,12 +118,12 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                   ],
                 ),
               ),
-              
+
               // 评分项列表
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h).copyWith(bottom: 24.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h).copyWith(bottom: 20.h),
                 itemCount: controller.statistics.length,
                 separatorBuilder: (context, index) => Padding(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -207,9 +207,9 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
                         ),
                       );
                     }),
-                  
+
                   const Spacer(),
-                  
+
                   // 分数徽章
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
@@ -267,11 +267,11 @@ class _CityRatingsCardState extends State<CityRatingsCard> {
 
   Widget _buildSkeletonLoader() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      padding: EdgeInsets.all(20.r),
+      margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(18.r),
       ),
       child: Column(
         children: List.generate(

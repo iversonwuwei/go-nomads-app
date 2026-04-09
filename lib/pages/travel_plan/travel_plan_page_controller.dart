@@ -2,11 +2,16 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
+import 'package:go_nomads_app/features/migration_workspace/domain/repositories/i_migration_workspace_repository.dart';
+import 'package:go_nomads_app/features/migration_workspace/infrastructure/repositories/migration_workspace_repository.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan_summary.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/travel_plan/travel_plan_page.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/openclaw_research_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/async_task_progress_dialog.dart';
@@ -76,6 +81,7 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
   final List<String>? interests;
   final String? departureLocation;
   final DateTime? departureDate;
+  final TravelPlanSummary? initialWorkspaceSummary;
 
   TravelPlanPageController({
     this.initialPlan,
@@ -89,15 +95,28 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
     this.interests,
     this.departureLocation,
     this.departureDate,
+    this.initialWorkspaceSummary,
   });
+
+  late final IMigrationWorkspaceRepository _workspaceRepository = Get.isRegistered<IMigrationWorkspaceRepository>()
+      ? Get.find<IMigrationWorkspaceRepository>()
+      : MigrationWorkspaceRepository(
+          Get.isRegistered<HttpService>() ? Get.find<HttpService>() : HttpService(),
+        );
 
   // ==================== 可观察状态 ====================
 
   /// 当前旅行计划
   final Rx<TravelPlan?> plan = Rx<TravelPlan?>(null);
 
+  /// 当前迁移工作台摘要
+  final Rx<TravelPlanSummary?> workspaceSummary = Rx<TravelPlanSummary?>(null);
+
   /// 是否正在加载
   final RxBool isLoading = true.obs;
+
+  /// 是否正在保存工作台
+  final RxBool isSavingWorkspace = false.obs;
 
   /// 进度消息
   final RxString progressMessage = '正在准备...'.obs;
@@ -123,6 +142,8 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
   @override
   void onInit() {
     super.onInit();
+
+    workspaceSummary.value = initialWorkspaceSummary;
 
     // 初始化动画控制器
     shimmerController = AnimationController(
@@ -233,6 +254,85 @@ class TravelPlanPageController extends GetxController with GetSingleTickerProvid
       AppToast.error(_l10n.travelPlanGenerateErrorWithError(e.toString()));
       Get.back();
     }
+  }
+
+  Future<void> saveWorkspaceState({
+    required TravelPlanSummary plan,
+    required String stage,
+    String? focusNote,
+    List<MigrationChecklistItem> checklist = const [],
+    List<MigrationTimelineItem> timeline = const [],
+  }) async {
+    if (isSavingWorkspace.value) {
+      return;
+    }
+
+    try {
+      isSavingWorkspace.value = true;
+
+      final result = await _workspaceRepository.savePlanState(
+        planId: plan.id,
+        stage: stage,
+        focusNote: focusNote,
+        checklist: checklist,
+        timeline: timeline,
+      );
+
+      result.fold(
+        onSuccess: (data) {
+          final updatedPlan = data.plans.cast<TravelPlanSummary?>().firstWhere(
+                (item) => item?.id == plan.id,
+                orElse: () => null,
+              );
+          workspaceSummary.value = updatedPlan ??
+              _mergeWorkspaceSummary(
+                source: plan,
+                stage: stage,
+                focusNote: focusNote,
+                checklist: checklist,
+                timeline: timeline,
+              );
+          AppToast.success(_l10n.saveSuccess);
+        },
+        onFailure: (exception) {
+          AppToast.error(_l10n.operationFailedWithError(exception.message));
+        },
+      );
+    } catch (error) {
+      log('❌ 保存迁移工作台失败: $error');
+      AppToast.error(_l10n.operationFailedWithError(error.toString()));
+    } finally {
+      isSavingWorkspace.value = false;
+    }
+  }
+
+  TravelPlanSummary _mergeWorkspaceSummary({
+    required TravelPlanSummary source,
+    required String stage,
+    String? focusNote,
+    required List<MigrationChecklistItem> checklist,
+    required List<MigrationTimelineItem> timeline,
+  }) {
+    final completedTaskCount = checklist.where((item) => item.isCompleted).length;
+
+    return TravelPlanSummary(
+      id: source.id,
+      cityId: source.cityId,
+      cityName: source.cityName,
+      cityImage: source.cityImage,
+      duration: source.duration,
+      budgetLevel: source.budgetLevel,
+      travelStyle: source.travelStyle,
+      status: source.status,
+      departureDate: source.departureDate,
+      createdAt: source.createdAt,
+      migrationStage: stage,
+      focusNote: focusNote,
+      completedTaskCount: completedTaskCount,
+      totalTaskCount: checklist.length,
+      checklist: checklist,
+      timeline: timeline,
+    );
   }
 
   /// 设置 GetX 监听器

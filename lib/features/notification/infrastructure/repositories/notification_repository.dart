@@ -350,36 +350,6 @@ class NotificationRepository implements INotificationRepository {
     }
   }
 
-  @override
-  Future<Result<bool>> respondToModeratorTransfer({
-    required String notificationId,
-    required String transferId,
-    required bool accepted,
-  }) async {
-    try {
-      log('📤 响应版主转让: notificationId=$notificationId, transferId=$transferId, accepted=$accepted');
-
-      final response = await _httpService.post(
-        '${ApiConfig.apiBaseUrl}/cities/moderator/transfers/$transferId/respond',
-        data: {
-          'action': accepted ? 'accept' : 'reject',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        // 标记通知为已读
-        await markAsRead(notificationId);
-        log('✅ 响应版主转让成功');
-        return Result.success(true);
-      } else {
-        return Result.failure(NetworkException(response.data?['message'] ?? '响应版主转让失败'));
-      }
-    } catch (e) {
-      log('❌ 响应版主转让异常: $e');
-      return Result.failure(NetworkException('响应版主转让失败: $e'));
-    }
-  }
-
   /// 将 JSON 映射为 AppNotification 对象
   AppNotification _mapFromJson(Map<String, dynamic> json) {
     return AppNotification(
@@ -399,16 +369,6 @@ class NotificationRepository implements INotificationRepository {
   /// 将 NotificationType 转换为字符串
   String _typeToString(NotificationType type) {
     switch (type) {
-      case NotificationType.moderatorApplication:
-        return 'moderator_application';
-      case NotificationType.moderatorApproved:
-        return 'moderator_approved';
-      case NotificationType.moderatorRejected:
-        return 'moderator_rejected';
-      case NotificationType.moderatorTransfer:
-        return 'moderator_transfer';
-      case NotificationType.moderatorTransferResult:
-        return 'moderator_transfer_result';
       case NotificationType.cityUpdate:
         return 'city_update';
       case NotificationType.systemAnnouncement:
@@ -430,15 +390,11 @@ class NotificationRepository implements INotificationRepository {
   NotificationType _stringToType(String type) {
     switch (type) {
       case 'moderator_application':
-        return NotificationType.moderatorApplication;
       case 'moderator_approved':
-        return NotificationType.moderatorApproved;
       case 'moderator_rejected':
-        return NotificationType.moderatorRejected;
       case 'moderator_transfer':
-        return NotificationType.moderatorTransfer;
       case 'moderator_transfer_result':
-        return NotificationType.moderatorTransferResult;
+        return NotificationType.systemAnnouncement;
       case 'city_update':
         return NotificationType.cityUpdate;
       case 'system_announcement':

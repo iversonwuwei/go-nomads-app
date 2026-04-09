@@ -6,6 +6,7 @@ import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_city_grid.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_hero_section.dart';
 import 'package:go_nomads_app/pages/home/widgets/home_meetups_section.dart';
+import 'package:go_nomads_app/pages/home/widgets/home_nomad_dashboard.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
 
 /// 首页 - 使用 GetView 实现
@@ -50,6 +51,18 @@ class HomePage extends GetView<HomePageController> {
               child: HomeHeroSection(isMobile: isMobile),
             ),
 
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  isMobile ? 16 : 32,
+                  14,
+                  isMobile ? 16 : 32,
+                  0,
+                ),
+                child: HomeNomadDashboard(isMobile: isMobile),
+              ),
+            ),
+
             // 城市列表锚点
             SliverToBoxAdapter(
               child: Container(key: controller.citiesListKey, height: 0),
@@ -64,7 +77,7 @@ class HomePage extends GetView<HomePageController> {
             ),
 
             // 底部间距
-            SliverToBoxAdapter(child: SizedBox(height: 40.h)),
+            SliverToBoxAdapter(child: SizedBox(height: 28.h)),
 
             // Meetups 区域
             SliverToBoxAdapter(
@@ -74,20 +87,20 @@ class HomePage extends GetView<HomePageController> {
               ),
             ),
 
-            SliverToBoxAdapter(child: SizedBox(height: 60.h)),
+            SliverToBoxAdapter(child: SizedBox(height: 36.h)),
 
             // 特性列表
             SliverToBoxAdapter(
               child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: isMobile ? 16 : 32,
-                  vertical: isMobile ? 10 : 20,
+                  vertical: isMobile ? 6 : 14,
                 ),
                 child: HomeFeatureHighlights(isMobile: isMobile),
               ),
             ),
 
-            SliverToBoxAdapter(child: SizedBox(height: 40.h)),
+            SliverToBoxAdapter(child: SizedBox(height: 24.h)),
 
             // 版权信息
             const SliverToBoxAdapter(

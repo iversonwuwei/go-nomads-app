@@ -22,10 +22,7 @@ class MeetupListPage extends GetView<MeetupListController> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(context, l10n),
-      body: TabBarView(
-        controller: controller.tabController,
-        children: MeetupListTab.values.map((tab) => MeetupListView(tab: tab)).toList(),
-      ),
+      body: _buildBody(l10n),
       floatingActionButton: _buildFloatingActionButton(),
     );
   }
@@ -46,7 +43,6 @@ class MeetupListPage extends GetView<MeetupListController> {
         ),
       ),
       actions: [
-        // 筛选按钮 - 暂时隐藏，保留逻辑代码
         const Visibility(
           visible: false,
           maintainState: true,
@@ -54,57 +50,99 @@ class MeetupListPage extends GetView<MeetupListController> {
         ),
         SizedBox(width: 8.w),
       ],
-      bottom: _buildTabBar(context, l10n),
     );
   }
 
-  /// 构建胶囊形态的 TabBar
-  PreferredSizeWidget _buildTabBar(BuildContext context, AppLocalizations l10n) {
-    return PreferredSize(
-      preferredSize: Size.fromHeight(60.h),
-      child: Container(
-        height: 44.h,
-        margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(22.r),
-        ),
-        child: TabBar(
-          controller: controller.tabController,
-          isScrollable: false, // 允许滚动或者铺满
-          labelColor: Colors.white,
-          unselectedLabelColor: AppColors.textSecondary,
-          labelStyle: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 13.sp,
-          ),
-          unselectedLabelStyle: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 13.sp,
-          ),
-          indicatorSize: TabBarIndicatorSize.tab,
-          dividerColor: Colors.transparent, // 移除底部的默认长横线
-          indicator: BoxDecoration(
-            color: const Color(0xFFFF4458), // Highlight Theme Color
-            borderRadius: BorderRadius.circular(22.r),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFF4458).withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+  Widget _buildBody(AppLocalizations l10n) {
+    return Obx(() {
+      final items = _buildNavItems(l10n);
+
+      return AnimatedBuilder(
+        animation: controller.tabController,
+        builder: (context, _) {
+          final currentIndex = controller.tabController.index;
+          final currentItem = items[currentIndex];
+
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 12.h),
+                child: _MeetupCompactToolbar(
+                  items: items,
+                  currentIndex: currentIndex,
+                  currentItem: currentItem,
+                  onTabSelected: (index) => controller.tabController.animateTo(index),
+                ),
+              ),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 320),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.04, 0),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(currentIndex),
+                    child: MeetupListView(tab: currentItem.tab),
+                  ),
+                ),
               ),
             ],
-          ),
-          labelPadding: EdgeInsets.zero,
-          tabs: [
-            Tab(text: l10n.allMeetups),
-            Tab(text: l10n.joined),
-            Tab(text: l10n.past),
-            const Tab(text: '已取消'),
-          ],
-        ),
+          );
+        },
+      );
+    });
+  }
+
+  List<_MeetupNavItem> _buildNavItems(AppLocalizations l10n) {
+    return [
+      _MeetupNavItem(
+        index: MeetupListTab.upcoming.index,
+        tab: MeetupListTab.upcoming,
+        label: l10n.allMeetups,
+        subtitle: 'Track the next sessions worth joining in your current city orbit.',
+        icon: FontAwesomeIcons.calendarDays,
+        accent: const Color(0xFF1E5C7A),
+        count: controller.tabMeetups[MeetupListTab.upcoming]!.length,
       ),
-    );
+      _MeetupNavItem(
+        index: MeetupListTab.joined.index,
+        tab: MeetupListTab.joined,
+        label: l10n.joined,
+        subtitle: 'Monitor your committed plans and refresh RSVP changes quickly.',
+        icon: FontAwesomeIcons.userGroup,
+        accent: const Color(0xFF2F6A48),
+        count: controller.tabMeetups[MeetupListTab.joined]!.length,
+      ),
+      _MeetupNavItem(
+        index: MeetupListTab.past.index,
+        tab: MeetupListTab.past,
+        label: l10n.past,
+        subtitle: 'Review finished sessions, follow-ups, and participation history.',
+        icon: FontAwesomeIcons.clockRotateLeft,
+        accent: const Color(0xFF7A4A1E),
+        count: controller.tabMeetups[MeetupListTab.past]!.length,
+      ),
+      _MeetupNavItem(
+        index: MeetupListTab.cancelled.index,
+        tab: MeetupListTab.cancelled,
+        label: '已取消',
+        subtitle: 'Audit dropped or closed plans without mixing them into live activity.',
+        icon: FontAwesomeIcons.calendarXmark,
+        accent: const Color(0xFF7B3559),
+        count: controller.tabMeetups[MeetupListTab.cancelled]!.length,
+      ),
+    ];
   }
 
   /// 构建悬浮创建按钮 FAB
@@ -129,6 +167,186 @@ class MeetupListPage extends GetView<MeetupListController> {
         FontAwesomeIcons.plus,
         color: Colors.white,
         size: 20.sp,
+      ),
+    );
+  }
+}
+
+class _MeetupNavItem {
+  const _MeetupNavItem({
+    required this.index,
+    required this.tab,
+    required this.label,
+    required this.subtitle,
+    required this.icon,
+    required this.accent,
+    required this.count,
+  });
+
+  final int index;
+  final MeetupListTab tab;
+  final String label;
+  final String subtitle;
+  final IconData icon;
+  final Color accent;
+  final int count;
+}
+
+class _MeetupPill extends StatelessWidget {
+  const _MeetupPill({
+    required this.item,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final _MeetupNavItem item;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            gradient: isActive
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [item.accent, Color.lerp(item.accent, Colors.black, 0.18) ?? item.accent],
+                  )
+                : null,
+            color: isActive ? null : Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: isActive ? Colors.transparent : const Color(0xFFE9E2D8),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(item.icon, size: 12.r, color: isActive ? Colors.white : AppColors.textSecondary),
+              SizedBox(width: 8.w),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  color: isActive ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MeetupCompactToolbar extends StatelessWidget {
+  const _MeetupCompactToolbar({
+    required this.items,
+    required this.currentIndex,
+    required this.currentItem,
+    required this.onTabSelected,
+  });
+
+  final List<_MeetupNavItem> items;
+  final int currentIndex;
+  final _MeetupNavItem currentItem;
+  final ValueChanged<int> onTabSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: const Color(0xFFE7DED0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12.r,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32.w,
+                height: 32.w,
+                decoration: BoxDecoration(
+                  color: currentItem.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(currentItem.icon, size: 14.r, color: currentItem.accent),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currentItem.label,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      currentItem.subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11.sp,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${currentItem.count}',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: currentItem.accent,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(items.length, (index) {
+                final item = items[index];
+                return Padding(
+                  padding: EdgeInsets.only(right: index == items.length - 1 ? 0 : 8.w),
+                  child: _MeetupPill(
+                    item: item,
+                    isActive: currentIndex == index,
+                    onTap: () => onTabSelected(index),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
     );
   }

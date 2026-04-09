@@ -551,9 +551,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profileRoleAdmin => '管理员';
 
   @override
-  String get profileRoleModerator => '版主';
-
-  @override
   String get profileRoleUser => '用户';
 
   @override
@@ -1358,77 +1355,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeMeetupChatButton => '聊天';
-
-  @override
-  String get moderatorCardTitle => '城市版主';
-
-  @override
-  String get moderatorCardCertified => '已认证';
-
-  @override
-  String get moderatorCardTransferModerator => '转让版主';
-
-  @override
-  String get moderatorCardApplyModerator => '申请成为版主';
-
-  @override
-  String get moderatorCardUnclaimed => '待认领';
-
-  @override
-  String get moderatorCardLookingForModerator =>
-      '这座城市正在寻找版主！如果你熟悉这里，可以申请成为版主，帮助其他数字游民了解这座城市。';
-
-  @override
-  String get moderatorCardAssignModerator => '分配版主';
-
-  @override
-  String get moderatorCardNeedUpgradeMembership => '需要升级会员';
-
-  @override
-  String get moderatorCardUpgradeContent =>
-      '申请成为城市版主需要 Pro 会员或更高等级。\n\n升级到 Pro 会员后，您将获得：\n• 申请成为城市版主的资格\n• 更多 AI 使用次数\n• 专属会员徽章\n• 更多高级功能';
-
-  @override
-  String get moderatorCardUpgradeNow => '立即升级';
-
-  @override
-  String assignModeratorLoadCandidatesFailed(String error) {
-    return '加载版主候选人失败: $error';
-  }
-
-  @override
-  String get assignModeratorSelectAtLeastOneUser => '请至少选择一个用户';
-
-  @override
-  String get assignModeratorUnknownError => '未知错误';
-
-  @override
-  String assignModeratorUserError(String userId, String error) {
-    return '用户 $userId: $error';
-  }
-
-  @override
-  String assignModeratorSuccessCount(int count) {
-    return '成功指定 $count 个版主！';
-  }
-
-  @override
-  String assignModeratorFailCount(int count) {
-    return '$count 个用户指定失败，请查看日志';
-  }
-
-  @override
-  String assignModeratorAllFailed(String reason) {
-    return '所有用户指定失败: $reason';
-  }
-
-  @override
-  String get assignModeratorConfirmTitle => '确认指定版主';
-
-  @override
-  String assignModeratorConfirmMessage(int count) {
-    return '确定要将 $count 个用户指定为版主吗？\n\n这些用户将自动获得版主角色和相应权限。';
-  }
 
   @override
   String get skillCategoryProgramming => '编程开发';
@@ -5214,9 +5140,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get inviteYouToJoin => '邀请你参加';
 
   @override
-  String get moderatorTransfer => '版主转让';
-
-  @override
   String get accept => '接受';
 
   @override
@@ -5665,12 +5588,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get applyModeratorSubmitSuccess => '申请已提交，请等待管理员审核';
-
-  @override
-  String get applyModeratorReasonHint => '请说明您申请成为版主的原因，以及您能为社区带来什么...';
-
-  @override
   String addCoworkingImageCount(int count, int max) {
     return '$count/$max';
   }
@@ -5684,11 +5601,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginFacebookComingSoon => 'Facebook 登录即将推出';
 
   @override
-  String assignModeratorPageTitle(Object cityName) {
-    return '$cityName - 指定版主';
-  }
-
-  @override
   String get homeAiCopilotTitle => 'AI 智能助手';
 
   @override
@@ -5696,12 +5608,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeAiCopilotDescription => '智能问路 · 行程规划 · 旅行攻略';
-
-  @override
-  String get moderatorAssigned => '已指定版主';
-
-  @override
-  String get moderatorPending => '待指定版主';
 
   @override
   String get searchResultsFor => '搜索结果：';
@@ -5826,6 +5732,430 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get citiesCount => '100+ 城市';
+
+  @override
+  String get explore => '探索';
+
+  @override
+  String get land => '落地';
+
+  @override
+  String get migrationWorkspace => '迁移工作台';
+
+  @override
+  String get landHubTitle => '把下一站当作一个项目来管理';
+
+  @override
+  String get landHubSubtitle => '把规划、到达和后续动作放进同一个落地视图。';
+
+  @override
+  String get landHubTravelPlanDescription => '继续或创建你的迁移计划与 AI 规划。';
+
+  @override
+  String get landHubBudgetDescription => '集中查看月预算目标、预测支出和各城市的成本假设。';
+
+  @override
+  String get landHubVisaDescription => '在出发前集中查看签证时间、续签风险和提醒准备情况。';
+
+  @override
+  String get cityDecisionTitle => '决策快照';
+
+  @override
+  String cityDecisionSubtitle(Object location) {
+    return '用这一组信号判断 $location 是否适合作为你的下一站。';
+  }
+
+  @override
+  String get cityDecisionSignals => '决策信号';
+
+  @override
+  String get cityDecisionActions => '快捷入口';
+
+  @override
+  String get cityDecisionInternet => '网络质量';
+
+  @override
+  String get cityDecisionVideoCall => '视频通话适配';
+
+  @override
+  String get cityDecisionCommunity => '社区活跃度';
+
+  @override
+  String get cityDecisionClimate => '气候稳定性';
+
+  @override
+  String get cityDecisionVisaSummary => '签证摘要';
+
+  @override
+  String get cityDecisionGuideLoading => '正在加载指南增强信号';
+
+  @override
+  String get cityDecisionGuideReady => '指南增强信号已就绪';
+
+  @override
+  String get landHubAccommodationDescription => '查看适合数字游民的住宿与长住选项。';
+
+  @override
+  String get landHubCoworkingDescription => '快速进入共享办公列表，筛选适合工作的场地。';
+
+  @override
+  String get landHubTravelHistoryDescription => '回看过去停留与迁移记录，为下一站提供参考。';
+
+  @override
+  String get landHubCurrentFocusTitle => '当前落地重点';
+
+  @override
+  String landHubCurrentFocusSubtitle(String city) {
+    return '你当前的落地链路正围绕 $city 展开。';
+  }
+
+  @override
+  String get landHubCurrentFocusEmpty =>
+      '当前还没有明确的落地重点城市。先创建一个迁移计划，让预算和签证动作都绑定到真实目标上。';
+
+  @override
+  String get landHubFocusCityLabel => '重点城市';
+
+  @override
+  String get landHubDepartureLabel => '出发时间';
+
+  @override
+  String get landHubBudgetLabel => '月成本';
+
+  @override
+  String get landHubVisaLabel => '签证时钟';
+
+  @override
+  String get landHubPendingLabel => '待确认';
+
+  @override
+  String get budgetCenter => '预算中心';
+
+  @override
+  String get budgetCenterHeroTitle => '把首月落地预算控制在可执行范围内';
+
+  @override
+  String get budgetCenterHeroSubtitle => '集中看预算目标、预测支出和影响现金流的计划。';
+
+  @override
+  String get budgetCenterMonthlyTarget => '月预算目标';
+
+  @override
+  String get budgetCenterForecast => '预测支出';
+
+  @override
+  String get budgetCenterDelta => '预算差值';
+
+  @override
+  String get budgetCenterTrackedCities => '跟踪城市数';
+
+  @override
+  String get budgetCenterFocusCity => '当前重点城市';
+
+  @override
+  String get budgetCenterEstimatedMonthlyCost => '预计月支出';
+
+  @override
+  String get budgetCenterQuickActions => '快捷操作';
+
+  @override
+  String get budgetCenterAddCost => '新增费用记录';
+
+  @override
+  String get budgetCenterManageCosts => '管理城市费用';
+
+  @override
+  String get budgetCenterManageCostsSubtitle => '查看当前重点城市已有的费用记录并继续补充。';
+
+  @override
+  String get budgetCenterEditBaseline => '编辑预算基线';
+
+  @override
+  String get budgetCenterTemplateLabel => '模板';
+
+  @override
+  String get budgetCenterThresholdLabel => '提醒阈值 %';
+
+  @override
+  String get budgetCenterCategoryLabel => '分类预算';
+
+  @override
+  String get budgetCenterTrackedPlans => '预算跟踪计划';
+
+  @override
+  String get budgetCenterOpenPlan => '打开计划';
+
+  @override
+  String get budgetCenterEmptyTitle => '还没有迁移预算基线';
+
+  @override
+  String get budgetCenterEmptySubtitle => '先创建一个迁移计划，再回到预算中心查看预算假设和费用跟踪。';
+
+  @override
+  String get budgetCenterStatusOnTrack => '预算正常';
+
+  @override
+  String get budgetCenterStatusWatch => '需要关注';
+
+  @override
+  String get budgetCenterStatusOverBudget => '预算偏高';
+
+  @override
+  String get budgetCenterStatusNoData => '暂无基线';
+
+  @override
+  String get budgetCenterActionCreateFirstPlan => '先创建第一个迁移计划，建立预算基线。';
+
+  @override
+  String get budgetCenterActionReviewOverBudget => '当前预测已经超过目标，优先检查首月住宿和落地成本。';
+
+  @override
+  String get budgetCenterActionLockFirstMonthBudget =>
+      '出发时间已接近，优先锁定首月落地预算与住宿支出。';
+
+  @override
+  String get budgetCenterActionCompareCityBudget => '你有多个活跃方案，先对比不同城市的预算再做决定。';
+
+  @override
+  String get budgetCenterActionFinalizeBudgetBaseline => '先完成草稿计划，预算跟踪才有稳定基线。';
+
+  @override
+  String get budgetCenterActionReviewLatestPlan => '复核最新计划，确认首月成本结构是否合理。';
+
+  @override
+  String get visaCenter => '签证中心';
+
+  @override
+  String get visaCenterHeroTitle => '把入境时间与签证风险放到台前';
+
+  @override
+  String get visaCenterHeroSubtitle => '集中看到期时间、准备度和提醒，别等临近出发才处理。';
+
+  @override
+  String get visaCenterProfiles => '档案数';
+
+  @override
+  String get visaCenterAttentionRequired => '待处理';
+
+  @override
+  String get visaCenterReminderReady => '可设提醒';
+
+  @override
+  String get visaCenterSoonestExpiry => '最近到期';
+
+  @override
+  String get visaCenterFocusProfile => '当前重点档案';
+
+  @override
+  String get visaCenterExpiryDate => '到期时间';
+
+  @override
+  String get visaCenterRequirements => '材料要求';
+
+  @override
+  String get visaCenterProcess => '办理流程';
+
+  @override
+  String get visaCenterQuickActions => '快捷操作';
+
+  @override
+  String get visaCenterSetReminder => '设置签证提醒';
+
+  @override
+  String get visaCenterSetReminderSubtitle => '把当前签证到期时间发给 OpenClaw，自动安排提醒。';
+
+  @override
+  String get visaCenterOpenPlan => '打开迁移计划';
+
+  @override
+  String get visaCenterOpenPlanSubtitle => '回到关联迁移计划，继续调整日期和目标城市假设。';
+
+  @override
+  String get visaCenterEditProfile => '编辑签证档案';
+
+  @override
+  String get visaCenterTypeLabel => '签证类型';
+
+  @override
+  String get visaCenterStayDaysLabel => '停留天数';
+
+  @override
+  String get visaCenterEntryDateLabel => '入境日期';
+
+  @override
+  String get visaCenterDocumentsLabel => '必备材料';
+
+  @override
+  String get visaCenterReminderDatesLabel => '提醒日期';
+
+  @override
+  String get visaCenterAllProfiles => '全部签证档案';
+
+  @override
+  String get visaCenterEmptyTitle => '还没有签证档案';
+
+  @override
+  String get visaCenterEmptySubtitle => '先创建迁移计划，再回到签证中心查看到期时间和提醒准备情况。';
+
+  @override
+  String get visaCenterActionSetReminderNow => '有签证节点已接近，先设置提醒并确认材料清单。';
+
+  @override
+  String get visaCenterActionCompareEntryOptions => '你有多个活跃目的地，先比较入境路径再锁定迁移方案。';
+
+  @override
+  String get visaCenterActionCompleteBrief => '先补完签证材料简报，再正式确定出发日期。';
+
+  @override
+  String get visaCenterActionCreateFirstPlan => '先创建一个迁移计划，签证中心才能生成第一份档案。';
+
+  @override
+  String get visaCenterActionReviewLatestVisa => '复核当前签证档案，确认到期时间和办理假设。';
+
+  @override
+  String get visaCenterStatusAttentionRequired => '需要立即处理';
+
+  @override
+  String get visaCenterStatusReviewSoon => '即将需要复核';
+
+  @override
+  String get visaCenterStatusPlanning => '规划中';
+
+  @override
+  String get visaCenterStatusArchived => '已归档';
+
+  @override
+  String get visaCenterStatusOnTrack => '正常推进';
+
+  @override
+  String get visaCenterTypeLongStay => '长期停留签证';
+
+  @override
+  String get visaCenterTypeDigitalNomad => '数字游民入境';
+
+  @override
+  String get visaCenterTypePriorityEVisa => '优先电子签';
+
+  @override
+  String get visaCenterTypeShortStay => '短期停留签证';
+
+  @override
+  String get visaCenterNoReminderTarget => '当前签证档案还没有可提醒的到期时间。';
+
+  @override
+  String visaCenterReminderSet(Object cityName) {
+    return '已为 $cityName 安排签证提醒。';
+  }
+
+  @override
+  String get visaCenterReminderFailed => '设置签证提醒失败。';
+
+  @override
+  String visaCenterReminderFailedWithError(Object error) {
+    return '设置签证提醒失败: $error';
+  }
+
+  @override
+  String get migrationWorkspaceHeroTitle => '把迁移计划转成可执行清单';
+
+  @override
+  String get migrationWorkspaceHeroSubtitle => '集中查看活跃计划、近期出发和仍待推进的草稿。';
+
+  @override
+  String get migrationWorkspacePlanCount => '计划数';
+
+  @override
+  String get migrationWorkspaceActivePlans => '活跃计划';
+
+  @override
+  String get migrationWorkspaceUpcomingDepartures => '即将出发';
+
+  @override
+  String get migrationWorkspaceContinuePlanning => '继续规划';
+
+  @override
+  String get migrationWorkspaceRetry => '重试';
+
+  @override
+  String get migrationWorkspaceEmptyTitle => '先创建你的第一份迁移计划';
+
+  @override
+  String get migrationWorkspaceEmptySubtitle => '从城市、预算和出发时间开始，生成一份可继续迭代的落地方案。';
+
+  @override
+  String get migrationWorkspaceDraftPlans => '待继续推进的草稿计划';
+
+  @override
+  String get migrationWorkspaceOpenPlan => '打开计划';
+
+  @override
+  String get migrationWorkspaceFocusTitle => '当前迁移工作流';
+
+  @override
+  String get migrationWorkspaceEditTitle => '编辑迁移工作流';
+
+  @override
+  String get migrationWorkspaceStageLabel => '阶段';
+
+  @override
+  String get migrationWorkspaceChecklistLabel => '待办清单';
+
+  @override
+  String get migrationWorkspaceTimelineLabel => '时间轴';
+
+  @override
+  String get migrationWorkspaceDepartureDate => '出发日期';
+
+  @override
+  String get inboxHubTitle => '统一查看消息与通知';
+
+  @override
+  String get inboxHubSubtitle => '先清掉紧急沟通，再进入消息或通知。';
+
+  @override
+  String get inboxMessagesDescription => '查看私聊与会话未读，继续正在进行的沟通。';
+
+  @override
+  String get inboxNotificationsDescription => '集中处理系统通知、活动提醒与状态更新。';
+
+  @override
+  String get inboxActionRequired => '待处理';
+
+  @override
+  String get inboxSystemActionCenter => '系统行动中心';
+
+  @override
+  String get inboxSystemActionEmpty => '当前没有需要处理的迁移、预算或签证事项。';
+
+  @override
+  String get inboxSystemMigrationTitle => '迁移工作台';
+
+  @override
+  String get inboxSystemBudgetTitle => '预算中心';
+
+  @override
+  String get inboxSystemVisaTitle => '签证中心';
+
+  @override
+  String inboxSystemMigrationFallback(String count) {
+    return '有 $count 个迁移事项等待你继续推进。';
+  }
+
+  @override
+  String inboxSystemBudgetFallback(String delta) {
+    return '当前预算偏差为 $delta。';
+  }
+
+  @override
+  String inboxSystemVisaFallback(String count) {
+    return '有 $count 条签证提醒需要复核。';
+  }
+
+  @override
+  String get inboxRecentNotifications => '最近通知';
+
+  @override
+  String get inboxNoRecentNotifications => '当前没有新的通知摘要。';
 
   @override
   String get verificationCodeRequired => '请输入验证码';
@@ -6382,85 +6712,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get confirmApprove => '确认通过';
-
-  @override
-  String confirmApproveMessage(String name) {
-    return '确定要通过$name的版主申请吗？';
-  }
-
-  @override
-  String get rejectApplication => '拒绝申请';
-
-  @override
-  String confirmRejectMessage(String name) {
-    return '确定要拒绝$name的版主申请吗？';
-  }
-
-  @override
-  String get rejectReasonOptional => '拒绝原因（可选）';
-
-  @override
-  String get enterRejectReason => '请输入拒绝原因...';
-
-  @override
-  String get confirmReject => '确认拒绝';
-
-  @override
-  String get confirmRevoke => '确认撤销';
-
-  @override
-  String confirmRevokeMessage(String name) {
-    return '确定要撤销$name的版主资格吗？';
-  }
-
-  @override
-  String get moderatorRevoked => '已撤销版主资格';
-
-  @override
-  String revokeFailed(String error) {
-    return '撤销失败: $error';
-  }
-
-  @override
-  String get applicationApproved => '已通过申请';
-
-  @override
-  String get applicationRejected => '已拒绝申请';
-
-  @override
-  String get moderatorApplicationDetail => '版主申请详情';
-
-  @override
-  String get applicationNotExists => '申请不存在';
-
-  @override
-  String applicationTime(String time) {
-    return '申请时间: $time';
-  }
-
-  @override
-  String processTime(String time) {
-    return '处理时间: $time';
-  }
-
-  @override
-  String get applicantInfo => '申请人信息';
-
-  @override
   String get unknownUser => '未知用户';
 
   @override
-  String get applicationCity => '申请管理的城市';
-
-  @override
   String get unknownCity => '未知城市';
-
-  @override
-  String get applicationReason => '申请理由';
-
-  @override
-  String get noReasonProvided => '未填写申请理由';
 
   @override
   String get rejectReason => '拒绝原因';
@@ -6470,9 +6725,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get approve => '通过';
-
-  @override
-  String get revokeModeratorStatus => '撤销版主资格';
 
   @override
   String get visitedPlaces => '访问过的地方';
@@ -6685,18 +6937,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get imageGenFailedDefault => '图片生成失败';
 
   @override
-  String get moderatorStatusPending => '待审核';
-
-  @override
-  String get moderatorStatusApproved => '已通过';
-
-  @override
-  String get moderatorStatusRejected => '已拒绝';
-
-  @override
-  String get revokePermissionWarning => '此操作将移除该用户在此城市的所有版主权限。';
-
-  @override
   String get perNightLabel => '每晚';
 
   @override
@@ -6713,4 +6953,702 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ratingDescPoor => '较差';
+
+  @override
+  String get homeDashboardTitle => '今天的数字游民驾驶舱';
+
+  @override
+  String get homeDashboardSubtitle => '把迁移、预算、签证和收件箱压力一起查看。';
+
+  @override
+  String get homeHeroTitle => '先选出真正值得你投入的下一座城市';
+
+  @override
+  String get homeHeroSubtitle => '先看城市和地图，再把最稳的选项推进到工作台。';
+
+  @override
+  String get homeHeroMapView => '地图视角';
+
+  @override
+  String get homeDashboardPromptTitle => '解锁你的运营看板';
+
+  @override
+  String get homeDashboardPromptMessage => '登录后查看计划、预算缺口、签证时点和待回复提醒。';
+
+  @override
+  String get homeDashboardPromptCta => '登录后继续';
+
+  @override
+  String get homeDashboardLoading => '正在同步 Explore 看板...';
+
+  @override
+  String get homePriorityQueueTitle => '优先处理队列';
+
+  @override
+  String get homeQuickActionsTitle => '快捷通道';
+
+  @override
+  String get homeDashboardMigrationTitle => '迁移工作台';
+
+  @override
+  String get homeDashboardBudgetTitle => '预算中心';
+
+  @override
+  String get homeDashboardVisaTitle => '签证中心';
+
+  @override
+  String get homeDashboardInboxTitle => '收件箱脉冲';
+
+  @override
+  String get homeDashboardOpen => '打开';
+
+  @override
+  String get homeQuickActionCities => '城市';
+
+  @override
+  String get homeQuickActionMeetups => '活动';
+
+  @override
+  String get homeQuickActionMap => '地图视角';
+
+  @override
+  String get homeQuickActionMigration => '迁移工作台';
+
+  @override
+  String get homeQueueMigrationTitle => '推进下一站迁移';
+
+  @override
+  String get homeQueueBudgetTitle => '收紧预算偏差';
+
+  @override
+  String get homeQueueVisaTitle => '守住停留窗口';
+
+  @override
+  String get homeQueueInboxTitle => '回复待处理信号';
+
+  @override
+  String homeQueueMigrationFallback(String count) {
+    return '还有 $count 个活跃计划等待你继续推进';
+  }
+
+  @override
+  String homeQueueBudgetFallback(String delta) {
+    return '本月预算偏差当前为 $delta';
+  }
+
+  @override
+  String homeQueueVisaFallback(String count) {
+    return '有 $count 个签证事项需要关注';
+  }
+
+  @override
+  String homeQueueInboxFallback(String count) {
+    return '有 $count 条提醒或会话等待响应';
+  }
+
+  @override
+  String get profileSnapshotTitle => '数字游民画像';
+
+  @override
+  String get profileSnapshotSubtitle => '快速看清你的下一站和当前运转节奏。';
+
+  @override
+  String get profileSnapshotNextDestination => '下一站';
+
+  @override
+  String get profileSnapshotDeparture => '出发时间';
+
+  @override
+  String get profileSnapshotBudgetLane => '预算带宽';
+
+  @override
+  String get profileSnapshotWorkTimezone => '工作时区';
+
+  @override
+  String get profileSnapshotStayRhythm => '停留节奏';
+
+  @override
+  String get profileSnapshotCommunity => '社区动能';
+
+  @override
+  String get profileSnapshotBase => '当前基地';
+
+  @override
+  String get profileSnapshotMigration => '迁移状态';
+
+  @override
+  String get profileSnapshotReadiness => '资料成熟度';
+
+  @override
+  String get profileSnapshotTuneProfile => '完善资料';
+
+  @override
+  String get profileSnapshotOpenWorkspace => '打开工作台';
+
+  @override
+  String get profileSnapshotOpenBudget => '查看预算';
+
+  @override
+  String get profileSnapshotNoDestination => '目的地保持灵活';
+
+  @override
+  String get profileSnapshotBaseFlexible => '地点弹性中';
+
+  @override
+  String get profileSnapshotBudgetLean => '轻量预算';
+
+  @override
+  String get profileSnapshotBudgetBalanced => '平衡续航';
+
+  @override
+  String get profileSnapshotBudgetPremium => '舒适优先';
+
+  @override
+  String get profileSnapshotStaySprint => '短冲式切换';
+
+  @override
+  String get profileSnapshotStaySeasonal => '季节性驻留';
+
+  @override
+  String get profileSnapshotStayLong => '长住型运营';
+
+  @override
+  String get profileSnapshotCommunityQuiet => '社区节奏偏安静';
+
+  @override
+  String get profileSnapshotCommunityBuilding => '正在建立连接';
+
+  @override
+  String get profileSnapshotCommunityHigh => '社区动能很强';
+
+  @override
+  String get profileSnapshotMigrationDraft => '还在起草迁移';
+
+  @override
+  String get profileSnapshotMigrationPlanning => '正在规划落地';
+
+  @override
+  String get profileSnapshotMigrationBooked => '已锁定关键安排';
+
+  @override
+  String get profileSnapshotMigrationActive => '迁移已进入执行';
+
+  @override
+  String get profileSnapshotMigrationFlexible => '保持灵活机动';
+
+  @override
+  String get profileSnapshotReadinessStarting => '基础画像还在搭建';
+
+  @override
+  String get profileSnapshotReadinessGrowing => '画像信号正在成型';
+
+  @override
+  String get profileSnapshotReadinessStrong => '运营画像已经很清晰';
+
+  @override
+  String get profileCollaborationTitle => '协作画像';
+
+  @override
+  String get profileCollaborationSubtitle => '让别人快速读懂你怎么工作、是否适合连接。';
+
+  @override
+  String get profileCollaborationProfessionalIdentity => '职业身份';
+
+  @override
+  String get profileCollaborationLanguageAbility => '语言能力';
+
+  @override
+  String get profileCollaborationMode => '协作模式';
+
+  @override
+  String get profileCollaborationDiscovery => '可发现度';
+
+  @override
+  String get profileCollaborationTopSkills => '核心技能';
+
+  @override
+  String get profileCollaborationTopInterests => '共同兴趣';
+
+  @override
+  String get profileCollaborationSocialPresence => '社交存在感';
+
+  @override
+  String get profileCollaborationEditSkills => '编辑技能';
+
+  @override
+  String get profileCollaborationEditInterests => '编辑兴趣';
+
+  @override
+  String get profileCollaborationEditLinks => '编辑链接';
+
+  @override
+  String get profileCollaborationNoSkills => '补充技能后，别人更容易判断你擅长什么。';
+
+  @override
+  String get profileCollaborationNoInterests => '补充兴趣后，别人更容易知道怎么和你建立连接。';
+
+  @override
+  String get profileCollaborationNoLinks => '补充社交链接后，别人更容易验证身份并继续联系。';
+
+  @override
+  String get profileCollaborationIdentityFlexible => '独立行动者';
+
+  @override
+  String get profileCollaborationIdentityBioDriven => '内容表达型游民';
+
+  @override
+  String get profileCollaborationLanguagePending => '还没有明确填写可使用语言，建议补充。';
+
+  @override
+  String get profileCollaborationLanguageBilingualSignal => '你的资料已经呈现出双语表达信号。';
+
+  @override
+  String get profileCollaborationLanguageProfileReady =>
+      '当前资料可读性不错，但明确填写语言会更利于匹配。';
+
+  @override
+  String get profileCollaborationModeCommunityLead => '更像在社区里主动带节奏的人。';
+
+  @override
+  String get profileCollaborationModeOpenToConnect => '愿意接受直接协作和熟人引荐。';
+
+  @override
+  String get profileCollaborationModeBuilding => '协作界面还在逐步成型。';
+
+  @override
+  String get profileCollaborationDiscoveryStrong => '别人很容易发现你，也更容易信任你。';
+
+  @override
+  String get profileCollaborationDiscoveryGrowing => '信号已经有了，但还可以更完整。';
+
+  @override
+  String get profileCollaborationDiscoveryStarting => '当前对外信号偏弱，建议继续补结构化信息。';
+
+  @override
+  String get inboxSystemMembershipTitle => '会员状态';
+
+  @override
+  String get inboxSystemMembershipExpired => '你的会员已过期，建议检查权益并续费。';
+
+  @override
+  String inboxSystemMembershipExpiring(String days) {
+    return '你的会员将在 $days 天后到期。';
+  }
+
+  @override
+  String get inboxSystemMembershipAiQuotaTitle => 'AI 配额提醒';
+
+  @override
+  String inboxSystemMembershipAiQuota(String count) {
+    return '本周期仅剩 $count 次 AI 配额。';
+  }
+
+  @override
+  String get communityCirclesHeroTitle => '真正服务于见面、提问和协作的社区入口';
+
+  @override
+  String get communityCirclesHeroSubtitle => '把 meetup、城市群聊、问答和协作放进同一个社区视图。';
+
+  @override
+  String get communityLayersTitle => '社区怎么用';
+
+  @override
+  String get communityLayersSubtitle => '从线下见面和城市信号，走到问答与直接协作。';
+
+  @override
+  String get communityLayerMeetupsTitle => '线下见面';
+
+  @override
+  String get communityLayerMeetupsSubtitle => '先用 meetup 把轻量连接变成真实到场和重复出现的关系。';
+
+  @override
+  String get communityLayerCityChatTitle => '城市脉搏';
+
+  @override
+  String communityLayerCityChatSubtitle(String city) {
+    return '先进入围绕 $city 正在发生的城市对话。';
+  }
+
+  @override
+  String get communityLayerQuestionsTitle => '在地问答';
+
+  @override
+  String get communityLayerQuestionsSubtitle => '先看待回应的问题和一线笔记，再决定要不要进入更直接的联系。';
+
+  @override
+  String communityLayerQuestionsBadge(String count) {
+    return '$count 个待回应问题';
+  }
+
+  @override
+  String get communityLayerReviewAsks => '查看待回应问题';
+
+  @override
+  String get communityLayerCoordinationTitle => '直接协作';
+
+  @override
+  String communityLayerCoordinationSubtitle(String city) {
+    return '当 $city 已经进入你的下一站，就切到私聊和更小的协作线程。';
+  }
+
+  @override
+  String get communityLayerReviewCircles => '查看圈子';
+
+  @override
+  String get communityIntelligenceTitle => '在地情报';
+
+  @override
+  String communityIntelligenceSubtitle(String city) {
+    return '围绕 $city 的待回应问题和现场笔记。';
+  }
+
+  @override
+  String get communityCoordinationTitle => '协作台';
+
+  @override
+  String get communityCoordinationSubtitle => '把公开信号转成真正推进落地的小线程。';
+
+  @override
+  String communityCoordinationSummary(String city) {
+    return '围绕 $city 协调抵达节奏和实际互助。';
+  }
+
+  @override
+  String get communityQuestionResolved => '已解决';
+
+  @override
+  String get communityQuestionNeedsAnswer => '待回答';
+
+  @override
+  String get communityRemoteBaseLabel => '远程据点';
+
+  @override
+  String get communityDetailFieldNoteTitle => '现场笔记';
+
+  @override
+  String get communityDetailQuestionTitle => '问题线程';
+
+  @override
+  String get communityDetailRatingsTitle => '评分拆解';
+
+  @override
+  String get communityDetailProsTitle => '有效经验';
+
+  @override
+  String get communityDetailConsTitle => '注意事项';
+
+  @override
+  String get communityDetailAnswersTitle => '在地回答';
+
+  @override
+  String get communityDetailAnswersLoading => '正在加载回答...';
+
+  @override
+  String get communityDetailAnswersEmpty => '还没有回答。当前最快的补位方式仍然是先去城市群聊里找已经到场的人。';
+
+  @override
+  String get communityDetailOpenCityChat => '打开城市群聊';
+
+  @override
+  String get communityDetailMessageAuthor => '联系作者';
+
+  @override
+  String get communityDetailMessageAsker => '联系提问者';
+
+  @override
+  String get communityDetailMessageAnswerer => '联系回答者';
+
+  @override
+  String get communityDetailUpvoteQuestion => '支持这个问题';
+
+  @override
+  String get communityCreateQuestionAction => '发起提问';
+
+  @override
+  String get communityCreateAnswerAction => '写回答';
+
+  @override
+  String get communityTagLabel => '标签（用逗号分隔）';
+
+  @override
+  String get communityDetailLikeFieldNote => '点赞这条笔记';
+
+  @override
+  String get communityCirclesSuggestedTitle => '推荐圈子';
+
+  @override
+  String get communityCirclesSuggestedSubtitle =>
+      '圈子只是社区的一条能力线，要和 meetup、城市群聊、在地提问一起看。';
+
+  @override
+  String get communityCirclesQuickActionsTitle => '社区主通道';
+
+  @override
+  String get communityCirclesQuickActionsSubtitle =>
+      '直接进入活动发起、活动浏览、城市群聊或私聊协作，不再在多个 tab 之间来回找入口。';
+
+  @override
+  String get communityCirclesMeetupsTitle => '圈内活动';
+
+  @override
+  String get communityCirclesMeetupsSubtitle =>
+      '即将到来的 meetup 是把圈子连接成线下关系的最快方式。';
+
+  @override
+  String get communityCirclesFieldNotesTitle => '现场笔记';
+
+  @override
+  String get communityCirclesFieldNotesSubtitle => '来自网络中的旅行报告和真实落地经验。';
+
+  @override
+  String get communityCirclesQuestionsTitle => '待回应的问题';
+
+  @override
+  String get communityCirclesQuestionsSubtitle => '这些问题还在等待已经到场的人来回答。';
+
+  @override
+  String get communityCirclesJoin => '加入';
+
+  @override
+  String get communityCirclesOpen => '打开';
+
+  @override
+  String get communityCirclesCreateMeetup => '发起活动';
+
+  @override
+  String get communityCirclesViewMeetups => '浏览活动';
+
+  @override
+  String get communityCirclesOpenInbox => '私聊协作';
+
+  @override
+  String get communityCirclesExploreCities => '城市群聊';
+
+  @override
+  String get communityCirclesMeetupsEmpty => '还没有即将开始的圈内活动。你可以先发起第一场 meetup。';
+
+  @override
+  String get communityCirclesFieldNotesEmpty => '还没有新的现场笔记，等社区成员开始分享后会出现在这里。';
+
+  @override
+  String get communityCirclesQuestionsEmpty => '当前没有待回应的问题，新的在地提问会汇总到这里。';
+
+  @override
+  String get communityCirclesFlexibleLabel => '灵活中';
+
+  @override
+  String get communityCirclesGeneralistLabel => '多面手';
+
+  @override
+  String communityCirclesMetricCircles(String count) {
+    return '$count 个圈子';
+  }
+
+  @override
+  String communityCirclesMetricMeetups(String count) {
+    return '$count 场活动';
+  }
+
+  @override
+  String communityCirclesMetricFieldNotes(String count) {
+    return '$count 条现场笔记';
+  }
+
+  @override
+  String get communityCircleCityTitle => '城市圈子';
+
+  @override
+  String communityCircleCitySubtitle(String city) {
+    return '找到已经活跃在 $city 周边的人。';
+  }
+
+  @override
+  String get communityCircleMigrationTitle => '结伴迁移圈';
+
+  @override
+  String communityCircleMigrationSubtitle(String city) {
+    return '协调下一站准备去 $city 的同行者。';
+  }
+
+  @override
+  String get communityCircleSkillTitle => '技能交换圈';
+
+  @override
+  String communityCircleSkillSubtitle(String skill) {
+    return '把 $skill 作为协作和互换的入口。';
+  }
+
+  @override
+  String get communityCircleRecurringTitle => 'Recurring Meetup';
+
+  @override
+  String communityCircleRecurringSubtitle(String count) {
+    return '当前有 $count 场即将开始的活动，可以成为圈子的线下锚点。';
+  }
+
+  @override
+  String get profileCockpitTitle => '把你的 Nomad Profile 当作实时操作系统来维护';
+
+  @override
+  String get profileCockpitSubtitle => '在进入下一站前，把身份、旅行信号和准备度放到同一视图。';
+
+  @override
+  String get profileCockpitCurrentBase => '当前基地';
+
+  @override
+  String get profileCockpitExperience => '经验等级';
+
+  @override
+  String get profileCockpitEditProfile => '编辑资料';
+
+  @override
+  String get profileCockpitIdentityTitle => '身份驾驶舱';
+
+  @override
+  String get profileCockpitIdentitySubtitle => '让资料基础信息和协作画像保持一致。';
+
+  @override
+  String get profileCockpitOperationsTitle => '旅行操作系统';
+
+  @override
+  String get profileCockpitOperationsSubtitle => '把会员、计划和旅程数据放在一起查看。';
+
+  @override
+  String get profileCockpitSignalsTitle => '信号与网络';
+
+  @override
+  String get profileCockpitSignalsSubtitle => '把徽章、兴趣和证明组织成别人看得懂的信号。';
+
+  @override
+  String get profileCockpitSupportTitle => '支持与账户';
+
+  @override
+  String get profileCockpitSupportSubtitle => '把帮助、法律信息和账户控制放在一起。';
+
+  @override
+  String get landHubPlanningLaneTitle => '规划通道';
+
+  @override
+  String get landHubPlanningLaneSubtitle => '先锁定计划、预算和签证，再推进其他动作。';
+
+  @override
+  String get landHubArrivalLaneTitle => '到达首周通道';
+
+  @override
+  String get landHubArrivalLaneSubtitle => '先把首周清单补齐，再真正落地。';
+
+  @override
+  String get landHubChecklistNow => '现在处理';
+
+  @override
+  String get landHubChecklistNext => '下一步';
+
+  @override
+  String get landHubChecklistWatch => '重点关注';
+
+  @override
+  String get landHubChecklistDetailed => '已细化';
+
+  @override
+  String get landHubChecklistLocked => '已锁定';
+
+  @override
+  String get landHubChecklistBaselineReady => '已有基线';
+
+  @override
+  String get landHubChecklistShortlisted => '已筛选';
+
+  @override
+  String get landHubChecklistPlanningLive => '计划中';
+
+  @override
+  String get landHubChecklistMapped => '已成路线';
+
+  @override
+  String get landHubChecklistCityScoped => '已聚焦城市';
+
+  @override
+  String get landHubChecklistVisaLinked => '已关联签证';
+
+  @override
+  String landHubChecklistTrackingSource(String source, String signal) {
+    return '跟踪来源：$source · $signal';
+  }
+
+  @override
+  String get landHubChecklistArrivalTitle => '锁定到达时间与第一晚节奏';
+
+  @override
+  String landHubChecklistArrivalReady(Object dateLabel) {
+    return '你的出发时间已经落在 $dateLabel。把入住时间和到达节奏继续收进同一份计划里。';
+  }
+
+  @override
+  String landHubChecklistArrivalDetailed(Object methodLabel, Object details) {
+    return '$methodLabel：$details';
+  }
+
+  @override
+  String get landHubChecklistArrivalPending =>
+      '你的迁移还没有明确出发日期，先把到达时间锁定，后续落地动作才不会继续漂移。';
+
+  @override
+  String get landHubChecklistStayTitle => '复核首周住宿';
+
+  @override
+  String landHubChecklistStaySubtitle(Object cityName) {
+    return '先在 $cityName 确认一组可灵活调整的首周住宿，再慢慢筛更长期的方案。';
+  }
+
+  @override
+  String landHubChecklistStayWithBudget(Object cityName, Object budgetLabel) {
+    return '你已经有 $budgetLabel 的月度基线，用它反推 $cityName 首周住宿是否合理。';
+  }
+
+  @override
+  String landHubChecklistStayDetailed(
+      Object cityName, Object areaLabel, Object priceLabel) {
+    return '你已经为 $cityName 筛出一组靠近 $areaLabel、约 $priceLabel 的住宿候选。';
+  }
+
+  @override
+  String get landHubChecklistWorkTitle => '确认可用的工作据点';
+
+  @override
+  String landHubChecklistWorkSubtitle(Object cityName) {
+    return '在到达前先看一遍 $cityName 的共享办公和备用工位，避免会议当天才临时找地方。';
+  }
+
+  @override
+  String get landHubChecklistTransportTitle => '摸清本地交通路径';
+
+  @override
+  String landHubChecklistTransportSubtitle(Object cityName) {
+    return '先看 $cityName 的机场接驳和日常通勤路径，趁路线和成本还容易调整时做决定。';
+  }
+
+  @override
+  String landHubChecklistTransportDetailed(Object methodLabel, Object details) {
+    return '$methodLabel：$details';
+  }
+
+  @override
+  String get landHubChecklistConnectivityTitle => '准备移动数据与网络备份';
+
+  @override
+  String landHubChecklistConnectivitySubtitle(Object cityName) {
+    return '用 AI 先梳理你在 $cityName 的 eSIM、热点和备用网络方案。';
+  }
+
+  @override
+  String landHubChecklistConnectivityWithVisa(
+      Object cityName, Object visaLabel) {
+    return '你当前的签证时钟是 $visaLabel。先用 AI 压测 $cityName 的 eSIM、热点和网络备份方案。';
+  }
+
+  @override
+  String get landHubResourceLaneTitle => '资源通道';
+
+  @override
+  String get landHubResourceLaneSubtitle => '下一站需要判断时，把过往停留记录放在手边。';
 }

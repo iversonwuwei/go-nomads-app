@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_nomad_summary.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_region_tab.dart';
 
 /// 城市仓储接口 (Domain Layer)
@@ -31,6 +32,9 @@ abstract class ICityRepository implements IRepository {
 
   /// 根据ID获取城市详情
   Future<Result<City>> getCityById(String cityId);
+
+  /// 获取城市数字游民决策摘要
+  Future<Result<CityNomadSummary>> getCityNomadSummary(String cityId);
 
   /// 获取城市版主摘要（轻量接口）
   Future<Result<CityModeratorSummary>> getCityModeratorSummary(String cityId);

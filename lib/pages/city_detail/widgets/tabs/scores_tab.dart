@@ -11,13 +11,15 @@ import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 /// Scores Tab - 城市评分
 /// 使用 GetView 绑定 CityDetailController
 class ScoresTab extends GetView<CityDetailController> {
-  @override
-  final String? tag;
+  final String? _tag;
 
   const ScoresTab({
     super.key,
-    required this.tag,
-  });
+    required String? tag,
+  }) : _tag = tag;
+
+  @override
+  String? get tag => _tag;
 
   @override
   Widget build(BuildContext context) {

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 法律信息入口组件（用于 Profile 页面，工信部/腾讯合规要求）
 /// Legal info entry widget (Tencent app store compliance - permanent entry)
@@ -16,15 +17,9 @@ class LegalInfoWidget extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: Colors.white.withValues(alpha: 0.48),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
       ),
       child: Column(
         children: [
@@ -77,12 +72,13 @@ class _LegalItem extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(10.w),
+              width: 44.w,
+              height: 44.h,
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(14.r),
               ),
-              child: Icon(icon, color: iconColor, size: 20.r),
+              child: Icon(icon, color: iconColor, size: 18.r),
             ),
             SizedBox(width: 14.w),
             Expanded(
@@ -90,15 +86,23 @@ class _LegalItem extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF333333),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),
-            Icon(
-              FontAwesomeIcons.chevronRight,
-              color: Color(0xFFCCCCCC),
-              size: 14.r,
+            Container(
+              width: 34.w,
+              height: 34.h,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(
+                FontAwesomeIcons.chevronRight,
+                color: AppColors.textSecondary,
+                size: 12.r,
+              ),
             ),
           ],
         ),

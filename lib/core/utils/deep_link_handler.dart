@@ -11,13 +11,17 @@ import 'package:go_nomads_app/features/user/presentation/controllers/user_state_
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 /// Deep Link 处理器
 /// 处理应用的 deep link，包括支付回调
 class DeepLinkHandler {
   static final AppLinks _appLinks = AppLinks();
   static StreamSubscription<Uri>? _linkSubscription;
-  static const Set<String> _supportedWebHosts = {'go-nomads.com', 'www.go-nomads.com'};
+  static const Set<String> _supportedWebHosts = {
+    'go-nomads.com',
+    'www.go-nomads.com'
+  };
 
   /// 初始化 Deep Link 监听
   static Future<void> init() async {
@@ -137,7 +141,8 @@ class DeepLinkHandler {
     log('💼 处理 Coworking 深链: ${uri.path}');
     final coworkingId = _extractEntityId(uri);
     if (coworkingId != null) {
-      Get.toNamed(AppRoutes.coworkingDetail, arguments: {'coworkingId': coworkingId});
+      Get.toNamed(AppRoutes.coworkingDetail,
+          arguments: {'coworkingId': coworkingId});
     }
   }
 
@@ -157,11 +162,14 @@ class DeepLinkHandler {
 
     if (normalizedPath == '/city-detail' || normalizedPath == '/city/detail') {
       await _handleCityDeepLink(uri);
-    } else if (normalizedPath == '/meetup-detail' || normalizedPath == '/meetup/detail') {
+    } else if (normalizedPath == '/meetup-detail' ||
+        normalizedPath == '/meetup/detail') {
       await _handleMeetupDeepLink(uri);
-    } else if (normalizedPath == '/coworking-detail' || normalizedPath == '/coworking/detail') {
+    } else if (normalizedPath == '/coworking-detail' ||
+        normalizedPath == '/coworking/detail') {
       await _handleCoworkingDeepLink(uri);
-    } else if (normalizedPath == '/travel-plan' || normalizedPath == '/travel-plan/detail') {
+    } else if (normalizedPath == '/travel-plan' ||
+        normalizedPath == '/travel-plan/detail') {
       await _handleTravelPlanDeepLink(uri);
     } else {
       log('⚠️ 未知的 deep link 路径: $path');
@@ -186,7 +194,8 @@ class DeepLinkHandler {
       return queryId;
     }
 
-    final segments = uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
+    final segments =
+        uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
     if (segments.isEmpty) {
       return null;
     }
@@ -283,54 +292,59 @@ class DeepLinkHandler {
 
   /// 显示处理中对话框
   static void _showProcessingDialog() {
-    Get.dialog(
-      AlertDialog(
-        content: Row(
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(width: 16.w),
-            Text('Confirming payment...'),
-          ],
+    Get.bottomSheet(
+      PopScope(
+        canPop: false,
+        child: AppBottomDrawer(
+          title: 'Confirming payment...',
+          maxHeightFactor: 0.34,
+          showHandle: false,
+          child: Row(
+            children: [
+              const CircularProgressIndicator(),
+              SizedBox(width: 16.w),
+              const Expanded(
+                  child: Text(
+                      'We are activating your membership and refreshing your profile.')),
+            ],
+          ),
         ),
       ),
-      barrierDismissible: false,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 
   /// 显示成功对话框
   static void _showSuccessDialog(String? membershipType) {
-    Get.dialog(
-      AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 28.r),
-            SizedBox(width: 8.w),
-            Text('Payment Successful!'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+    Get.bottomSheet(
+      AppBottomDrawer(
+        title: 'Payment Successful!',
+        subtitle: membershipType == null
+            ? null
+            : 'Your $membershipType membership is now active!',
+        maxHeightFactor: 0.4,
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (membershipType != null) Text('Your $membershipType membership is now active!'),
-            SizedBox(height: 8.h),
-            const Text('Thank you for your support!'),
+            Icon(Icons.check_circle, color: Colors.green, size: 28.r),
+            SizedBox(width: 12.w),
+            const Expanded(
+              child: Text('Thank you for your support!'),
+            ),
           ],
         ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Get.back();
-              // 可以选择跳转到会员页面
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Great!'),
-          ),
-        ],
+        footer: AppBottomDrawerActionRow(
+          secondaryLabel: 'Close',
+          onSecondaryPressed: () => Get.back<void>(),
+          primaryLabel: 'Great!',
+          onPrimaryPressed: () => Get.back<void>(),
+        ),
       ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 }

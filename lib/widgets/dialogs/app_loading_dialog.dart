@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/widgets/double_spin_loader.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 /// 通用加载对话框
 ///
@@ -38,51 +39,31 @@ class AppLoadingDialog {
     if (_isShowing) return;
     _isShowing = true;
 
-    Get.dialog(
+    Get.bottomSheet(
       PopScope(
         canPop: barrierDismissible,
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DoubleSpinLoader(
-                  size: 42.w,
-                  color1: indicatorColor ?? AppColors.cityPrimary,
-                  color2: const Color(0xFF4ECDC4),
-                  trackColor: Colors.white.withValues(alpha: 0.14),
-                ),
-                SizedBox(height: 18.h),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    decoration: TextDecoration.none,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                if (subtitle != null) ...[
-                  SizedBox(height: 8.h),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13.5.sp,
-                      color: Colors.white.withValues(alpha: 0.74),
-                      decoration: TextDecoration.none,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ],
+        child: AppBottomDrawer(
+          title: title,
+          subtitle: subtitle,
+          maxHeightFactor: 0.38,
+          showHandle: barrierDismissible,
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              child: DoubleSpinLoader(
+                size: 42.w,
+                color1: indicatorColor ?? AppColors.cityPrimary,
+                color2: const Color(0xFF4ECDC4),
+                trackColor: AppColors.borderLight,
+              ),
             ),
           ),
         ),
       ),
-      barrierDismissible: barrierDismissible,
-      barrierColor: Colors.black54,
+      isDismissible: barrierDismissible,
+      enableDrag: barrierDismissible,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 
@@ -97,25 +78,36 @@ class AppLoadingDialog {
     if (_isShowing) return;
     _isShowing = true;
 
-    Get.dialog(
+    Get.bottomSheet(
       PopScope(
         canPop: barrierDismissible,
-        child: Center(
-          child: DoubleSpinLoader(
-            size: 44.w,
-            color1: indicatorColor ?? AppColors.cityPrimary,
-            color2: const Color(0xFF4ECDC4),
-            trackColor: Colors.white.withValues(alpha: 0.14),
+        child: AppBottomDrawer(
+          maxHeightFactor: 0.26,
+          showHandle: barrierDismissible,
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              child: DoubleSpinLoader(
+                size: 44.w,
+                color1: indicatorColor ?? AppColors.cityPrimary,
+                color2: const Color(0xFF4ECDC4),
+                trackColor: AppColors.borderLight,
+              ),
+            ),
           ),
         ),
       ),
-      barrierDismissible: barrierDismissible,
+      isDismissible: barrierDismissible,
+      enableDrag: barrierDismissible,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 
   /// 关闭加载对话框
   static void hide() {
-    if (_isShowing && Get.isDialogOpen == true) {
+    if (_isShowing &&
+        (Get.isDialogOpen == true || Get.isBottomSheetOpen == true)) {
       Get.back();
       _isShowing = false;
     }

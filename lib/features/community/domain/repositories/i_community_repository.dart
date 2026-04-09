@@ -1,8 +1,13 @@
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 
 /// Community Repository Interface - 社区功能仓储接口
 abstract class ICommunityRepository {
+  /// 获取 Community 首页 meetup preview
+  /// [city] 可选城市过滤
+  Future<Result<List<Meetup>>> getMeetups({String? city});
+
   /// 获取旅行报告列表
   /// [city] 可选城市过滤
   Future<Result<List<TripReport>>> getTripReports({String? city});
@@ -22,6 +27,18 @@ abstract class ICommunityRepository {
   /// 获取问题的答案列表
   /// [questionId] 问题ID
   Future<Result<List<Answer>>> getAnswers(String questionId);
+
+  Future<Result<Question>> createQuestion({
+    required String city,
+    required String title,
+    required String content,
+    List<String> tags = const [],
+  });
+
+  Future<Result<Answer>> createAnswer({
+    required String questionId,
+    required String content,
+  });
 
   /// 切换旅行报告的点赞状态
   /// [reportId] 报告ID

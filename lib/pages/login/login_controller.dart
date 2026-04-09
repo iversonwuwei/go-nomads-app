@@ -14,6 +14,7 @@ import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/services/token_storage_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_loading_dialog.dart';
 import 'package:go_nomads_app/widgets/dialogs/first_launch_privacy_dialog.dart';
 
@@ -276,7 +277,7 @@ class LoginController extends GetxController {
         password: passwordController.text,
       );
 
-      if (context.mounted) Navigator.pop(context);
+      _closeLoadingDialog();
 
       if (success) {
         log('🎉 邮箱登录成功');
@@ -296,10 +297,10 @@ class LoginController extends GetxController {
         AppToast.error(_l10n.loginInvalidEmailOrPassword, title: _l10n.loginFailedTitle);
       }
     } on HttpException catch (e) {
-      if (context.mounted) Navigator.pop(context);
+      _closeLoadingDialog();
       AppToast.error(e.message, title: _l10n.networkError);
     } catch (e) {
-      if (context.mounted) Navigator.pop(context);
+      _closeLoadingDialog();
       log('❌ 登录错误: $e');
       AppToast.error(_l10n.loginUnknownErrorRetry, title: _l10n.error);
     }
@@ -326,7 +327,7 @@ class LoginController extends GetxController {
         code: smsCodeController.text.trim(),
       );
 
-      if (context.mounted) Navigator.pop(context);
+      _closeLoadingDialog();
 
       if (success) {
         log('✅ 手机号登录成功');
@@ -340,7 +341,7 @@ class LoginController extends GetxController {
         AppToast.error(_l10n.loginFailedRetry, title: _l10n.error);
       }
     } catch (e) {
-      if (context.mounted) Navigator.pop(context);
+      _closeLoadingDialog();
       log('❌ 手机号登录失败: $e');
 
       String errorMessage = _l10n.loginFailedRetry;
@@ -406,13 +407,38 @@ class LoginController extends GetxController {
   }
 
   void _showLoadingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: LoginConstants.primaryColor),
+    AppBottomDrawer.show<void>(
+      context,
+      maxHeightFactor: 0.24,
+      isDismissible: false,
+      enableDrag: false,
+      showHandle: false,
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.8,
+              color: LoginConstants.primaryColor,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              _l10n.loginPleaseWait,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  void _closeLoadingDialog() {
+    if (Get.isBottomSheetOpen ?? false) {
+      Get.back<void>();
+    }
   }
 
   /// 登录成功后，静默同步隐私政策同意状态到后端

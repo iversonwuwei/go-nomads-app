@@ -23,9 +23,9 @@ class ManageCityRatingsPage extends StatelessWidget {
 
   CityRatingController get _controller => Get.find<CityRatingController>();
 
-  void _loadData() {
+  Future<void> _loadData() async {
     log('🔍 [ManageCityRatingsPage] 加载评分项数据: cityId=$cityId');
-    _controller.loadCityRatings(cityId);
+    await _controller.loadCityRatings(cityId);
   }
 
   Future<void> _addRating() async {
@@ -192,55 +192,70 @@ class ManageCityRatingsPage extends StatelessWidget {
           log('  - categories: ${_controller.categories.length} 项');
           log('  - statistics: ${_controller.statistics.length} 项');
 
-          Widget content;
-          if (_controller.categories.isEmpty) {
-            content = _buildEmptyState();
-          } else {
-            content = ListView.separated(
-              padding: EdgeInsets.all(16.w),
-              itemBuilder: (context, index) {
-                final category = _controller.categories[index];
-                final stat = _controller.statistics.firstWhereOrNull(
-                  (s) => s.categoryId == category.id,
-                );
+          final content = RefreshIndicator(
+            onRefresh: _loadData,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                if (_controller.categories.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _buildEmptyState(),
+                  )
+                else
+                  SliverPadding(
+                    padding: EdgeInsets.all(16.w),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final category = _controller.categories[index];
+                          final stat = _controller.statistics.firstWhereOrNull(
+                            (s) => s.categoryId == category.id,
+                          );
 
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.r),
-                  ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                      child: Icon(
-                        _getIcon(category.icon),
-                        color: const Color(0xFFFF4458),
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: index == _controller.categories.length - 1 ? 0 : 12.h),
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                                  child: Icon(
+                                    _getIcon(category.icon),
+                                    color: const Color(0xFFFF4458),
+                                  ),
+                                ),
+                                title: Text(category.name),
+                                subtitle: Text(
+                                  l10n.manageCityRatingsSubtitle(
+                                    category.nameEn ?? '',
+                                    stat?.averageRating.toStringAsFixed(1) ?? '0.0',
+                                    stat?.ratingCount ?? 0,
+                                  ),
+                                ),
+                                trailing: category.isDefault
+                                    ? Chip(
+                                        label: Text(l10n.defaultStatus, style: TextStyle(fontSize: 12.sp)),
+                                        padding: EdgeInsets.symmetric(horizontal: 8.w),
+                                      )
+                                    : IconButton(
+                                        icon: const Icon(FontAwesomeIcons.trash),
+                                        tooltip: l10n.delete,
+                                        onPressed: () => _deleteRating(category.id, category.name),
+                                      ),
+                              ),
+                            ),
+                          );
+                        },
+                        childCount: _controller.categories.length,
                       ),
                     ),
-                    title: Text(category.name),
-                    subtitle: Text(
-                      l10n.manageCityRatingsSubtitle(
-                        category.nameEn ?? '',
-                        stat?.averageRating.toStringAsFixed(1) ?? '0.0',
-                        stat?.ratingCount ?? 0,
-                      ),
-                    ),
-                    trailing: category.isDefault
-                        ? Chip(
-                            label: Text(l10n.defaultStatus, style: TextStyle(fontSize: 12.sp)),
-                            padding: EdgeInsets.symmetric(horizontal: 8.w),
-                          )
-                        : IconButton(
-                            icon: const Icon(FontAwesomeIcons.trash),
-                            tooltip: l10n.delete,
-                            onPressed: () => _deleteRating(category.id, category.name),
-                          ),
                   ),
-                );
-              },
-              separatorBuilder: (_, __) => SizedBox(height: 12.h),
-              itemCount: _controller.categories.length,
-            );
-          }
+              ],
+            ),
+          );
 
           return AppLoadingSwitcher(
             isLoading: _controller.isLoading.value,

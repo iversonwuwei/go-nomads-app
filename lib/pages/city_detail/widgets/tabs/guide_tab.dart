@@ -10,6 +10,7 @@ import 'package:go_nomads_app/features/membership/presentation/services/ai_quota
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 /// Guide Tab - AI 数字游民指南
 /// 使用 GetView 绑定 CityDetailController
@@ -223,67 +224,64 @@ class _GuideActionBar extends StatelessWidget {
 
   void _showAIGenerateProgressDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.guideTabAiGenerateGuide),
-        content: Obx(() {
-          final progress = aiController.guideGenerationProgress;
-          final message = aiController.guideGenerationMessage;
-          final isCompleted = aiController.isGuideCompleted;
+    AppBottomDrawer.show<void>(
+      context,
+      title: l10n.guideTabAiGenerateGuide,
+      maxHeightFactor: 0.46,
+      showHandle: false,
+      isDismissible: false,
+      enableDrag: false,
+      child: Obx(() {
+        final progress = aiController.guideGenerationProgress;
+        final message = aiController.guideGenerationMessage;
+        final isCompleted = aiController.isGuideCompleted;
 
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 使用带进度的圆形指示器
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 60.w,
-                    height: 60.h,
-                    child: CircularProgressIndicator(
-                      value: progress > 0 ? progress / 100 : null,
-                      strokeWidth: 4,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isCompleted ? Colors.green : AppColors.cityPrimary,
-                      ),
+        return Column(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 60.w,
+                  height: 60.h,
+                  child: CircularProgressIndicator(
+                    value: progress > 0 ? progress / 100 : null,
+                    strokeWidth: 4,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isCompleted ? Colors.green : AppColors.cityPrimary,
                     ),
                   ),
-                  if (progress > 0)
-                    Text(
-                      '$progress%',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+                ),
+                if (progress > 0)
+                  Text(
+                    '$progress%',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
                     ),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                message.isNotEmpty ? message : '后端运行中...',
-                style: TextStyle(fontSize: 14.sp, color: Colors.grey[700]),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                '⏳ 请耐心等待，AI 正在生成内容',
-                style: TextStyle(fontSize: 12.sp, color: Colors.grey[500]),
-              ),
-            ],
-          );
-        }),
-        // 不显示取消按钮
-        actions: const [],
-      ),
+                  ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              message.isNotEmpty ? message : '后端运行中...',
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey[700]),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              '⏳ 请耐心等待，AI 正在生成内容',
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[500]),
+            ),
+          ],
+        );
+      }),
     );
 
     aiController.generateDigitalNomadGuideStream(cityId: cityId, cityName: cityName).then((_) {
-      if (context.mounted) {
-        Navigator.pop(context);
+      if (context.mounted && Get.isBottomSheetOpen == true) {
+        Get.back<void>();
       }
     });
   }

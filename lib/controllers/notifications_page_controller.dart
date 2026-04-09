@@ -1,14 +1,15 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:go_nomads_app/widgets/dialogs/notification_dialogs.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 通知列表页面控制器
 class NotificationsPageController extends GetxController {
@@ -87,55 +88,6 @@ class NotificationsPageController extends GetxController {
     markAsRead(notification.id);
 
     switch (notification.type) {
-      case NotificationType.moderatorApplication:
-        // 版主申请：跳转到审批详情页面
-        final applicationId = notification.metadata?['applicationId'] ?? notification.relatedId;
-        log('   applicationId to use: $applicationId');
-
-        if (applicationId != null && applicationId.toString().isNotEmpty) {
-          Get.toNamed(
-            AppRoutes.moderatorApplicationDetail,
-            arguments: {'applicationId': applicationId.toString()},
-          );
-        } else {
-          AppToast.error('无法获取申请ID，请刷新通知列表');
-        }
-        break;
-
-      case NotificationType.moderatorApproved:
-      case NotificationType.moderatorRejected:
-        // 版主申请结果：只是通知消息，跳转到城市详情
-        final cityId = notification.metadata?['cityId'] ?? notification.relatedId;
-        if (cityId != null) {
-          Get.toNamed(
-            AppRoutes.cityDetail,
-            arguments: {
-              'cityId': cityId,
-              'cityName': notification.metadata?['cityName'] ?? '',
-            },
-          );
-        }
-        break;
-
-      case NotificationType.moderatorTransfer:
-        // 版主转让请求：弹出对话框，同意/拒绝
-        _showModeratorTransferDialog(notification);
-        break;
-
-      case NotificationType.moderatorTransferResult:
-        // 版主转让结果：只是通知消息，跳转到城市详情
-        final cityId = notification.metadata?['cityId'] ?? notification.relatedId;
-        if (cityId != null) {
-          Get.toNamed(
-            AppRoutes.cityDetail,
-            arguments: {
-              'cityId': cityId,
-              'cityName': notification.metadata?['cityName'] ?? '',
-            },
-          );
-        }
-        break;
-
       case NotificationType.cityUpdate:
         if (notification.relatedId != null) {
           Get.toNamed(
@@ -183,38 +135,34 @@ class NotificationsPageController extends GetxController {
 
   /// 显示活动邀请对话框
   void _showEventInvitationDialog(AppNotification notification) {
-    Get.dialog(
+    Get.bottomSheet(
       EventInvitationDialog(
         notification: notification,
         onResponse: () => handleRefresh(),
       ),
-      barrierDismissible: false,
-    );
-  }
-
-  /// 显示版主转让对话框
-  void _showModeratorTransferDialog(AppNotification notification) {
-    Get.dialog(
-      ModeratorTransferDialog(
-        notification: notification,
-        onResponse: () => handleRefresh(),
-      ),
-      barrierDismissible: false,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 
   void _showAnnouncementDialog(AppNotification notification) {
-    Get.dialog(
-      AlertDialog(
-        title: Text(notification.title),
-        content: Text(notification.message),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
+    Get.bottomSheet(
+      AppBottomDrawer(
+        title: notification.title,
+        maxHeightFactor: 0.56,
+        footer: SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: () => Get.back<void>(),
             child: const Text('关闭'),
           ),
-        ],
+        ),
+        child: Text(notification.message),
       ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 
@@ -226,17 +174,18 @@ class NotificationsPageController extends GetxController {
     final targetName = metadata['targetName'] ?? '';
     final reasonLabel = metadata['reasonLabel'] ?? '';
 
-    Get.dialog(
-      AlertDialog(
-        title: Row(
-          children: [
-            Text(isCity ? '🚨' : '⚠️', style: TextStyle(fontSize: 20.sp)),
-            SizedBox(width: 8.w),
-            Expanded(child: Text(notification.title, style: TextStyle(fontSize: 16.sp))),
-          ],
+    Get.bottomSheet(
+      AppBottomDrawer(
+        title: '${isCity ? '🚨' : '⚠️'} ${notification.title}',
+        maxHeightFactor: 0.62,
+        footer: SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: () => Get.back<void>(),
+            child: const Text('关闭'),
+          ),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(notification.message),
@@ -252,13 +201,9 @@ class NotificationsPageController extends GetxController {
             Text('举报人: $reporterName', style: TextStyle(color: Colors.grey[600], fontSize: 13.sp)),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('关闭'),
-          ),
-        ],
       ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 

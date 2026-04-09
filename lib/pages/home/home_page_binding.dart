@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
+import 'package:go_nomads_app/pages/home/domain/repositories/i_explore_dashboard_repository.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
+import 'package:go_nomads_app/pages/home/infrastructure/repositories/explore_dashboard_repository.dart';
+import 'package:go_nomads_app/services/http_service.dart';
 
 /// 首页 Binding - GetX 依赖注入
 ///
@@ -9,6 +12,12 @@ import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 class HomePageBinding extends Bindings {
   @override
   void dependencies() {
+    if (!Get.isRegistered<IExploreDashboardRepository>()) {
+      Get.lazyPut<IExploreDashboardRepository>(
+        () => ExploreDashboardRepository(Get.find<HttpService>()),
+      );
+    }
+
     if (!Get.isRegistered<HomePageController>()) {
       Get.put<HomePageController>(HomePageController(), permanent: true);
     }

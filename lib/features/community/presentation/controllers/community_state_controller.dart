@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/community/domain/entities/trip_report.dart';
 import 'package:go_nomads_app/features/community/domain/repositories/i_community_repository.dart';
+import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -22,14 +23,22 @@ class CommunityStateController extends GetxController {
   /// 旅行报告列表
   final RxList<TripReport> tripReports = <TripReport>[].obs;
 
+  /// Community 首页 meetup preview
+  final RxList<Meetup> meetups = <Meetup>[].obs;
+
   /// 城市推荐列表
   final RxList<CityRecommendation> recommendations = <CityRecommendation>[].obs;
 
   /// 问题列表
   final RxList<Question> questions = <Question>[].obs;
 
+  final RxSet<String> joinedCircleIds = <String>{}.obs;
+
   /// 答案映射 (questionId -> answers)
   final RxMap<String, List<Answer>> answers = <String, List<Answer>>{}.obs;
+
+  /// 正在加载答案的问题 id
+  final RxSet<String> loadingAnswerIds = <String>{}.obs;
 
   /// 选中的推荐类别
   final RxString selectedCategory = 'All'.obs;
@@ -64,6 +73,10 @@ class CommunityStateController extends GetxController {
     return tripReports.where((report) => report.isPopular).toList();
   }
 
+  bool isCircleJoined(String circleId) => joinedCircleIds.contains(circleId);
+
+  bool isLoadingAnswers(String questionId) => loadingAnswerIds.contains(questionId);
+
   /// 最近的问题
   List<Question> get recentQuestions {
     return questions.where((q) => q.isRecent).toList();
@@ -91,6 +104,7 @@ class CommunityStateController extends GetxController {
     try {
       // 并行加载所有数据
       final results = await Future.wait([
+        _loadMeetups(),
         _loadTripReports(),
         _loadRecommendations(),
         _loadQuestions(),
@@ -104,6 +118,24 @@ class CommunityStateController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// 加载 Community 首页 meetup preview
+  Future<bool> _loadMeetups() async {
+    final result = await _repository.getMeetups(
+      city: selectedCity.value == 'All Cities' ? null : selectedCity.value,
+    );
+
+    return result.fold(
+      onSuccess: (items) {
+        meetups.value = items;
+        return true;
+      },
+      onFailure: (error) {
+        log('加载活动失败: ${error.message}');
+        return false;
+      },
+    );
   }
 
   /// 加载旅行报告
@@ -163,19 +195,104 @@ class CommunityStateController extends GetxController {
   /// 加载问题的答案
   Future<void> loadAnswers(String questionId) async {
     // 如果已经加载过,直接返回
-    if (answers.containsKey(questionId)) {
+    if (answers.containsKey(questionId) || loadingAnswerIds.contains(questionId)) {
       return;
     }
 
-    final result = await _repository.getAnswers(questionId);
+    loadingAnswerIds.add(questionId);
+    loadingAnswerIds.refresh();
+
+    try {
+      final result = await _repository.getAnswers(questionId);
+
+      result.fold(
+        onSuccess: (answerList) {
+          answers[questionId] = answerList;
+        },
+        onFailure: (error) {
+          log('加载答案失败: ${error.message}');
+          AppToast.error(AppLocalizations.of(Get.context!)!.loadAnswersFailed(error.message));
+        },
+      );
+    } finally {
+      loadingAnswerIds.remove(questionId);
+      loadingAnswerIds.refresh();
+    }
+  }
+
+  Future<void> createQuestion({
+    required String city,
+    required String title,
+    required String content,
+    List<String> tags = const [],
+  }) async {
+    final context = Get.context;
+    final result = await _repository.createQuestion(
+      city: city,
+      title: title,
+      content: content,
+      tags: tags,
+    );
 
     result.fold(
-      onSuccess: (answerList) {
-        answers[questionId] = answerList;
+      onSuccess: (question) {
+        questions.insert(0, question);
+        answers[question.id] = const <Answer>[];
+        if (context != null) {
+          AppToast.success(AppLocalizations.of(context)!.saveSuccess);
+        }
       },
       onFailure: (error) {
-        log('加载答案失败: ${error.message}');
-        AppToast.error(AppLocalizations.of(Get.context!)!.loadAnswersFailed(error.message));
+        if (context != null) {
+          AppToast.error(AppLocalizations.of(context)!.operationFailedWithError(error.message));
+        }
+      },
+    );
+  }
+
+  Future<void> createAnswer({
+    required String questionId,
+    required String content,
+  }) async {
+    final context = Get.context;
+    final result = await _repository.createAnswer(
+      questionId: questionId,
+      content: content,
+    );
+
+    result.fold(
+      onSuccess: (answer) {
+        final nextAnswers = [...(answers[questionId] ?? const <Answer>[]), answer];
+        answers[questionId] = nextAnswers;
+
+        final index = questions.indexWhere((question) => question.id == questionId);
+        if (index != -1) {
+          final question = questions[index];
+          questions[index] = Question(
+            id: question.id,
+            userId: question.userId,
+            userName: question.userName,
+            userAvatar: question.userAvatar,
+            city: question.city,
+            title: question.title,
+            content: question.content,
+            tags: question.tags,
+            upvotes: question.upvotes,
+            answerCount: question.answerCount + 1,
+            hasAcceptedAnswer: question.hasAcceptedAnswer,
+            createdAt: question.createdAt,
+            isUpvoted: question.isUpvoted,
+          );
+        }
+
+        if (context != null) {
+          AppToast.success(AppLocalizations.of(context)!.saveSuccess);
+        }
+      },
+      onFailure: (error) {
+        if (context != null) {
+          AppToast.error(AppLocalizations.of(context)!.operationFailedWithError(error.message));
+        }
       },
     );
   }
@@ -336,6 +453,15 @@ class CommunityStateController extends GetxController {
     await loadCommunityData(); // 重新加载数据
   }
 
+  void toggleCircleMembership(String circleId) {
+    if (joinedCircleIds.contains(circleId)) {
+      joinedCircleIds.remove(circleId);
+    } else {
+      joinedCircleIds.add(circleId);
+    }
+    joinedCircleIds.refresh();
+  }
+
   /// 刷新数据
   @override
   Future<void> refresh() async {
@@ -349,6 +475,8 @@ class CommunityStateController extends GetxController {
     recommendations.clear();
     questions.clear();
     answers.clear();
+    loadingAnswerIds.clear();
+    joinedCircleIds.clear();
 
     // 重置选择状态
     selectedCategory.value = 'All';

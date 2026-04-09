@@ -553,9 +553,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileRoleAdmin => 'Admin';
 
   @override
-  String get profileRoleModerator => 'Moderator';
-
-  @override
   String get profileRoleUser => 'User';
 
   @override
@@ -1388,79 +1385,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeMeetupChatButton => 'Chat';
-
-  @override
-  String get moderatorCardTitle => 'City Moderator';
-
-  @override
-  String get moderatorCardCertified => 'Certified';
-
-  @override
-  String get moderatorCardTransferModerator => 'Transfer Moderator';
-
-  @override
-  String get moderatorCardApplyModerator => 'Apply to be Moderator';
-
-  @override
-  String get moderatorCardUnclaimed => 'Unclaimed';
-
-  @override
-  String get moderatorCardLookingForModerator =>
-      'This city is looking for a moderator! If you are familiar with this place, you can apply to become a moderator and help other digital nomads understand the city.';
-
-  @override
-  String get moderatorCardAssignModerator => 'Assign Moderator';
-
-  @override
-  String get moderatorCardNeedUpgradeMembership =>
-      'Membership Upgrade Required';
-
-  @override
-  String get moderatorCardUpgradeContent =>
-      'Applying to be a city moderator requires Pro membership or above.\n\nAfter upgrading to Pro, you will get:\n• Eligibility to apply as a city moderator\n• More AI usage quota\n• Exclusive member badge\n• More advanced features';
-
-  @override
-  String get moderatorCardUpgradeNow => 'Upgrade Now';
-
-  @override
-  String assignModeratorLoadCandidatesFailed(String error) {
-    return 'Failed to load moderator candidates: $error';
-  }
-
-  @override
-  String get assignModeratorSelectAtLeastOneUser =>
-      'Please select at least one user';
-
-  @override
-  String get assignModeratorUnknownError => 'Unknown error';
-
-  @override
-  String assignModeratorUserError(String userId, String error) {
-    return 'User $userId: $error';
-  }
-
-  @override
-  String assignModeratorSuccessCount(int count) {
-    return 'Successfully assigned $count moderators!';
-  }
-
-  @override
-  String assignModeratorFailCount(int count) {
-    return 'Failed to assign $count users, please check logs';
-  }
-
-  @override
-  String assignModeratorAllFailed(String reason) {
-    return 'All user assignments failed: $reason';
-  }
-
-  @override
-  String get assignModeratorConfirmTitle => 'Confirm Moderator Assignment';
-
-  @override
-  String assignModeratorConfirmMessage(int count) {
-    return 'Are you sure you want to assign $count users as moderators?\n\nThese users will automatically receive moderator role and related permissions.';
-  }
 
   @override
   String get skillCategoryProgramming => 'Programming';
@@ -5306,9 +5230,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inviteYouToJoin => 'invites you to join';
 
   @override
-  String get moderatorTransfer => 'Moderator Transfer';
-
-  @override
   String get accept => 'Accept';
 
   @override
@@ -5786,14 +5707,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get applyModeratorSubmitSuccess =>
-      'Application submitted. Please wait for admin review';
-
-  @override
-  String get applyModeratorReasonHint =>
-      'Please explain why you are applying to be a moderator and what you can contribute to the community...';
-
-  @override
   String addCoworkingImageCount(int count, int max) {
     return '$count/$max';
   }
@@ -5807,11 +5720,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginFacebookComingSoon => 'Facebook sign-in is coming soon';
 
   @override
-  String assignModeratorPageTitle(Object cityName) {
-    return '$cityName - Assign Moderators';
-  }
-
-  @override
   String get homeAiCopilotTitle => 'AI Copilot';
 
   @override
@@ -5820,12 +5728,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeAiCopilotDescription =>
       'Smart directions · Trip planning · Travel guides';
-
-  @override
-  String get moderatorAssigned => 'Moderator assigned';
-
-  @override
-  String get moderatorPending => 'Moderator pending';
 
   @override
   String get searchResultsFor => 'Search results for ';
@@ -5959,6 +5861,466 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get citiesCount => '100+ cities';
+
+  @override
+  String get explore => 'Explore';
+
+  @override
+  String get land => 'Land';
+
+  @override
+  String get migrationWorkspace => 'Migration Workspace';
+
+  @override
+  String get landHubTitle => 'Manage your next move like a project';
+
+  @override
+  String get landHubSubtitle =>
+      'Keep planning, arrival, and follow-up work in one landing view.';
+
+  @override
+  String get landHubTravelPlanDescription =>
+      'Resume or create your relocation plan with AI planning support.';
+
+  @override
+  String get landHubBudgetDescription =>
+      'Track your monthly target, forecast, and city-by-city cost assumptions in one place.';
+
+  @override
+  String get landHubVisaDescription =>
+      'Track visa timing, renewal risk, and reminder readiness before you move.';
+
+  @override
+  String get cityDecisionTitle => 'Decision snapshot';
+
+  @override
+  String cityDecisionSubtitle(Object location) {
+    return 'Use these signals to decide whether $location is ready for your next move.';
+  }
+
+  @override
+  String get cityDecisionSignals => 'Decision signals';
+
+  @override
+  String get cityDecisionActions => 'Action shortcuts';
+
+  @override
+  String get cityDecisionInternet => 'Network quality';
+
+  @override
+  String get cityDecisionVideoCall => 'Video-call fit';
+
+  @override
+  String get cityDecisionCommunity => 'Community activity';
+
+  @override
+  String get cityDecisionClimate => 'Climate stability';
+
+  @override
+  String get cityDecisionVisaSummary => 'Visa brief';
+
+  @override
+  String get cityDecisionGuideLoading => 'Loading guide-backed signals';
+
+  @override
+  String get cityDecisionGuideReady => 'Guide-backed signals ready';
+
+  @override
+  String get landHubAccommodationDescription =>
+      'Browse digital-nomad-friendly stays and longer-term options.';
+
+  @override
+  String get landHubCoworkingDescription =>
+      'Jump into coworking options and find spaces built for focused work.';
+
+  @override
+  String get landHubTravelHistoryDescription =>
+      'Review past stays and moves to inform your next destination.';
+
+  @override
+  String get landHubCurrentFocusTitle => 'Current landing focus';
+
+  @override
+  String landHubCurrentFocusSubtitle(String city) {
+    return 'Your relocation stack is currently centered on $city.';
+  }
+
+  @override
+  String get landHubCurrentFocusEmpty =>
+      'No active relocation focus yet. Start with one travel plan so budget and visa work can lock onto a real city.';
+
+  @override
+  String get landHubFocusCityLabel => 'Focus city';
+
+  @override
+  String get landHubDepartureLabel => 'Departure';
+
+  @override
+  String get landHubBudgetLabel => 'Monthly cost';
+
+  @override
+  String get landHubVisaLabel => 'Visa clock';
+
+  @override
+  String get landHubPendingLabel => 'Pending';
+
+  @override
+  String get budgetCenter => 'Budget Center';
+
+  @override
+  String get budgetCenterHeroTitle =>
+      'Keep your first-month landing budget realistic';
+
+  @override
+  String get budgetCenterHeroSubtitle =>
+      'Watch target, forecast, and the plans shaping first-month cash flow.';
+
+  @override
+  String get budgetCenterMonthlyTarget => 'Monthly target';
+
+  @override
+  String get budgetCenterForecast => 'Forecast';
+
+  @override
+  String get budgetCenterDelta => 'Delta';
+
+  @override
+  String get budgetCenterTrackedCities => 'Tracked cities';
+
+  @override
+  String get budgetCenterFocusCity => 'Focus city';
+
+  @override
+  String get budgetCenterEstimatedMonthlyCost => 'Estimated monthly cost';
+
+  @override
+  String get budgetCenterQuickActions => 'Quick actions';
+
+  @override
+  String get budgetCenterAddCost => 'Add cost entry';
+
+  @override
+  String get budgetCenterManageCosts => 'Manage city costs';
+
+  @override
+  String get budgetCenterManageCostsSubtitle =>
+      'Review the existing cost entries for your current focus city.';
+
+  @override
+  String get budgetCenterEditBaseline => 'Edit budget baseline';
+
+  @override
+  String get budgetCenterTemplateLabel => 'Template';
+
+  @override
+  String get budgetCenterThresholdLabel => 'Alert threshold %';
+
+  @override
+  String get budgetCenterCategoryLabel => 'Categories';
+
+  @override
+  String get budgetCenterTrackedPlans => 'Tracked plans';
+
+  @override
+  String get budgetCenterOpenPlan => 'Open plan';
+
+  @override
+  String get budgetCenterEmptyTitle => 'No migration budget yet';
+
+  @override
+  String get budgetCenterEmptySubtitle =>
+      'Create a migration plan first, then use Budget Center to review budget assumptions and cost tracking.';
+
+  @override
+  String get budgetCenterStatusOnTrack => 'On track';
+
+  @override
+  String get budgetCenterStatusWatch => 'Watch closely';
+
+  @override
+  String get budgetCenterStatusOverBudget => 'Over budget';
+
+  @override
+  String get budgetCenterStatusNoData => 'No baseline';
+
+  @override
+  String get budgetCenterActionCreateFirstPlan =>
+      'Start a first migration plan to establish a budget baseline.';
+
+  @override
+  String get budgetCenterActionReviewOverBudget =>
+      'Your forecast is above target. Review the first-month cost assumptions now.';
+
+  @override
+  String get budgetCenterActionLockFirstMonthBudget =>
+      'Departure is close. Lock the first-month landing budget and housing spend.';
+
+  @override
+  String get budgetCenterActionCompareCityBudget =>
+      'You have multiple active options. Compare city budgets before committing.';
+
+  @override
+  String get budgetCenterActionFinalizeBudgetBaseline =>
+      'Finalize the draft plan so cost tracking has a clear baseline.';
+
+  @override
+  String get budgetCenterActionReviewLatestPlan =>
+      'Review the latest plan and confirm the first-month cost profile.';
+
+  @override
+  String get visaCenter => 'Visa Center';
+
+  @override
+  String get visaCenterHeroTitle => 'Keep entry timing and visa risk visible';
+
+  @override
+  String get visaCenterHeroSubtitle =>
+      'Track expiry, readiness, and reminders before timing gets tight.';
+
+  @override
+  String get visaCenterProfiles => 'Profiles';
+
+  @override
+  String get visaCenterAttentionRequired => 'Needs action';
+
+  @override
+  String get visaCenterReminderReady => 'Reminder ready';
+
+  @override
+  String get visaCenterSoonestExpiry => 'Soonest expiry';
+
+  @override
+  String get visaCenterFocusProfile => 'Focus profile';
+
+  @override
+  String get visaCenterExpiryDate => 'Expiry date';
+
+  @override
+  String get visaCenterRequirements => 'Requirements';
+
+  @override
+  String get visaCenterProcess => 'Process';
+
+  @override
+  String get visaCenterQuickActions => 'Quick actions';
+
+  @override
+  String get visaCenterSetReminder => 'Set visa reminder';
+
+  @override
+  String get visaCenterSetReminderSubtitle =>
+      'Send this visa expiry into OpenClaw so reminders are scheduled automatically.';
+
+  @override
+  String get visaCenterOpenPlan => 'Open migration plan';
+
+  @override
+  String get visaCenterOpenPlanSubtitle =>
+      'Jump back to the linked migration plan and adjust dates or destination assumptions.';
+
+  @override
+  String get visaCenterEditProfile => 'Edit visa profile';
+
+  @override
+  String get visaCenterTypeLabel => 'Visa type';
+
+  @override
+  String get visaCenterStayDaysLabel => 'Stay days';
+
+  @override
+  String get visaCenterEntryDateLabel => 'Entry date';
+
+  @override
+  String get visaCenterDocumentsLabel => 'Required documents';
+
+  @override
+  String get visaCenterReminderDatesLabel => 'Reminder dates';
+
+  @override
+  String get visaCenterAllProfiles => 'All visa profiles';
+
+  @override
+  String get visaCenterEmptyTitle => 'No visa profile yet';
+
+  @override
+  String get visaCenterEmptySubtitle =>
+      'Create a migration plan first, then use Visa Center to monitor expiry timing and reminder readiness.';
+
+  @override
+  String get visaCenterActionSetReminderNow =>
+      'A visa deadline is close. Set a reminder now and confirm the required documents.';
+
+  @override
+  String get visaCenterActionCompareEntryOptions =>
+      'You have multiple active destinations. Compare entry options before locking the move.';
+
+  @override
+  String get visaCenterActionCompleteBrief =>
+      'Finish the visa brief and document list before setting the move date.';
+
+  @override
+  String get visaCenterActionCreateFirstPlan =>
+      'Start with a migration plan so Visa Center can build a first profile.';
+
+  @override
+  String get visaCenterActionReviewLatestVisa =>
+      'Review the current visa profile and confirm its expiry assumptions.';
+
+  @override
+  String get visaCenterStatusAttentionRequired => 'Attention required';
+
+  @override
+  String get visaCenterStatusReviewSoon => 'Review soon';
+
+  @override
+  String get visaCenterStatusPlanning => 'Planning';
+
+  @override
+  String get visaCenterStatusArchived => 'Archived';
+
+  @override
+  String get visaCenterStatusOnTrack => 'On track';
+
+  @override
+  String get visaCenterTypeLongStay => 'Long-stay visa';
+
+  @override
+  String get visaCenterTypeDigitalNomad => 'Digital nomad entry';
+
+  @override
+  String get visaCenterTypePriorityEVisa => 'Priority e-visa';
+
+  @override
+  String get visaCenterTypeShortStay => 'Short-stay visa';
+
+  @override
+  String get visaCenterNoReminderTarget =>
+      'This visa profile does not have an expiry date yet.';
+
+  @override
+  String visaCenterReminderSet(Object cityName) {
+    return 'Visa reminder scheduled for $cityName.';
+  }
+
+  @override
+  String get visaCenterReminderFailed => 'Failed to set visa reminder.';
+
+  @override
+  String visaCenterReminderFailedWithError(Object error) {
+    return 'Failed to set visa reminder: $error';
+  }
+
+  @override
+  String get migrationWorkspaceHeroTitle =>
+      'Turn relocation planning into an actionable workspace';
+
+  @override
+  String get migrationWorkspaceHeroSubtitle =>
+      'Review active plans, upcoming departures, and drafts that still need work.';
+
+  @override
+  String get migrationWorkspacePlanCount => 'Plans';
+
+  @override
+  String get migrationWorkspaceActivePlans => 'Active';
+
+  @override
+  String get migrationWorkspaceUpcomingDepartures => 'Upcoming';
+
+  @override
+  String get migrationWorkspaceContinuePlanning => 'Continue planning';
+
+  @override
+  String get migrationWorkspaceRetry => 'Retry';
+
+  @override
+  String get migrationWorkspaceEmptyTitle =>
+      'Create your first relocation plan';
+
+  @override
+  String get migrationWorkspaceEmptySubtitle =>
+      'Start with a city, budget, and departure date, then iterate on a plan you can keep refining.';
+
+  @override
+  String get migrationWorkspaceDraftPlans =>
+      'Draft plans that still need action';
+
+  @override
+  String get migrationWorkspaceOpenPlan => 'Open plan';
+
+  @override
+  String get migrationWorkspaceFocusTitle => 'Focus workflow';
+
+  @override
+  String get migrationWorkspaceEditTitle => 'Edit migration workflow';
+
+  @override
+  String get migrationWorkspaceStageLabel => 'Stage';
+
+  @override
+  String get migrationWorkspaceChecklistLabel => 'Checklist';
+
+  @override
+  String get migrationWorkspaceTimelineLabel => 'Timeline';
+
+  @override
+  String get migrationWorkspaceDepartureDate => 'Departure';
+
+  @override
+  String get inboxHubTitle => 'Review messages and notifications together';
+
+  @override
+  String get inboxHubSubtitle =>
+      'Clear urgent threads first, then jump into messages or notifications.';
+
+  @override
+  String get inboxMessagesDescription =>
+      'Open direct conversations and catch up on unread threads.';
+
+  @override
+  String get inboxNotificationsDescription =>
+      'Process system alerts, meetup reminders, and status updates in one place.';
+
+  @override
+  String get inboxActionRequired => 'Action required';
+
+  @override
+  String get inboxSystemActionCenter => 'System action center';
+
+  @override
+  String get inboxSystemActionEmpty =>
+      'No migration, budget, or visa actions need attention right now.';
+
+  @override
+  String get inboxSystemMigrationTitle => 'Migration workspace';
+
+  @override
+  String get inboxSystemBudgetTitle => 'Budget center';
+
+  @override
+  String get inboxSystemVisaTitle => 'Visa center';
+
+  @override
+  String inboxSystemMigrationFallback(String count) {
+    return '$count migration items are waiting for your next move.';
+  }
+
+  @override
+  String inboxSystemBudgetFallback(String delta) {
+    return 'Budget variance is currently $delta.';
+  }
+
+  @override
+  String inboxSystemVisaFallback(String count) {
+    return '$count visa reminders need to be reviewed.';
+  }
+
+  @override
+  String get inboxRecentNotifications => 'Recent notifications';
+
+  @override
+  String get inboxNoRecentNotifications =>
+      'There are no recent notification summaries yet.';
 
   @override
   String get verificationCodeRequired => 'Please enter verification code';
@@ -6519,85 +6881,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get confirmApprove => 'Confirm Approve';
-
-  @override
-  String confirmApproveMessage(String name) {
-    return 'Approve $name\'s moderator application?';
-  }
-
-  @override
-  String get rejectApplication => 'Reject Application';
-
-  @override
-  String confirmRejectMessage(String name) {
-    return 'Reject $name\'s moderator application?';
-  }
-
-  @override
-  String get rejectReasonOptional => 'Reject reason (optional)';
-
-  @override
-  String get enterRejectReason => 'Enter reject reason...';
-
-  @override
-  String get confirmReject => 'Confirm Reject';
-
-  @override
-  String get confirmRevoke => 'Confirm Revoke';
-
-  @override
-  String confirmRevokeMessage(String name) {
-    return 'Revoke $name\'s moderator status?';
-  }
-
-  @override
-  String get moderatorRevoked => 'Moderator status revoked';
-
-  @override
-  String revokeFailed(String error) {
-    return 'Revoke failed: $error';
-  }
-
-  @override
-  String get applicationApproved => 'Application approved';
-
-  @override
-  String get applicationRejected => 'Application rejected';
-
-  @override
-  String get moderatorApplicationDetail => 'Moderator Application Detail';
-
-  @override
-  String get applicationNotExists => 'Application not found';
-
-  @override
-  String applicationTime(String time) {
-    return 'Application time: $time';
-  }
-
-  @override
-  String processTime(String time) {
-    return 'Process time: $time';
-  }
-
-  @override
-  String get applicantInfo => 'Applicant Info';
-
-  @override
   String get unknownUser => 'Unknown User';
 
   @override
-  String get applicationCity => 'Applied City';
-
-  @override
   String get unknownCity => 'Unknown City';
-
-  @override
-  String get applicationReason => 'Application Reason';
-
-  @override
-  String get noReasonProvided => 'No reason provided';
 
   @override
   String get rejectReason => 'Reject Reason';
@@ -6607,9 +6894,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get approve => 'Approve';
-
-  @override
-  String get revokeModeratorStatus => 'Revoke Moderator';
 
   @override
   String get visitedPlaces => 'Visited Places';
@@ -6824,19 +7108,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageGenFailedDefault => 'Image generation failed';
 
   @override
-  String get moderatorStatusPending => 'Pending Review';
-
-  @override
-  String get moderatorStatusApproved => 'Approved';
-
-  @override
-  String get moderatorStatusRejected => 'Rejected';
-
-  @override
-  String get revokePermissionWarning =>
-      'This will remove all moderator permissions for this user in this city.';
-
-  @override
   String get perNightLabel => 'Per Night';
 
   @override
@@ -6853,4 +7124,744 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratingDescPoor => 'Poor';
+
+  @override
+  String get homeDashboardTitle => 'Today for your nomad stack';
+
+  @override
+  String get homeDashboardSubtitle =>
+      'Track migration, budget, visa, and inbox pressure together.';
+
+  @override
+  String get homeHeroTitle =>
+      'Choose the next city with enough signal to commit';
+
+  @override
+  String get homeHeroSubtitle =>
+      'Scan cities, open the map, and push the best option into your workspace.';
+
+  @override
+  String get homeHeroMapView => 'Map view';
+
+  @override
+  String get homeDashboardPromptTitle => 'Unlock your operating dashboard';
+
+  @override
+  String get homeDashboardPromptMessage =>
+      'Sign in to see plans, budget gaps, visa timing, and pending replies.';
+
+  @override
+  String get homeDashboardPromptCta => 'Sign in to continue';
+
+  @override
+  String get homeDashboardLoading => 'Syncing your Explore dashboard...';
+
+  @override
+  String get homePriorityQueueTitle => 'Priority queue';
+
+  @override
+  String get homeQuickActionsTitle => 'Fast lane';
+
+  @override
+  String get homeDashboardMigrationTitle => 'Migration workspace';
+
+  @override
+  String get homeDashboardBudgetTitle => 'Budget center';
+
+  @override
+  String get homeDashboardVisaTitle => 'Visa center';
+
+  @override
+  String get homeDashboardInboxTitle => 'Inbox pulse';
+
+  @override
+  String get homeDashboardOpen => 'Open';
+
+  @override
+  String get homeQuickActionCities => 'Cities';
+
+  @override
+  String get homeQuickActionMeetups => 'Meetups';
+
+  @override
+  String get homeQuickActionMap => 'Map view';
+
+  @override
+  String get homeQuickActionMigration => 'Migration workspace';
+
+  @override
+  String get homeQueueMigrationTitle => 'Move the next destination';
+
+  @override
+  String get homeQueueBudgetTitle => 'Close the budget gap';
+
+  @override
+  String get homeQueueVisaTitle => 'Protect your stay window';
+
+  @override
+  String get homeQueueInboxTitle => 'Answer pending signals';
+
+  @override
+  String homeQueueMigrationFallback(String count) {
+    return '$count active plans waiting for your next move';
+  }
+
+  @override
+  String homeQueueBudgetFallback(String delta) {
+    return 'Budget variance is sitting at $delta this month';
+  }
+
+  @override
+  String homeQueueVisaFallback(String count) {
+    return '$count visa items need attention';
+  }
+
+  @override
+  String homeQueueInboxFallback(String count) {
+    return '$count alerts or conversations need a response';
+  }
+
+  @override
+  String get profileSnapshotTitle => 'Nomad profile';
+
+  @override
+  String get profileSnapshotSubtitle =>
+      'A quick read on your next move and current operating rhythm.';
+
+  @override
+  String get profileSnapshotNextDestination => 'Next destination';
+
+  @override
+  String get profileSnapshotDeparture => 'Departure';
+
+  @override
+  String get profileSnapshotBudgetLane => 'Budget lane';
+
+  @override
+  String get profileSnapshotWorkTimezone => 'Work timezone';
+
+  @override
+  String get profileSnapshotStayRhythm => 'Stay rhythm';
+
+  @override
+  String get profileSnapshotCommunity => 'Community momentum';
+
+  @override
+  String get profileSnapshotBase => 'Current base';
+
+  @override
+  String get profileSnapshotMigration => 'Migration status';
+
+  @override
+  String get profileSnapshotReadiness => 'Profile readiness';
+
+  @override
+  String get profileSnapshotTuneProfile => 'Tune profile';
+
+  @override
+  String get profileSnapshotOpenWorkspace => 'Open workspace';
+
+  @override
+  String get profileSnapshotOpenBudget => 'Open budget';
+
+  @override
+  String get profileSnapshotNoDestination => 'Flexible destination';
+
+  @override
+  String get profileSnapshotBaseFlexible => 'Location flexible';
+
+  @override
+  String get profileSnapshotBudgetLean => 'Lean setup';
+
+  @override
+  String get profileSnapshotBudgetBalanced => 'Balanced runway';
+
+  @override
+  String get profileSnapshotBudgetPremium => 'Premium comfort';
+
+  @override
+  String get profileSnapshotStaySprint => 'Sprint-based hops';
+
+  @override
+  String get profileSnapshotStaySeasonal => 'Seasonal base building';
+
+  @override
+  String get profileSnapshotStayLong => 'Long-stay operator';
+
+  @override
+  String get profileSnapshotCommunityQuiet => 'Quiet network';
+
+  @override
+  String get profileSnapshotCommunityBuilding => 'Community building';
+
+  @override
+  String get profileSnapshotCommunityHigh => 'High community momentum';
+
+  @override
+  String get profileSnapshotMigrationDraft => 'Drafting the move';
+
+  @override
+  String get profileSnapshotMigrationPlanning => 'Planning logistics';
+
+  @override
+  String get profileSnapshotMigrationBooked => 'Booked and aligning';
+
+  @override
+  String get profileSnapshotMigrationActive => 'Already in motion';
+
+  @override
+  String get profileSnapshotMigrationFlexible => 'Keeping plans flexible';
+
+  @override
+  String get profileSnapshotReadinessStarting => 'Foundations in progress';
+
+  @override
+  String get profileSnapshotReadinessGrowing => 'Signal is getting stronger';
+
+  @override
+  String get profileSnapshotReadinessStrong => 'Operator profile is sharp';
+
+  @override
+  String get profileCollaborationTitle => 'Collaboration profile';
+
+  @override
+  String get profileCollaborationSubtitle =>
+      'Show other nomads how you work and how ready you are to connect.';
+
+  @override
+  String get profileCollaborationProfessionalIdentity =>
+      'Professional identity';
+
+  @override
+  String get profileCollaborationLanguageAbility => 'Language ability';
+
+  @override
+  String get profileCollaborationMode => 'Collaboration mode';
+
+  @override
+  String get profileCollaborationDiscovery => 'Discovery readiness';
+
+  @override
+  String get profileCollaborationTopSkills => 'Top skills';
+
+  @override
+  String get profileCollaborationTopInterests => 'Shared interests';
+
+  @override
+  String get profileCollaborationSocialPresence => 'Social presence';
+
+  @override
+  String get profileCollaborationEditSkills => 'Edit skills';
+
+  @override
+  String get profileCollaborationEditInterests => 'Edit interests';
+
+  @override
+  String get profileCollaborationEditLinks => 'Edit links';
+
+  @override
+  String get profileCollaborationNoSkills =>
+      'Add skills to sharpen your professional signal.';
+
+  @override
+  String get profileCollaborationNoInterests =>
+      'Add interests so others know where you click socially.';
+
+  @override
+  String get profileCollaborationNoLinks =>
+      'Add links to make it easier for people to verify and connect.';
+
+  @override
+  String get profileCollaborationIdentityFlexible => 'Independent operator';
+
+  @override
+  String get profileCollaborationIdentityBioDriven => 'Story-driven nomad';
+
+  @override
+  String get profileCollaborationLanguagePending =>
+      'Spoken languages still need to be added explicitly.';
+
+  @override
+  String get profileCollaborationLanguageBilingualSignal =>
+      'Your profile already shows a bilingual writing signal.';
+
+  @override
+  String get profileCollaborationLanguageProfileReady =>
+      'Your public profile is readable, but explicit spoken languages can make matching better.';
+
+  @override
+  String get profileCollaborationModeCommunityLead =>
+      'Leading from the front in community spaces.';
+
+  @override
+  String get profileCollaborationModeOpenToConnect =>
+      'Open to direct collaboration and warm intros.';
+
+  @override
+  String get profileCollaborationModeBuilding =>
+      'Still shaping your collaboration surface.';
+
+  @override
+  String get profileCollaborationDiscoveryStrong =>
+      'Easy to discover and easy to trust.';
+
+  @override
+  String get profileCollaborationDiscoveryGrowing =>
+      'Signals are forming, but a few more details would help.';
+
+  @override
+  String get profileCollaborationDiscoveryStarting =>
+      'Still quiet for matching. Add more structured signals.';
+
+  @override
+  String get inboxSystemMembershipTitle => 'Membership status';
+
+  @override
+  String get inboxSystemMembershipExpired =>
+      'Your membership has expired. Review benefits and renew access.';
+
+  @override
+  String inboxSystemMembershipExpiring(String days) {
+    return 'Your membership expires in $days days.';
+  }
+
+  @override
+  String get inboxSystemMembershipAiQuotaTitle => 'AI quota reminder';
+
+  @override
+  String inboxSystemMembershipAiQuota(String count) {
+    return 'Only $count AI credits remain this cycle.';
+  }
+
+  @override
+  String get communityCirclesHeroTitle =>
+      'Community that helps you meet, ask, and coordinate';
+
+  @override
+  String get communityCirclesHeroSubtitle =>
+      'Meetups, city chat, Q&A, and coordination belong in one community view.';
+
+  @override
+  String get communityLayersTitle => 'How community works';
+
+  @override
+  String get communityLayersSubtitle =>
+      'Move from meetups and city signal into questions and direct coordination.';
+
+  @override
+  String get communityLayerMeetupsTitle => 'Meet on the ground';
+
+  @override
+  String get communityLayerMeetupsSubtitle =>
+      'Use meetups to turn lightweight discovery into real presence and recurring local touchpoints.';
+
+  @override
+  String get communityLayerCityChatTitle => 'City pulse';
+
+  @override
+  String communityLayerCityChatSubtitle(String city) {
+    return 'Drop into the conversation already happening around $city.';
+  }
+
+  @override
+  String get communityLayerQuestionsTitle => 'Local Q&A';
+
+  @override
+  String get communityLayerQuestionsSubtitle =>
+      'Review open asks and first-hand notes before you decide who to contact directly.';
+
+  @override
+  String communityLayerQuestionsBadge(String count) {
+    return '$count open asks';
+  }
+
+  @override
+  String get communityLayerReviewAsks => 'Review open asks';
+
+  @override
+  String get communityLayerCoordinationTitle => 'Direct coordination';
+
+  @override
+  String communityLayerCoordinationSubtitle(String city) {
+    return 'Once $city becomes real, move into direct messages and smaller collaboration loops.';
+  }
+
+  @override
+  String get communityLayerReviewCircles => 'Review circles';
+
+  @override
+  String get communityIntelligenceTitle => 'Local intelligence';
+
+  @override
+  String communityIntelligenceSubtitle(String city) {
+    return 'Open questions and field notes around $city.';
+  }
+
+  @override
+  String get communityCoordinationTitle => 'Coordination desk';
+
+  @override
+  String get communityCoordinationSubtitle =>
+      'Turn public signal into smaller threads that actually unblock the move.';
+
+  @override
+  String communityCoordinationSummary(String city) {
+    return 'Coordinate arrival timing and practical help around $city.';
+  }
+
+  @override
+  String get communityQuestionResolved => 'Resolved';
+
+  @override
+  String get communityQuestionNeedsAnswer => 'Needs answer';
+
+  @override
+  String get communityRemoteBaseLabel => 'Remote base';
+
+  @override
+  String get communityDetailFieldNoteTitle => 'Field note';
+
+  @override
+  String get communityDetailQuestionTitle => 'Question thread';
+
+  @override
+  String get communityDetailRatingsTitle => 'Ratings breakdown';
+
+  @override
+  String get communityDetailProsTitle => 'What worked';
+
+  @override
+  String get communityDetailConsTitle => 'Watchouts';
+
+  @override
+  String get communityDetailAnswersTitle => 'Answers from the ground';
+
+  @override
+  String get communityDetailAnswersLoading => 'Loading answers...';
+
+  @override
+  String get communityDetailAnswersEmpty =>
+      'No answers yet. City chat is still the fastest way to find someone on the ground.';
+
+  @override
+  String get communityDetailOpenCityChat => 'Open city chat';
+
+  @override
+  String get communityDetailMessageAuthor => 'Message author';
+
+  @override
+  String get communityDetailMessageAsker => 'Message asker';
+
+  @override
+  String get communityDetailMessageAnswerer => 'Message responder';
+
+  @override
+  String get communityDetailUpvoteQuestion => 'Upvote question';
+
+  @override
+  String get communityCreateQuestionAction => 'Ask a question';
+
+  @override
+  String get communityCreateAnswerAction => 'Write an answer';
+
+  @override
+  String get communityTagLabel => 'Tags (comma separated)';
+
+  @override
+  String get communityDetailLikeFieldNote => 'Like field note';
+
+  @override
+  String get communityCirclesSuggestedTitle => 'Suggested circles';
+
+  @override
+  String get communityCirclesSuggestedSubtitle =>
+      'Circles are only one lane of the community stack. Use them alongside meetups, city chat, and local questions.';
+
+  @override
+  String get communityCirclesQuickActionsTitle => 'Community lanes';
+
+  @override
+  String get communityCirclesQuickActionsSubtitle =>
+      'Jump directly into meetup hosting, meetup discovery, city chat, or direct conversations without hunting across tabs.';
+
+  @override
+  String get communityCirclesMeetupsTitle => 'Circle activities';
+
+  @override
+  String get communityCirclesMeetupsSubtitle =>
+      'Upcoming meetups are the fastest path from circle discovery to real-world connection.';
+
+  @override
+  String get communityCirclesFieldNotesTitle => 'Field notes';
+
+  @override
+  String get communityCirclesFieldNotesSubtitle =>
+      'Recent trip reports and lived experience signals from the network.';
+
+  @override
+  String get communityCirclesQuestionsTitle => 'Open asks';
+
+  @override
+  String get communityCirclesQuestionsSubtitle =>
+      'Questions that still need answers from people already on the ground.';
+
+  @override
+  String get communityCirclesJoin => 'Join';
+
+  @override
+  String get communityCirclesOpen => 'Open';
+
+  @override
+  String get communityCirclesCreateMeetup => 'Host meetup';
+
+  @override
+  String get communityCirclesViewMeetups => 'Browse meetups';
+
+  @override
+  String get communityCirclesOpenInbox => 'Direct messages';
+
+  @override
+  String get communityCirclesExploreCities => 'City chat';
+
+  @override
+  String get communityCirclesMeetupsEmpty =>
+      'No upcoming circle activities yet. Host the first meetup to seed the lane.';
+
+  @override
+  String get communityCirclesFieldNotesEmpty =>
+      'No field notes yet. Community reports will surface here once people start sharing.';
+
+  @override
+  String get communityCirclesQuestionsEmpty =>
+      'No open asks right now. When local questions arrive, they will appear here.';
+
+  @override
+  String get communityCirclesFlexibleLabel => 'Flexible';
+
+  @override
+  String get communityCirclesGeneralistLabel => 'Generalist';
+
+  @override
+  String communityCirclesMetricCircles(String count) {
+    return '$count circles';
+  }
+
+  @override
+  String communityCirclesMetricMeetups(String count) {
+    return '$count meetups';
+  }
+
+  @override
+  String communityCirclesMetricFieldNotes(String count) {
+    return '$count field notes';
+  }
+
+  @override
+  String get communityCircleCityTitle => 'City circle';
+
+  @override
+  String communityCircleCitySubtitle(String city) {
+    return 'Find people already active around $city.';
+  }
+
+  @override
+  String get communityCircleMigrationTitle => 'Migration buddies';
+
+  @override
+  String communityCircleMigrationSubtitle(String city) {
+    return 'Coordinate people heading toward $city next.';
+  }
+
+  @override
+  String get communityCircleSkillTitle => 'Skill exchange';
+
+  @override
+  String communityCircleSkillSubtitle(String skill) {
+    return 'Use $skill as your entry point for collaboration and peer swaps.';
+  }
+
+  @override
+  String get communityCircleRecurringTitle => 'Recurring meetups';
+
+  @override
+  String communityCircleRecurringSubtitle(String count) {
+    return 'There are $count upcoming activities ready to anchor the next circle.';
+  }
+
+  @override
+  String get profileCockpitTitle =>
+      'Run your nomad profile like a live operating system';
+
+  @override
+  String get profileCockpitSubtitle =>
+      'Keep identity, travel signal, and readiness aligned before the next move.';
+
+  @override
+  String get profileCockpitCurrentBase => 'Current base';
+
+  @override
+  String get profileCockpitExperience => 'Experience';
+
+  @override
+  String get profileCockpitEditProfile => 'Edit profile';
+
+  @override
+  String get profileCockpitIdentityTitle => 'Identity cockpit';
+
+  @override
+  String get profileCockpitIdentitySubtitle =>
+      'Keep profile basics and collaboration story aligned.';
+
+  @override
+  String get profileCockpitOperationsTitle => 'Travel operating system';
+
+  @override
+  String get profileCockpitOperationsSubtitle =>
+      'Review membership, plans, and journey stats together.';
+
+  @override
+  String get profileCockpitSignalsTitle => 'Signals and network';
+
+  @override
+  String get profileCockpitSignalsSubtitle =>
+      'Show the badges, interests, and proof others use to read your profile.';
+
+  @override
+  String get profileCockpitSupportTitle => 'Support and account';
+
+  @override
+  String get profileCockpitSupportSubtitle =>
+      'Keep support, legal info, and account controls together.';
+
+  @override
+  String get landHubPlanningLaneTitle => 'Planning lane';
+
+  @override
+  String get landHubPlanningLaneSubtitle =>
+      'Lock plan, budget, and visa before the rest of the move.';
+
+  @override
+  String get landHubArrivalLaneTitle => 'First-week lane';
+
+  @override
+  String get landHubArrivalLaneSubtitle =>
+      'Build the first-week checklist before you land.';
+
+  @override
+  String get landHubChecklistNow => 'Now';
+
+  @override
+  String get landHubChecklistNext => 'Next';
+
+  @override
+  String get landHubChecklistWatch => 'Watch';
+
+  @override
+  String get landHubChecklistDetailed => 'Detailed';
+
+  @override
+  String get landHubChecklistLocked => 'Locked';
+
+  @override
+  String get landHubChecklistBaselineReady => 'Baseline ready';
+
+  @override
+  String get landHubChecklistShortlisted => 'Shortlisted';
+
+  @override
+  String get landHubChecklistPlanningLive => 'In plan';
+
+  @override
+  String get landHubChecklistMapped => 'Mapped';
+
+  @override
+  String get landHubChecklistCityScoped => 'City scoped';
+
+  @override
+  String get landHubChecklistVisaLinked => 'Visa-linked';
+
+  @override
+  String landHubChecklistTrackingSource(String source, String signal) {
+    return 'Tracking in $source: $signal';
+  }
+
+  @override
+  String get landHubChecklistArrivalTitle =>
+      'Lock arrival and first-night timing';
+
+  @override
+  String landHubChecklistArrivalReady(Object dateLabel) {
+    return 'Departure is already visible for $dateLabel. Keep check-in and airport arrival details in the same plan.';
+  }
+
+  @override
+  String landHubChecklistArrivalDetailed(Object methodLabel, Object details) {
+    return '$methodLabel: $details';
+  }
+
+  @override
+  String get landHubChecklistArrivalPending =>
+      'Your move still needs a committed departure date. Set arrival timing before the rest of the landing stack drifts.';
+
+  @override
+  String get landHubChecklistStayTitle => 'Review the first-week stay';
+
+  @override
+  String landHubChecklistStaySubtitle(Object cityName) {
+    return 'Shortlist flexible stays in $cityName so the first week is covered before you start exploring longer-term options.';
+  }
+
+  @override
+  String landHubChecklistStayWithBudget(Object cityName, Object budgetLabel) {
+    return 'You already have a monthly baseline of $budgetLabel. Use it to keep the first-week stay in $cityName realistic.';
+  }
+
+  @override
+  String landHubChecklistStayDetailed(
+      Object cityName, Object areaLabel, Object priceLabel) {
+    return 'Shortlisted a stay around $areaLabel at about $priceLabel for $cityName.';
+  }
+
+  @override
+  String get landHubChecklistWorkTitle => 'Secure a reliable work base';
+
+  @override
+  String landHubChecklistWorkSubtitle(Object cityName) {
+    return 'Check coworking options in $cityName before arrival so meetings, calls, and backup desks are not last-minute.';
+  }
+
+  @override
+  String get landHubChecklistTransportTitle => 'Map the local transport path';
+
+  @override
+  String landHubChecklistTransportSubtitle(Object cityName) {
+    return 'Review airport transfer and daily transport options around $cityName while route choices are still cheap to adjust.';
+  }
+
+  @override
+  String landHubChecklistTransportDetailed(Object methodLabel, Object details) {
+    return '$methodLabel: $details';
+  }
+
+  @override
+  String get landHubChecklistConnectivityTitle =>
+      'Prepare mobile data and connectivity';
+
+  @override
+  String landHubChecklistConnectivitySubtitle(Object cityName) {
+    return 'Use AI to outline the first eSIM, hotspot, and backup connectivity setup you will need in $cityName.';
+  }
+
+  @override
+  String landHubChecklistConnectivityWithVisa(
+      Object cityName, Object visaLabel) {
+    return 'Your visa clock is currently $visaLabel. Use AI to pressure-test eSIM, hotspot, and backup network setup for $cityName.';
+  }
+
+  @override
+  String get landHubResourceLaneTitle => 'Resource lane';
+
+  @override
+  String get landHubResourceLaneSubtitle =>
+      'Keep past stays close when the next move needs context.';
 }

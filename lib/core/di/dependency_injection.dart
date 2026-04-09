@@ -92,10 +92,6 @@ import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_st
 import 'package:go_nomads_app/features/membership/domain/repositories/membership_repository.dart';
 import 'package:go_nomads_app/features/membership/infrastructure/repositories/membership_repository_impl.dart';
 import 'package:go_nomads_app/features/membership/presentation/controllers/membership_state_controller.dart';
-// Moderator Domain
-import 'package:go_nomads_app/features/moderator/domain/repositories/i_moderator_application_repository.dart';
-import 'package:go_nomads_app/features/moderator/infrastructure/repositories/moderator_application_repository.dart';
-import 'package:go_nomads_app/features/moderator/presentation/controllers/moderator_application_controller.dart';
 // Notification Domain
 import 'package:go_nomads_app/features/notification/domain/repositories/i_notification_repository.dart';
 import 'package:go_nomads_app/features/notification/infrastructure/repositories/notification_repository.dart';
@@ -211,9 +207,6 @@ class DependencyInjection {
 
     // UserManagement 领域
     _registerUserManagementDomain();
-
-    // Moderator 领域
-    _registerModeratorDomain();
 
     // Membership 领域
     _registerMembershipDomain();
@@ -490,6 +483,7 @@ class DependencyInjection {
     Get.lazyPut(() => GetCitiesUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => GetCityByIdUseCase(Get.find<ICityRepository>()),
         tag: 'city_domain', fenix: true); // 添加tag区分City domain
+    Get.lazyPut(() => GetCityNomadSummaryUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => SearchCityListUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => GetRecommendedCitiesUseCase(Get.find<ICityRepository>()), fenix: true);
     Get.lazyPut(() => GetPopularCitiesUseCase(Get.find<ICityRepository>()), fenix: true);
@@ -520,6 +514,7 @@ class DependencyInjection {
     Get.lazyPut(
       () => CityDetailStateController(
         getCityByIdUseCase: Get.find<GetCityByIdUseCase>(tag: 'city_domain'), // 使用tag获取City domain的UseCase
+        getCityNomadSummaryUseCase: Get.find<GetCityNomadSummaryUseCase>(),
         toggleCityFavoriteUseCase: Get.find<ToggleCityFavoriteUseCase>(),
         cityRepository: Get.find<ICityRepository>(),
       ),
@@ -855,6 +850,7 @@ class DependencyInjection {
     // Repository
     Get.lazyPut<ICommunityRepository>(
       () => CommunityRepository(),
+      fenix: true,
     );
 
     // Controller
@@ -862,6 +858,7 @@ class DependencyInjection {
       () => CommunityStateController(
         repository: Get.find<ICommunityRepository>(),
       ),
+      fenix: true,
     );
   }
 
@@ -1144,19 +1141,6 @@ class DependencyInjection {
     // Controller
     Get.lazyPut(
       () => UserManagementStateController(Get.find<IUserManagementRepository>()),
-    );
-  }
-
-  /// 注册版主申请领域依赖
-  static void _registerModeratorDomain() {
-    // Repository
-    Get.lazyPut<IModeratorApplicationRepository>(
-      () => ModeratorApplicationRepository(),
-    );
-
-    // Controller
-    Get.lazyPut(
-      () => ModeratorApplicationController(Get.find<IModeratorApplicationRepository>()),
     );
   }
 

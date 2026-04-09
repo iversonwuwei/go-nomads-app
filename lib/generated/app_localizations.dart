@@ -1166,12 +1166,6 @@ abstract class AppLocalizations {
   /// **'管理员'**
   String get profileRoleAdmin;
 
-  /// No description provided for @profileRoleModerator.
-  ///
-  /// In zh, this message translates to:
-  /// **'版主'**
-  String get profileRoleModerator;
-
   /// No description provided for @profileRoleUser.
   ///
   /// In zh, this message translates to:
@@ -2641,120 +2635,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'聊天'**
   String get homeMeetupChatButton;
-
-  /// No description provided for @moderatorCardTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'城市版主'**
-  String get moderatorCardTitle;
-
-  /// No description provided for @moderatorCardCertified.
-  ///
-  /// In zh, this message translates to:
-  /// **'已认证'**
-  String get moderatorCardCertified;
-
-  /// No description provided for @moderatorCardTransferModerator.
-  ///
-  /// In zh, this message translates to:
-  /// **'转让版主'**
-  String get moderatorCardTransferModerator;
-
-  /// No description provided for @moderatorCardApplyModerator.
-  ///
-  /// In zh, this message translates to:
-  /// **'申请成为版主'**
-  String get moderatorCardApplyModerator;
-
-  /// No description provided for @moderatorCardUnclaimed.
-  ///
-  /// In zh, this message translates to:
-  /// **'待认领'**
-  String get moderatorCardUnclaimed;
-
-  /// No description provided for @moderatorCardLookingForModerator.
-  ///
-  /// In zh, this message translates to:
-  /// **'这座城市正在寻找版主！如果你熟悉这里，可以申请成为版主，帮助其他数字游民了解这座城市。'**
-  String get moderatorCardLookingForModerator;
-
-  /// No description provided for @moderatorCardAssignModerator.
-  ///
-  /// In zh, this message translates to:
-  /// **'分配版主'**
-  String get moderatorCardAssignModerator;
-
-  /// No description provided for @moderatorCardNeedUpgradeMembership.
-  ///
-  /// In zh, this message translates to:
-  /// **'需要升级会员'**
-  String get moderatorCardNeedUpgradeMembership;
-
-  /// No description provided for @moderatorCardUpgradeContent.
-  ///
-  /// In zh, this message translates to:
-  /// **'申请成为城市版主需要 Pro 会员或更高等级。\n\n升级到 Pro 会员后，您将获得：\n• 申请成为城市版主的资格\n• 更多 AI 使用次数\n• 专属会员徽章\n• 更多高级功能'**
-  String get moderatorCardUpgradeContent;
-
-  /// No description provided for @moderatorCardUpgradeNow.
-  ///
-  /// In zh, this message translates to:
-  /// **'立即升级'**
-  String get moderatorCardUpgradeNow;
-
-  /// No description provided for @assignModeratorLoadCandidatesFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'加载版主候选人失败: {error}'**
-  String assignModeratorLoadCandidatesFailed(String error);
-
-  /// No description provided for @assignModeratorSelectAtLeastOneUser.
-  ///
-  /// In zh, this message translates to:
-  /// **'请至少选择一个用户'**
-  String get assignModeratorSelectAtLeastOneUser;
-
-  /// No description provided for @assignModeratorUnknownError.
-  ///
-  /// In zh, this message translates to:
-  /// **'未知错误'**
-  String get assignModeratorUnknownError;
-
-  /// No description provided for @assignModeratorUserError.
-  ///
-  /// In zh, this message translates to:
-  /// **'用户 {userId}: {error}'**
-  String assignModeratorUserError(String userId, String error);
-
-  /// No description provided for @assignModeratorSuccessCount.
-  ///
-  /// In zh, this message translates to:
-  /// **'成功指定 {count} 个版主！'**
-  String assignModeratorSuccessCount(int count);
-
-  /// No description provided for @assignModeratorFailCount.
-  ///
-  /// In zh, this message translates to:
-  /// **'{count} 个用户指定失败，请查看日志'**
-  String assignModeratorFailCount(int count);
-
-  /// No description provided for @assignModeratorAllFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'所有用户指定失败: {reason}'**
-  String assignModeratorAllFailed(String reason);
-
-  /// No description provided for @assignModeratorConfirmTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'确认指定版主'**
-  String get assignModeratorConfirmTitle;
-
-  /// No description provided for @assignModeratorConfirmMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'确定要将 {count} 个用户指定为版主吗？\n\n这些用户将自动获得版主角色和相应权限。'**
-  String assignModeratorConfirmMessage(int count);
 
   /// No description provided for @skillCategoryProgramming.
   ///
@@ -10100,12 +9980,6 @@ abstract class AppLocalizations {
   /// **'邀请你参加'**
   String get inviteYouToJoin;
 
-  /// No description provided for @moderatorTransfer.
-  ///
-  /// In zh, this message translates to:
-  /// **'版主转让'**
-  String get moderatorTransfer;
-
   /// No description provided for @accept.
   ///
   /// In zh, this message translates to:
@@ -10934,18 +10808,6 @@ abstract class AppLocalizations {
   /// **'预订 {name}'**
   String roomTypeBookingToast(Object name);
 
-  /// No description provided for @applyModeratorSubmitSuccess.
-  ///
-  /// In zh, this message translates to:
-  /// **'申请已提交，请等待管理员审核'**
-  String get applyModeratorSubmitSuccess;
-
-  /// No description provided for @applyModeratorReasonHint.
-  ///
-  /// In zh, this message translates to:
-  /// **'请说明您申请成为版主的原因，以及您能为社区带来什么...'**
-  String get applyModeratorReasonHint;
-
   /// No description provided for @addCoworkingImageCount.
   ///
   /// In zh, this message translates to:
@@ -10964,12 +10826,6 @@ abstract class AppLocalizations {
   /// **'Facebook 登录即将推出'**
   String get loginFacebookComingSoon;
 
-  /// No description provided for @assignModeratorPageTitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'{cityName} - 指定版主'**
-  String assignModeratorPageTitle(Object cityName);
-
   /// No description provided for @homeAiCopilotTitle.
   ///
   /// In zh, this message translates to:
@@ -10987,18 +10843,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'智能问路 · 行程规划 · 旅行攻略'**
   String get homeAiCopilotDescription;
-
-  /// No description provided for @moderatorAssigned.
-  ///
-  /// In zh, this message translates to:
-  /// **'已指定版主'**
-  String get moderatorAssigned;
-
-  /// No description provided for @moderatorPending.
-  ///
-  /// In zh, this message translates to:
-  /// **'待指定版主'**
-  String get moderatorPending;
 
   /// No description provided for @searchResultsFor.
   ///
@@ -11215,6 +11059,822 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'100+ 城市'**
   String get citiesCount;
+
+  /// No description provided for @explore.
+  ///
+  /// In zh, this message translates to:
+  /// **'探索'**
+  String get explore;
+
+  /// No description provided for @land.
+  ///
+  /// In zh, this message translates to:
+  /// **'落地'**
+  String get land;
+
+  /// No description provided for @migrationWorkspace.
+  ///
+  /// In zh, this message translates to:
+  /// **'迁移工作台'**
+  String get migrationWorkspace;
+
+  /// No description provided for @landHubTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把下一站当作一个项目来管理'**
+  String get landHubTitle;
+
+  /// No description provided for @landHubSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把规划、到达和后续动作放进同一个落地视图。'**
+  String get landHubSubtitle;
+
+  /// No description provided for @landHubTravelPlanDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续或创建你的迁移计划与 AI 规划。'**
+  String get landHubTravelPlanDescription;
+
+  /// No description provided for @landHubBudgetDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'集中查看月预算目标、预测支出和各城市的成本假设。'**
+  String get landHubBudgetDescription;
+
+  /// No description provided for @landHubVisaDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'在出发前集中查看签证时间、续签风险和提醒准备情况。'**
+  String get landHubVisaDescription;
+
+  /// No description provided for @cityDecisionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'决策快照'**
+  String get cityDecisionTitle;
+
+  /// No description provided for @cityDecisionSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'用这一组信号判断 {location} 是否适合作为你的下一站。'**
+  String cityDecisionSubtitle(Object location);
+
+  /// No description provided for @cityDecisionSignals.
+  ///
+  /// In zh, this message translates to:
+  /// **'决策信号'**
+  String get cityDecisionSignals;
+
+  /// No description provided for @cityDecisionActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷入口'**
+  String get cityDecisionActions;
+
+  /// No description provided for @cityDecisionInternet.
+  ///
+  /// In zh, this message translates to:
+  /// **'网络质量'**
+  String get cityDecisionInternet;
+
+  /// No description provided for @cityDecisionVideoCall.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频通话适配'**
+  String get cityDecisionVideoCall;
+
+  /// No description provided for @cityDecisionCommunity.
+  ///
+  /// In zh, this message translates to:
+  /// **'社区活跃度'**
+  String get cityDecisionCommunity;
+
+  /// No description provided for @cityDecisionClimate.
+  ///
+  /// In zh, this message translates to:
+  /// **'气候稳定性'**
+  String get cityDecisionClimate;
+
+  /// No description provided for @cityDecisionVisaSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'签证摘要'**
+  String get cityDecisionVisaSummary;
+
+  /// No description provided for @cityDecisionGuideLoading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载指南增强信号'**
+  String get cityDecisionGuideLoading;
+
+  /// No description provided for @cityDecisionGuideReady.
+  ///
+  /// In zh, this message translates to:
+  /// **'指南增强信号已就绪'**
+  String get cityDecisionGuideReady;
+
+  /// No description provided for @landHubAccommodationDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看适合数字游民的住宿与长住选项。'**
+  String get landHubAccommodationDescription;
+
+  /// No description provided for @landHubCoworkingDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'快速进入共享办公列表，筛选适合工作的场地。'**
+  String get landHubCoworkingDescription;
+
+  /// No description provided for @landHubTravelHistoryDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'回看过去停留与迁移记录，为下一站提供参考。'**
+  String get landHubTravelHistoryDescription;
+
+  /// No description provided for @landHubCurrentFocusTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前落地重点'**
+  String get landHubCurrentFocusTitle;
+
+  /// No description provided for @landHubCurrentFocusSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'你当前的落地链路正围绕 {city} 展开。'**
+  String landHubCurrentFocusSubtitle(String city);
+
+  /// No description provided for @landHubCurrentFocusEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前还没有明确的落地重点城市。先创建一个迁移计划，让预算和签证动作都绑定到真实目标上。'**
+  String get landHubCurrentFocusEmpty;
+
+  /// No description provided for @landHubFocusCityLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'重点城市'**
+  String get landHubFocusCityLabel;
+
+  /// No description provided for @landHubDepartureLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'出发时间'**
+  String get landHubDepartureLabel;
+
+  /// No description provided for @landHubBudgetLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'月成本'**
+  String get landHubBudgetLabel;
+
+  /// No description provided for @landHubVisaLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'签证时钟'**
+  String get landHubVisaLabel;
+
+  /// No description provided for @landHubPendingLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'待确认'**
+  String get landHubPendingLabel;
+
+  /// No description provided for @budgetCenter.
+  ///
+  /// In zh, this message translates to:
+  /// **'预算中心'**
+  String get budgetCenter;
+
+  /// No description provided for @budgetCenterHeroTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把首月落地预算控制在可执行范围内'**
+  String get budgetCenterHeroTitle;
+
+  /// No description provided for @budgetCenterHeroSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'集中看预算目标、预测支出和影响现金流的计划。'**
+  String get budgetCenterHeroSubtitle;
+
+  /// No description provided for @budgetCenterMonthlyTarget.
+  ///
+  /// In zh, this message translates to:
+  /// **'月预算目标'**
+  String get budgetCenterMonthlyTarget;
+
+  /// No description provided for @budgetCenterForecast.
+  ///
+  /// In zh, this message translates to:
+  /// **'预测支出'**
+  String get budgetCenterForecast;
+
+  /// No description provided for @budgetCenterDelta.
+  ///
+  /// In zh, this message translates to:
+  /// **'预算差值'**
+  String get budgetCenterDelta;
+
+  /// No description provided for @budgetCenterTrackedCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟踪城市数'**
+  String get budgetCenterTrackedCities;
+
+  /// No description provided for @budgetCenterFocusCity.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前重点城市'**
+  String get budgetCenterFocusCity;
+
+  /// No description provided for @budgetCenterEstimatedMonthlyCost.
+  ///
+  /// In zh, this message translates to:
+  /// **'预计月支出'**
+  String get budgetCenterEstimatedMonthlyCost;
+
+  /// No description provided for @budgetCenterQuickActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作'**
+  String get budgetCenterQuickActions;
+
+  /// No description provided for @budgetCenterAddCost.
+  ///
+  /// In zh, this message translates to:
+  /// **'新增费用记录'**
+  String get budgetCenterAddCost;
+
+  /// No description provided for @budgetCenterManageCosts.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理城市费用'**
+  String get budgetCenterManageCosts;
+
+  /// No description provided for @budgetCenterManageCostsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看当前重点城市已有的费用记录并继续补充。'**
+  String get budgetCenterManageCostsSubtitle;
+
+  /// No description provided for @budgetCenterEditBaseline.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑预算基线'**
+  String get budgetCenterEditBaseline;
+
+  /// No description provided for @budgetCenterTemplateLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'模板'**
+  String get budgetCenterTemplateLabel;
+
+  /// No description provided for @budgetCenterThresholdLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒阈值 %'**
+  String get budgetCenterThresholdLabel;
+
+  /// No description provided for @budgetCenterCategoryLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'分类预算'**
+  String get budgetCenterCategoryLabel;
+
+  /// No description provided for @budgetCenterTrackedPlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'预算跟踪计划'**
+  String get budgetCenterTrackedPlans;
+
+  /// No description provided for @budgetCenterOpenPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开计划'**
+  String get budgetCenterOpenPlan;
+
+  /// No description provided for @budgetCenterEmptyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有迁移预算基线'**
+  String get budgetCenterEmptyTitle;
+
+  /// No description provided for @budgetCenterEmptySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先创建一个迁移计划，再回到预算中心查看预算假设和费用跟踪。'**
+  String get budgetCenterEmptySubtitle;
+
+  /// No description provided for @budgetCenterStatusOnTrack.
+  ///
+  /// In zh, this message translates to:
+  /// **'预算正常'**
+  String get budgetCenterStatusOnTrack;
+
+  /// No description provided for @budgetCenterStatusWatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要关注'**
+  String get budgetCenterStatusWatch;
+
+  /// No description provided for @budgetCenterStatusOverBudget.
+  ///
+  /// In zh, this message translates to:
+  /// **'预算偏高'**
+  String get budgetCenterStatusOverBudget;
+
+  /// No description provided for @budgetCenterStatusNoData.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无基线'**
+  String get budgetCenterStatusNoData;
+
+  /// No description provided for @budgetCenterActionCreateFirstPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'先创建第一个迁移计划，建立预算基线。'**
+  String get budgetCenterActionCreateFirstPlan;
+
+  /// No description provided for @budgetCenterActionReviewOverBudget.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前预测已经超过目标，优先检查首月住宿和落地成本。'**
+  String get budgetCenterActionReviewOverBudget;
+
+  /// No description provided for @budgetCenterActionLockFirstMonthBudget.
+  ///
+  /// In zh, this message translates to:
+  /// **'出发时间已接近，优先锁定首月落地预算与住宿支出。'**
+  String get budgetCenterActionLockFirstMonthBudget;
+
+  /// No description provided for @budgetCenterActionCompareCityBudget.
+  ///
+  /// In zh, this message translates to:
+  /// **'你有多个活跃方案，先对比不同城市的预算再做决定。'**
+  String get budgetCenterActionCompareCityBudget;
+
+  /// No description provided for @budgetCenterActionFinalizeBudgetBaseline.
+  ///
+  /// In zh, this message translates to:
+  /// **'先完成草稿计划，预算跟踪才有稳定基线。'**
+  String get budgetCenterActionFinalizeBudgetBaseline;
+
+  /// No description provided for @budgetCenterActionReviewLatestPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'复核最新计划，确认首月成本结构是否合理。'**
+  String get budgetCenterActionReviewLatestPlan;
+
+  /// No description provided for @visaCenter.
+  ///
+  /// In zh, this message translates to:
+  /// **'签证中心'**
+  String get visaCenter;
+
+  /// No description provided for @visaCenterHeroTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把入境时间与签证风险放到台前'**
+  String get visaCenterHeroTitle;
+
+  /// No description provided for @visaCenterHeroSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'集中看到期时间、准备度和提醒，别等临近出发才处理。'**
+  String get visaCenterHeroSubtitle;
+
+  /// No description provided for @visaCenterProfiles.
+  ///
+  /// In zh, this message translates to:
+  /// **'档案数'**
+  String get visaCenterProfiles;
+
+  /// No description provided for @visaCenterAttentionRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'待处理'**
+  String get visaCenterAttentionRequired;
+
+  /// No description provided for @visaCenterReminderReady.
+  ///
+  /// In zh, this message translates to:
+  /// **'可设提醒'**
+  String get visaCenterReminderReady;
+
+  /// No description provided for @visaCenterSoonestExpiry.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近到期'**
+  String get visaCenterSoonestExpiry;
+
+  /// No description provided for @visaCenterFocusProfile.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前重点档案'**
+  String get visaCenterFocusProfile;
+
+  /// No description provided for @visaCenterExpiryDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'到期时间'**
+  String get visaCenterExpiryDate;
+
+  /// No description provided for @visaCenterRequirements.
+  ///
+  /// In zh, this message translates to:
+  /// **'材料要求'**
+  String get visaCenterRequirements;
+
+  /// No description provided for @visaCenterProcess.
+  ///
+  /// In zh, this message translates to:
+  /// **'办理流程'**
+  String get visaCenterProcess;
+
+  /// No description provided for @visaCenterQuickActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷操作'**
+  String get visaCenterQuickActions;
+
+  /// No description provided for @visaCenterSetReminder.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置签证提醒'**
+  String get visaCenterSetReminder;
+
+  /// No description provided for @visaCenterSetReminderSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把当前签证到期时间发给 OpenClaw，自动安排提醒。'**
+  String get visaCenterSetReminderSubtitle;
+
+  /// No description provided for @visaCenterOpenPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开迁移计划'**
+  String get visaCenterOpenPlan;
+
+  /// No description provided for @visaCenterOpenPlanSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'回到关联迁移计划，继续调整日期和目标城市假设。'**
+  String get visaCenterOpenPlanSubtitle;
+
+  /// No description provided for @visaCenterEditProfile.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑签证档案'**
+  String get visaCenterEditProfile;
+
+  /// No description provided for @visaCenterTypeLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'签证类型'**
+  String get visaCenterTypeLabel;
+
+  /// No description provided for @visaCenterStayDaysLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'停留天数'**
+  String get visaCenterStayDaysLabel;
+
+  /// No description provided for @visaCenterEntryDateLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'入境日期'**
+  String get visaCenterEntryDateLabel;
+
+  /// No description provided for @visaCenterDocumentsLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'必备材料'**
+  String get visaCenterDocumentsLabel;
+
+  /// No description provided for @visaCenterReminderDatesLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒日期'**
+  String get visaCenterReminderDatesLabel;
+
+  /// No description provided for @visaCenterAllProfiles.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部签证档案'**
+  String get visaCenterAllProfiles;
+
+  /// No description provided for @visaCenterEmptyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有签证档案'**
+  String get visaCenterEmptyTitle;
+
+  /// No description provided for @visaCenterEmptySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先创建迁移计划，再回到签证中心查看到期时间和提醒准备情况。'**
+  String get visaCenterEmptySubtitle;
+
+  /// No description provided for @visaCenterActionSetReminderNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'有签证节点已接近，先设置提醒并确认材料清单。'**
+  String get visaCenterActionSetReminderNow;
+
+  /// No description provided for @visaCenterActionCompareEntryOptions.
+  ///
+  /// In zh, this message translates to:
+  /// **'你有多个活跃目的地，先比较入境路径再锁定迁移方案。'**
+  String get visaCenterActionCompareEntryOptions;
+
+  /// No description provided for @visaCenterActionCompleteBrief.
+  ///
+  /// In zh, this message translates to:
+  /// **'先补完签证材料简报，再正式确定出发日期。'**
+  String get visaCenterActionCompleteBrief;
+
+  /// No description provided for @visaCenterActionCreateFirstPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'先创建一个迁移计划，签证中心才能生成第一份档案。'**
+  String get visaCenterActionCreateFirstPlan;
+
+  /// No description provided for @visaCenterActionReviewLatestVisa.
+  ///
+  /// In zh, this message translates to:
+  /// **'复核当前签证档案，确认到期时间和办理假设。'**
+  String get visaCenterActionReviewLatestVisa;
+
+  /// No description provided for @visaCenterStatusAttentionRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要立即处理'**
+  String get visaCenterStatusAttentionRequired;
+
+  /// No description provided for @visaCenterStatusReviewSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将需要复核'**
+  String get visaCenterStatusReviewSoon;
+
+  /// No description provided for @visaCenterStatusPlanning.
+  ///
+  /// In zh, this message translates to:
+  /// **'规划中'**
+  String get visaCenterStatusPlanning;
+
+  /// No description provided for @visaCenterStatusArchived.
+  ///
+  /// In zh, this message translates to:
+  /// **'已归档'**
+  String get visaCenterStatusArchived;
+
+  /// No description provided for @visaCenterStatusOnTrack.
+  ///
+  /// In zh, this message translates to:
+  /// **'正常推进'**
+  String get visaCenterStatusOnTrack;
+
+  /// No description provided for @visaCenterTypeLongStay.
+  ///
+  /// In zh, this message translates to:
+  /// **'长期停留签证'**
+  String get visaCenterTypeLongStay;
+
+  /// No description provided for @visaCenterTypeDigitalNomad.
+  ///
+  /// In zh, this message translates to:
+  /// **'数字游民入境'**
+  String get visaCenterTypeDigitalNomad;
+
+  /// No description provided for @visaCenterTypePriorityEVisa.
+  ///
+  /// In zh, this message translates to:
+  /// **'优先电子签'**
+  String get visaCenterTypePriorityEVisa;
+
+  /// No description provided for @visaCenterTypeShortStay.
+  ///
+  /// In zh, this message translates to:
+  /// **'短期停留签证'**
+  String get visaCenterTypeShortStay;
+
+  /// No description provided for @visaCenterNoReminderTarget.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前签证档案还没有可提醒的到期时间。'**
+  String get visaCenterNoReminderTarget;
+
+  /// No description provided for @visaCenterReminderSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'已为 {cityName} 安排签证提醒。'**
+  String visaCenterReminderSet(Object cityName);
+
+  /// No description provided for @visaCenterReminderFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置签证提醒失败。'**
+  String get visaCenterReminderFailed;
+
+  /// No description provided for @visaCenterReminderFailedWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置签证提醒失败: {error}'**
+  String visaCenterReminderFailedWithError(Object error);
+
+  /// No description provided for @migrationWorkspaceHeroTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把迁移计划转成可执行清单'**
+  String get migrationWorkspaceHeroTitle;
+
+  /// No description provided for @migrationWorkspaceHeroSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'集中查看活跃计划、近期出发和仍待推进的草稿。'**
+  String get migrationWorkspaceHeroSubtitle;
+
+  /// No description provided for @migrationWorkspacePlanCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'计划数'**
+  String get migrationWorkspacePlanCount;
+
+  /// No description provided for @migrationWorkspaceActivePlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'活跃计划'**
+  String get migrationWorkspaceActivePlans;
+
+  /// No description provided for @migrationWorkspaceUpcomingDepartures.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将出发'**
+  String get migrationWorkspaceUpcomingDepartures;
+
+  /// No description provided for @migrationWorkspaceContinuePlanning.
+  ///
+  /// In zh, this message translates to:
+  /// **'继续规划'**
+  String get migrationWorkspaceContinuePlanning;
+
+  /// No description provided for @migrationWorkspaceRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get migrationWorkspaceRetry;
+
+  /// No description provided for @migrationWorkspaceEmptyTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先创建你的第一份迁移计划'**
+  String get migrationWorkspaceEmptyTitle;
+
+  /// No description provided for @migrationWorkspaceEmptySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'从城市、预算和出发时间开始，生成一份可继续迭代的落地方案。'**
+  String get migrationWorkspaceEmptySubtitle;
+
+  /// No description provided for @migrationWorkspaceDraftPlans.
+  ///
+  /// In zh, this message translates to:
+  /// **'待继续推进的草稿计划'**
+  String get migrationWorkspaceDraftPlans;
+
+  /// No description provided for @migrationWorkspaceOpenPlan.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开计划'**
+  String get migrationWorkspaceOpenPlan;
+
+  /// No description provided for @migrationWorkspaceFocusTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前迁移工作流'**
+  String get migrationWorkspaceFocusTitle;
+
+  /// No description provided for @migrationWorkspaceEditTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑迁移工作流'**
+  String get migrationWorkspaceEditTitle;
+
+  /// No description provided for @migrationWorkspaceStageLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'阶段'**
+  String get migrationWorkspaceStageLabel;
+
+  /// No description provided for @migrationWorkspaceChecklistLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'待办清单'**
+  String get migrationWorkspaceChecklistLabel;
+
+  /// No description provided for @migrationWorkspaceTimelineLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'时间轴'**
+  String get migrationWorkspaceTimelineLabel;
+
+  /// No description provided for @migrationWorkspaceDepartureDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'出发日期'**
+  String get migrationWorkspaceDepartureDate;
+
+  /// No description provided for @inboxHubTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'统一查看消息与通知'**
+  String get inboxHubTitle;
+
+  /// No description provided for @inboxHubSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先清掉紧急沟通，再进入消息或通知。'**
+  String get inboxHubSubtitle;
+
+  /// No description provided for @inboxMessagesDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看私聊与会话未读，继续正在进行的沟通。'**
+  String get inboxMessagesDescription;
+
+  /// No description provided for @inboxNotificationsDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'集中处理系统通知、活动提醒与状态更新。'**
+  String get inboxNotificationsDescription;
+
+  /// No description provided for @inboxActionRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'待处理'**
+  String get inboxActionRequired;
+
+  /// No description provided for @inboxSystemActionCenter.
+  ///
+  /// In zh, this message translates to:
+  /// **'系统行动中心'**
+  String get inboxSystemActionCenter;
+
+  /// No description provided for @inboxSystemActionEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前没有需要处理的迁移、预算或签证事项。'**
+  String get inboxSystemActionEmpty;
+
+  /// No description provided for @inboxSystemMigrationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'迁移工作台'**
+  String get inboxSystemMigrationTitle;
+
+  /// No description provided for @inboxSystemBudgetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'预算中心'**
+  String get inboxSystemBudgetTitle;
+
+  /// No description provided for @inboxSystemVisaTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'签证中心'**
+  String get inboxSystemVisaTitle;
+
+  /// No description provided for @inboxSystemMigrationFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'有 {count} 个迁移事项等待你继续推进。'**
+  String inboxSystemMigrationFallback(String count);
+
+  /// No description provided for @inboxSystemBudgetFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前预算偏差为 {delta}。'**
+  String inboxSystemBudgetFallback(String delta);
+
+  /// No description provided for @inboxSystemVisaFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'有 {count} 条签证提醒需要复核。'**
+  String inboxSystemVisaFallback(String count);
+
+  /// No description provided for @inboxRecentNotifications.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近通知'**
+  String get inboxRecentNotifications;
+
+  /// No description provided for @inboxNoRecentNotifications.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前没有新的通知摘要。'**
+  String get inboxNoRecentNotifications;
 
   /// No description provided for @verificationCodeRequired.
   ///
@@ -12176,143 +12836,17 @@ abstract class AppLocalizations {
   /// **'分享失败: {error}'**
   String shareFailedWithError(String error);
 
-  /// No description provided for @confirmApprove.
-  ///
-  /// In zh, this message translates to:
-  /// **'确认通过'**
-  String get confirmApprove;
-
-  /// No description provided for @confirmApproveMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'确定要通过{name}的版主申请吗？'**
-  String confirmApproveMessage(String name);
-
-  /// No description provided for @rejectApplication.
-  ///
-  /// In zh, this message translates to:
-  /// **'拒绝申请'**
-  String get rejectApplication;
-
-  /// No description provided for @confirmRejectMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'确定要拒绝{name}的版主申请吗？'**
-  String confirmRejectMessage(String name);
-
-  /// No description provided for @rejectReasonOptional.
-  ///
-  /// In zh, this message translates to:
-  /// **'拒绝原因（可选）'**
-  String get rejectReasonOptional;
-
-  /// No description provided for @enterRejectReason.
-  ///
-  /// In zh, this message translates to:
-  /// **'请输入拒绝原因...'**
-  String get enterRejectReason;
-
-  /// No description provided for @confirmReject.
-  ///
-  /// In zh, this message translates to:
-  /// **'确认拒绝'**
-  String get confirmReject;
-
-  /// No description provided for @confirmRevoke.
-  ///
-  /// In zh, this message translates to:
-  /// **'确认撤销'**
-  String get confirmRevoke;
-
-  /// No description provided for @confirmRevokeMessage.
-  ///
-  /// In zh, this message translates to:
-  /// **'确定要撤销{name}的版主资格吗？'**
-  String confirmRevokeMessage(String name);
-
-  /// No description provided for @moderatorRevoked.
-  ///
-  /// In zh, this message translates to:
-  /// **'已撤销版主资格'**
-  String get moderatorRevoked;
-
-  /// No description provided for @revokeFailed.
-  ///
-  /// In zh, this message translates to:
-  /// **'撤销失败: {error}'**
-  String revokeFailed(String error);
-
-  /// No description provided for @applicationApproved.
-  ///
-  /// In zh, this message translates to:
-  /// **'已通过申请'**
-  String get applicationApproved;
-
-  /// No description provided for @applicationRejected.
-  ///
-  /// In zh, this message translates to:
-  /// **'已拒绝申请'**
-  String get applicationRejected;
-
-  /// No description provided for @moderatorApplicationDetail.
-  ///
-  /// In zh, this message translates to:
-  /// **'版主申请详情'**
-  String get moderatorApplicationDetail;
-
-  /// No description provided for @applicationNotExists.
-  ///
-  /// In zh, this message translates to:
-  /// **'申请不存在'**
-  String get applicationNotExists;
-
-  /// No description provided for @applicationTime.
-  ///
-  /// In zh, this message translates to:
-  /// **'申请时间: {time}'**
-  String applicationTime(String time);
-
-  /// No description provided for @processTime.
-  ///
-  /// In zh, this message translates to:
-  /// **'处理时间: {time}'**
-  String processTime(String time);
-
-  /// No description provided for @applicantInfo.
-  ///
-  /// In zh, this message translates to:
-  /// **'申请人信息'**
-  String get applicantInfo;
-
   /// No description provided for @unknownUser.
   ///
   /// In zh, this message translates to:
   /// **'未知用户'**
   String get unknownUser;
 
-  /// No description provided for @applicationCity.
-  ///
-  /// In zh, this message translates to:
-  /// **'申请管理的城市'**
-  String get applicationCity;
-
   /// No description provided for @unknownCity.
   ///
   /// In zh, this message translates to:
   /// **'未知城市'**
   String get unknownCity;
-
-  /// No description provided for @applicationReason.
-  ///
-  /// In zh, this message translates to:
-  /// **'申请理由'**
-  String get applicationReason;
-
-  /// No description provided for @noReasonProvided.
-  ///
-  /// In zh, this message translates to:
-  /// **'未填写申请理由'**
-  String get noReasonProvided;
 
   /// No description provided for @rejectReason.
   ///
@@ -12331,12 +12865,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'通过'**
   String get approve;
-
-  /// No description provided for @revokeModeratorStatus.
-  ///
-  /// In zh, this message translates to:
-  /// **'撤销版主资格'**
-  String get revokeModeratorStatus;
 
   /// No description provided for @visitedPlaces.
   ///
@@ -12710,30 +13238,6 @@ abstract class AppLocalizations {
   /// **'图片生成失败'**
   String get imageGenFailedDefault;
 
-  /// No description provided for @moderatorStatusPending.
-  ///
-  /// In zh, this message translates to:
-  /// **'待审核'**
-  String get moderatorStatusPending;
-
-  /// No description provided for @moderatorStatusApproved.
-  ///
-  /// In zh, this message translates to:
-  /// **'已通过'**
-  String get moderatorStatusApproved;
-
-  /// No description provided for @moderatorStatusRejected.
-  ///
-  /// In zh, this message translates to:
-  /// **'已拒绝'**
-  String get moderatorStatusRejected;
-
-  /// No description provided for @revokePermissionWarning.
-  ///
-  /// In zh, this message translates to:
-  /// **'此操作将移除该用户在此城市的所有版主权限。'**
-  String get revokePermissionWarning;
-
   /// No description provided for @perNightLabel.
   ///
   /// In zh, this message translates to:
@@ -12769,6 +13273,1274 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'较差'**
   String get ratingDescPoor;
+
+  /// No description provided for @homeDashboardTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'今天的数字游民驾驶舱'**
+  String get homeDashboardTitle;
+
+  /// No description provided for @homeDashboardSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把迁移、预算、签证和收件箱压力一起查看。'**
+  String get homeDashboardSubtitle;
+
+  /// No description provided for @homeHeroTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先选出真正值得你投入的下一座城市'**
+  String get homeHeroTitle;
+
+  /// No description provided for @homeHeroSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先看城市和地图，再把最稳的选项推进到工作台。'**
+  String get homeHeroSubtitle;
+
+  /// No description provided for @homeHeroMapView.
+  ///
+  /// In zh, this message translates to:
+  /// **'地图视角'**
+  String get homeHeroMapView;
+
+  /// No description provided for @homeDashboardPromptTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁你的运营看板'**
+  String get homeDashboardPromptTitle;
+
+  /// No description provided for @homeDashboardPromptMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录后查看计划、预算缺口、签证时点和待回复提醒。'**
+  String get homeDashboardPromptMessage;
+
+  /// No description provided for @homeDashboardPromptCta.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录后继续'**
+  String get homeDashboardPromptCta;
+
+  /// No description provided for @homeDashboardLoading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在同步 Explore 看板...'**
+  String get homeDashboardLoading;
+
+  /// No description provided for @homePriorityQueueTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'优先处理队列'**
+  String get homePriorityQueueTitle;
+
+  /// No description provided for @homeQuickActionsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷通道'**
+  String get homeQuickActionsTitle;
+
+  /// No description provided for @homeDashboardMigrationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'迁移工作台'**
+  String get homeDashboardMigrationTitle;
+
+  /// No description provided for @homeDashboardBudgetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'预算中心'**
+  String get homeDashboardBudgetTitle;
+
+  /// No description provided for @homeDashboardVisaTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'签证中心'**
+  String get homeDashboardVisaTitle;
+
+  /// No description provided for @homeDashboardInboxTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'收件箱脉冲'**
+  String get homeDashboardInboxTitle;
+
+  /// No description provided for @homeDashboardOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开'**
+  String get homeDashboardOpen;
+
+  /// No description provided for @homeQuickActionCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市'**
+  String get homeQuickActionCities;
+
+  /// No description provided for @homeQuickActionMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'活动'**
+  String get homeQuickActionMeetups;
+
+  /// No description provided for @homeQuickActionMap.
+  ///
+  /// In zh, this message translates to:
+  /// **'地图视角'**
+  String get homeQuickActionMap;
+
+  /// No description provided for @homeQuickActionMigration.
+  ///
+  /// In zh, this message translates to:
+  /// **'迁移工作台'**
+  String get homeQuickActionMigration;
+
+  /// No description provided for @homeQueueMigrationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'推进下一站迁移'**
+  String get homeQueueMigrationTitle;
+
+  /// No description provided for @homeQueueBudgetTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'收紧预算偏差'**
+  String get homeQueueBudgetTitle;
+
+  /// No description provided for @homeQueueVisaTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'守住停留窗口'**
+  String get homeQueueVisaTitle;
+
+  /// No description provided for @homeQueueInboxTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'回复待处理信号'**
+  String get homeQueueInboxTitle;
+
+  /// No description provided for @homeQueueMigrationFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'还有 {count} 个活跃计划等待你继续推进'**
+  String homeQueueMigrationFallback(String count);
+
+  /// No description provided for @homeQueueBudgetFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'本月预算偏差当前为 {delta}'**
+  String homeQueueBudgetFallback(String delta);
+
+  /// No description provided for @homeQueueVisaFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'有 {count} 个签证事项需要关注'**
+  String homeQueueVisaFallback(String count);
+
+  /// No description provided for @homeQueueInboxFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'有 {count} 条提醒或会话等待响应'**
+  String homeQueueInboxFallback(String count);
+
+  /// No description provided for @profileSnapshotTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'数字游民画像'**
+  String get profileSnapshotTitle;
+
+  /// No description provided for @profileSnapshotSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'快速看清你的下一站和当前运转节奏。'**
+  String get profileSnapshotSubtitle;
+
+  /// No description provided for @profileSnapshotNextDestination.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一站'**
+  String get profileSnapshotNextDestination;
+
+  /// No description provided for @profileSnapshotDeparture.
+  ///
+  /// In zh, this message translates to:
+  /// **'出发时间'**
+  String get profileSnapshotDeparture;
+
+  /// No description provided for @profileSnapshotBudgetLane.
+  ///
+  /// In zh, this message translates to:
+  /// **'预算带宽'**
+  String get profileSnapshotBudgetLane;
+
+  /// No description provided for @profileSnapshotWorkTimezone.
+  ///
+  /// In zh, this message translates to:
+  /// **'工作时区'**
+  String get profileSnapshotWorkTimezone;
+
+  /// No description provided for @profileSnapshotStayRhythm.
+  ///
+  /// In zh, this message translates to:
+  /// **'停留节奏'**
+  String get profileSnapshotStayRhythm;
+
+  /// No description provided for @profileSnapshotCommunity.
+  ///
+  /// In zh, this message translates to:
+  /// **'社区动能'**
+  String get profileSnapshotCommunity;
+
+  /// No description provided for @profileSnapshotBase.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前基地'**
+  String get profileSnapshotBase;
+
+  /// No description provided for @profileSnapshotMigration.
+  ///
+  /// In zh, this message translates to:
+  /// **'迁移状态'**
+  String get profileSnapshotMigration;
+
+  /// No description provided for @profileSnapshotReadiness.
+  ///
+  /// In zh, this message translates to:
+  /// **'资料成熟度'**
+  String get profileSnapshotReadiness;
+
+  /// No description provided for @profileSnapshotTuneProfile.
+  ///
+  /// In zh, this message translates to:
+  /// **'完善资料'**
+  String get profileSnapshotTuneProfile;
+
+  /// No description provided for @profileSnapshotOpenWorkspace.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开工作台'**
+  String get profileSnapshotOpenWorkspace;
+
+  /// No description provided for @profileSnapshotOpenBudget.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看预算'**
+  String get profileSnapshotOpenBudget;
+
+  /// No description provided for @profileSnapshotNoDestination.
+  ///
+  /// In zh, this message translates to:
+  /// **'目的地保持灵活'**
+  String get profileSnapshotNoDestination;
+
+  /// No description provided for @profileSnapshotBaseFlexible.
+  ///
+  /// In zh, this message translates to:
+  /// **'地点弹性中'**
+  String get profileSnapshotBaseFlexible;
+
+  /// No description provided for @profileSnapshotBudgetLean.
+  ///
+  /// In zh, this message translates to:
+  /// **'轻量预算'**
+  String get profileSnapshotBudgetLean;
+
+  /// No description provided for @profileSnapshotBudgetBalanced.
+  ///
+  /// In zh, this message translates to:
+  /// **'平衡续航'**
+  String get profileSnapshotBudgetBalanced;
+
+  /// No description provided for @profileSnapshotBudgetPremium.
+  ///
+  /// In zh, this message translates to:
+  /// **'舒适优先'**
+  String get profileSnapshotBudgetPremium;
+
+  /// No description provided for @profileSnapshotStaySprint.
+  ///
+  /// In zh, this message translates to:
+  /// **'短冲式切换'**
+  String get profileSnapshotStaySprint;
+
+  /// No description provided for @profileSnapshotStaySeasonal.
+  ///
+  /// In zh, this message translates to:
+  /// **'季节性驻留'**
+  String get profileSnapshotStaySeasonal;
+
+  /// No description provided for @profileSnapshotStayLong.
+  ///
+  /// In zh, this message translates to:
+  /// **'长住型运营'**
+  String get profileSnapshotStayLong;
+
+  /// No description provided for @profileSnapshotCommunityQuiet.
+  ///
+  /// In zh, this message translates to:
+  /// **'社区节奏偏安静'**
+  String get profileSnapshotCommunityQuiet;
+
+  /// No description provided for @profileSnapshotCommunityBuilding.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在建立连接'**
+  String get profileSnapshotCommunityBuilding;
+
+  /// No description provided for @profileSnapshotCommunityHigh.
+  ///
+  /// In zh, this message translates to:
+  /// **'社区动能很强'**
+  String get profileSnapshotCommunityHigh;
+
+  /// No description provided for @profileSnapshotMigrationDraft.
+  ///
+  /// In zh, this message translates to:
+  /// **'还在起草迁移'**
+  String get profileSnapshotMigrationDraft;
+
+  /// No description provided for @profileSnapshotMigrationPlanning.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在规划落地'**
+  String get profileSnapshotMigrationPlanning;
+
+  /// No description provided for @profileSnapshotMigrationBooked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已锁定关键安排'**
+  String get profileSnapshotMigrationBooked;
+
+  /// No description provided for @profileSnapshotMigrationActive.
+  ///
+  /// In zh, this message translates to:
+  /// **'迁移已进入执行'**
+  String get profileSnapshotMigrationActive;
+
+  /// No description provided for @profileSnapshotMigrationFlexible.
+  ///
+  /// In zh, this message translates to:
+  /// **'保持灵活机动'**
+  String get profileSnapshotMigrationFlexible;
+
+  /// No description provided for @profileSnapshotReadinessStarting.
+  ///
+  /// In zh, this message translates to:
+  /// **'基础画像还在搭建'**
+  String get profileSnapshotReadinessStarting;
+
+  /// No description provided for @profileSnapshotReadinessGrowing.
+  ///
+  /// In zh, this message translates to:
+  /// **'画像信号正在成型'**
+  String get profileSnapshotReadinessGrowing;
+
+  /// No description provided for @profileSnapshotReadinessStrong.
+  ///
+  /// In zh, this message translates to:
+  /// **'运营画像已经很清晰'**
+  String get profileSnapshotReadinessStrong;
+
+  /// No description provided for @profileCollaborationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'协作画像'**
+  String get profileCollaborationTitle;
+
+  /// No description provided for @profileCollaborationSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'让别人快速读懂你怎么工作、是否适合连接。'**
+  String get profileCollaborationSubtitle;
+
+  /// No description provided for @profileCollaborationProfessionalIdentity.
+  ///
+  /// In zh, this message translates to:
+  /// **'职业身份'**
+  String get profileCollaborationProfessionalIdentity;
+
+  /// No description provided for @profileCollaborationLanguageAbility.
+  ///
+  /// In zh, this message translates to:
+  /// **'语言能力'**
+  String get profileCollaborationLanguageAbility;
+
+  /// No description provided for @profileCollaborationMode.
+  ///
+  /// In zh, this message translates to:
+  /// **'协作模式'**
+  String get profileCollaborationMode;
+
+  /// No description provided for @profileCollaborationDiscovery.
+  ///
+  /// In zh, this message translates to:
+  /// **'可发现度'**
+  String get profileCollaborationDiscovery;
+
+  /// No description provided for @profileCollaborationTopSkills.
+  ///
+  /// In zh, this message translates to:
+  /// **'核心技能'**
+  String get profileCollaborationTopSkills;
+
+  /// No description provided for @profileCollaborationTopInterests.
+  ///
+  /// In zh, this message translates to:
+  /// **'共同兴趣'**
+  String get profileCollaborationTopInterests;
+
+  /// No description provided for @profileCollaborationSocialPresence.
+  ///
+  /// In zh, this message translates to:
+  /// **'社交存在感'**
+  String get profileCollaborationSocialPresence;
+
+  /// No description provided for @profileCollaborationEditSkills.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑技能'**
+  String get profileCollaborationEditSkills;
+
+  /// No description provided for @profileCollaborationEditInterests.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑兴趣'**
+  String get profileCollaborationEditInterests;
+
+  /// No description provided for @profileCollaborationEditLinks.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑链接'**
+  String get profileCollaborationEditLinks;
+
+  /// No description provided for @profileCollaborationNoSkills.
+  ///
+  /// In zh, this message translates to:
+  /// **'补充技能后，别人更容易判断你擅长什么。'**
+  String get profileCollaborationNoSkills;
+
+  /// No description provided for @profileCollaborationNoInterests.
+  ///
+  /// In zh, this message translates to:
+  /// **'补充兴趣后，别人更容易知道怎么和你建立连接。'**
+  String get profileCollaborationNoInterests;
+
+  /// No description provided for @profileCollaborationNoLinks.
+  ///
+  /// In zh, this message translates to:
+  /// **'补充社交链接后，别人更容易验证身份并继续联系。'**
+  String get profileCollaborationNoLinks;
+
+  /// No description provided for @profileCollaborationIdentityFlexible.
+  ///
+  /// In zh, this message translates to:
+  /// **'独立行动者'**
+  String get profileCollaborationIdentityFlexible;
+
+  /// No description provided for @profileCollaborationIdentityBioDriven.
+  ///
+  /// In zh, this message translates to:
+  /// **'内容表达型游民'**
+  String get profileCollaborationIdentityBioDriven;
+
+  /// No description provided for @profileCollaborationLanguagePending.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有明确填写可使用语言，建议补充。'**
+  String get profileCollaborationLanguagePending;
+
+  /// No description provided for @profileCollaborationLanguageBilingualSignal.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的资料已经呈现出双语表达信号。'**
+  String get profileCollaborationLanguageBilingualSignal;
+
+  /// No description provided for @profileCollaborationLanguageProfileReady.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前资料可读性不错，但明确填写语言会更利于匹配。'**
+  String get profileCollaborationLanguageProfileReady;
+
+  /// No description provided for @profileCollaborationModeCommunityLead.
+  ///
+  /// In zh, this message translates to:
+  /// **'更像在社区里主动带节奏的人。'**
+  String get profileCollaborationModeCommunityLead;
+
+  /// No description provided for @profileCollaborationModeOpenToConnect.
+  ///
+  /// In zh, this message translates to:
+  /// **'愿意接受直接协作和熟人引荐。'**
+  String get profileCollaborationModeOpenToConnect;
+
+  /// No description provided for @profileCollaborationModeBuilding.
+  ///
+  /// In zh, this message translates to:
+  /// **'协作界面还在逐步成型。'**
+  String get profileCollaborationModeBuilding;
+
+  /// No description provided for @profileCollaborationDiscoveryStrong.
+  ///
+  /// In zh, this message translates to:
+  /// **'别人很容易发现你，也更容易信任你。'**
+  String get profileCollaborationDiscoveryStrong;
+
+  /// No description provided for @profileCollaborationDiscoveryGrowing.
+  ///
+  /// In zh, this message translates to:
+  /// **'信号已经有了，但还可以更完整。'**
+  String get profileCollaborationDiscoveryGrowing;
+
+  /// No description provided for @profileCollaborationDiscoveryStarting.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前对外信号偏弱，建议继续补结构化信息。'**
+  String get profileCollaborationDiscoveryStarting;
+
+  /// No description provided for @inboxSystemMembershipTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'会员状态'**
+  String get inboxSystemMembershipTitle;
+
+  /// No description provided for @inboxSystemMembershipExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的会员已过期，建议检查权益并续费。'**
+  String get inboxSystemMembershipExpired;
+
+  /// No description provided for @inboxSystemMembershipExpiring.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的会员将在 {days} 天后到期。'**
+  String inboxSystemMembershipExpiring(String days);
+
+  /// No description provided for @inboxSystemMembershipAiQuotaTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'AI 配额提醒'**
+  String get inboxSystemMembershipAiQuotaTitle;
+
+  /// No description provided for @inboxSystemMembershipAiQuota.
+  ///
+  /// In zh, this message translates to:
+  /// **'本周期仅剩 {count} 次 AI 配额。'**
+  String inboxSystemMembershipAiQuota(String count);
+
+  /// No description provided for @communityCirclesHeroTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'真正服务于见面、提问和协作的社区入口'**
+  String get communityCirclesHeroTitle;
+
+  /// No description provided for @communityCirclesHeroSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把 meetup、城市群聊、问答和协作放进同一个社区视图。'**
+  String get communityCirclesHeroSubtitle;
+
+  /// No description provided for @communityLayersTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'社区怎么用'**
+  String get communityLayersTitle;
+
+  /// No description provided for @communityLayersSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'从线下见面和城市信号，走到问答与直接协作。'**
+  String get communityLayersSubtitle;
+
+  /// No description provided for @communityLayerMeetupsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'线下见面'**
+  String get communityLayerMeetupsTitle;
+
+  /// No description provided for @communityLayerMeetupsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先用 meetup 把轻量连接变成真实到场和重复出现的关系。'**
+  String get communityLayerMeetupsSubtitle;
+
+  /// No description provided for @communityLayerCityChatTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市脉搏'**
+  String get communityLayerCityChatTitle;
+
+  /// No description provided for @communityLayerCityChatSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先进入围绕 {city} 正在发生的城市对话。'**
+  String communityLayerCityChatSubtitle(String city);
+
+  /// No description provided for @communityLayerQuestionsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'在地问答'**
+  String get communityLayerQuestionsTitle;
+
+  /// No description provided for @communityLayerQuestionsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先看待回应的问题和一线笔记，再决定要不要进入更直接的联系。'**
+  String get communityLayerQuestionsSubtitle;
+
+  /// No description provided for @communityLayerQuestionsBadge.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个待回应问题'**
+  String communityLayerQuestionsBadge(String count);
+
+  /// No description provided for @communityLayerReviewAsks.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看待回应问题'**
+  String get communityLayerReviewAsks;
+
+  /// No description provided for @communityLayerCoordinationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'直接协作'**
+  String get communityLayerCoordinationTitle;
+
+  /// No description provided for @communityLayerCoordinationSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'当 {city} 已经进入你的下一站，就切到私聊和更小的协作线程。'**
+  String communityLayerCoordinationSubtitle(String city);
+
+  /// No description provided for @communityLayerReviewCircles.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看圈子'**
+  String get communityLayerReviewCircles;
+
+  /// No description provided for @communityIntelligenceTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'在地情报'**
+  String get communityIntelligenceTitle;
+
+  /// No description provided for @communityIntelligenceSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'围绕 {city} 的待回应问题和现场笔记。'**
+  String communityIntelligenceSubtitle(String city);
+
+  /// No description provided for @communityCoordinationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'协作台'**
+  String get communityCoordinationTitle;
+
+  /// No description provided for @communityCoordinationSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把公开信号转成真正推进落地的小线程。'**
+  String get communityCoordinationSubtitle;
+
+  /// No description provided for @communityCoordinationSummary.
+  ///
+  /// In zh, this message translates to:
+  /// **'围绕 {city} 协调抵达节奏和实际互助。'**
+  String communityCoordinationSummary(String city);
+
+  /// No description provided for @communityQuestionResolved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已解决'**
+  String get communityQuestionResolved;
+
+  /// No description provided for @communityQuestionNeedsAnswer.
+  ///
+  /// In zh, this message translates to:
+  /// **'待回答'**
+  String get communityQuestionNeedsAnswer;
+
+  /// No description provided for @communityRemoteBaseLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'远程据点'**
+  String get communityRemoteBaseLabel;
+
+  /// No description provided for @communityDetailFieldNoteTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'现场笔记'**
+  String get communityDetailFieldNoteTitle;
+
+  /// No description provided for @communityDetailQuestionTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'问题线程'**
+  String get communityDetailQuestionTitle;
+
+  /// No description provided for @communityDetailRatingsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'评分拆解'**
+  String get communityDetailRatingsTitle;
+
+  /// No description provided for @communityDetailProsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'有效经验'**
+  String get communityDetailProsTitle;
+
+  /// No description provided for @communityDetailConsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'注意事项'**
+  String get communityDetailConsTitle;
+
+  /// No description provided for @communityDetailAnswersTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'在地回答'**
+  String get communityDetailAnswersTitle;
+
+  /// No description provided for @communityDetailAnswersLoading.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载回答...'**
+  String get communityDetailAnswersLoading;
+
+  /// No description provided for @communityDetailAnswersEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有回答。当前最快的补位方式仍然是先去城市群聊里找已经到场的人。'**
+  String get communityDetailAnswersEmpty;
+
+  /// No description provided for @communityDetailOpenCityChat.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开城市群聊'**
+  String get communityDetailOpenCityChat;
+
+  /// No description provided for @communityDetailMessageAuthor.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系作者'**
+  String get communityDetailMessageAuthor;
+
+  /// No description provided for @communityDetailMessageAsker.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系提问者'**
+  String get communityDetailMessageAsker;
+
+  /// No description provided for @communityDetailMessageAnswerer.
+  ///
+  /// In zh, this message translates to:
+  /// **'联系回答者'**
+  String get communityDetailMessageAnswerer;
+
+  /// No description provided for @communityDetailUpvoteQuestion.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持这个问题'**
+  String get communityDetailUpvoteQuestion;
+
+  /// No description provided for @communityCreateQuestionAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'发起提问'**
+  String get communityCreateQuestionAction;
+
+  /// No description provided for @communityCreateAnswerAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'写回答'**
+  String get communityCreateAnswerAction;
+
+  /// No description provided for @communityTagLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'标签（用逗号分隔）'**
+  String get communityTagLabel;
+
+  /// No description provided for @communityDetailLikeFieldNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'点赞这条笔记'**
+  String get communityDetailLikeFieldNote;
+
+  /// No description provided for @communityCirclesSuggestedTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'推荐圈子'**
+  String get communityCirclesSuggestedTitle;
+
+  /// No description provided for @communityCirclesSuggestedSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'圈子只是社区的一条能力线，要和 meetup、城市群聊、在地提问一起看。'**
+  String get communityCirclesSuggestedSubtitle;
+
+  /// No description provided for @communityCirclesQuickActionsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'社区主通道'**
+  String get communityCirclesQuickActionsTitle;
+
+  /// No description provided for @communityCirclesQuickActionsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'直接进入活动发起、活动浏览、城市群聊或私聊协作，不再在多个 tab 之间来回找入口。'**
+  String get communityCirclesQuickActionsSubtitle;
+
+  /// No description provided for @communityCirclesMeetupsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'圈内活动'**
+  String get communityCirclesMeetupsTitle;
+
+  /// No description provided for @communityCirclesMeetupsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将到来的 meetup 是把圈子连接成线下关系的最快方式。'**
+  String get communityCirclesMeetupsSubtitle;
+
+  /// No description provided for @communityCirclesFieldNotesTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'现场笔记'**
+  String get communityCirclesFieldNotesTitle;
+
+  /// No description provided for @communityCirclesFieldNotesSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'来自网络中的旅行报告和真实落地经验。'**
+  String get communityCirclesFieldNotesSubtitle;
+
+  /// No description provided for @communityCirclesQuestionsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'待回应的问题'**
+  String get communityCirclesQuestionsTitle;
+
+  /// No description provided for @communityCirclesQuestionsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'这些问题还在等待已经到场的人来回答。'**
+  String get communityCirclesQuestionsSubtitle;
+
+  /// No description provided for @communityCirclesJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入'**
+  String get communityCirclesJoin;
+
+  /// No description provided for @communityCirclesOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开'**
+  String get communityCirclesOpen;
+
+  /// No description provided for @communityCirclesCreateMeetup.
+  ///
+  /// In zh, this message translates to:
+  /// **'发起活动'**
+  String get communityCirclesCreateMeetup;
+
+  /// No description provided for @communityCirclesViewMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'浏览活动'**
+  String get communityCirclesViewMeetups;
+
+  /// No description provided for @communityCirclesOpenInbox.
+  ///
+  /// In zh, this message translates to:
+  /// **'私聊协作'**
+  String get communityCirclesOpenInbox;
+
+  /// No description provided for @communityCirclesExploreCities.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市群聊'**
+  String get communityCirclesExploreCities;
+
+  /// No description provided for @communityCirclesMeetupsEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有即将开始的圈内活动。你可以先发起第一场 meetup。'**
+  String get communityCirclesMeetupsEmpty;
+
+  /// No description provided for @communityCirclesFieldNotesEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有新的现场笔记，等社区成员开始分享后会出现在这里。'**
+  String get communityCirclesFieldNotesEmpty;
+
+  /// No description provided for @communityCirclesQuestionsEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前没有待回应的问题，新的在地提问会汇总到这里。'**
+  String get communityCirclesQuestionsEmpty;
+
+  /// No description provided for @communityCirclesFlexibleLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'灵活中'**
+  String get communityCirclesFlexibleLabel;
+
+  /// No description provided for @communityCirclesGeneralistLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'多面手'**
+  String get communityCirclesGeneralistLabel;
+
+  /// No description provided for @communityCirclesMetricCircles.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个圈子'**
+  String communityCirclesMetricCircles(String count);
+
+  /// No description provided for @communityCirclesMetricMeetups.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 场活动'**
+  String communityCirclesMetricMeetups(String count);
+
+  /// No description provided for @communityCirclesMetricFieldNotes.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 条现场笔记'**
+  String communityCirclesMetricFieldNotes(String count);
+
+  /// No description provided for @communityCircleCityTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'城市圈子'**
+  String get communityCircleCityTitle;
+
+  /// No description provided for @communityCircleCitySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'找到已经活跃在 {city} 周边的人。'**
+  String communityCircleCitySubtitle(String city);
+
+  /// No description provided for @communityCircleMigrationTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'结伴迁移圈'**
+  String get communityCircleMigrationTitle;
+
+  /// No description provided for @communityCircleMigrationSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'协调下一站准备去 {city} 的同行者。'**
+  String communityCircleMigrationSubtitle(String city);
+
+  /// No description provided for @communityCircleSkillTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'技能交换圈'**
+  String get communityCircleSkillTitle;
+
+  /// No description provided for @communityCircleSkillSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把 {skill} 作为协作和互换的入口。'**
+  String communityCircleSkillSubtitle(String skill);
+
+  /// No description provided for @communityCircleRecurringTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Recurring Meetup'**
+  String get communityCircleRecurringTitle;
+
+  /// No description provided for @communityCircleRecurringSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前有 {count} 场即将开始的活动，可以成为圈子的线下锚点。'**
+  String communityCircleRecurringSubtitle(String count);
+
+  /// No description provided for @profileCockpitTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把你的 Nomad Profile 当作实时操作系统来维护'**
+  String get profileCockpitTitle;
+
+  /// No description provided for @profileCockpitSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'在进入下一站前，把身份、旅行信号和准备度放到同一视图。'**
+  String get profileCockpitSubtitle;
+
+  /// No description provided for @profileCockpitCurrentBase.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前基地'**
+  String get profileCockpitCurrentBase;
+
+  /// No description provided for @profileCockpitExperience.
+  ///
+  /// In zh, this message translates to:
+  /// **'经验等级'**
+  String get profileCockpitExperience;
+
+  /// No description provided for @profileCockpitEditProfile.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑资料'**
+  String get profileCockpitEditProfile;
+
+  /// No description provided for @profileCockpitIdentityTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'身份驾驶舱'**
+  String get profileCockpitIdentityTitle;
+
+  /// No description provided for @profileCockpitIdentitySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'让资料基础信息和协作画像保持一致。'**
+  String get profileCockpitIdentitySubtitle;
+
+  /// No description provided for @profileCockpitOperationsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'旅行操作系统'**
+  String get profileCockpitOperationsTitle;
+
+  /// No description provided for @profileCockpitOperationsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把会员、计划和旅程数据放在一起查看。'**
+  String get profileCockpitOperationsSubtitle;
+
+  /// No description provided for @profileCockpitSignalsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'信号与网络'**
+  String get profileCockpitSignalsTitle;
+
+  /// No description provided for @profileCockpitSignalsSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把徽章、兴趣和证明组织成别人看得懂的信号。'**
+  String get profileCockpitSignalsSubtitle;
+
+  /// No description provided for @profileCockpitSupportTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'支持与账户'**
+  String get profileCockpitSupportTitle;
+
+  /// No description provided for @profileCockpitSupportSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'把帮助、法律信息和账户控制放在一起。'**
+  String get profileCockpitSupportSubtitle;
+
+  /// No description provided for @landHubPlanningLaneTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'规划通道'**
+  String get landHubPlanningLaneTitle;
+
+  /// No description provided for @landHubPlanningLaneSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先锁定计划、预算和签证，再推进其他动作。'**
+  String get landHubPlanningLaneSubtitle;
+
+  /// No description provided for @landHubArrivalLaneTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'到达首周通道'**
+  String get landHubArrivalLaneTitle;
+
+  /// No description provided for @landHubArrivalLaneSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先把首周清单补齐，再真正落地。'**
+  String get landHubArrivalLaneSubtitle;
+
+  /// No description provided for @landHubChecklistNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'现在处理'**
+  String get landHubChecklistNow;
+
+  /// No description provided for @landHubChecklistNext.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一步'**
+  String get landHubChecklistNext;
+
+  /// No description provided for @landHubChecklistWatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'重点关注'**
+  String get landHubChecklistWatch;
+
+  /// No description provided for @landHubChecklistDetailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'已细化'**
+  String get landHubChecklistDetailed;
+
+  /// No description provided for @landHubChecklistLocked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已锁定'**
+  String get landHubChecklistLocked;
+
+  /// No description provided for @landHubChecklistBaselineReady.
+  ///
+  /// In zh, this message translates to:
+  /// **'已有基线'**
+  String get landHubChecklistBaselineReady;
+
+  /// No description provided for @landHubChecklistShortlisted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已筛选'**
+  String get landHubChecklistShortlisted;
+
+  /// No description provided for @landHubChecklistPlanningLive.
+  ///
+  /// In zh, this message translates to:
+  /// **'计划中'**
+  String get landHubChecklistPlanningLive;
+
+  /// No description provided for @landHubChecklistMapped.
+  ///
+  /// In zh, this message translates to:
+  /// **'已成路线'**
+  String get landHubChecklistMapped;
+
+  /// No description provided for @landHubChecklistCityScoped.
+  ///
+  /// In zh, this message translates to:
+  /// **'已聚焦城市'**
+  String get landHubChecklistCityScoped;
+
+  /// No description provided for @landHubChecklistVisaLinked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已关联签证'**
+  String get landHubChecklistVisaLinked;
+
+  /// No description provided for @landHubChecklistTrackingSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'跟踪来源：{source} · {signal}'**
+  String landHubChecklistTrackingSource(String source, String signal);
+
+  /// No description provided for @landHubChecklistArrivalTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定到达时间与第一晚节奏'**
+  String get landHubChecklistArrivalTitle;
+
+  /// No description provided for @landHubChecklistArrivalReady.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的出发时间已经落在 {dateLabel}。把入住时间和到达节奏继续收进同一份计划里。'**
+  String landHubChecklistArrivalReady(Object dateLabel);
+
+  /// No description provided for @landHubChecklistArrivalDetailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'{methodLabel}：{details}'**
+  String landHubChecklistArrivalDetailed(Object methodLabel, Object details);
+
+  /// No description provided for @landHubChecklistArrivalPending.
+  ///
+  /// In zh, this message translates to:
+  /// **'你的迁移还没有明确出发日期，先把到达时间锁定，后续落地动作才不会继续漂移。'**
+  String get landHubChecklistArrivalPending;
+
+  /// No description provided for @landHubChecklistStayTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'复核首周住宿'**
+  String get landHubChecklistStayTitle;
+
+  /// No description provided for @landHubChecklistStaySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先在 {cityName} 确认一组可灵活调整的首周住宿，再慢慢筛更长期的方案。'**
+  String landHubChecklistStaySubtitle(Object cityName);
+
+  /// No description provided for @landHubChecklistStayWithBudget.
+  ///
+  /// In zh, this message translates to:
+  /// **'你已经有 {budgetLabel} 的月度基线，用它反推 {cityName} 首周住宿是否合理。'**
+  String landHubChecklistStayWithBudget(Object cityName, Object budgetLabel);
+
+  /// No description provided for @landHubChecklistStayDetailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'你已经为 {cityName} 筛出一组靠近 {areaLabel}、约 {priceLabel} 的住宿候选。'**
+  String landHubChecklistStayDetailed(
+      Object cityName, Object areaLabel, Object priceLabel);
+
+  /// No description provided for @landHubChecklistWorkTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认可用的工作据点'**
+  String get landHubChecklistWorkTitle;
+
+  /// No description provided for @landHubChecklistWorkSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'在到达前先看一遍 {cityName} 的共享办公和备用工位，避免会议当天才临时找地方。'**
+  String landHubChecklistWorkSubtitle(Object cityName);
+
+  /// No description provided for @landHubChecklistTransportTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'摸清本地交通路径'**
+  String get landHubChecklistTransportTitle;
+
+  /// No description provided for @landHubChecklistTransportSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'先看 {cityName} 的机场接驳和日常通勤路径，趁路线和成本还容易调整时做决定。'**
+  String landHubChecklistTransportSubtitle(Object cityName);
+
+  /// No description provided for @landHubChecklistTransportDetailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'{methodLabel}：{details}'**
+  String landHubChecklistTransportDetailed(Object methodLabel, Object details);
+
+  /// No description provided for @landHubChecklistConnectivityTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'准备移动数据与网络备份'**
+  String get landHubChecklistConnectivityTitle;
+
+  /// No description provided for @landHubChecklistConnectivitySubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'用 AI 先梳理你在 {cityName} 的 eSIM、热点和备用网络方案。'**
+  String landHubChecklistConnectivitySubtitle(Object cityName);
+
+  /// No description provided for @landHubChecklistConnectivityWithVisa.
+  ///
+  /// In zh, this message translates to:
+  /// **'你当前的签证时钟是 {visaLabel}。先用 AI 压测 {cityName} 的 eSIM、热点和网络备份方案。'**
+  String landHubChecklistConnectivityWithVisa(
+      Object cityName, Object visaLabel);
+
+  /// No description provided for @landHubResourceLaneTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'资源通道'**
+  String get landHubResourceLaneTitle;
+
+  /// No description provided for @landHubResourceLaneSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一站需要判断时，把过往停留记录放在手边。'**
+  String get landHubResourceLaneSubtitle;
 }
 
 class _AppLocalizationsDelegate

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
+import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
 
 /// 住宿卡片组件 - 无状态组件
 class TravelPlanAccommodationCard extends StatelessWidget {
@@ -16,13 +18,8 @@ class TravelPlanAccommodationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CockpitPanel(
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -31,15 +28,16 @@ class TravelPlanAccommodationCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12.r),
+                  color: AppColors.cityPrimary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999.r),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
                 ),
                 child: Text(
                   accommodation.type.name,
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFFFF4458),
+                    color: AppColors.cityPrimary,
                   ),
                 ),
               ),
@@ -49,7 +47,7 @@ class TravelPlanAccommodationCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFFF4458),
+                  color: AppColors.cityPrimary,
                 ),
               ),
             ],
@@ -60,20 +58,21 @@ class TravelPlanAccommodationCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: 8.h),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(FontAwesomeIcons.locationDot, size: 14.r, color: Colors.grey),
+              Icon(FontAwesomeIcons.locationDot, size: 14.r, color: AppColors.textSecondary),
               SizedBox(width: 4.w),
               Expanded(
                 child: Text(
                   accommodation.recommendedArea,
                   style: TextStyle(
                     fontSize: 13.sp,
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ),
@@ -88,12 +87,13 @@ class TravelPlanAccommodationCard extends StatelessWidget {
                 .map((amenity) => Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(6.r),
+                        color: Colors.white.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(999.r),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
                       ),
                       child: Text(
                         amenity,
-                        style: TextStyle(fontSize: 11.sp),
+                        style: TextStyle(fontSize: 11.sp, color: AppColors.textPrimary),
                       ),
                     ))
                 .toList(),
@@ -104,8 +104,9 @@ class TravelPlanAccommodationCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(8.r),
+                color: const Color(0xFFEFF6FF).withValues(alpha: 0.82),
+                borderRadius: BorderRadius.circular(14.r),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
               ),
               child: Row(
                 children: [
@@ -114,7 +115,7 @@ class TravelPlanAccommodationCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       accommodation.bookingTips!,
-                      style: TextStyle(fontSize: 12.sp),
+                      style: TextStyle(fontSize: 12.sp, color: AppColors.textPrimary, height: 1.5),
                     ),
                   ),
                 ],

@@ -128,14 +128,7 @@ class CityCard extends GetView<CityListController> {
         Positioned(
           top: 6.h,
           left: 6.w,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildScoreBadge(city.overallScore ?? 0.0),
-              SizedBox(width: 4.w),
-              _buildModeratorBadge(city.hasModerator),
-            ],
-          ),
+          child: _buildScoreBadge(city.overallScore ?? 0.0),
         ),
         // 底部信息面板
         Positioned(
@@ -179,27 +172,6 @@ class CityCard extends GetView<CityListController> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// 版主徽章 - 左上角评分旁，与评分同款样式
-  Widget _buildModeratorBadge(bool hasModerator) {
-    return Container(
-      height: 20.h,
-      padding: EdgeInsets.symmetric(horizontal: 5.w),
-      decoration: BoxDecoration(
-        color: (hasModerator ? const Color(0xFF4ADE80) : Colors.grey).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 0.5,
-        ),
-      ),
-      child: Icon(
-        hasModerator ? FontAwesomeIcons.userShield : FontAwesomeIcons.userSlash,
-        size: 10.r,
-        color: Colors.white,
       ),
     );
   }

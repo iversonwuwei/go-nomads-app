@@ -7,14 +7,19 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
+import 'package:go_nomads_app/features/budget/domain/entities/budget_center.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
+import 'package:go_nomads_app/features/migration_workspace/domain/entities/migration_workspace.dart';
+import 'package:go_nomads_app/features/navigation_hub/domain/entities/inbox_summary.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/features/visa/domain/entities/visa_center.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/pages/home/domain/repositories/i_explore_dashboard_repository.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/services/signalr_service.dart';
@@ -27,6 +32,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   // ==================== 依赖注入 ====================
   final ICityRepository _cityRepository = Get.find<ICityRepository>();
   final IMeetupRepository _meetupRepository = Get.find<IMeetupRepository>();
+  final IExploreDashboardRepository _exploreDashboardRepository = Get.find<IExploreDashboardRepository>();
 
   // 延迟获取的控制器
   CityStateController get cityController => Get.find<CityStateController>();
@@ -73,6 +79,14 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   /// 首页活动是否还有更多
   final hasMoreHomeMeetups = true.obs;
 
+  /// Explore Dashboard 摘要数据
+  final migrationWorkspace = Rxn<MigrationWorkspace>();
+  final budgetCenter = Rxn<BudgetCenter>();
+  final visaCenter = Rxn<VisaCenter>();
+  final inboxSummary = Rxn<InboxSummary>();
+  final isLoadingDashboard = false.obs;
+  final dashboardErrorMessage = RxnString();
+
   // ==================== 私有变量 ====================
   // 已移除 _cityListWorker，首页数据完全独立
 
@@ -87,9 +101,11 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
   // 首页活动加载节流与并发控制
   DateTime? _lastHomeMeetupsLoadedAt;
+  DateTime? _lastDashboardLoadedAt;
   Completer<void>? _homeMeetupsLoadCompleter;
   int _homeMeetupsCurrentPage = 1;
   static const int _homeMeetupsPageSize = 20;
+  Worker? _authWorker;
 
   // 首页 meetup 调试日志开关（仅 debug 下生效）
   bool _enableHomeMeetupsDebugLogs = true;
@@ -106,6 +122,13 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     // 设置 SignalR 监听器（城市图片更新）
     _setupSignalRListeners();
     _setupMeetupDataChangeListener();
+    _authWorker = ever<bool>(authController.isAuthenticated, (isAuthenticated) {
+      if (isAuthenticated) {
+        unawaited(loadNomadDashboard(forceRefresh: true));
+      } else {
+        _clearDashboardData();
+      }
+    });
 
     // ⭐ 首页使用独立的数据加载，不再监听全局 CityStateController
     // 这样首页和城市列表页面的数据完全独立，互不影响
@@ -134,6 +157,8 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     // 取消 EventBus 订阅
     _meetupDataChangedSubscription?.cancel();
     _meetupDataChangedSubscription = null;
+    _authWorker?.dispose();
+    _authWorker = null;
 
     // 注意：不要在 onClose() 中 dispose TextEditingController / ScrollController
     // GetX 的 onClose() 在 widget 卸载之前调用，此时 TextField 仍在使用 controller，
@@ -291,6 +316,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
       await Future.wait([
         _loadHomeCitiesIndependent(),
         loadHomeMeetups(forceRefresh: false),
+        loadNomadDashboard(forceRefresh: false),
       ]);
     } catch (e) {
       log('⚠️ HomePageController: _loadInitialData 失败: $e');
@@ -330,6 +356,57 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
   /// 加载首页城市数据（公开方法，供下拉刷新使用）
   Future<void> loadHomeCities() async {
     await _loadHomeCitiesIndependent();
+  }
+
+  Future<void> loadNomadDashboard({required bool forceRefresh}) async {
+    if (!authController.isAuthenticated.value) {
+      _clearDashboardData();
+      return;
+    }
+
+    final now = DateTime.now();
+    if (isLoadingDashboard.value) {
+      return;
+    }
+
+    if (!forceRefresh &&
+        _lastDashboardLoadedAt != null &&
+        now.difference(_lastDashboardLoadedAt!) < const Duration(seconds: 45) &&
+        hasDashboardData) {
+      return;
+    }
+
+    isLoadingDashboard.value = true;
+    dashboardErrorMessage.value = null;
+
+    try {
+      final dashboardResult = await _exploreDashboardRepository.getExploreDashboard();
+      final dashboard = dashboardResult.dataOrNull;
+
+      migrationWorkspace.value = dashboard?.migrationWorkspace;
+      budgetCenter.value = dashboard?.budgetCenter;
+      visaCenter.value = dashboard?.visaCenter;
+      inboxSummary.value = dashboard?.inboxSummary;
+      dashboardErrorMessage.value = dashboardResult.exceptionOrNull?.message;
+
+      if (dashboardResult.isSuccess) {
+        _lastDashboardLoadedAt = DateTime.now();
+      }
+    } catch (error) {
+      log('⚠️ HomePageController: 加载 Explore Dashboard 失败: $error');
+      dashboardErrorMessage.value = error.toString();
+    } finally {
+      isLoadingDashboard.value = false;
+    }
+  }
+
+  void _clearDashboardData() {
+    migrationWorkspace.value = null;
+    budgetCenter.value = null;
+    visaCenter.value = null;
+    inboxSummary.value = null;
+    dashboardErrorMessage.value = null;
+    _lastDashboardLoadedAt = null;
   }
 
   /// 刷新首页 meetup 数据
@@ -482,6 +559,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     await Future.wait([
       loadHomeCities(),
       refreshMeetups(),
+      loadNomadDashboard(forceRefresh: true),
     ]);
 
     log('✅ HomePageController: 返回首页刷新完成');
@@ -499,6 +577,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
       await Future.wait([
         loadHomeCities(),
         refreshMeetups(),
+        loadNomadDashboard(forceRefresh: true),
       ]);
 
       log('✅ HomePageController: 下拉刷新完成');
@@ -535,6 +614,7 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
     if (forceRefresh) {
       _debugHomeMeetups('trigger force refresh from visible hook');
       unawaited(loadHomeMeetups(forceRefresh: true));
+      unawaited(loadNomadDashboard(forceRefresh: true));
       return;
     }
 
@@ -553,6 +633,13 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
         (_lastHomeMeetupsLoadedAt == null || now.difference(_lastHomeMeetupsLoadedAt!) > const Duration(minutes: 2))) {
       _debugHomeMeetups('trigger background refresh due to stale cache');
       unawaited(loadHomeMeetups(forceRefresh: true));
+    }
+
+    if (authController.isAuthenticated.value &&
+        (!hasDashboardData ||
+            _lastDashboardLoadedAt == null ||
+            now.difference(_lastDashboardLoadedAt!) > const Duration(minutes: 2))) {
+      unawaited(loadNomadDashboard(forceRefresh: hasDashboardData));
     }
   }
 
@@ -654,4 +741,102 @@ class HomePageController extends GetxController with WidgetsBindingObserver impl
 
   /// 是否正在加载城市
   bool get isLoadingCities => isLoadingLocalCities.value;
+
+  bool get hasDashboardData =>
+      migrationWorkspace.value != null ||
+      budgetCenter.value != null ||
+      visaCenter.value != null ||
+      inboxSummary.value != null;
+
+  List<HomeDashboardTask> get priorityQueueTasks {
+    final tasks = <HomeDashboardTask>[];
+    final workspace = migrationWorkspace.value;
+    final budget = budgetCenter.value;
+    final visa = visaCenter.value;
+    final inbox = inboxSummary.value;
+
+    if (workspace != null && (workspace.upcomingDepartures > 0 || workspace.activePlans > 0)) {
+      tasks.add(
+        HomeDashboardTask(
+          icon: Icons.flight_takeoff_rounded,
+          accentColor: const Color(0xFFFF6B6B),
+          title: _l10n.homeQueueMigrationTitle,
+          detail: workspace.recommendedAction.isNotEmpty
+              ? workspace.recommendedAction
+              : _l10n.homeQueueMigrationFallback(workspace.activePlans.toString()),
+          routeName: AppRoutes.migrationWorkspace,
+        ),
+      );
+    }
+
+    if (budget != null && budget.hasData) {
+      final deltaText = _formatSignedCurrency(budget.deltaUsd);
+      tasks.add(
+        HomeDashboardTask(
+          icon: Icons.savings_rounded,
+          accentColor: const Color(0xFF2A9D8F),
+          title: _l10n.homeQueueBudgetTitle,
+          detail:
+              budget.recommendedAction.isNotEmpty ? budget.recommendedAction : _l10n.homeQueueBudgetFallback(deltaText),
+          routeName: AppRoutes.budgetCenter,
+        ),
+      );
+    }
+
+    if (visa != null && (visa.attentionRequiredCount > 0 || visa.reminderReadyCount > 0)) {
+      final pendingCount = visa.attentionRequiredCount > 0 ? visa.attentionRequiredCount : visa.reminderReadyCount;
+      tasks.add(
+        HomeDashboardTask(
+          icon: Icons.badge_rounded,
+          accentColor: const Color(0xFFE9C46A),
+          title: _l10n.homeQueueVisaTitle,
+          detail: visa.recommendedAction.isNotEmpty
+              ? visa.recommendedAction
+              : _l10n.homeQueueVisaFallback(pendingCount.toString()),
+          routeName: AppRoutes.visaCenter,
+        ),
+      );
+    }
+
+    if (inbox != null && (inbox.actionRequiredCount > 0 || inbox.unreadNotifications > 0)) {
+      final pendingCount = inbox.actionRequiredCount > 0 ? inbox.actionRequiredCount : inbox.unreadNotifications;
+      tasks.add(
+        HomeDashboardTask(
+          icon: Icons.mark_email_unread_rounded,
+          accentColor: const Color(0xFF457B9D),
+          title: _l10n.homeQueueInboxTitle,
+          detail: _l10n.homeQueueInboxFallback(pendingCount.toString()),
+          routeName: AppRoutes.inbox,
+        ),
+      );
+    }
+
+    return tasks.take(3).toList(growable: false);
+  }
+
+  String _formatSignedCurrency(double value) {
+    final rounded = value.abs().round();
+    final prefix = value > 0
+        ? '+'
+        : value < 0
+            ? '-'
+            : '';
+    return '$prefix\$$rounded';
+  }
+}
+
+class HomeDashboardTask {
+  final IconData icon;
+  final Color accentColor;
+  final String title;
+  final String detail;
+  final String routeName;
+
+  const HomeDashboardTask({
+    required this.icon,
+    required this.accentColor,
+    required this.title,
+    required this.detail,
+    required this.routeName,
+  });
 }

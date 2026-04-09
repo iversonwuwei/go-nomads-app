@@ -82,19 +82,27 @@ class AddReviewPage extends StatelessWidget {
       ),
       body: Form(
         key: controller.formKey,
-        child: ListView(
-          padding: EdgeInsets.all(20.w),
-          children: [
-            _buildRatingSection(context, controller, l10n),
-            SizedBox(height: 32.h),
-            _buildTitleInput(context, controller, l10n),
-            SizedBox(height: 24.h),
-            _buildContentInput(context, controller, l10n),
-            SizedBox(height: 24.h),
-            _buildPhotosSection(context, controller, l10n),
-            SizedBox(height: 32.h),
-            _buildGuidelines(context, l10n),
-            SizedBox(height: 96.h),
+        child: CustomScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 96.h),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    _buildRatingSection(context, controller, l10n),
+                    SizedBox(height: 32.h),
+                    _buildTitleInput(context, controller, l10n),
+                    SizedBox(height: 24.h),
+                    _buildContentInput(context, controller, l10n),
+                    SizedBox(height: 24.h),
+                    _buildPhotosSection(context, controller, l10n),
+                    SizedBox(height: 32.h),
+                    _buildGuidelines(context, l10n),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -352,27 +360,27 @@ class AddReviewPage extends StatelessWidget {
         LayoutBuilder(
           builder: (context, constraints) {
             final availableWidth = constraints.maxWidth;
-            
+
             return Obx(() {
               // 如果没有图片，显示占满宽度的添加按钮
               if (controller.selectedImages.isEmpty) {
                 return _buildFullWidthAddButton(context, controller, l10n, availableWidth);
               }
-              
+
               // 有图片时，固定每行显示5个图片
               const itemCount = 5;
               const spacing = 8.0;
               final itemWidth = (availableWidth - (itemCount - 1) * spacing) / itemCount;
-              
+
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(itemCount, (index) {
                   if (index < controller.selectedImages.length) {
                     // 显示已选择的图片
                     return _buildImageThumbnail(
-                      controller.selectedImages[index], 
-                      index, 
-                      controller, 
+                      controller.selectedImages[index],
+                      index,
+                      controller,
                       itemWidth,
                     );
                   } else if (index == controller.selectedImages.length && controller.selectedImages.length < 5) {

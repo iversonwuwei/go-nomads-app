@@ -43,16 +43,17 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   final RxBool isModerator = false.obs;
 
   // Tab 索引常量
-  static const int tabScores = 0;
-  static const int tabGuide = 1;
-  static const int tabProsCons = 2;
-  static const int tabReviews = 3;
-  static const int tabCost = 4;
-  static const int tabPhotos = 5;
-  static const int tabWeather = 6;
-  static const int tabHotels = 7;
-  static const int tabNeighborhoods = 8;
-  static const int tabCoworking = 9;
+  static const int tabDecision = 0;
+  static const int tabScores = 1;
+  static const int tabGuide = 2;
+  static const int tabProsCons = 3;
+  static const int tabReviews = 4;
+  static const int tabCost = 5;
+  static const int tabPhotos = 6;
+  static const int tabWeather = 7;
+  static const int tabHotels = 8;
+  static const int tabNeighborhoods = 9;
+  static const int tabCoworking = 10;
 
   // 首次加载标记，避免重复请求
   bool _loadedGuide = false;
@@ -90,9 +91,9 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
     pageController = PageController();
     scrollController = ScrollController();
 
-    // 初始化 TabController (10个tab)
+    // 初始化 TabController (11个tab)
     tabController = TabController(
-      length: 10,
+      length: 11,
       vsync: this,
       initialIndex: initialTab,
     );
@@ -107,6 +108,7 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   void _onTabChanged() {
     if (!tabController.indexIsChanging) {
       currentPage.value = tabController.index;
+      Get.find<CityDetailStateController>().currentTabIndex.value = tabController.index;
       _loadTabDataIfNeeded(tabController.index);
     }
   }
@@ -147,6 +149,8 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
 
   void _loadTabDataIfNeeded(int index) async {
     switch (index) {
+      case tabDecision:
+        break;
       case tabGuide:
         if (!_loadedGuide) {
           _loadedGuide = true;
@@ -225,6 +229,9 @@ class CityDetailController extends GetxController with GetTickerProviderStateMix
   /// 刷新当前 Tab 数据
   Future<void> refreshCurrentTab() async {
     switch (tabController.index) {
+      case tabDecision:
+        Get.find<CityDetailStateController>().loadCityDetail(cityId);
+        break;
       case tabScores:
         Get.find<CityDetailStateController>().loadCityDetail(cityId);
         break;

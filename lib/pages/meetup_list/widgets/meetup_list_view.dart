@@ -33,41 +33,41 @@ class MeetupListView extends GetView<MeetupListController> {
         content = RefreshIndicator(
           color: const Color(0xFFFF4458),
           onRefresh: controller.refreshCurrentTab,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: _buildEmptyState(context, l10n),
-                ),
-              );
-            },
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _buildEmptyState(context, l10n),
+              ),
+            ],
           ),
         );
       } else {
         content = RefreshIndicator(
           color: const Color(0xFFFF4458),
           onRefresh: controller.refreshCurrentTab,
-          child: Column(
-            children: [
-              _buildToolbar(context, l10n, meetups),
-              Expanded(
-                child: ListView.builder(
-                  controller: controller.tabScrollControllers[tab],
-                  padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 100),
-                  itemCount: meetups.length + (isLoading ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == meetups.length) {
-                      return _buildLoadingIndicator();
-                    }
-                    return MeetupListCard(
-                      meetup: meetups[index],
-                      currentTabIndex: tab.index,
-                      onTap: () => _onMeetupTap(meetups[index]),
-                      onToggleJoin: () => _onToggleJoin(meetups[index]),
-                    );
-                  },
+          child: CustomScrollView(
+            controller: controller.tabScrollControllers[tab],
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 100.h),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index == meetups.length) {
+                        return _buildLoadingIndicator();
+                      }
+                      return MeetupListCard(
+                        meetup: meetups[index],
+                        currentTabIndex: tab.index,
+                        onTap: () => _onMeetupTap(meetups[index]),
+                        onToggleJoin: () => _onToggleJoin(meetups[index]),
+                      );
+                    },
+                    childCount: meetups.length + (isLoading ? 1 : 0),
+                  ),
                 ),
               ),
             ],
@@ -82,61 +82,6 @@ class MeetupListView extends GetView<MeetupListController> {
       );
     });
   }
-
-  /// 工具栏
-  Widget _buildToolbar(BuildContext context, AppLocalizations l10n, List<Meetup> meetups) {
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            _getTabCountText(l10n, meetups.length),
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Row(
-            children: [
-              PopupMenuButton<String>(
-                icon: Icon(
-                  FontAwesomeIcons.arrowDownWideShort,
-                  color: AppColors.textSecondary,
-                  size: 20.sp,
-                ),
-                onSelected: (value) {
-                  // TODO: Handle sort
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(value: 'date', child: Text(l10n.date)),
-                  PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
-                  PopupMenuItem(value: 'nearby', child: Text(l10n.nearby)),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 获取 Tab 计数文本
-  String _getTabCountText(AppLocalizations l10n, int count) {
-    switch (tab) {
-      case MeetupListTab.upcoming:
-        return l10n.upcomingEvents('$count');
-      case MeetupListTab.joined:
-        return l10n.joinedEvents('$count');
-      case MeetupListTab.past:
-        return l10n.pastEvents('$count');
-      case MeetupListTab.cancelled:
-        return '已取消 ($count)';
-    }
-  }
-
   /// 空状态
   Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     String emptyMessage;

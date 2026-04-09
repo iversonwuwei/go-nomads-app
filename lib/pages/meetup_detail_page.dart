@@ -19,6 +19,7 @@ import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/utils/share_link_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:go_nomads_app/widgets/edit_button.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/share_bottom_sheet.dart';
@@ -139,14 +140,13 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: const Color(0xFFF5F1EA),
         body: CustomScrollView(
           slivers: [
-            // 顶部图片和AppBar
             SliverAppBar(
               expandedHeight: 300.h,
               pinned: true,
-              backgroundColor: Colors.white,
+              backgroundColor: const Color(0xFF17191D),
               leading: SliverBackButton(
                 onPressed: _handleBack,
               ),
@@ -172,11 +172,10 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 SizedBox(width: 8.w),
               ],
               flexibleSpace: FlexibleSpaceBar(
-                background: Obx(() => _meetup.value.images.isNotEmpty
-                    ? Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          // 图片轮播
+                background: Obx(() => Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (_meetup.value.images.isNotEmpty)
                           PageView.builder(
                             controller: _imagePageController,
                             itemCount: _meetup.value.images.length,
@@ -189,84 +188,97 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    color: AppColors.borderLight,
+                                    color: const Color(0xFF252A31),
                                     child: Icon(
                                       FontAwesomeIcons.imagePortrait,
                                       size: 64.sp,
-                                      color: AppColors.textTertiary,
+                                      color: Colors.white24,
                                     ),
                                   );
                                 },
                               );
                             },
+                          )
+                        else
+                          Container(
+                            color: const Color(0xFF252A31),
+                            child: Icon(
+                              FontAwesomeIcons.calendarDays,
+                              size: 64.sp,
+                              color: Colors.white24,
+                            ),
                           ),
-                          // 图片指示器 - 只有多张图片时显示
-                          if (_meetup.value.images.length > 1)
-                            Positioned(
-                              bottom: 16.h,
-                              left: 0,
-                              right: 0,
-                              child: Obx(() => Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: List.generate(
-                                      _meetup.value.images.length,
-                                      (index) => Container(
-                                        width: _currentImageIndex.value == index ? 24.w : 8.w,
-                                        height: 8.h,
-                                        margin: EdgeInsets.symmetric(horizontal: 4.w),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(4.r),
-                                          color: _currentImageIndex.value == index
-                                              ? Colors.white
-                                              : Colors.white.withValues(alpha: 0.5),
-                                        ),
-                                      ),
-                                    ),
-                                  )),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.12),
+                                Colors.black.withValues(alpha: 0.2),
+                                const Color(0xFF101317).withValues(alpha: 0.92),
+                              ],
                             ),
-                          // 图片计数器
-                          if (_meetup.value.images.length > 1)
-                            Positioned(
-                              top: 100.h,
-                              right: 16.w,
-                              child: Obx(() => Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.5),
-                                      borderRadius: BorderRadius.circular(12.r),
-                                    ),
-                                    child: Text(
-                                      '${_currentImageIndex.value + 1} / ${_meetup.value.images.length}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  )),
-                            ),
-                        ],
-                      )
-                    : Container(
-                        color: AppColors.borderLight,
-                        child: Icon(
-                          FontAwesomeIcons.calendarDays,
-                          size: 64.sp,
-                          color: AppColors.textTertiary,
+                          ),
                         ),
-                      )),
+                        if (_meetup.value.images.length > 1)
+                          Positioned(
+                            bottom: 16.h,
+                            left: 0,
+                            right: 0,
+                            child: Obx(() => Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    _meetup.value.images.length,
+                                    (index) => Container(
+                                      width: _currentImageIndex.value == index ? 24.w : 8.w,
+                                      height: 8.h,
+                                      margin: EdgeInsets.symmetric(horizontal: 4.w),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4.r),
+                                        color: _currentImageIndex.value == index
+                                            ? Colors.white
+                                            : Colors.white.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ),
+                                )),
+                          ),
+                        if (_meetup.value.images.length > 1)
+                          Positioned(
+                            top: 100.h,
+                            right: 16.w,
+                            child: Obx(() => Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  child: Text(
+                                    '${_currentImageIndex.value + 1} / ${_meetup.value.images.length}',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                )),
+                          ),
+                        Positioned(
+                          left: 20.w,
+                          right: 20.w,
+                          bottom: 34.h,
+                          child: _buildHeroOverlay(),
+                        ),
+                      ],
+                    )),
               ),
             ),
-
-            // 内容区域
             SliverToBoxAdapter(
               child: Obx(() {
-                // 触发对 _meetup 的监听，确保数据变化时能重新构建
-                // 通过访问 capacity 属性来确保 GetX 追踪到 _meetup 的变化
                 final currentAttendees = _meetup.value.capacity.currentAttendees;
                 log('🔄 Obx 重建 - currentAttendees: $currentAttendees');
 
-                // 显示加载指示器
                 if (_isLoading.value) {
                   return Container(
                     padding: EdgeInsets.all(40.w),
@@ -281,29 +293,54 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 基本信息
-                    _buildBasicInfo(),
-
-                    SizedBox(height: 16.h),
-
-                    // 时间地点
-                    _buildTimeLocationInfo(),
-
-                    SizedBox(height: 16.h),
-
-                    // 描述
-                    _buildDescription(),
-
-                    SizedBox(height: 16.h),
-
-                    // 组织者信息
-                    _buildOrganizerInfo(),
-
-                    SizedBox(height: 16.h),
-
-                    // 参与者列表
-                    _buildAttendeesList(),
-
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Transform.translate(
+                            offset: Offset(0, -40.h),
+                            child: _buildHeroStatusCard(),
+                          ),
+                          SizedBox(height: 8.h),
+                          _buildSectionShell(
+                            eyebrow: 'Live pulse',
+                            title: 'How this meetup is shaping up',
+                            child: _buildMeetupSignalBoard(),
+                          ),
+                          SizedBox(height: 16.h),
+                          _buildSectionShell(
+                            eyebrow: 'Event brief',
+                            title: 'Why this session matters',
+                            child: _buildBasicInfo(),
+                          ),
+                          SizedBox(height: 16.h),
+                          _buildSectionShell(
+                            eyebrow: 'Plan the arrival',
+                            title: 'Time and venue',
+                            child: _buildTimeLocationInfo(),
+                          ),
+                          SizedBox(height: 16.h),
+                          _buildSectionShell(
+                            eyebrow: 'About the room',
+                            title: 'Session context',
+                            child: _buildDescription(),
+                          ),
+                          SizedBox(height: 16.h),
+                          _buildSectionShell(
+                            eyebrow: 'Host layer',
+                            title: 'Organizer and trust',
+                            child: _buildOrganizerInfo(),
+                          ),
+                          SizedBox(height: 16.h),
+                          _buildSectionShell(
+                            eyebrow: 'Social proof',
+                            title: 'Who is already in',
+                            child: _buildAttendeesList(),
+                          ),
+                        ],
+                      ),
+                    ),
                     SizedBox(height: 100.h),
                   ],
                 );
@@ -318,218 +355,438 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   Widget _buildBasicInfo() {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _buildTypeChip(
-                // 优先使用 eventType 的国际化名称
-                _meetup.value.eventType?.getDisplayName(
-                      Localizations.localeOf(context).languageCode,
-                    ) ??
-                    _meetup.value.type.value,
-              ),
-              SizedBox(width: 12.w),
-              if (_meetup.value.isStartingSoon)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(FontAwesomeIcons.clock, size: 12.sp, color: const Color(0xFFFF4458)),
-                      SizedBox(width: 4.w),
-                      Text(
-                        l10n.startingSoon,
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFFF4458),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            _meetup.value.title,
-            style: TextStyle(
-              fontSize: 24.sp,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10.w,
+          runSpacing: 10.h,
+          children: [
+            _buildTypeChip(
+              _meetup.value.eventType?.getDisplayName(
+                    Localizations.localeOf(context).languageCode,
+                  ) ??
+                  _meetup.value.type.value,
             ),
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Icon(FontAwesomeIcons.city, size: 16.sp, color: AppColors.textSecondary),
-              SizedBox(width: 6.w),
-              Text(
-                '${_meetup.value.location.city}, ${_meetup.value.location.country}',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: AppColors.textSecondary,
+            if (_meetup.value.isStartingSoon)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Text(
+                  l10n.startingSoon,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFFFF4458),
+                  ),
                 ),
               ),
-            ],
+          ],
+        ),
+        SizedBox(height: 14.h),
+        Text(
+          _meetup.value.description,
+          style: TextStyle(
+            fontSize: 15.sp,
+            height: 1.65,
+            color: AppColors.textSecondary,
           ),
-        ],
-      ),
+          maxLines: 5,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 
   Widget _buildTimeLocationInfo() {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      color: Colors.white,
-      child: Column(
-        children: [
-          _buildInfoRow(
-            FontAwesomeIcons.calendar,
-            l10n.dateAndTime,
-            _formatDateTime(_meetup.value.schedule.startTime),
-          ),
-          SizedBox(height: 20.h),
-          _buildInfoRow(
-            FontAwesomeIcons.locationDot,
-            l10n.venue,
-            _meetup.value.venue.name,
-            subtitle: _meetup.value.venue.address,
-          ),
-          SizedBox(height: 20.h),
-          // 使用后端返回的 capacity 数据显示参与者数量
-          _buildInfoRow(
-            FontAwesomeIcons.users,
-            l10n.attendees,
-            '${_meetup.value.capacity.currentAttendees} / ${_meetup.value.capacity.maxAttendees}',
-            subtitle: _meetup.value.capacity.isFull
-                ? l10n.meetupIsFull
-                : l10n.spotsLeft('${_meetup.value.capacity.remainingSlots}'),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _buildInfoRow(
+          FontAwesomeIcons.calendar,
+          l10n.dateAndTime,
+          _formatDateTime(_meetup.value.schedule.startTime),
+        ),
+        SizedBox(height: 20.h),
+        _buildInfoRow(
+          FontAwesomeIcons.locationDot,
+          l10n.venue,
+          _meetup.value.venue.name,
+          subtitle: _meetup.value.venue.address,
+        ),
+        SizedBox(height: 20.h),
+        _buildInfoRow(
+          FontAwesomeIcons.users,
+          l10n.attendees,
+          '${_meetup.value.capacity.currentAttendees} / ${_meetup.value.capacity.maxAttendees}',
+          subtitle: _meetup.value.capacity.isFull
+              ? l10n.meetupIsFull
+              : l10n.spotsLeft('${_meetup.value.capacity.remainingSlots}'),
+        ),
+      ],
     );
   }
 
   Widget _buildDescription() {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      width: double.infinity, // 占据整个屏幕宽度
-      padding: EdgeInsets.all(20.w),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.about,
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.about,
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
           ),
-          SizedBox(height: 12.h),
-          Text(
-            _meetup.value.description,
-            style: TextStyle(
-              fontSize: 15.sp,
-              color: AppColors.textSecondary,
-              height: 1.6,
-            ),
+        ),
+        SizedBox(height: 12.h),
+        Text(
+          _meetup.value.description,
+          style: TextStyle(
+            fontSize: 15.sp,
+            color: AppColors.textSecondary,
+            height: 1.6,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildOrganizerInfo() {
     final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.organizer,
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            GestureDetector(
+              onTap: () {
+                final organizerUser = _createBasicUserModel(
+                  _meetup.value.organizer.id,
+                  _meetup.value.organizer.name,
+                  _meetup.value.organizer.avatarUrl,
+                );
+                Get.to(() => MemberDetailPage(user: organizerUser));
+              },
+              child: SafeCircleAvatar(
+                imageUrl: _meetup.value.organizer.avatarUrl,
+                radius: 30.r,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _meetup.value.organizer.name,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    l10n.eventOrganizer,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!_isOrganizer)
+              OutlinedButton(
+                onPressed: _contactOrganizer,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFFF4458),
+                  side: BorderSide(color: const Color(0xFFFF4458), width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                ),
+                child: Text(
+                  l10n.message,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAttendeesList() {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Obx(() {
+          final attendeesCount = _meetup.value.capacity.currentAttendees;
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                l10n.attendeesCount('$attendeesCount'),
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              if (attendeesCount > 0)
+                TextButton(
+                  onPressed: _showAllAttendees,
+                  child: Text(
+                    l10n.viewAll,
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: const Color(0xFFFF4458),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }),
+        SizedBox(height: 16.h),
+        Obx(() {
+          if (_participants.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.h),
+                child: Text(
+                  l10n.noAttendeesYet,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            );
+          }
+
+          return SizedBox(
+            height: 40.h,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _participants.length.clamp(0, 10),
+              itemBuilder: (context, index) {
+                final participant = _participants[index];
+                final userId = participant['userId']?.toString() ?? '';
+                final userInfo = participant['user'] as Map<String, dynamic>?;
+                final userAvatar = userInfo?['avatar'] as String?;
+                final userName = userInfo?['name'] as String? ?? 'User';
+
+                return Padding(
+                  padding: EdgeInsets.only(right: 12.w),
+                  child: GestureDetector(
+                    onTap: () {
+                      final participantUser = _createBasicUserModel(
+                        userId,
+                        userName,
+                        userAvatar ?? '',
+                      );
+                      Get.to(() => MemberDetailPage(user: participantUser));
+                    },
+                    child: Tooltip(
+                      message: userName,
+                      child: SafeCircleAvatar(
+                        imageUrl: userAvatar,
+                        radius: 20.r,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildHeroOverlay() {
+    final eventTypeLabel = _meetup.value.eventType?.getDisplayName(
+          Localizations.localeOf(context).languageCode,
+        ) ??
+        _meetup.value.type.value;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: [
+            _buildHeroPill(FontAwesomeIcons.userGroup, eventTypeLabel),
+            _buildHeroPill(
+              FontAwesomeIcons.clock,
+              _meetup.value.isStartingSoon
+                  ? AppLocalizations.of(context)!.startingSoon
+                  : (_meetup.value.isOngoing ? 'Live now' : 'Upcoming'),
+            ),
+          ],
+        ),
+        SizedBox(height: 14.h),
+        Text(
+          _meetup.value.title,
+          style: TextStyle(
+            fontSize: 28.sp,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            height: 1.08,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Row(
+          children: [
+            Icon(FontAwesomeIcons.locationDot, size: 12.r, color: Colors.white70),
+            SizedBox(width: 8.w),
+            Expanded(
+              child: Text(
+                '${_meetup.value.location.city}, ${_meetup.value.location.country}',
+                style: TextStyle(fontSize: 13.sp, color: Colors.white70),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroStatusCard() {
     return Container(
-      padding: EdgeInsets.all(20.w),
-      color: Colors.white,
+      width: double.infinity,
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF3EDE3), Color(0xFFE8DDCF)],
+        ),
+        borderRadius: BorderRadius.circular(28.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 22.r,
+            offset: Offset(0, 10.h),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.organizer,
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: 16.h),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () {
-                  // 跳转到 Organizer 的个人详情页
-                  final organizerUser = _createBasicUserModel(
-                    _meetup.value.organizer.id,
-                    _meetup.value.organizer.name,
-                    _meetup.value.organizer.avatarUrl,
-                  );
-                  Get.to(() => MemberDetailPage(user: organizerUser));
-                },
-                child: SafeCircleAvatar(
-                  imageUrl: _meetup.value.organizer.avatarUrl,
-                  radius: 30.r,
-                ),
-              ),
-              SizedBox(width: 16.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _meetup.value.organizer.name,
+                      'Meetup profile',
                       style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.1,
+                        color: const Color(0xFF7F5832),
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: 8.h),
                     Text(
-                      l10n.eventOrganizer,
+                      _meetup.value.isJoined ? 'You are already in' : 'Decision snapshot',
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1D1A17),
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      _formatDateTime(_meetup.value.schedule.startTime),
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: AppColors.textSecondary,
+                        height: 1.45,
+                        color: const Color(0xFF655345),
                       ),
                     ),
                   ],
                 ),
               ),
-              // 如果当前用户是组织者，不显示消息按钮（不能给自己发消息）
-              if (!_isOrganizer)
-                OutlinedButton(
-                  onPressed: _contactOrganizer,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFFF4458),
-                    side: BorderSide(color: const Color(0xFFFF4458), width: 1.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  ),
-                  child: Text(
-                    l10n.message,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+              SizedBox(width: 12.w),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF17191D),
+                  borderRadius: BorderRadius.circular(22.r),
                 ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _meetup.value.capacity.remainingSlots.toString(),
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      'spots left',
+                      style: TextStyle(fontSize: 11.sp, color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 18.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSummaryMetric(
+                  label: 'Attendees',
+                  value: _meetup.value.capacity.currentAttendees.toString(),
+                  hint: 'people confirmed',
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: _buildSummaryMetric(
+                  label: 'Fill rate',
+                  value: '${(_meetup.value.participationRate * 100).round()}%',
+                  hint: _meetup.value.isNearlyFull ? 'close to full' : 'room to join',
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: _buildSummaryMetric(
+                  label: 'Host mode',
+                  value: _isOrganizer ? 'You' : 'Host',
+                  hint: _meetup.value.organizer.name,
+                ),
+              ),
             ],
           ),
         ],
@@ -537,99 +794,160 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     );
   }
 
-  Widget _buildAttendeesList() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildMeetupSignalBoard() {
+    final signals = [
+      _buildSignalTile(
+        label: 'Status',
+        value: _meetup.value.isOngoing ? 'Live' : (_meetup.value.isEnded ? 'Ended' : 'Upcoming'),
+        detail: _meetup.value.status.value,
+        icon: FontAwesomeIcons.signal,
+        accent: const Color(0xFF276A88),
+      ),
+      _buildSignalTile(
+        label: 'Capacity',
+        value: '${_meetup.value.capacity.currentAttendees}/${_meetup.value.capacity.maxAttendees}',
+        detail: _meetup.value.capacity.isFull ? 'No seats left' : '${_meetup.value.capacity.remainingSlots} still open',
+        icon: FontAwesomeIcons.users,
+        accent: const Color(0xFF855129),
+      ),
+      _buildSignalTile(
+        label: 'Timing',
+        value: _meetup.value.isStartingSoon ? 'Soon' : (_meetup.value.isUpcoming ? 'Planned' : 'Past'),
+        detail: _meetup.value.durationInHours != null
+            ? '${_meetup.value.durationInHours!.toStringAsFixed(1)} hour session'
+            : 'Duration not specified',
+        icon: FontAwesomeIcons.clock,
+        accent: const Color(0xFF3E7B59),
+      ),
+      _buildSignalTile(
+        label: 'Access',
+        value: _isJoined ? 'Joined' : (_meetup.value.canJoin ? 'Can join' : 'Restricted'),
+        detail: _isOrganizer ? 'Organizer controls active' : 'Chat unlocks after joining',
+        icon: FontAwesomeIcons.doorOpen,
+        accent: const Color(0xFF6F3D78),
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = (constraints.maxWidth - 12.w) / 2;
+        return Wrap(
+          spacing: 12.w,
+          runSpacing: 12.h,
+          children: signals.map((tile) => SizedBox(width: width, child: tile)).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionShell({required String eyebrow, required String title, required Widget child}) {
     return Container(
-      padding: EdgeInsets.all(20.w),
-      color: Colors.white,
+      width: double.infinity,
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.86),
+        borderRadius: BorderRadius.circular(28.r),
+        border: Border.all(color: const Color(0xFFE6DDD2)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 使用 Obx 监听 _participants 的变化来显示真实参与者数量
-          Obx(() {
-            final attendeesCount = _meetup.value.capacity.currentAttendees;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.attendeesCount('$attendeesCount'),
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                if (attendeesCount > 0)
-                  TextButton(
-                    onPressed: _showAllAttendees,
-                    child: Text(
-                      l10n.viewAll,
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: const Color(0xFFFF4458),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          }),
+          Text(
+            eyebrow.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.1,
+              color: const Color(0xFF7F5832),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1C232C),
+            ),
+          ),
           SizedBox(height: 16.h),
-          Obx(() {
-            if (_participants.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20.h),
-                  child: Text(
-                    l10n.noAttendeesYet,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-              );
-            }
+          child,
+        ],
+      ),
+    );
+  }
 
-            return SizedBox(
-              height: 40.h,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _participants.length.clamp(0, 10),
-                itemBuilder: (context, index) {
-                  final participant = _participants[index];
-                  final userId = participant['userId']?.toString() ?? '';
+  Widget _buildHeroPill(IconData icon, String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12.r, color: Colors.white),
+          SizedBox(width: 8.w),
+          Text(label, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+        ],
+      ),
+    );
+  }
 
-                  // 从嵌套的 user 对象中获取头像
-                  final userInfo = participant['user'] as Map<String, dynamic>?;
-                  final userAvatar = userInfo?['avatar'] as String?;
-                  final userName = userInfo?['name'] as String? ?? 'User';
+  Widget _buildSignalTile({
+    required String label,
+    required String value,
+    required String detail,
+    required IconData icon,
+    required Color accent,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(22.r),
+        border: Border.all(color: accent.withValues(alpha: 0.14)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36.w,
+            height: 36.w,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(icon, size: 16.r, color: accent),
+          ),
+          SizedBox(height: 14.h),
+          Text(label, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: accent)),
+          SizedBox(height: 8.h),
+          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1C232C))),
+          SizedBox(height: 6.h),
+          Text(detail, style: TextStyle(fontSize: 12.sp, height: 1.45, color: const Color(0xFF51606B))),
+        ],
+      ),
+    );
+  }
 
-                  return Padding(
-                    padding: EdgeInsets.only(right: 12.w),
-                    child: GestureDetector(
-                      onTap: () {
-                        // 跳转到参与者的个人详情页
-                        final participantUser = _createBasicUserModel(
-                          userId,
-                          userName,
-                          userAvatar ?? '',
-                        );
-                        Get.to(() => MemberDetailPage(user: participantUser));
-                      },
-                      child: Tooltip(
-                        message: userName,
-                        child: SafeCircleAvatar(
-                          imageUrl: userAvatar,
-                          radius: 20.r,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            );
-          }),
+  Widget _buildSummaryMetric({required String label, required String value, required String hint}) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.56),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFF7F5832))),
+          SizedBox(height: 8.h),
+          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1D1A17))),
+          SizedBox(height: 4.h),
+          Text(hint, style: TextStyle(fontSize: 11.sp, height: 1.35, color: const Color(0xFF655345))),
         ],
       ),
     );
@@ -1123,11 +1441,16 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
 
   void _showAllAttendees() {
     final l10n = AppLocalizations.of(context)!;
-    Get.dialog(
-      AlertDialog(
-        title: Text(l10n.allAttendees, style: TextStyle(fontSize: 18.sp)),
-        content: SizedBox(
-          width: double.maxFinite,
+    Get.bottomSheet(
+      AppBottomDrawer(
+        title: l10n.allAttendees,
+        maxHeightFactor: 0.72,
+        footer: AppBottomDrawerActionRow(
+          secondaryLabel: l10n.close,
+          onSecondaryPressed: () => Get.back<void>(),
+          primaryLabel: l10n.close,
+          onPrimaryPressed: () => Get.back<void>(),
+        ),
           child: Obx(() {
             if (_participants.isEmpty) {
               return Padding(
@@ -1151,21 +1474,20 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 final participant = _participants[index];
                 final userId = participant['userId']?.toString() ?? '';
 
-                // 🔧 从嵌套的 user 对象中获取用户信息
                 final userInfo = participant['user'] as Map<String, dynamic>?;
                 final userName = userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
                 final userEmail = userInfo?['email'] as String?;
                 final userAvatar = userInfo?['avatar'] as String?;
 
                 return ListTile(
-                  onTap: () {
-                    // 跳转到参与者的个人详情页
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
                     final participantUser = _createBasicUserModel(
                       userId,
                       userName,
                       userAvatar ?? '',
                     );
-                    Get.back(); // 关闭对话框
+                  Get.back();
                     Get.to(() => MemberDetailPage(user: participantUser));
                   },
                   leading: SafeCircleAvatar(
@@ -1180,15 +1502,10 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                 );
               },
             );
-          }),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(l10n.close, style: TextStyle(fontSize: 14.sp)),
-          ),
-        ],
+        }),
       ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
     );
   }
 

@@ -54,27 +54,34 @@ class AddCoworkingPage extends StatelessWidget {
             children: [
               Form(
                 key: controller.formKey,
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.all(16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AddCoworkingImageSection(controllerTag: _tag),
-                      SizedBox(height: 24.h),
-                      AddCoworkingBasicInfoSection(controllerTag: _tag),
-                      SizedBox(height: 24.h),
-                      AddCoworkingLocationSection(controllerTag: _tag),
-                      SizedBox(height: 24.h),
-                      AddCoworkingContactSection(controllerTag: _tag),
-                      SizedBox(height: 24.h),
-                      AddCoworkingPricingSection(controllerTag: _tag),
-                      SizedBox(height: 24.h),
-                      AddCoworkingSpecsSection(controllerTag: _tag),
-                      SizedBox(height: 24.h),
-                      AddCoworkingAmenitiesSection(controllerTag: _tag),
-                      SizedBox(height: 100.h),
-                    ],
-                  ),
+                child: CustomScrollView(
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  slivers: [
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 120.h),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AddCoworkingImageSection(controllerTag: _tag),
+                            SizedBox(height: 24.h),
+                            AddCoworkingBasicInfoSection(controllerTag: _tag),
+                            SizedBox(height: 24.h),
+                            AddCoworkingLocationSection(controllerTag: _tag),
+                            SizedBox(height: 24.h),
+                            AddCoworkingContactSection(controllerTag: _tag),
+                            SizedBox(height: 24.h),
+                            AddCoworkingPricingSection(controllerTag: _tag),
+                            SizedBox(height: 24.h),
+                            AddCoworkingSpecsSection(controllerTag: _tag),
+                            SizedBox(height: 24.h),
+                            AddCoworkingAmenitiesSection(controllerTag: _tag),
+                            SizedBox(height: 32.h),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               if (controller.isSubmitting.value)
@@ -113,7 +120,7 @@ class AddCoworkingPage extends StatelessWidget {
                     );
                     if (success && context.mounted) {
                       // 使用 NavigationUtil 确保在 iOS 上也能正确返回并传递结果
-                      await NavigationUtil.popAfterSuccess(result: true, context: context);
+                      await NavigationUtil.backAfterSave(true, context: context);
                     }
                   },
             style: ElevatedButton.styleFrom(

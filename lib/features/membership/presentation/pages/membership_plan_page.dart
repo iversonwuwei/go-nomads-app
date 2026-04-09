@@ -22,6 +22,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:go_nomads_app/widgets/double_spin_loader.dart';
 
 /// 支付方式枚举
@@ -1136,6 +1137,46 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     }
   }
 
+  void _showPaymentLoadingSheet(
+    BuildContext context, {
+    required String title,
+    required String priceText,
+  }) {
+    AppBottomDrawer.show<void>(
+      context,
+      maxHeightFactor: 0.3,
+      isDismissible: false,
+      enableDrag: false,
+      child: Row(
+        children: [
+          const DoubleSpinLoader(size: 24, strokeWidth: 2.4),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  priceText,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey.shade600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// 处理 PayPal 支付
   Future<void> _processPayPalPayment(
     BuildContext context,
@@ -1154,45 +1195,17 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       return;
     }
 
-    // 显示加载对话框
-    Get.dialog(
-      AlertDialog(
-        content: Row(
-          children: [
-            const DoubleSpinLoader(size: 24, strokeWidth: 2.4),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.creatingPaypalOrder,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    l10n.priceForPlan(
-                      _formatMembershipDisplayPrice(
-                        context,
-                        controller.isMonthlyBilling
-                            ? plan.priceMonthly
-                            : plan.priceYearly,
-                        sourceCurrencyCode: plan.currency,
-                      ),
-                      plan.name,
-                    ),
-                    style:
-                        TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
+    _showPaymentLoadingSheet(
+      context,
+      title: l10n.creatingPaypalOrder,
+      priceText: l10n.priceForPlan(
+        _formatMembershipDisplayPrice(
+          context,
+          controller.isMonthlyBilling ? plan.priceMonthly : plan.priceYearly,
+          sourceCurrencyCode: plan.currency,
         ),
+        plan.name,
       ),
-      barrierDismissible: false,
     );
 
     // 等待对话框完全显示
@@ -1215,9 +1228,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
     } catch (e) {
       errorMessage = e.toString();
     } finally {
-      // 无论成功与否都关闭加载对话框
-      if (Get.isDialogOpen == true) {
-        Get.back();
+      if (Get.isBottomSheetOpen ?? false) {
+        Get.back<void>();
       }
     }
 
@@ -1264,45 +1276,17 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       return;
     }
 
-    // 显示加载对话框
-    Get.dialog(
-      AlertDialog(
-        content: Row(
-          children: [
-            const DoubleSpinLoader(size: 24, strokeWidth: 2.4),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.creatingWechatOrder,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    l10n.priceForPlan(
-                      _formatMembershipDisplayPrice(
-                        context,
-                        controller.isMonthlyBilling
-                            ? plan.priceMonthly
-                            : plan.priceYearly,
-                        sourceCurrencyCode: plan.currency,
-                      ),
-                      plan.name,
-                    ),
-                    style:
-                        TextStyle(fontSize: 12.sp, color: Colors.grey.shade600),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
+    _showPaymentLoadingSheet(
+      context,
+      title: l10n.creatingWechatOrder,
+      priceText: l10n.priceForPlan(
+        _formatMembershipDisplayPrice(
+          context,
+          controller.isMonthlyBilling ? plan.priceMonthly : plan.priceYearly,
+          sourceCurrencyCode: plan.currency,
         ),
+        plan.name,
       ),
-      barrierDismissible: false,
     );
 
     // 等待对话框完全显示
@@ -1343,8 +1327,8 @@ class MembershipPlanPage extends GetView<MembershipStateController> {
       AppToast.error(l10n.wechatPayError(e.toString()));
     } finally {
       // 无论成功与否都关闭加载对话框
-      if (Get.isDialogOpen == true) {
-        Get.back();
+      if (Get.isBottomSheetOpen ?? false) {
+        Get.back<void>();
       }
     }
   }

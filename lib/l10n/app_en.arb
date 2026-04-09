@@ -208,7 +208,6 @@
     }
   },
   "profileRoleAdmin": "Admin",
-  "profileRoleModerator": "Moderator",
   "profileRoleUser": "User",
   "profileSelectUsersFirst": "Please select users first",
   "profileBatchSetAdminSuccess": "Successfully set {count} users as admin",
@@ -723,70 +722,6 @@
   "currencyOptionMyr": "MYR (RM)",
   "currencyOptionSgd": "SGD (S$)",
   "homeMeetupChatButton": "Chat",
-  "moderatorCardTitle": "City Moderator",
-  "moderatorCardCertified": "Certified",
-  "moderatorCardTransferModerator": "Transfer Moderator",
-  "moderatorCardApplyModerator": "Apply to be Moderator",
-  "moderatorCardUnclaimed": "Unclaimed",
-  "moderatorCardLookingForModerator": "This city is looking for a moderator! If you are familiar with this place, you can apply to become a moderator and help other digital nomads understand the city.",
-  "moderatorCardAssignModerator": "Assign Moderator",
-  "moderatorCardNeedUpgradeMembership": "Membership Upgrade Required",
-  "moderatorCardUpgradeContent": "Applying to be a city moderator requires Pro membership or above.\n\nAfter upgrading to Pro, you will get:\n• Eligibility to apply as a city moderator\n• More AI usage quota\n• Exclusive member badge\n• More advanced features",
-  "moderatorCardUpgradeNow": "Upgrade Now",
-  "assignModeratorLoadCandidatesFailed": "Failed to load moderator candidates: {error}",
-  "@assignModeratorLoadCandidatesFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "assignModeratorSelectAtLeastOneUser": "Please select at least one user",
-  "assignModeratorUnknownError": "Unknown error",
-  "assignModeratorUserError": "User {userId}: {error}",
-  "@assignModeratorUserError": {
-    "placeholders": {
-      "userId": {
-        "type": "String"
-      },
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "assignModeratorSuccessCount": "Successfully assigned {count} moderators!",
-  "@assignModeratorSuccessCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "assignModeratorFailCount": "Failed to assign {count} users, please check logs",
-  "@assignModeratorFailCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "assignModeratorAllFailed": "All user assignments failed: {reason}",
-  "@assignModeratorAllFailed": {
-    "placeholders": {
-      "reason": {
-        "type": "String"
-      }
-    }
-  },
-  "assignModeratorConfirmTitle": "Confirm Moderator Assignment",
-  "assignModeratorConfirmMessage": "Are you sure you want to assign {count} users as moderators?\n\nThese users will automatically receive moderator role and related permissions.",
-  "@assignModeratorConfirmMessage": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "skillCategoryProgramming": "Programming",
   "skillCategoryDesign": "Design",
   "skillCategoryMarketing": "Marketing",
@@ -2828,7 +2763,6 @@
   "noResults": "No results found",
   "eventInvitation": "Event Invitation",
   "inviteYouToJoin": "invites you to join",
-  "moderatorTransfer": "Moderator Transfer",
   "accept": "Accept",
   "decline": "Decline",
   "from": "From",
@@ -3038,8 +2972,6 @@
       "name": {}
     }
   },
-  "applyModeratorSubmitSuccess": "Application submitted. Please wait for admin review",
-  "applyModeratorReasonHint": "Please explain why you are applying to be a moderator and what you can contribute to the community...",
   "addCoworkingImageCount": "{count}/{max}",
   "@addCoworkingImageCount": {
     "placeholders": {
@@ -3060,18 +2992,10 @@
     }
   },
   "loginFacebookComingSoon": "Facebook sign-in is coming soon",
-  "assignModeratorPageTitle": "{cityName} - Assign Moderators",
-  "@assignModeratorPageTitle": {
-    "placeholders": {
-      "cityName": {}
-    }
-  },
 
   "homeAiCopilotTitle": "AI Copilot",
   "homeAiCopilotBeta": "Beta",
   "homeAiCopilotDescription": "Smart directions · Trip planning · Travel guides",
-  "moderatorAssigned": "Moderator assigned",
-  "moderatorPending": "Moderator pending",
   "searchResultsFor": "Search results for ",
   "citiesFoundCount": "{count} {count, plural, =1{city} other{cities}} found",
   "@citiesFoundCount": {
@@ -3164,6 +3088,162 @@
   "meetupsPerYear": "363 meetups/year",
   "messagesCount": "15k+ messages",
   "citiesCount": "100+ cities",
+  "explore": "Explore",
+  "land": "Land",
+  "inbox": "Inbox",
+  "migrationWorkspace": "Migration Workspace",
+  "landHubTitle": "Manage your next move like a project",
+  "landHubSubtitle": "Keep planning, arrival, and follow-up work in one landing view.",
+  "landHubTravelPlanDescription": "Resume or create your relocation plan with AI planning support.",
+  "landHubBudgetDescription": "Track your monthly target, forecast, and city-by-city cost assumptions in one place.",
+  "landHubVisaDescription": "Track visa timing, renewal risk, and reminder readiness before you move.",
+  "cityDecisionTitle": "Decision snapshot",
+  "cityDecisionSubtitle": "Use these signals to decide whether {location} is ready for your next move.",
+  "@cityDecisionSubtitle": {
+    "placeholders": {
+      "location": {}
+    }
+  },
+  "cityDecisionSignals": "Decision signals",
+  "cityDecisionActions": "Action shortcuts",
+  "cityDecisionInternet": "Network quality",
+  "cityDecisionVideoCall": "Video-call fit",
+  "cityDecisionCommunity": "Community activity",
+  "cityDecisionClimate": "Climate stability",
+  "cityDecisionVisaSummary": "Visa brief",
+  "cityDecisionGuideLoading": "Loading guide-backed signals",
+  "cityDecisionGuideReady": "Guide-backed signals ready",
+  "landHubAccommodationDescription": "Browse digital-nomad-friendly stays and longer-term options.",
+  "landHubCoworkingDescription": "Jump into coworking options and find spaces built for focused work.",
+  "landHubTravelHistoryDescription": "Review past stays and moves to inform your next destination.",
+  "landHubCurrentFocusTitle": "Current landing focus",
+  "landHubCurrentFocusSubtitle": "Your relocation stack is currently centered on {city}.",
+  "@landHubCurrentFocusSubtitle": { "placeholders": { "city": { "type": "String" } } },
+  "landHubCurrentFocusEmpty": "No active relocation focus yet. Start with one travel plan so budget and visa work can lock onto a real city.",
+  "landHubFocusCityLabel": "Focus city",
+  "landHubDepartureLabel": "Departure",
+  "landHubBudgetLabel": "Monthly cost",
+  "landHubVisaLabel": "Visa clock",
+  "landHubPendingLabel": "Pending",
+  "budgetCenter": "Budget Center",
+  "budgetCenterHeroTitle": "Keep your first-month landing budget realistic",
+  "budgetCenterHeroSubtitle": "Watch target, forecast, and the plans shaping first-month cash flow.",
+  "budgetCenterMonthlyTarget": "Monthly target",
+  "budgetCenterForecast": "Forecast",
+  "budgetCenterDelta": "Delta",
+  "budgetCenterTrackedCities": "Tracked cities",
+  "budgetCenterFocusCity": "Focus city",
+  "budgetCenterEstimatedMonthlyCost": "Estimated monthly cost",
+  "budgetCenterQuickActions": "Quick actions",
+  "budgetCenterAddCost": "Add cost entry",
+  "budgetCenterManageCosts": "Manage city costs",
+  "budgetCenterManageCostsSubtitle": "Review the existing cost entries for your current focus city.",
+  "budgetCenterEditBaseline": "Edit budget baseline",
+  "budgetCenterTemplateLabel": "Template",
+  "budgetCenterThresholdLabel": "Alert threshold %",
+  "budgetCenterCategoryLabel": "Categories",
+  "budgetCenterTrackedPlans": "Tracked plans",
+  "budgetCenterOpenPlan": "Open plan",
+  "budgetCenterEmptyTitle": "No migration budget yet",
+  "budgetCenterEmptySubtitle": "Create a migration plan first, then use Budget Center to review budget assumptions and cost tracking.",
+  "budgetCenterStatusOnTrack": "On track",
+  "budgetCenterStatusWatch": "Watch closely",
+  "budgetCenterStatusOverBudget": "Over budget",
+  "budgetCenterStatusNoData": "No baseline",
+  "budgetCenterActionCreateFirstPlan": "Start a first migration plan to establish a budget baseline.",
+  "budgetCenterActionReviewOverBudget": "Your forecast is above target. Review the first-month cost assumptions now.",
+  "budgetCenterActionLockFirstMonthBudget": "Departure is close. Lock the first-month landing budget and housing spend.",
+  "budgetCenterActionCompareCityBudget": "You have multiple active options. Compare city budgets before committing.",
+  "budgetCenterActionFinalizeBudgetBaseline": "Finalize the draft plan so cost tracking has a clear baseline.",
+  "budgetCenterActionReviewLatestPlan": "Review the latest plan and confirm the first-month cost profile.",
+  "visaCenter": "Visa Center",
+  "visaCenterHeroTitle": "Keep entry timing and visa risk visible",
+  "visaCenterHeroSubtitle": "Track expiry, readiness, and reminders before timing gets tight.",
+  "visaCenterProfiles": "Profiles",
+  "visaCenterAttentionRequired": "Needs action",
+  "visaCenterReminderReady": "Reminder ready",
+  "visaCenterSoonestExpiry": "Soonest expiry",
+  "visaCenterFocusProfile": "Focus profile",
+  "visaCenterExpiryDate": "Expiry date",
+  "visaCenterRequirements": "Requirements",
+  "visaCenterProcess": "Process",
+  "visaCenterQuickActions": "Quick actions",
+  "visaCenterSetReminder": "Set visa reminder",
+  "visaCenterSetReminderSubtitle": "Send this visa expiry into OpenClaw so reminders are scheduled automatically.",
+  "visaCenterOpenPlan": "Open migration plan",
+  "visaCenterOpenPlanSubtitle": "Jump back to the linked migration plan and adjust dates or destination assumptions.",
+  "visaCenterEditProfile": "Edit visa profile",
+  "visaCenterTypeLabel": "Visa type",
+  "visaCenterStayDaysLabel": "Stay days",
+  "visaCenterEntryDateLabel": "Entry date",
+  "visaCenterDocumentsLabel": "Required documents",
+  "visaCenterReminderDatesLabel": "Reminder dates",
+  "visaCenterAllProfiles": "All visa profiles",
+  "visaCenterEmptyTitle": "No visa profile yet",
+  "visaCenterEmptySubtitle": "Create a migration plan first, then use Visa Center to monitor expiry timing and reminder readiness.",
+  "visaCenterActionSetReminderNow": "A visa deadline is close. Set a reminder now and confirm the required documents.",
+  "visaCenterActionCompareEntryOptions": "You have multiple active destinations. Compare entry options before locking the move.",
+  "visaCenterActionCompleteBrief": "Finish the visa brief and document list before setting the move date.",
+  "visaCenterActionCreateFirstPlan": "Start with a migration plan so Visa Center can build a first profile.",
+  "visaCenterActionReviewLatestVisa": "Review the current visa profile and confirm its expiry assumptions.",
+  "visaCenterStatusAttentionRequired": "Attention required",
+  "visaCenterStatusReviewSoon": "Review soon",
+  "visaCenterStatusPlanning": "Planning",
+  "visaCenterStatusArchived": "Archived",
+  "visaCenterStatusOnTrack": "On track",
+  "visaCenterTypeLongStay": "Long-stay visa",
+  "visaCenterTypeDigitalNomad": "Digital nomad entry",
+  "visaCenterTypePriorityEVisa": "Priority e-visa",
+  "visaCenterTypeShortStay": "Short-stay visa",
+  "visaCenterNoReminderTarget": "This visa profile does not have an expiry date yet.",
+  "visaCenterReminderSet": "Visa reminder scheduled for {cityName}.",
+  "@visaCenterReminderSet": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "visaCenterReminderFailed": "Failed to set visa reminder.",
+  "visaCenterReminderFailedWithError": "Failed to set visa reminder: {error}",
+  "@visaCenterReminderFailedWithError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "migrationWorkspaceHeroTitle": "Turn relocation planning into an actionable workspace",
+  "migrationWorkspaceHeroSubtitle": "Review active plans, upcoming departures, and drafts that still need work.",
+  "migrationWorkspacePlanCount": "Plans",
+  "migrationWorkspaceActivePlans": "Active",
+  "migrationWorkspaceUpcomingDepartures": "Upcoming",
+  "migrationWorkspaceContinuePlanning": "Continue planning",
+  "migrationWorkspaceRetry": "Retry",
+  "migrationWorkspaceEmptyTitle": "Create your first relocation plan",
+  "migrationWorkspaceEmptySubtitle": "Start with a city, budget, and departure date, then iterate on a plan you can keep refining.",
+  "migrationWorkspaceDraftPlans": "Draft plans that still need action",
+  "migrationWorkspaceOpenPlan": "Open plan",
+  "migrationWorkspaceFocusTitle": "Focus workflow",
+  "migrationWorkspaceEditTitle": "Edit migration workflow",
+  "migrationWorkspaceStageLabel": "Stage",
+  "migrationWorkspaceChecklistLabel": "Checklist",
+  "migrationWorkspaceTimelineLabel": "Timeline",
+  "migrationWorkspaceDepartureDate": "Departure",
+  "inboxHubTitle": "Review messages and notifications together",
+  "inboxHubSubtitle": "Clear urgent threads first, then jump into messages or notifications.",
+  "inboxMessagesDescription": "Open direct conversations and catch up on unread threads.",
+  "inboxNotificationsDescription": "Process system alerts, meetup reminders, and status updates in one place.",
+  "inboxActionRequired": "Action required",
+  "inboxSystemActionCenter": "System action center",
+  "inboxSystemActionEmpty": "No migration, budget, or visa actions need attention right now.",
+  "inboxSystemMigrationTitle": "Migration workspace",
+  "inboxSystemBudgetTitle": "Budget center",
+  "inboxSystemVisaTitle": "Visa center",
+  "inboxSystemMigrationFallback": "{count} migration items are waiting for your next move.",
+  "@inboxSystemMigrationFallback": { "placeholders": { "count": { "type": "String" } } },
+  "inboxSystemBudgetFallback": "Budget variance is currently {delta}.",
+  "@inboxSystemBudgetFallback": { "placeholders": { "delta": { "type": "String" } } },
+  "inboxSystemVisaFallback": "{count} visa reminders need to be reviewed.",
+  "@inboxSystemVisaFallback": { "placeholders": { "count": { "type": "String" } } },
+  "inboxRecentNotifications": "Recent notifications",
+  "inboxNoRecentNotifications": "There are no recent notification summaries yet.",
   "verificationCodeRequired": "Please enter verification code",
   "verificationCodeLength": "Verification code must be 6 digits",
   "sendFailed": "Send failed",
@@ -3428,39 +3508,11 @@
   "shareFailedWithError": "Share failed: {error}",
   "@shareFailedWithError": { "placeholders": { "error": { "type": "String" } } },
 
-  "confirmApprove": "Confirm Approve",
-  "confirmApproveMessage": "Approve {name}'s moderator application?",
-  "@confirmApproveMessage": { "placeholders": { "name": { "type": "String" } } },
-  "rejectApplication": "Reject Application",
-  "confirmRejectMessage": "Reject {name}'s moderator application?",
-  "@confirmRejectMessage": { "placeholders": { "name": { "type": "String" } } },
-  "rejectReasonOptional": "Reject reason (optional)",
-  "enterRejectReason": "Enter reject reason...",
-  "confirmReject": "Confirm Reject",
-  "confirmRevoke": "Confirm Revoke",
-  "confirmRevokeMessage": "Revoke {name}'s moderator status?",
-  "@confirmRevokeMessage": { "placeholders": { "name": { "type": "String" } } },
-  "moderatorRevoked": "Moderator status revoked",
-  "revokeFailed": "Revoke failed: {error}",
-  "@revokeFailed": { "placeholders": { "error": { "type": "String" } } },
-  "applicationApproved": "Application approved",
-  "applicationRejected": "Application rejected",
-  "moderatorApplicationDetail": "Moderator Application Detail",
-  "applicationNotExists": "Application not found",
-  "applicationTime": "Application time: {time}",
-  "@applicationTime": { "placeholders": { "time": { "type": "String" } } },
-  "processTime": "Process time: {time}",
-  "@processTime": { "placeholders": { "time": { "type": "String" } } },
-  "applicantInfo": "Applicant Info",
   "unknownUser": "Unknown User",
-  "applicationCity": "Applied City",
   "unknownCity": "Unknown City",
-  "applicationReason": "Application Reason",
-  "noReasonProvided": "No reason provided",
   "rejectReason": "Reject Reason",
   "reject": "Reject",
   "approve": "Approve",
-  "revokeModeratorStatus": "Revoke Moderator",
 
   "visitedPlaces": "Visited Places",
   "placesCount": "{count} places",
@@ -3564,17 +3616,309 @@
   "@generateImageFailed": { "placeholders": { "error": { "type": "String" } } },
   "imageGenFailedDefault": "Image generation failed",
 
-  "moderatorStatusPending": "Pending Review",
-  "moderatorStatusApproved": "Approved",
-  "moderatorStatusRejected": "Rejected",
-  "revokePermissionWarning": "This will remove all moderator permissions for this user in this city.",
-
   "perNightLabel": "Per Night",
   "ratingDescExcellent": "Excellent",
   "ratingDescVeryGood": "Very Good",
   "ratingDescGood": "Good",
   "ratingDescAverage": "Average",
-  "ratingDescPoor": "Poor"
+  "ratingDescPoor": "Poor",
+
+  "homeDashboardTitle": "Today for your nomad stack",
+  "homeDashboardSubtitle": "Track migration, budget, visa, and inbox pressure together.",
+  "homeHeroTitle": "Choose the next city with enough signal to commit",
+  "homeHeroSubtitle": "Scan cities, open the map, and push the best option into your workspace.",
+  "homeHeroMapView": "Map view",
+  "homeDashboardPromptTitle": "Unlock your operating dashboard",
+  "homeDashboardPromptMessage": "Sign in to see plans, budget gaps, visa timing, and pending replies.",
+  "homeDashboardPromptCta": "Sign in to continue",
+  "homeDashboardLoading": "Syncing your Explore dashboard...",
+  "homePriorityQueueTitle": "Priority queue",
+  "homeQuickActionsTitle": "Fast lane",
+  "homeDashboardMigrationTitle": "Migration workspace",
+  "homeDashboardBudgetTitle": "Budget center",
+  "homeDashboardVisaTitle": "Visa center",
+  "homeDashboardInboxTitle": "Inbox pulse",
+  "homeDashboardOpen": "Open",
+  "homeQuickActionCities": "Cities",
+  "homeQuickActionMeetups": "Meetups",
+  "homeQuickActionMap": "Map view",
+  "homeQuickActionMigration": "Migration workspace",
+  "homeQueueMigrationTitle": "Move the next destination",
+  "homeQueueBudgetTitle": "Close the budget gap",
+  "homeQueueVisaTitle": "Protect your stay window",
+  "homeQueueInboxTitle": "Answer pending signals",
+  "homeQueueMigrationFallback": "{count} active plans waiting for your next move",
+  "@homeQueueMigrationFallback": { "placeholders": { "count": { "type": "String" } } },
+  "homeQueueBudgetFallback": "Budget variance is sitting at {delta} this month",
+  "@homeQueueBudgetFallback": { "placeholders": { "delta": { "type": "String" } } },
+  "homeQueueVisaFallback": "{count} visa items need attention",
+  "@homeQueueVisaFallback": { "placeholders": { "count": { "type": "String" } } },
+  "homeQueueInboxFallback": "{count} alerts or conversations need a response",
+  "@homeQueueInboxFallback": { "placeholders": { "count": { "type": "String" } } },
+
+  "profileSnapshotTitle": "Nomad profile",
+  "profileSnapshotSubtitle": "A quick read on your next move and current operating rhythm.",
+  "profileSnapshotNextDestination": "Next destination",
+  "profileSnapshotDeparture": "Departure",
+  "profileSnapshotBudgetLane": "Budget lane",
+  "profileSnapshotWorkTimezone": "Work timezone",
+  "profileSnapshotStayRhythm": "Stay rhythm",
+  "profileSnapshotCommunity": "Community momentum",
+  "profileSnapshotBase": "Current base",
+  "profileSnapshotMigration": "Migration status",
+  "profileSnapshotReadiness": "Profile readiness",
+  "profileSnapshotTuneProfile": "Tune profile",
+  "profileSnapshotOpenWorkspace": "Open workspace",
+  "profileSnapshotOpenBudget": "Open budget",
+  "profileSnapshotNoDestination": "Flexible destination",
+  "profileSnapshotBaseFlexible": "Location flexible",
+  "profileSnapshotBudgetLean": "Lean setup",
+  "profileSnapshotBudgetBalanced": "Balanced runway",
+  "profileSnapshotBudgetPremium": "Premium comfort",
+  "profileSnapshotStaySprint": "Sprint-based hops",
+  "profileSnapshotStaySeasonal": "Seasonal base building",
+  "profileSnapshotStayLong": "Long-stay operator",
+  "profileSnapshotCommunityQuiet": "Quiet network",
+  "profileSnapshotCommunityBuilding": "Community building",
+  "profileSnapshotCommunityHigh": "High community momentum",
+  "profileSnapshotMigrationDraft": "Drafting the move",
+  "profileSnapshotMigrationPlanning": "Planning logistics",
+  "profileSnapshotMigrationBooked": "Booked and aligning",
+  "profileSnapshotMigrationActive": "Already in motion",
+  "profileSnapshotMigrationFlexible": "Keeping plans flexible",
+  "profileSnapshotReadinessStarting": "Foundations in progress",
+  "profileSnapshotReadinessGrowing": "Signal is getting stronger",
+  "profileSnapshotReadinessStrong": "Operator profile is sharp",
+
+  "profileCollaborationTitle": "Collaboration profile",
+  "profileCollaborationSubtitle": "Show other nomads how you work and how ready you are to connect.",
+  "profileCollaborationProfessionalIdentity": "Professional identity",
+  "profileCollaborationLanguageAbility": "Language ability",
+  "profileCollaborationMode": "Collaboration mode",
+  "profileCollaborationDiscovery": "Discovery readiness",
+  "profileCollaborationTopSkills": "Top skills",
+  "profileCollaborationTopInterests": "Shared interests",
+  "profileCollaborationSocialPresence": "Social presence",
+  "profileCollaborationEditSkills": "Edit skills",
+  "profileCollaborationEditInterests": "Edit interests",
+  "profileCollaborationEditLinks": "Edit links",
+  "profileCollaborationNoSkills": "Add skills to sharpen your professional signal.",
+  "profileCollaborationNoInterests": "Add interests so others know where you click socially.",
+  "profileCollaborationNoLinks": "Add links to make it easier for people to verify and connect.",
+  "profileCollaborationIdentityFlexible": "Independent operator",
+  "profileCollaborationIdentityBioDriven": "Story-driven nomad",
+  "profileCollaborationLanguagePending": "Spoken languages still need to be added explicitly.",
+  "profileCollaborationLanguageBilingualSignal": "Your profile already shows a bilingual writing signal.",
+  "profileCollaborationLanguageProfileReady": "Your public profile is readable, but explicit spoken languages can make matching better.",
+  "profileCollaborationModeCommunityLead": "Leading from the front in community spaces.",
+  "profileCollaborationModeOpenToConnect": "Open to direct collaboration and warm intros.",
+  "profileCollaborationModeBuilding": "Still shaping your collaboration surface.",
+  "profileCollaborationDiscoveryStrong": "Easy to discover and easy to trust.",
+  "profileCollaborationDiscoveryGrowing": "Signals are forming, but a few more details would help.",
+  "profileCollaborationDiscoveryStarting": "Still quiet for matching. Add more structured signals.",
+
+  "inboxSystemMembershipTitle": "Membership status",
+  "inboxSystemMembershipExpired": "Your membership has expired. Review benefits and renew access.",
+  "inboxSystemMembershipExpiring": "Your membership expires in {days} days.",
+  "@inboxSystemMembershipExpiring": { "placeholders": { "days": { "type": "String" } } },
+  "inboxSystemMembershipAiQuotaTitle": "AI quota reminder",
+  "inboxSystemMembershipAiQuota": "Only {count} AI credits remain this cycle.",
+  "@inboxSystemMembershipAiQuota": { "placeholders": { "count": { "type": "String" } } },
+
+  "communityCirclesHeroTitle": "Community that helps you meet, ask, and coordinate",
+  "communityCirclesHeroSubtitle": "Meetups, city chat, Q&A, and coordination belong in one community view.",
+  "communityLayersTitle": "How community works",
+  "communityLayersSubtitle": "Move from meetups and city signal into questions and direct coordination.",
+  "communityLayerMeetupsTitle": "Meet on the ground",
+  "communityLayerMeetupsSubtitle": "Use meetups to turn lightweight discovery into real presence and recurring local touchpoints.",
+  "communityLayerCityChatTitle": "City pulse",
+  "communityLayerCityChatSubtitle": "Drop into the conversation already happening around {city}.",
+  "@communityLayerCityChatSubtitle": { "placeholders": { "city": { "type": "String" } } },
+  "communityLayerQuestionsTitle": "Local Q&A",
+  "communityLayerQuestionsSubtitle": "Review open asks and first-hand notes before you decide who to contact directly.",
+  "communityLayerQuestionsBadge": "{count} open asks",
+  "@communityLayerQuestionsBadge": { "placeholders": { "count": { "type": "String" } } },
+  "communityLayerReviewAsks": "Review open asks",
+  "communityLayerCoordinationTitle": "Direct coordination",
+  "communityLayerCoordinationSubtitle": "Once {city} becomes real, move into direct messages and smaller collaboration loops.",
+  "@communityLayerCoordinationSubtitle": { "placeholders": { "city": { "type": "String" } } },
+  "communityLayerReviewCircles": "Review circles",
+  "communityIntelligenceTitle": "Local intelligence",
+  "communityIntelligenceSubtitle": "Open questions and field notes around {city}.",
+  "@communityIntelligenceSubtitle": { "placeholders": { "city": { "type": "String" } } },
+  "communityCoordinationTitle": "Coordination desk",
+  "communityCoordinationSubtitle": "Turn public signal into smaller threads that actually unblock the move.",
+  "communityCoordinationSummary": "Coordinate arrival timing and practical help around {city}.",
+  "@communityCoordinationSummary": { "placeholders": { "city": { "type": "String" } } },
+  "communityQuestionResolved": "Resolved",
+  "communityQuestionNeedsAnswer": "Needs answer",
+  "communityRemoteBaseLabel": "Remote base",
+  "communityDetailFieldNoteTitle": "Field note",
+  "communityDetailQuestionTitle": "Question thread",
+  "communityDetailRatingsTitle": "Ratings breakdown",
+  "communityDetailProsTitle": "What worked",
+  "communityDetailConsTitle": "Watchouts",
+  "communityDetailAnswersTitle": "Answers from the ground",
+  "communityDetailAnswersLoading": "Loading answers...",
+  "communityDetailAnswersEmpty": "No answers yet. City chat is still the fastest way to find someone on the ground.",
+  "communityDetailOpenCityChat": "Open city chat",
+  "communityDetailMessageAuthor": "Message author",
+  "communityDetailMessageAsker": "Message asker",
+  "communityDetailMessageAnswerer": "Message responder",
+  "communityDetailUpvoteQuestion": "Upvote question",
+  "communityCreateQuestionAction": "Ask a question",
+  "communityCreateAnswerAction": "Write an answer",
+  "communityTagLabel": "Tags (comma separated)",
+  "communityDetailLikeFieldNote": "Like field note",
+  "communityCirclesSuggestedTitle": "Suggested circles",
+  "communityCirclesSuggestedSubtitle": "Circles are only one lane of the community stack. Use them alongside meetups, city chat, and local questions.",
+  "communityCirclesQuickActionsTitle": "Community lanes",
+  "communityCirclesQuickActionsSubtitle": "Jump directly into meetup hosting, meetup discovery, city chat, or direct conversations without hunting across tabs.",
+  "communityCirclesMeetupsTitle": "Circle activities",
+  "communityCirclesMeetupsSubtitle": "Upcoming meetups are the fastest path from circle discovery to real-world connection.",
+  "communityCirclesFieldNotesTitle": "Field notes",
+  "communityCirclesFieldNotesSubtitle": "Recent trip reports and lived experience signals from the network.",
+  "communityCirclesQuestionsTitle": "Open asks",
+  "communityCirclesQuestionsSubtitle": "Questions that still need answers from people already on the ground.",
+  "communityCirclesJoin": "Join",
+  "communityCirclesOpen": "Open",
+  "communityCirclesCreateMeetup": "Host meetup",
+  "communityCirclesViewMeetups": "Browse meetups",
+  "communityCirclesOpenInbox": "Direct messages",
+  "communityCirclesExploreCities": "City chat",
+  "communityCirclesMeetupsEmpty": "No upcoming circle activities yet. Host the first meetup to seed the lane.",
+  "communityCirclesFieldNotesEmpty": "No field notes yet. Community reports will surface here once people start sharing.",
+  "communityCirclesQuestionsEmpty": "No open asks right now. When local questions arrive, they will appear here.",
+  "communityCirclesFlexibleLabel": "Flexible",
+  "communityCirclesGeneralistLabel": "Generalist",
+  "communityCirclesMetricCircles": "{count} circles",
+  "@communityCirclesMetricCircles": { "placeholders": { "count": { "type": "String" } } },
+  "communityCirclesMetricMeetups": "{count} meetups",
+  "@communityCirclesMetricMeetups": { "placeholders": { "count": { "type": "String" } } },
+  "communityCirclesMetricFieldNotes": "{count} field notes",
+  "@communityCirclesMetricFieldNotes": { "placeholders": { "count": { "type": "String" } } },
+  "communityCircleCityTitle": "City circle",
+  "communityCircleCitySubtitle": "Find people already active around {city}.",
+  "@communityCircleCitySubtitle": { "placeholders": { "city": { "type": "String" } } },
+  "communityCircleMigrationTitle": "Migration buddies",
+  "communityCircleMigrationSubtitle": "Coordinate people heading toward {city} next.",
+  "@communityCircleMigrationSubtitle": { "placeholders": { "city": { "type": "String" } } },
+  "communityCircleSkillTitle": "Skill exchange",
+  "communityCircleSkillSubtitle": "Use {skill} as your entry point for collaboration and peer swaps.",
+  "@communityCircleSkillSubtitle": { "placeholders": { "skill": { "type": "String" } } },
+  "communityCircleRecurringTitle": "Recurring meetups",
+  "communityCircleRecurringSubtitle": "There are {count} upcoming activities ready to anchor the next circle.",
+  "@communityCircleRecurringSubtitle": { "placeholders": { "count": { "type": "String" } } },
+
+  "profileCockpitTitle": "Run your nomad profile like a live operating system",
+  "profileCockpitSubtitle": "Keep identity, travel signal, and readiness aligned before the next move.",
+  "profileCockpitCurrentBase": "Current base",
+  "profileCockpitExperience": "Experience",
+  "profileCockpitEditProfile": "Edit profile",
+  "profileCockpitIdentityTitle": "Identity cockpit",
+  "profileCockpitIdentitySubtitle": "Keep profile basics and collaboration story aligned.",
+  "profileCockpitOperationsTitle": "Travel operating system",
+  "profileCockpitOperationsSubtitle": "Review membership, plans, and journey stats together.",
+  "profileCockpitSignalsTitle": "Signals and network",
+  "profileCockpitSignalsSubtitle": "Show the badges, interests, and proof others use to read your profile.",
+  "profileCockpitSupportTitle": "Support and account",
+  "profileCockpitSupportSubtitle": "Keep support, legal info, and account controls together.",
+  "landHubPlanningLaneTitle": "Planning lane",
+  "landHubPlanningLaneSubtitle": "Lock plan, budget, and visa before the rest of the move.",
+  "landHubArrivalLaneTitle": "First-week lane",
+  "landHubArrivalLaneSubtitle": "Build the first-week checklist before you land.",
+  "landHubChecklistNow": "Now",
+  "landHubChecklistNext": "Next",
+  "landHubChecklistWatch": "Watch",
+  "landHubChecklistDetailed": "Detailed",
+  "landHubChecklistLocked": "Locked",
+  "landHubChecklistBaselineReady": "Baseline ready",
+  "landHubChecklistShortlisted": "Shortlisted",
+  "landHubChecklistPlanningLive": "In plan",
+  "landHubChecklistMapped": "Mapped",
+  "landHubChecklistCityScoped": "City scoped",
+  "landHubChecklistVisaLinked": "Visa-linked",
+  "landHubChecklistTrackingSource": "Tracking in {source}: {signal}",
+  "@landHubChecklistTrackingSource": {
+    "placeholders": {
+      "source": { "type": "String" },
+      "signal": { "type": "String" }
+    }
+  },
+  "landHubChecklistArrivalTitle": "Lock arrival and first-night timing",
+  "landHubChecklistArrivalReady": "Departure is already visible for {dateLabel}. Keep check-in and airport arrival details in the same plan.",
+  "@landHubChecklistArrivalReady": {
+    "placeholders": {
+      "dateLabel": {}
+    }
+  },
+  "landHubChecklistArrivalDetailed": "{methodLabel}: {details}",
+  "@landHubChecklistArrivalDetailed": {
+    "placeholders": {
+      "methodLabel": {},
+      "details": {}
+    }
+  },
+  "landHubChecklistArrivalPending": "Your move still needs a committed departure date. Set arrival timing before the rest of the landing stack drifts.",
+  "landHubChecklistStayTitle": "Review the first-week stay",
+  "landHubChecklistStaySubtitle": "Shortlist flexible stays in {cityName} so the first week is covered before you start exploring longer-term options.",
+  "@landHubChecklistStaySubtitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "landHubChecklistStayWithBudget": "You already have a monthly baseline of {budgetLabel}. Use it to keep the first-week stay in {cityName} realistic.",
+  "@landHubChecklistStayWithBudget": {
+    "placeholders": {
+      "cityName": {},
+      "budgetLabel": {}
+    }
+  },
+  "landHubChecklistStayDetailed": "Shortlisted a stay around {areaLabel} at about {priceLabel} for {cityName}.",
+  "@landHubChecklistStayDetailed": {
+    "placeholders": {
+      "cityName": {},
+      "areaLabel": {},
+      "priceLabel": {}
+    }
+  },
+  "landHubChecklistWorkTitle": "Secure a reliable work base",
+  "landHubChecklistWorkSubtitle": "Check coworking options in {cityName} before arrival so meetings, calls, and backup desks are not last-minute.",
+  "@landHubChecklistWorkSubtitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "landHubChecklistTransportTitle": "Map the local transport path",
+  "landHubChecklistTransportSubtitle": "Review airport transfer and daily transport options around {cityName} while route choices are still cheap to adjust.",
+  "@landHubChecklistTransportSubtitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "landHubChecklistTransportDetailed": "{methodLabel}: {details}",
+  "@landHubChecklistTransportDetailed": {
+    "placeholders": {
+      "methodLabel": {},
+      "details": {}
+    }
+  },
+  "landHubChecklistConnectivityTitle": "Prepare mobile data and connectivity",
+  "landHubChecklistConnectivitySubtitle": "Use AI to outline the first eSIM, hotspot, and backup connectivity setup you will need in {cityName}.",
+  "@landHubChecklistConnectivitySubtitle": {
+    "placeholders": {
+      "cityName": {}
+    }
+  },
+  "landHubChecklistConnectivityWithVisa": "Your visa clock is currently {visaLabel}. Use AI to pressure-test eSIM, hotspot, and backup network setup for {cityName}.",
+  "@landHubChecklistConnectivityWithVisa": {
+    "placeholders": {
+      "cityName": {},
+      "visaLabel": {}
+    }
+  },
+  "landHubResourceLaneTitle": "Resource lane",
+  "landHubResourceLaneSubtitle": "Keep past stays close when the next move needs context."
 }
 
 

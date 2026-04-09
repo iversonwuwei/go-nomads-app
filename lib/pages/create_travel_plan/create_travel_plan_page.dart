@@ -7,6 +7,7 @@ import 'package:go_nomads_app/controllers/create_travel_plan_page_controller.dar
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/planning/planning_launch_components.dart';
 
 import '../travel_plan/travel_plan_page.dart';
 import 'widgets/widgets.dart';
@@ -38,88 +39,9 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: _buildAppBar(context),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Header Card
-              _HeaderCard(controllerTag: controllerTag),
-
-              // Form Section
-              Container(
-                margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10.r,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Destination
-                    TravelPlanDestinationSection(controllerTag: controllerTag),
-
-                    SizedBox(height: 28.h),
-
-                    // Departure Location
-                    TravelPlanDepartureSection(controllerTag: controllerTag),
-
-                    SizedBox(height: 28.h),
-
-                    // Departure Date
-                    TravelPlanDateSection(controllerTag: controllerTag),
-
-                    SizedBox(height: 28.h),
-
-                    // Trip Duration
-                    const TravelPlanDurationSection(),
-
-                    SizedBox(height: 28.h),
-
-                    // Budget Level
-                    const TravelPlanBudgetSection(),
-
-                    SizedBox(height: 28.h),
-
-                    // OpenClaw Research Layer
-                    TravelPlanOpenClawSection(
-                      onStrategyTap: (planningMode) => _launchTravelPlanFromCreatePage(
-                        context,
-                        controller,
-                        overridePlanningMode: planningMode,
-                      ),
-                    ),
-
-                    SizedBox(height: 28.h),
-
-                    // Attractions
-                    const TravelPlanAttractionsSection(),
-
-                    SizedBox(height: 28.h),
-
-                    // Travel Style
-                    const TravelPlanStyleSection(),
-
-                    SizedBox(height: 28.h),
-
-                    // Interests
-                    const TravelPlanInterestsSection(),
-
-                    if (embeddedInBottomNav) ...[
-                      SizedBox(height: 28.h),
-                      const _GeneratePlanButton(),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
+        body: _CreateTravelPlanBody(
+          controllerTag: controllerTag,
+          embeddedInBottomNav: embeddedInBottomNav,
         ),
         bottomNavigationBar: embeddedInBottomNav ? null : const _BottomBar(),
       ),
@@ -177,6 +99,723 @@ class CreateTravelPlanPage extends GetView<CreateTravelPlanPageController> {
       ),
     );
   }
+}
+
+class _CreateTravelPlanBody extends StatefulWidget {
+  final String controllerTag;
+  final bool embeddedInBottomNav;
+
+  const _CreateTravelPlanBody({
+    required this.controllerTag,
+    required this.embeddedInBottomNav,
+  });
+
+  @override
+  State<_CreateTravelPlanBody> createState() => _CreateTravelPlanBodyState();
+}
+
+class _CreateTravelPlanBodyState extends State<_CreateTravelPlanBody> {
+  late final ScrollController _scrollController;
+  late final CreateTravelPlanPageController _controller;
+  late final List<GlobalKey> _stageKeys;
+  int _activeStage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.find<CreateTravelPlanPageController>(tag: widget.controllerTag);
+    _scrollController = ScrollController()..addListener(_handleScroll);
+    _stageKeys = List<GlobalKey>.generate(3, (_) => GlobalKey());
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!mounted) {
+      return;
+    }
+
+    final anchor = MediaQuery.paddingOf(context).top + kToolbarHeight + 88.h;
+    var nextStage = _activeStage;
+    var nearestDistance = double.infinity;
+
+    for (var index = 0; index < _stageKeys.length; index++) {
+      final stageContext = _stageKeys[index].currentContext;
+      final renderBox = stageContext?.findRenderObject() as RenderBox?;
+
+      if (renderBox == null || !renderBox.attached) {
+        continue;
+      }
+
+      final top = renderBox.localToGlobal(Offset.zero).dy;
+      final distance = (top - anchor).abs();
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nextStage = index;
+      }
+    }
+
+    if (nextStage != _activeStage) {
+      setState(() {
+        _activeStage = nextStage;
+      });
+    }
+  }
+
+  Future<void> _scrollToStage(int index) async {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _activeStage = index;
+    });
+
+    final stageContext = _stageKeys[index].currentContext;
+    if (stageContext == null) {
+      return;
+    }
+
+    await Scrollable.ensureVisible(
+      stageContext,
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeInOutCubic,
+      alignment: 0.02,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final stages = <_CreatePlanStageMeta>[
+      _CreatePlanStageMeta(
+        label: l10n.destination,
+        title: 'Travel Brief',
+        icon: FontAwesomeIcons.route,
+        color: const Color(0xFFFF4458),
+      ),
+      _CreatePlanStageMeta(
+        label: l10n.travelStyle,
+        title: 'Preference Stack',
+        icon: FontAwesomeIcons.sliders,
+        color: const Color(0xFF2E9B7F),
+      ),
+      _CreatePlanStageMeta(
+        label: l10n.generatePlan,
+        title: 'Research Launch',
+        icon: FontAwesomeIcons.wandMagicSparkles,
+        color: const Color(0xFF2667FF),
+      ),
+    ];
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      child: Column(
+        children: [
+          _HeaderCard(controllerTag: widget.controllerTag),
+          _CreatePlanMissionShell(
+            controllerTag: widget.controllerTag,
+            stages: stages,
+            activeStage: _activeStage,
+            onStageSelected: _scrollToStage,
+          ),
+          _CreatePlanStageSection(
+            key: _stageKeys[0],
+            accentColor: stages[0].color,
+            icon: stages[0].icon,
+            eyebrow: '01',
+            title: stages[0].title,
+            label: stages[0].label,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TravelPlanDestinationSection(controllerTag: widget.controllerTag),
+                SizedBox(height: 28.h),
+                TravelPlanDepartureSection(controllerTag: widget.controllerTag),
+                SizedBox(height: 28.h),
+                TravelPlanDateSection(controllerTag: widget.controllerTag),
+              ],
+            ),
+          ),
+          _CreatePlanStageSection(
+            key: _stageKeys[1],
+            accentColor: stages[1].color,
+            icon: stages[1].icon,
+            eyebrow: '02',
+            title: stages[1].title,
+            label: stages[1].label,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const TravelPlanDurationSection(),
+                SizedBox(height: 28.h),
+                const TravelPlanBudgetSection(),
+                SizedBox(height: 28.h),
+                const TravelPlanAttractionsSection(),
+                SizedBox(height: 28.h),
+                const TravelPlanStyleSection(),
+                SizedBox(height: 28.h),
+                const TravelPlanInterestsSection(),
+              ],
+            ),
+          ),
+          _CreatePlanStageSection(
+            key: _stageKeys[2],
+            accentColor: stages[2].color,
+            icon: stages[2].icon,
+            eyebrow: '03',
+            title: stages[2].title,
+            label: stages[2].label,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TravelPlanOpenClawSection(
+                  onStrategyTap: (planningMode) => _launchTravelPlanFromCreatePage(
+                    context,
+                    _controller,
+                    overridePlanningMode: planningMode,
+                  ),
+                ),
+                SizedBox(height: 28.h),
+                _LaunchReadinessCard(
+                  controllerTag: widget.controllerTag,
+                  showInlineButton: widget.embeddedInBottomNav,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: widget.embeddedInBottomNav ? 20.h : 120.h),
+        ],
+      ),
+    );
+  }
+}
+
+class _CreatePlanMissionShell extends StatelessWidget {
+  final String controllerTag;
+  final List<_CreatePlanStageMeta> stages;
+  final int activeStage;
+  final ValueChanged<int> onStageSelected;
+
+  const _CreatePlanMissionShell({
+    required this.controllerTag,
+    required this.stages,
+    required this.activeStage,
+    required this.onStageSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = Get.find<CreateTravelPlanPageController>(tag: controllerTag);
+
+    return Obx(() {
+      final previewItems = _buildPreviewItems(l10n, controller);
+      return Container(
+        width: double.infinity,
+        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFF4F5), Color(0xFFF7F9FF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: const Color(0xFFFF4458).withValues(alpha: 0.08)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.createTravelPlan,
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Text(
+                        controller.cityName.isNotEmpty ? l10n.planYourTrip(controller.cityName) : l10n.aiTravelPlanner,
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 13.sp,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: stages[activeStage].color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999.r),
+                  ),
+                  child: Text(
+                    '${activeStage + 1}/${stages.length}',
+                    style: TextStyle(
+                      color: stages[activeStage].color,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999.r),
+              child: LinearProgressIndicator(
+                value: (activeStage + 1) / stages.length,
+                minHeight: 8.h,
+                backgroundColor: Colors.white,
+                valueColor: AlwaysStoppedAnimation<Color>(stages[activeStage].color),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: List<Widget>.generate(
+                stages.length,
+                (index) => _CreatePlanStagePill(
+                  label: stages[index].label,
+                  icon: stages[index].icon,
+                  color: stages[index].color,
+                  isActive: activeStage == index,
+                  onTap: () => onStageSelected(index),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 240),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: Wrap(
+                key: ValueKey<int>(activeStage),
+                spacing: 12.w,
+                runSpacing: 12.h,
+                children: previewItems[activeStage]
+                    .map(
+                      (item) => SizedBox(
+                        width: 146.w,
+                        child: PlanningPreviewCard(
+                          title: item.title,
+                          value: item.value,
+                          icon: item.icon,
+                          tint: stages[activeStage].color,
+                          backgroundColor: Colors.white.withValues(alpha: 0.92),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  List<List<_CreatePlanPreviewItem>> _buildPreviewItems(
+    AppLocalizations l10n,
+    CreateTravelPlanPageController controller,
+  ) {
+    final date = controller.departureDate.value;
+    final dateText = date == null
+        ? l10n.selectDate
+        : '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+    final interestCount = controller.interests.length + controller.selectedAttractions.length;
+
+    return [
+      [
+        _CreatePlanPreviewItem(
+          title: l10n.destination,
+          value: controller.cityName.isNotEmpty ? controller.cityName : l10n.selectDestination,
+          icon: FontAwesomeIcons.locationDot,
+        ),
+        _CreatePlanPreviewItem(
+          title: l10n.departureLocation,
+          value: controller.departureLocation.value.isNotEmpty
+              ? controller.departureLocation.value
+              : l10n.selectDeparture,
+          icon: FontAwesomeIcons.planeDeparture,
+        ),
+        _CreatePlanPreviewItem(
+          title: l10n.date,
+          value: dateText,
+          icon: FontAwesomeIcons.calendarDay,
+        ),
+      ],
+      [
+        _CreatePlanPreviewItem(
+          title: l10n.tripDuration,
+          value: '${controller.duration.value} d',
+          icon: FontAwesomeIcons.clock,
+        ),
+        _CreatePlanPreviewItem(
+          title: l10n.budget,
+          value: controller.getFinalBudget(),
+          icon: FontAwesomeIcons.wallet,
+        ),
+        _CreatePlanPreviewItem(
+          title: l10n.interests,
+          value: interestCount > 0 ? '$interestCount selected' : l10n.selectInterests,
+          icon: FontAwesomeIcons.layerGroup,
+        ),
+      ],
+      [
+        _CreatePlanPreviewItem(
+          title: 'OpenClaw',
+          value: controller.planningModeLabel,
+          icon: FontAwesomeIcons.magnifyingGlassChart,
+        ),
+        _CreatePlanPreviewItem(
+          title: 'Signals',
+          value: controller.openClawSignals.isNotEmpty
+              ? controller.openClawSignals.join(', ')
+              : 'No signals',
+          icon: FontAwesomeIcons.waveSquare,
+        ),
+        _CreatePlanPreviewItem(
+          title: l10n.generatePlan,
+          value: controller.hasSelectedDestination ? 'Ready' : l10n.selectDestination,
+          icon: FontAwesomeIcons.rocket,
+        ),
+      ],
+    ];
+  }
+}
+
+class _CreatePlanStageSection extends StatelessWidget {
+  final Color accentColor;
+  final IconData icon;
+  final String eyebrow;
+  final String title;
+  final String label;
+  final Widget child;
+
+  const _CreatePlanStageSection({
+    super.key,
+    required this.accentColor,
+    required this.icon,
+    required this.eyebrow,
+    required this.title,
+    required this.label,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 16.r,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Icon(icon, color: accentColor, size: 18.r),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      eyebrow,
+                      style: TextStyle(
+                        color: accentColor,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: accentColor,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 18.h),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _CreatePlanStagePill extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _CreatePlanStagePill({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: isActive ? color : Colors.white,
+          borderRadius: BorderRadius.circular(999.r),
+          border: Border.all(color: isActive ? color : Colors.black12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14.r, color: isActive ? Colors.white : Colors.black54),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? Colors.white : Colors.black87,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LaunchReadinessCard extends GetView<CreateTravelPlanPageController> {
+  final String controllerTag;
+  final bool showInlineButton;
+
+  const _LaunchReadinessCard({
+    required this.controllerTag,
+    required this.showInlineButton,
+  });
+
+  @override
+  String? get tag => controllerTag;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Obx(() {
+      final summaryItems = <_CreatePlanPreviewItem>[
+        _CreatePlanPreviewItem(
+          title: l10n.destination,
+          value: controller.cityName.isNotEmpty ? controller.cityName : l10n.selectDestination,
+          icon: FontAwesomeIcons.locationDot,
+        ),
+        _CreatePlanPreviewItem(
+          title: l10n.tripDuration,
+          value: '${controller.duration.value} d',
+          icon: FontAwesomeIcons.clock,
+        ),
+        _CreatePlanPreviewItem(
+          title: l10n.budget,
+          value: controller.getFinalBudget(),
+          icon: FontAwesomeIcons.wallet,
+        ),
+      ];
+
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(18.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFEEF4FF), Color(0xFFFFFFFF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(color: const Color(0xFF2667FF).withValues(alpha: 0.12)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 42.w,
+                  height: 42.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2667FF).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.rocket,
+                    color: const Color(0xFF2667FF),
+                    size: 18.r,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.generatePlan,
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 17.sp,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        controller.hasSelectedDestination ? controller.planningModeLabel : l10n.selectDestination,
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            Wrap(
+              spacing: 10.w,
+              runSpacing: 10.h,
+              children: summaryItems
+                  .map(
+                    (item) => SizedBox(
+                      width: 146.w,
+                      child: PlanningPreviewCard(
+                        title: item.title,
+                        value: item.value,
+                        icon: item.icon,
+                        tint: const Color(0xFF2667FF),
+                        backgroundColor: Colors.white.withValues(alpha: 0.92),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            SizedBox(height: 16.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: [
+                PlanningStageChip(
+                  label: 'Travel Brief',
+                  value: controller.cityName.isNotEmpty ? controller.cityName : l10n.selectDestination,
+                  minWidth: 104.w,
+                ),
+                PlanningStageChip(
+                  label: 'Preference Stack',
+                  value: controller.getFinalBudget(),
+                  minWidth: 104.w,
+                ),
+                PlanningStageChip(
+                  label: 'Research Launch',
+                  value: controller.planningModeLabel,
+                  minWidth: 104.w,
+                ),
+              ],
+            ),
+            if (showInlineButton) ...[
+              SizedBox(height: 18.h),
+              const _GeneratePlanButton(),
+            ],
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _CreatePlanStageMeta {
+  final String label;
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  const _CreatePlanStageMeta({
+    required this.label,
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
+}
+
+class _CreatePlanPreviewItem {
+  final String title;
+  final String value;
+  final IconData icon;
+
+  const _CreatePlanPreviewItem({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
 }
 
 class _HeaderCard extends StatelessWidget {

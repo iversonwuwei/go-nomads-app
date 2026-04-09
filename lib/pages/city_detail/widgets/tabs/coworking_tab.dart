@@ -7,6 +7,7 @@ import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/coworking_verification_badge.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
+import '../../../../features/city/presentation/controllers/city_detail_state_controller.dart';
 import '../../../../features/coworking/domain/entities/coworking_space.dart' as coworking;
 import '../../../../features/coworking/presentation/controllers/coworking_state_controller.dart';
 import '../../city_detail_controller.dart';
@@ -17,20 +18,25 @@ import '../../city_detail_controller.dart';
 class CoworkingTab extends GetView<CityDetailController> {
   const CoworkingTab({
     super.key,
-    required this.tag,
+    required String tag,
     required this.onAddCoworkingPressed,
-  });
+  }) : _tag = tag;
+
+  final String _tag;
+  final VoidCallback onAddCoworkingPressed;
 
   @override
-  final String? tag;
-  final VoidCallback onAddCoworkingPressed;
+  String? get tag => _tag;
 
   @override
   Widget build(BuildContext context) {
     final coworkingController = Get.find<CoworkingStateController>();
+    final cityDetailController = Get.find<CityDetailStateController>();
 
     return Obx(() {
       final spaces = coworkingController.coworkingSpaces;
+      final nomadSummary = cityDetailController.currentNomadSummary.value;
+      final city = cityDetailController.currentCity.value;
       final content = spaces.isEmpty
           ? _EmptyCoworkingState(
               cityId: controller.cityId,
@@ -43,12 +49,126 @@ class CoworkingTab extends GetView<CityDetailController> {
               onAddCoworkingPressed: onAddCoworkingPressed,
             );
 
-      return AppLoadingSwitcher(
-        isLoading: coworkingController.isLoading.value,
-        loading: const CoworkingTabSkeleton(),
-        child: content,
+      return Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
+            child: _CoworkingContextHeader(
+              cityName: controller.cityName,
+              featuredCount: nomadSummary?.recommendedCoworkings.length ?? 0,
+              countryName: city?.country,
+            ),
+          ),
+          Expanded(
+            child: AppLoadingSwitcher(
+              isLoading: coworkingController.isLoading.value,
+              loading: const CoworkingTabSkeleton(),
+              child: content,
+            ),
+          ),
+        ],
       );
     });
+  }
+}
+
+class _CoworkingContextHeader extends StatelessWidget {
+  const _CoworkingContextHeader({
+    required this.cityName,
+    required this.featuredCount,
+    required this.countryName,
+  });
+
+  final String cityName;
+  final int featuredCount;
+  final String? countryName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2E1A46), Color(0xFF4F2E75)],
+        ),
+        borderRadius: BorderRadius.circular(24.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _ContextPill(
+                icon: FontAwesomeIcons.laptop,
+                label: featuredCount > 0 ? '$featuredCount recommended work hubs' : 'Workspace scouting',
+              ),
+              if (countryName != null && countryName!.isNotEmpty)
+                _ContextPill(
+                  icon: FontAwesomeIcons.locationDot,
+                  label: countryName!,
+                ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            'Work setup in $cityName',
+            style: TextStyle(
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Scan verified desks, meeting capacity, and network quality before you lock the week.',
+            style: TextStyle(
+              fontSize: 13.sp,
+              height: 1.5,
+              color: Colors.white.withValues(alpha: 0.78),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContextPill extends StatelessWidget {
+  const _ContextPill({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12.r, color: Colors.white),
+          SizedBox(width: 8.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

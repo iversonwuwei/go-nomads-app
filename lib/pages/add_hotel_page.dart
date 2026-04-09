@@ -9,6 +9,7 @@ import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/map_picker/map_picker_page.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:go_nomads_app/widgets/location_picker_field.dart';
 
 class AddHotelPage extends StatelessWidget {
@@ -47,35 +48,38 @@ class AddHotelPage extends StatelessWidget {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Form(
-              key: controller.formKey,
-              child: ListView(
-                padding: EdgeInsets.all(16.w),
-                children: [
-                  _buildImageSection(controller, l10n),
-                  SizedBox(height: 24.h),
-                  _buildBasicInfoSection(controller, l10n),
-                  SizedBox(height: 24.h),
-                  _buildLocationSection(controller, l10n),
-                  SizedBox(height: 24.h),
-                  _buildContactSection(controller, l10n),
-                  SizedBox(height: 24.h),
-                  _buildPricingSection(controller, l10n),
-                  SizedBox(height: 24.h),
-                  _buildRoomTypesSection(controller),
-                  SizedBox(height: 24.h),
-                  _buildNomadFeaturesSection(controller, l10n),
-                  SizedBox(height: 32.h),
-                ],
+      body: Form(
+        key: controller.formKey,
+        child: CustomScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 120.h),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    _buildImageSection(controller, l10n),
+                    SizedBox(height: 24.h),
+                    _buildBasicInfoSection(controller, l10n),
+                    SizedBox(height: 24.h),
+                    _buildLocationSection(controller, l10n),
+                    SizedBox(height: 24.h),
+                    _buildContactSection(controller, l10n),
+                    SizedBox(height: 24.h),
+                    _buildPricingSection(controller, l10n),
+                    SizedBox(height: 24.h),
+                    _buildRoomTypesSection(controller),
+                    SizedBox(height: 24.h),
+                    _buildNomadFeaturesSection(controller, l10n),
+                    SizedBox(height: 32.h),
+                  ],
+                ),
               ),
             ),
-          ),
-          _buildBottomBar(controller, l10n),
-        ],
+          ],
+        ),
       ),
+      bottomNavigationBar: _buildBottomBar(controller, l10n),
     );
   }
 
@@ -437,7 +441,7 @@ class AddHotelPage extends StatelessWidget {
   Widget _buildCurrencyDropdown(AddHotelPageController controller, AppLocalizations l10n) {
     return Obx(() {
       return DropdownButtonFormField<String>(
-        value: controller.currency.value,
+        initialValue: controller.currency.value,
         decoration: InputDecoration(
           labelText: l10n.currency,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -601,15 +605,13 @@ class AddHotelPage extends StatelessWidget {
     String selectedBedType = room['bedType'] ?? 'Double';
     String selectedCurrency = room['currency'] ?? controller.currency.value;
 
-    showDialog(
-      context: Get.context!,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(isEdit ? l10n.addHotelEditRoomType : l10n.addHotelAddRoomType),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+    AppBottomDrawer.show<void>(
+      Get.context!,
+      title: isEdit ? l10n.addHotelEditRoomType : l10n.addHotelAddRoomType,
+      maxHeightFactor: 0.9,
+      child: StatefulBuilder(
+        builder: (context, setDialogState) => Column(
+          children: [
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
@@ -636,7 +638,7 @@ class AddHotelPage extends StatelessWidget {
                     SizedBox(width: 8.w),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: selectedCurrency,
+                    initialValue: selectedCurrency,
                         decoration: InputDecoration(labelText: l10n.currency),
                         items: const ['USD', 'EUR', 'CNY', 'THB', 'VND', 'IDR']
                             .map((c) => DropdownMenuItem(value: c, child: Text(c)))
@@ -671,7 +673,7 @@ class AddHotelPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: selectedBedType,
+                    initialValue: selectedBedType,
                         decoration: InputDecoration(labelText: l10n.addHotelBedType),
                         items: [
                           DropdownMenuItem(value: 'Single', child: Text(l10n.addHotelBedTypeSingle)),
@@ -695,51 +697,48 @@ class AddHotelPage extends StatelessWidget {
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
-            ElevatedButton(
-              onPressed: () {
-                if (nameController.text.trim().isEmpty) {
-                  AppToast.error(l10n.addHotelEnterRoomTypeName);
-                  return;
-                }
-                if (priceController.text.trim().isEmpty) {
-                  AppToast.error(l10n.addHotelEnterPricePerNight);
-                  return;
-                }
-
-                final roomData = <String, dynamic>{
-                  'name': nameController.text.trim(),
-                  'description': descController.text.trim(),
-                  'pricePerNight': double.tryParse(priceController.text) ?? 0,
-                  'currency': selectedCurrency,
-                  'roomSize': double.tryParse(sizeController.text) ?? 25,
-                  'maxOccupancy': int.tryParse(maxOccupancyController.text) ?? 2,
-                  'bedType': selectedBedType,
-                  'availableRooms': int.tryParse(availableRoomsController.text) ?? 1,
-                  'isAvailable': true,
-                };
-
-                if (isEdit && room['id'] != null) {
-                  roomData['id'] = room['id'];
-                }
-
-                if (isEdit) {
-                  controller.updateRoomType(editIndex, roomData);
-                } else {
-                  controller.addRoomType(roomData);
-                }
-
-                Navigator.pop(context);
-                AppToast.success(isEdit ? l10n.addHotelRoomTypeUpdated : l10n.addHotelRoomTypeAdded);
-              },
-              child: Text(isEdit ? l10n.save : l10n.add),
-            ),
           ],
         ),
+      ),
+      footer: AppBottomDrawerActionRow(
+        secondaryLabel: l10n.cancel,
+        onSecondaryPressed: () => Navigator.pop(Get.context!),
+        primaryLabel: isEdit ? l10n.save : l10n.add,
+        onPrimaryPressed: () {
+          if (nameController.text.trim().isEmpty) {
+            AppToast.error(l10n.addHotelEnterRoomTypeName);
+            return;
+          }
+          if (priceController.text.trim().isEmpty) {
+            AppToast.error(l10n.addHotelEnterPricePerNight);
+            return;
+          }
+
+          final roomData = <String, dynamic>{
+            'name': nameController.text.trim(),
+            'description': descController.text.trim(),
+            'pricePerNight': double.tryParse(priceController.text) ?? 0,
+            'currency': selectedCurrency,
+            'roomSize': double.tryParse(sizeController.text) ?? 25,
+            'maxOccupancy': int.tryParse(maxOccupancyController.text) ?? 2,
+            'bedType': selectedBedType,
+            'availableRooms': int.tryParse(availableRoomsController.text) ?? 1,
+            'isAvailable': true,
+          };
+
+          if (isEdit && room['id'] != null) {
+            roomData['id'] = room['id'];
+          }
+
+          if (isEdit) {
+            controller.updateRoomType(editIndex, roomData);
+          } else {
+            controller.addRoomType(roomData);
+          }
+
+          Navigator.pop(Get.context!);
+          AppToast.success(isEdit ? l10n.addHotelRoomTypeUpdated : l10n.addHotelRoomTypeAdded);
+        },
       ),
     );
   }

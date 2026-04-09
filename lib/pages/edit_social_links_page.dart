@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/controllers/edit_social_links_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
 /// 社交平台常量
@@ -34,27 +35,25 @@ class EditSocialLinksPage extends StatelessWidget {
     if (Get.isRegistered<EditSocialLinksPageController>(tag: tag)) {
       return Get.find<EditSocialLinksPageController>(tag: tag);
     }
-    return Get.put(EditSocialLinksPageController(accountId: accountId), tag: tag);
+    return Get.put(EditSocialLinksPageController(accountId: accountId),
+        tag: tag);
   }
 
-  Future<void> _showEditDialog(BuildContext context, EditSocialLinksPageController controller, String platform) async {
+  Future<void> _showEditDialog(BuildContext context,
+      EditSocialLinksPageController controller, String platform) async {
     final l10n = AppLocalizations.of(context)!;
     final platformInfo = SocialPlatforms.platforms[platform]!;
     final currentUrl = controller.getLink(platform);
     final textController = TextEditingController(text: currentUrl);
+    String? result;
 
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Text(platformInfo['icon'] as String, style: TextStyle(fontSize: 24.sp)),
-            SizedBox(width: 8.w),
-            Text(platformInfo['name'] as String),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+    try {
+      await AppBottomDrawer.show<void>(
+        context,
+        title:
+            '${platformInfo['icon'] as String} ${platformInfo['name'] as String}',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: textController,
@@ -68,7 +67,8 @@ class EditSocialLinksPage extends StatelessWidget {
             SizedBox(height: 8.h),
             if (platformInfo['urlPattern'] != null)
               Text(
-                l10n.editSocialLinksExample(platformInfo['urlPattern'] as String),
+                l10n.editSocialLinksExample(
+                    platformInfo['urlPattern'] as String),
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.grey.shade600,
@@ -76,32 +76,42 @@ class EditSocialLinksPage extends StatelessWidget {
               ),
           ],
         ),
-        actions: [
-          if (currentUrl != null)
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'DELETE'),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: Text(l10n.delete),
+        footer: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (currentUrl != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () {
+                    result = 'DELETE';
+                    Get.back<void>();
+                  },
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: Text(l10n.delete),
+                ),
+              ),
+            AppBottomDrawerActionRow(
+              secondaryLabel: l10n.cancel,
+              onSecondaryPressed: () => Get.back<void>(),
+              primaryLabel: l10n.save,
+              onPrimaryPressed: () {
+                result = textController.text.trim();
+                Get.back<void>();
+              },
             ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, textController.text.trim()),
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
-    );
-
-    textController.dispose();
+          ],
+        ),
+      );
+    } finally {
+      textController.dispose();
+    }
 
     if (result != null) {
       if (result == 'DELETE') {
         await controller.deleteSocialLink(platform);
-      } else if (result.isNotEmpty) {
-        await controller.saveSocialLink(platform, result);
+      } else if (result!.isNotEmpty) {
+        await controller.saveSocialLink(platform, result!);
       }
     }
   }
@@ -152,7 +162,9 @@ class EditSocialLinksPage extends StatelessWidget {
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
           trailing: Icon(
-            hasLink ? FontAwesomeIcons.circleCheck : FontAwesomeIcons.circlePlus,
+            hasLink
+                ? FontAwesomeIcons.circleCheck
+                : FontAwesomeIcons.circlePlus,
             color: hasLink ? Colors.green : Colors.grey,
           ),
           onTap: () => _showEditDialog(context, controller, platform),
@@ -186,7 +198,8 @@ class EditSocialLinksPage extends StatelessWidget {
                     const Icon(FontAwesomeIcons.link, color: Colors.blue),
                     SizedBox(width: 8.w),
                     Obx(() => Text(
-                          l10n.editSocialLinksAddedCount(controller.linkedCount, SocialPlatforms.platforms.length),
+                          l10n.editSocialLinksAddedCount(controller.linkedCount,
+                              SocialPlatforms.platforms.length),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16.sp,
@@ -203,7 +216,8 @@ class EditSocialLinksPage extends StatelessWidget {
                   children: SocialPlatforms.platforms.entries.map((entry) {
                     return Padding(
                       padding: EdgeInsets.only(bottom: 8.h),
-                      child: _buildPlatformCard(context, controller, entry.key, entry.value),
+                      child: _buildPlatformCard(
+                          context, controller, entry.key, entry.value),
                     );
                   }).toList(),
                 ),

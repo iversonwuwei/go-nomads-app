@@ -35,68 +35,65 @@ class HomeHeroSection extends GetView<HomePageController> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 24 : 48,
-                vertical: isMobile ? 40 : 60,
+                horizontal: isMobile ? 18 : 40,
+                vertical: isMobile ? 24 : 44,
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo和标题区域
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: EdgeInsets.all(12.w),
+                        padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Icon(
-                          FontAwesomeIcons.earthAmericas,
+                          FontAwesomeIcons.compass,
                           color: Colors.white,
-                          size: 32.r,
+                          size: 16.r,
                         ),
                       ),
-                      SizedBox(width: 16.w),
+                      SizedBox(width: 12.w),
                       Text(
-                        l10n.goNomad,
+                        l10n.explore,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: isMobile ? 32 : 42,
+                          fontSize: isMobile ? 14 : 16,
                           fontWeight: FontWeight.w700,
-                          letterSpacing: -1,
+                          letterSpacing: 0.4,
                         ),
                       ),
                     ],
                   ),
 
-                  SizedBox(height: isMobile ? 24 : 32),
+                  SizedBox(height: isMobile ? 18 : 24),
 
-                  // 副标题
                   Text(
-                    l10n.joinGlobalCommunity,
-                    textAlign: TextAlign.center,
+                    l10n.homeHeroTitle,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: isMobile ? 18 : 22,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.5.sp,
+                      fontSize: isMobile ? 26 : 40,
+                      fontWeight: FontWeight.w800,
+                      height: 1.02,
+                      letterSpacing: -0.8,
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: 6.h),
                   Text(
-                    l10n.livingTravelingWorld,
-                    textAlign: TextAlign.center,
+                    l10n.homeHeroSubtitle,
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: isMobile ? 18 : 22,
+                      color: Colors.white.withValues(alpha: 0.88),
+                      fontSize: isMobile ? 14 : 15,
                       fontWeight: FontWeight.w400,
-                      letterSpacing: 0.5.sp,
+                      height: 1.3,
+                      letterSpacing: 0.2.sp,
                     ),
                   ),
 
-                  SizedBox(height: isMobile ? 32 : 40),
+                  SizedBox(height: isMobile ? 18 : 28),
 
-                  // 服务卡片
                   _ServiceCardsGrid(isMobile: isMobile),
                 ],
               ),
@@ -135,7 +132,7 @@ class _ServiceCardsGrid extends GetView<HomePageController> {
                   child: _ServiceCard(
                     isMobile: true,
                     icon: FontAwesomeIcons.city,
-                    title: l10n.cities,
+                    title: l10n.exploreCities,
                     color: const Color(0xFFFF4458),
                     onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
                     isCompact: isVerySmall,
@@ -145,26 +142,26 @@ class _ServiceCardsGrid extends GetView<HomePageController> {
                 Expanded(
                   child: _ServiceCard(
                     isMobile: true,
-                    icon: FontAwesomeIcons.building,
-                    title: l10n.coworks,
-                    color: const Color(0xFF6366F1),
-                    onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.coworking)),
+                    icon: FontAwesomeIcons.mapLocationDot,
+                    title: l10n.homeHeroMapView,
+                    color: const Color(0xFF3B82F6),
+                    onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.globalMap)),
                     isCompact: isVerySmall,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 12.h),
-            // 第二行: Meetups + Innovation
+            SizedBox(height: 10.h),
+            // 第二行: Migration + Meetups
             Row(
               children: [
                 Expanded(
                   child: _ServiceCard(
                     isMobile: true,
-                    icon: FontAwesomeIcons.userGroup,
-                    title: l10n.meetups,
+                    icon: FontAwesomeIcons.route,
+                    title: l10n.migrationWorkspace,
                     color: const Color(0xFF10B981),
-                    onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.meetupsList)),
+                    onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.migrationWorkspace)),
                     isCompact: isVerySmall,
                   ),
                 ),
@@ -172,10 +169,10 @@ class _ServiceCardsGrid extends GetView<HomePageController> {
                 Expanded(
                   child: _ServiceCard(
                     isMobile: true,
-                    icon: FontAwesomeIcons.lightbulb,
-                    title: l10n.innovation,
-                    color: const Color(0xFF8B5CF6),
-                    onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.innovation)),
+                    icon: FontAwesomeIcons.userGroup,
+                    title: l10n.meetups,
+                    color: const Color(0xFFF59E0B),
+                    onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.meetupsList)),
                     isCompact: isVerySmall,
                   ),
                 ),
@@ -187,7 +184,7 @@ class _ServiceCardsGrid extends GetView<HomePageController> {
     } else {
       // 1x4 横向布局(桌面端)
       return Container(
-        constraints: BoxConstraints(maxWidth: 900),
+        constraints: BoxConstraints(maxWidth: 860),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -195,7 +192,7 @@ class _ServiceCardsGrid extends GetView<HomePageController> {
               child: _ServiceCard(
                 isMobile: false,
                 icon: FontAwesomeIcons.city,
-                title: l10n.cities,
+                title: l10n.exploreCities,
                 color: const Color(0xFFFF4458),
                 onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.cityList)),
               ),
@@ -204,10 +201,20 @@ class _ServiceCardsGrid extends GetView<HomePageController> {
             Expanded(
               child: _ServiceCard(
                 isMobile: false,
-                icon: FontAwesomeIcons.building,
-                title: l10n.coworks,
-                color: const Color(0xFF6366F1),
-                onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.coworking)),
+                icon: FontAwesomeIcons.mapLocationDot,
+                title: l10n.homeHeroMapView,
+                color: const Color(0xFF3B82F6),
+                onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.globalMap)),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: _ServiceCard(
+                isMobile: false,
+                icon: FontAwesomeIcons.route,
+                title: l10n.migrationWorkspace,
+                color: const Color(0xFF10B981),
+                onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.migrationWorkspace)),
               ),
             ),
             SizedBox(width: 12.w),
@@ -216,18 +223,8 @@ class _ServiceCardsGrid extends GetView<HomePageController> {
                 isMobile: false,
                 icon: FontAwesomeIcons.userGroup,
                 title: l10n.meetups,
-                color: const Color(0xFF10B981),
+                color: const Color(0xFFF59E0B),
                 onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.meetupsList)),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _ServiceCard(
-                isMobile: false,
-                icon: FontAwesomeIcons.lightbulb,
-                title: l10n.innovation,
-                color: const Color(0xFF8B5CF6),
-                onTap: () => controller.checkLoginAndNavigate(() => Get.toNamed(AppRoutes.innovation)),
               ),
             ),
           ],
@@ -261,24 +258,25 @@ class _ServiceCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
-          vertical: isCompact ? 16 : (isMobile ? 20 : 24),
-          horizontal: isCompact ? 12 : (isMobile ? 16 : 20),
+          vertical: isCompact ? 12 : (isMobile ? 14 : 18),
+          horizontal: isCompact ? 10 : (isMobile ? 12 : 16),
         ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              color,
-              color.withValues(alpha: 0.8),
+              Colors.white.withValues(alpha: 0.14),
+              color.withValues(alpha: 0.22),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 12.r,
-              offset: const Offset(0, 4),
+              color: color.withValues(alpha: 0.24),
+              blurRadius: 16.r,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -286,18 +284,19 @@ class _ServiceCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: EdgeInsets.all(isCompact ? 10 : 14),
+              padding: EdgeInsets.all(isCompact ? 8 : 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(14.r),
+                color: Colors.white.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
               ),
               child: Icon(
                 icon,
                 color: Colors.white,
-                size: isCompact ? 28 : (isMobile ? 32 : 36),
+                size: isCompact ? 22 : (isMobile ? 24 : 28),
               ),
             ),
-            SizedBox(height: isCompact ? 8 : (isMobile ? 12 : 14)),
+            SizedBox(height: isCompact ? 6 : (isMobile ? 8 : 10)),
             Text(
               title,
               maxLines: 1,
@@ -305,7 +304,7 @@ class _ServiceCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: isCompact ? 12 : (isMobile ? 13 : 15),
+                fontSize: isCompact ? 11 : (isMobile ? 12 : 13),
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.3.sp,
               ),
@@ -336,28 +335,34 @@ class HomeFeatureHighlights extends StatelessWidget {
 
     return Container(
       constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 800),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Wrap(
+        spacing: 10.w,
+        runSpacing: 10.h,
         children: features.map((feature) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: 12.h),
+          return Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(color: AppColors.borderLight),
+            ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   feature['icon']!,
-                  style: TextStyle(fontSize: 24.sp),
+                  style: TextStyle(fontSize: 18.sp),
                 ),
-                SizedBox(width: 12.w),
-                Expanded(
+                SizedBox(width: 8.w),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: isMobile ? 220.w : 250.w),
                   child: Text(
                     feature['text']!,
                     style: TextStyle(
                       color: AppColors.textPrimary,
-                      fontSize: isMobile ? 15 : 16,
-                      fontWeight: FontWeight.w400,
-                      height: 1.4,
-                      letterSpacing: 0.2.sp,
+                      fontSize: isMobile ? 13 : 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.25,
                     ),
                   ),
                 ),

@@ -180,6 +180,8 @@ class _MeetupsListPageState extends State<MeetupsListPage>
 
   /// 加载指定 tab 的数据
   Future<void> _loadTabData(int tabIndex, {bool refresh = false}) async {
+    final l10n = AppLocalizations.of(context)!;
+
     log('📡 _loadTabData 被调用: tabIndex=$tabIndex, refresh=$refresh');
     log('   _tabLoading[$tabIndex]=${_tabLoading[tabIndex]!.value}, _tabHasMore[$tabIndex]=${_tabHasMore[tabIndex]}');
 
@@ -258,7 +260,7 @@ class _MeetupsListPageState extends State<MeetupsListPage>
     } catch (e, stackTrace) {
       log('❌ Tab $tabIndex 加载失败: $e');
       log('Stack trace: $stackTrace');
-      AppToast.error(AppLocalizations.of(context)!.loadFailed);
+      AppToast.error(l10n.loadFailed);
     } finally {
       _tabLoading[tabIndex]!.value = false;
     }
@@ -351,128 +353,194 @@ class _MeetupsListPageState extends State<MeetupsListPage>
           ),
           SizedBox(width: 8.w),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          labelColor: const Color(0xFFFF4458),
-          unselectedLabelColor: Colors.grey[600],
-          labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 15.sp),
-          unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 15.sp),
-          indicatorSize: TabBarIndicatorSize.label,
-          indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border(
-              bottom: BorderSide(color: Color(0xFFFF4458), width: 3),
-            ),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          onTap: (index) => setState(() {}),
-          tabs: [
-            Tab(text: l10n.allMeetups),
-            Tab(text: l10n.joined),
-            Tab(text: l10n.past),
-            Tab(text: l10n.cancelledTab),
-          ],
-        ),
       ),
       body: Obx(() {
-        final currentTabIndex = _tabController.index;
-        final isLoading = _tabLoading[currentTabIndex]!.value;
-        final meetups = _tabMeetups[currentTabIndex]!;
+        final items = _buildNavItems(l10n);
 
-        // 首次加载时显示中间加载指示器
-        if (isLoading && meetups.isEmpty && !_isRefreshing) {
-          return const AppSceneLoading(scene: AppLoadingScene.meetup, fullScreen: true);
-        }
+        return AnimatedBuilder(
+          animation: _tabController,
+          builder: (context, _) {
+            final currentTabIndex = _tabController.index;
 
-        if (meetups.isEmpty) {
-          return RefreshIndicator(
-            color: const Color(0xFFFF4458),
-            onRefresh: _refreshCurrentTab,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                    child: _buildEmptyState(),
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 320),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.04, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
                   ),
                 );
               },
-            ),
-          );
-        }
-
-        return RefreshIndicator(
-          color: const Color(0xFFFF4458),
-          onRefresh: _refreshCurrentTab,
-          child: Column(
-            children: [
-              // 工具栏
-              Container(
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _tabController.index == 0
-                          ? l10n.upcomingEvents('${meetups.length}')
-                          : _tabController.index == 1
-                              ? l10n.joinedEvents('${meetups.length}')
-                              : l10n.pastEvents('${meetups.length}'),
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        // Sort
-                        PopupMenuButton<String>(
-                          icon: Icon(
-                            FontAwesomeIcons.arrowDownWideShort,
-                            color: AppColors.textSecondary,
-                            size: 20.sp,
-                          ),
-                          onSelected: (value) {
-                            // Handle sort
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(value: 'date', child: Text(l10n.date)),
-                            PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
-                            PopupMenuItem(value: 'nearby', child: Text(l10n.nearby)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              child: KeyedSubtree(
+                key: ValueKey<int>(currentTabIndex),
+                child: _buildMeetupsTabBody(currentTabIndex, l10n, items),
               ),
-
-              // Meetups list
-              Expanded(
-                child: ListView.builder(
-                  controller: _tabScrollControllers[currentTabIndex],
-                  padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 100), // 底部留白给导航栏
-                  itemCount: meetups.length + (isLoading ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == meetups.length) {
-                      // 加载更多指示器
-                      return Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        child: const Center(child: AppLoadingWidget(fullScreen: false)),
-                      );
-                    }
-                    return _buildMeetupCard(meetups[index]);
-                  },
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       }),
+    );
+  }
+
+  List<_MeetupsNavItem> _buildNavItems(AppLocalizations l10n) {
+    return [
+      _MeetupsNavItem(
+        index: 0,
+        label: l10n.allMeetups,
+        subtitle: '${_tabMeetups[0]!.length} live tracks',
+        description: 'Upcoming and ongoing meetups worth acting on now.',
+        icon: FontAwesomeIcons.calendarDay,
+        accent: const Color(0xFF1E5C7A),
+      ),
+      _MeetupsNavItem(
+        index: 1,
+        label: l10n.joined,
+        subtitle: '${_tabMeetups[1]!.length} joined',
+        description: 'Your committed schedule and attendee conversations.',
+        icon: FontAwesomeIcons.userCheck,
+        accent: const Color(0xFF2F6A48),
+      ),
+      _MeetupsNavItem(
+        index: 2,
+        label: l10n.past,
+        subtitle: '${_tabMeetups[2]!.length} archived',
+        description: 'Look back at finished sessions and organizer history.',
+        icon: FontAwesomeIcons.clockRotateLeft,
+        accent: const Color(0xFF7B3559),
+      ),
+      _MeetupsNavItem(
+        index: 3,
+        label: l10n.cancelledTab,
+        subtitle: '${_tabMeetups[3]!.length} cancelled',
+        description: 'Track dropped plans separately from active pipelines.',
+        icon: FontAwesomeIcons.calendarXmark,
+        accent: const Color(0xFF7A3E1E),
+      ),
+    ];
+  }
+
+  void _switchTab(int index) {
+    _tabController.animateTo(index);
+  }
+
+  Widget _buildMeetupsTabBody(int currentTabIndex, AppLocalizations l10n, List<_MeetupsNavItem> items) {
+    final isLoading = _tabLoading[currentTabIndex]!.value;
+    final meetups = _tabMeetups[currentTabIndex]!;
+    final currentItem = items[currentTabIndex];
+
+    if (isLoading && meetups.isEmpty && !_isRefreshing) {
+      return const AppSceneLoading(scene: AppLoadingScene.meetup, fullScreen: true);
+    }
+
+    if (meetups.isEmpty) {
+      return RefreshIndicator(
+        color: const Color(0xFFFF4458),
+        onRefresh: _refreshCurrentTab,
+        child: CustomScrollView(
+          controller: _tabScrollControllers[currentTabIndex],
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 8.h),
+                child: _MeetupsCompactToolbar(
+                  items: items,
+                  currentIndex: currentTabIndex,
+                  currentItem: currentItem,
+                  onTabSelected: _switchTab,
+                ),
+              ),
+            ),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _buildEmptyState(),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      color: const Color(0xFFFF4458),
+      onRefresh: _refreshCurrentTab,
+      child: CustomScrollView(
+        controller: _tabScrollControllers[currentTabIndex],
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 8.h),
+              child: _MeetupsCompactToolbar(
+                items: items,
+                currentIndex: currentTabIndex,
+                currentItem: currentItem,
+                onTabSelected: _switchTab,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              color: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    currentTabIndex == 0
+                        ? l10n.upcomingEvents('${meetups.length}')
+                        : currentTabIndex == 1
+                            ? l10n.joinedEvents('${meetups.length}')
+                            : currentTabIndex == 2
+                                ? l10n.pastEvents('${meetups.length}')
+                                : '${l10n.cancelledTab} · ${meetups.length}',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      FontAwesomeIcons.arrowDownWideShort,
+                      color: AppColors.textSecondary,
+                      size: 20.sp,
+                    ),
+                    onSelected: (value) {},
+                    itemBuilder: (context) => [
+                      PopupMenuItem(value: 'date', child: Text(l10n.date)),
+                      PopupMenuItem(value: 'popular', child: Text(l10n.popular)),
+                      PopupMenuItem(value: 'nearby', child: Text(l10n.nearby)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (index == meetups.length) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      child: const Center(child: AppLoadingWidget(fullScreen: false)),
+                    );
+                  }
+                  return _buildMeetupCard(meetups[index]);
+                },
+                childCount: meetups.length + (isLoading ? 1 : 0),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -542,12 +610,10 @@ class _MeetupsListPageState extends State<MeetupsListPage>
   }
 
   Widget _buildMeetupCard(Meetup meetup) {
-    // 使用自管理生命周期的 StatefulWidget，参考 data_service_page 的设计
     return _MeetupListCard(
       meetup: meetup,
-      currentTabIndex: _tabController.index, // 传递当前 Tab 索引
+      currentTabIndex: _tabController.index,
       onUpdated: (updatedMeetup) {
-        // 回调更新当前 tab 的列表
         final currentTabIndex = _tabController.index;
         final meetups = _tabMeetups[currentTabIndex]!;
         final index = meetups.indexWhere((m) => m.id == updatedMeetup.id);
@@ -574,6 +640,177 @@ class _MeetupsListPageState extends State<MeetupsListPage>
         availableCities: availableCities,
         availableTypes: availableTypes,
         onReset: _resetFilters,
+      ),
+    );
+  }
+}
+
+class _MeetupsNavItem {
+  const _MeetupsNavItem({
+    required this.index,
+    required this.label,
+    required this.subtitle,
+    required this.description,
+    required this.icon,
+    required this.accent,
+  });
+
+  final int index;
+  final String label;
+  final String subtitle;
+  final String description;
+  final IconData icon;
+  final Color accent;
+}
+
+class _MeetupsPill extends StatelessWidget {
+  const _MeetupsPill({
+    required this.item,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final _MeetupsNavItem item;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isActive ? item.accent : Colors.white,
+      borderRadius: BorderRadius.circular(999.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999.r),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FaIcon(item.icon, size: 12.sp, color: isActive ? Colors.white : item.accent),
+              SizedBox(width: 8.w),
+              Text(
+                item.label,
+                style: TextStyle(
+                  color: isActive ? Colors.white : AppColors.textPrimary,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MeetupsCompactToolbar extends StatelessWidget {
+  const _MeetupsCompactToolbar({
+    required this.items,
+    required this.currentIndex,
+    required this.currentItem,
+    required this.onTabSelected,
+  });
+
+  final List<_MeetupsNavItem> items;
+  final int currentIndex;
+  final _MeetupsNavItem currentItem;
+  final ValueChanged<int> onTabSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: const Color(0xFFE7DED0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12.r,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32.w,
+                height: 32.w,
+                decoration: BoxDecoration(
+                  color: currentItem.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Center(
+                  child: FaIcon(
+                    currentItem.icon,
+                    size: 14.sp,
+                    color: currentItem.accent,
+                  ),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currentItem.label,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      currentItem.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11.sp,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${currentIndex + 1}/${items.length}',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(items.length, (index) {
+                final item = items[index];
+                return Padding(
+                  padding: EdgeInsets.only(right: index == items.length - 1 ? 0 : 8.w),
+                  child: _MeetupsPill(
+                    item: item,
+                    isActive: currentIndex == index,
+                    onTap: () => onTabSelected(index),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -719,7 +956,7 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         if (widget.onRefresh != null) {
           await widget.onRefresh!();
         }
-        AppToast.info(AppLocalizations.of(context)!.dataServiceAlreadyJoinedMeetup);
+        AppToast.info(l10n.dataServiceAlreadyJoinedMeetup);
         return;
       }
 
@@ -737,15 +974,13 @@ class _MeetupListCardState extends State<_MeetupListCard> {
         if (widget.onRefresh != null) {
           await widget.onRefresh!();
         }
-        AppToast.info(AppLocalizations.of(context)!.dataServiceNotJoinedMeetup);
+        AppToast.info(l10n.dataServiceNotJoinedMeetup);
         return;
       }
 
       // 其他错误正常提示
       AppToast.error(
-        _isJoined
-            ? AppLocalizations.of(context)!.dataServiceLeaveMeetupFailed
-            : AppLocalizations.of(context)!.dataServiceJoinMeetupFailed,
+        _isJoined ? l10n.dataServiceLeaveMeetupFailed : l10n.dataServiceJoinMeetupFailed,
       );
     }
   }

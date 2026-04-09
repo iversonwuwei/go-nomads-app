@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/chat/presentation/controllers/conversation_list_controller.dart';
-import 'package:go_nomads_app/features/membership/presentation/services/ai_planner_access_service.dart';
 import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
@@ -28,6 +27,9 @@ class BottomNavController extends GetxController {
 
   /// IM 未读消息数量 - 从 ConversationListController 同步
   final imUnreadCount = 0.obs;
+
+  /// Inbox 聚合未读数量
+  int get totalInboxUnreadCount => unreadCount.value + imUnreadCount.value;
 
   // ==================== 私有变量 ====================
 
@@ -71,10 +73,10 @@ class BottomNavController extends GetxController {
   Future<void> onNavTap(int index) async {
     log('🔘 Bottom Nav 点击: index=$index');
 
-    // 首页不需要验证，直接跳转
+    // Explore 首页不需要验证，直接跳转
     if (index == 0) {
-      log('✅ 首页，无需验证');
-      await _navigateToHome();
+      log('✅ Explore，无需验证');
+      await _navigateToExplore();
       return;
     }
 
@@ -86,39 +88,31 @@ class BottomNavController extends GetxController {
     // 认证有效，允许跳转
     log('✅ 认证有效，允许跳转');
 
-    if (index == 3 && !await _checkAiPlannerAccess()) {
-      return;
-    }
-
     changeTab(index);
 
     // 根据索引跳转到对应页面
     switch (index) {
-      case 1: // 消息会话列表 (IM)
-        log('   → 消息会话列表页面');
-        Get.toNamed(AppRoutes.conversations);
+      case 1: // 落地中心
+        log('   → 落地中心页面');
+        await Get.offAllNamed(AppRoutes.land);
         break;
-      case 2: // AI 助手
-        log('   → AI 助手页面');
-        Get.toNamed(AppRoutes.aiAssistantTab);
+      case 2: // 社区
+        log('   → 社区页面');
+        await Get.offAllNamed(AppRoutes.communityHub);
         break;
-      case 3: // AI 规划师
-        log('   → AI 旅行规划师页面');
-        Get.toNamed(AppRoutes.aiPlannerTab);
+      case 3: // 收件箱
+        log('   → 收件箱页面');
+        await Get.offAllNamed(AppRoutes.inbox);
         break;
-      case 4: // 通知列表
-        log('   → 通知列表页面');
-        Get.toNamed(AppRoutes.notifications);
-        break;
-      case 5: // Profile
-        log('   → Profile 页面');
-        _navigateToProfile();
+      case 4: // 我的
+        log('   → 我的页面');
+        await _navigateToMe();
         break;
     }
   }
 
-  /// 导航到 Profile 页面并触发数据同步
-  Future<void> _navigateToProfile() async {
+  /// 导航到我的页面并触发数据同步
+  Future<void> _navigateToMe() async {
     // 如果 ProfileController 已存在，触发数据同步
     if (Get.isRegistered<ProfileController>()) {
       final profileController = Get.find<ProfileController>();
@@ -126,11 +120,11 @@ class BottomNavController extends GetxController {
       profileController.onRouteResume();
     }
 
-    Get.toNamed(AppRoutes.profile);
+    await Get.offAllNamed(AppRoutes.me);
   }
 
-  /// 导航到首页
-  Future<void> _navigateToHome() async {
+  /// 导航到 Explore 首页
+  Future<void> _navigateToExplore() async {
     changeTab(0);
 
     // 如果 HomePageController 已存在，触发数据刷新
@@ -140,7 +134,7 @@ class BottomNavController extends GetxController {
       unawaited(homeController.onRouteResume());
     }
 
-    await Get.offAllNamed(AppRoutes.home);
+    await Get.offAllNamed(AppRoutes.explore);
 
     // 导航完成后再做一次可见性强制检查，覆盖路由回调遗漏场景。
     if (Get.isRegistered<HomePageController>()) {
@@ -176,18 +170,6 @@ class BottomNavController extends GetxController {
     return true;
   }
 
-  /// 检查 AI 旅行规划师访问权限
-  Future<bool> _checkAiPlannerAccess() async {
-    try {
-      return await AiPlannerAccessService().ensureAccess(
-        featureName: 'AI 旅行规划师',
-      );
-    } catch (error) {
-      log('⚠️ AI 旅行规划师会员检查失败，按降级策略继续放行: $error');
-      return true;
-    }
-  }
-
   /// 切换标签页
   void changeTab(int index) {
     currentIndex.value = index;
@@ -211,18 +193,29 @@ class BottomNavController extends GetxController {
   /// 根据当前路由更新选中的标签索引
   void updateIndexByRoute() {
     final currentRoute = Get.currentRoute;
-    if (currentRoute == AppRoutes.home) {
+    if (currentRoute == AppRoutes.aiAssistantTab) {
+      return;
+    }
+
+    if (currentRoute == AppRoutes.home || currentRoute == AppRoutes.explore) {
       currentIndex.value = 0;
-    } else if (currentRoute == AppRoutes.conversations) {
+    } else if (currentRoute == AppRoutes.land ||
+        currentRoute == AppRoutes.migrationWorkspace ||
+        currentRoute == AppRoutes.aiPlannerTab ||
+        currentRoute == AppRoutes.travelPlan ||
+        currentRoute == AppRoutes.createTravelPlan ||
+        currentRoute == AppRoutes.travelHistory) {
       currentIndex.value = 1;
-    } else if (currentRoute == AppRoutes.aiAssistantTab) {
+    } else if (currentRoute == AppRoutes.communityHub || currentRoute == AppRoutes.community) {
       currentIndex.value = 2;
-    } else if (currentRoute == AppRoutes.aiPlannerTab) {
+    } else if (currentRoute == AppRoutes.inbox ||
+        currentRoute == AppRoutes.conversations ||
+        currentRoute == AppRoutes.notifications) {
       currentIndex.value = 3;
-    } else if (currentRoute == AppRoutes.notifications) {
+    } else if (currentRoute == AppRoutes.me ||
+        currentRoute == AppRoutes.profile ||
+        currentRoute == AppRoutes.profileEdit) {
       currentIndex.value = 4;
-    } else if (currentRoute == AppRoutes.profile || currentRoute == AppRoutes.profileEdit) {
-      currentIndex.value = 5;
     }
   }
 

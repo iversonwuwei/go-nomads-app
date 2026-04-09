@@ -69,53 +69,148 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.cityPrimary,
-        foregroundColor: Colors.white,
-        title: Text(l10n.manageProsConsPageTitle(widget.cityName)),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: '优点', icon: Icon(FontAwesomeIcons.circleCheck)),
-            Tab(text: '挑战', icon: Icon(FontAwesomeIcons.circleInfo)),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.plus),
-            onPressed: () async {
-              await Get.to(() => ProsAndConsAddPage(
-                    cityId: widget.cityId,
-                    cityName: widget.cityName,
-                    initialTab: _tabController.index,
-                  ));
-              await _controller.loadData();
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        bottom: false,
+        child: Obx(() {
+          final items = _buildNavItems(l10n);
+
+          return AnimatedBuilder(
+            animation: _tabController,
+            builder: (context, _) {
+              final currentIndex = _tabController.index;
+              final currentItem = items[currentIndex];
+
+              return Column(
+                children: [
+                  _buildHeader(l10n),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 8.h),
+                    child: _ProsConsCompactToolbar(
+                      items: items,
+                      currentIndex: currentIndex,
+                      currentItem: currentItem,
+                      onTabSelected: _switchTab,
+                      onAddPressed: () async {
+                        await Get.to(() => ProsAndConsAddPage(
+                              cityId: widget.cityId,
+                              cityName: widget.cityName,
+                              initialTab: currentIndex,
+                            ));
+                        await _controller.loadData();
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: AppLoadingSwitcher(
+                      isLoading: _controller.isLoading.value,
+                      loading: const ManageListSkeleton(),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 320),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.04, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: KeyedSubtree(
+                          key: ValueKey<int>(currentIndex),
+                          child: currentIndex == 0 ? _buildProsList(l10n) : _buildConsList(l10n),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
             },
-            tooltip: '添加',
-          ),
-        ],
+          );
+        }),
       ),
-      body: Obx(() {
-        return AppLoadingSwitcher(
-          isLoading: _controller.isLoading.value,
-          loading: const ManageListSkeleton(),
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildProsList(),
-              _buildConsList(),
-            ],
-          ),
-        );
-      }),
     );
   }
 
-  Widget _buildProsList() {
+  Widget _buildHeader(AppLocalizations l10n) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 4.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.manageProsConsPageTitle(widget.cityName),
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  l10n.prosAndCons,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12.sp,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            onPressed: () => Get.back(),
+            icon: const Icon(Icons.close),
+            label: Text(l10n.close),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<_ProsConsNavItem> _buildNavItems(AppLocalizations l10n) {
+    final prosCount = _controller.prosConsController.prosList.length;
+    final consCount = _controller.prosConsController.consList.length;
+
+    return [
+      _ProsConsNavItem(
+        index: 0,
+        label: l10n.pros,
+        subtitle: '$prosCount entries',
+        description: l10n.prosConsNoProsSubtitle,
+        icon: FontAwesomeIcons.circleCheck,
+        accent: const Color(0xFF2F6A48),
+        count: prosCount,
+      ),
+      _ProsConsNavItem(
+        index: 1,
+        label: l10n.cons,
+        subtitle: '$consCount entries',
+        description: l10n.prosConsNoConsSubtitle,
+        icon: FontAwesomeIcons.circleInfo,
+        accent: const Color(0xFF7B3559),
+        count: consCount,
+      ),
+    ];
+  }
+
+  void _switchTab(int index) {
+    _tabController.animateTo(index);
+    _controller.updateTabIndex(index);
+  }
+
+  Widget _buildProsList(AppLocalizations l10n) {
     final prosConsController = _controller.prosConsController;
 
     return Obx(() {
@@ -127,8 +222,14 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
               Icon(FontAwesomeIcons.circleCheck, size: 80.r, color: Colors.grey[300]),
               SizedBox(height: 16.h),
               Text(
-                '暂无优点数据',
+                l10n.prosConsNoProsTitle,
                 style: TextStyle(fontSize: 18.sp, color: Colors.grey[600]),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                l10n.prosConsNoProsSubtitle,
+                style: TextStyle(fontSize: 13.sp, color: Colors.grey[500]),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -188,7 +289,7 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
     });
   }
 
-  Widget _buildConsList() {
+  Widget _buildConsList(AppLocalizations l10n) {
     final prosConsController = _controller.prosConsController;
 
     return Obx(() {
@@ -200,8 +301,14 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
               Icon(FontAwesomeIcons.circleInfo, size: 80.r, color: Colors.grey[300]),
               SizedBox(height: 16.h),
               Text(
-                '暂无挑战数据',
+                l10n.prosConsNoConsTitle,
                 style: TextStyle(fontSize: 18.sp, color: Colors.grey[600]),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                l10n.prosConsNoConsSubtitle,
+                style: TextStyle(fontSize: 13.sp, color: Colors.grey[500]),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -259,5 +366,187 @@ class _ManageProsConsPageState extends State<ManageProsConsPage> with SingleTick
         },
       );
     });
+  }
+}
+
+class _ProsConsNavItem {
+  const _ProsConsNavItem({
+    required this.index,
+    required this.label,
+    required this.subtitle,
+    required this.description,
+    required this.icon,
+    required this.accent,
+    required this.count,
+  });
+
+  final int index;
+  final String label;
+  final String subtitle;
+  final String description;
+  final IconData icon;
+  final Color accent;
+  final int count;
+}
+
+class _ProsConsPill extends StatelessWidget {
+  const _ProsConsPill({
+    required this.item,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final _ProsConsNavItem item;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isActive ? item.accent : Colors.white,
+      borderRadius: BorderRadius.circular(999.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999.r),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FaIcon(
+                item.icon,
+                size: 12.sp,
+                color: isActive ? Colors.white : item.accent,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                item.label,
+                style: TextStyle(
+                  color: isActive ? Colors.white : AppColors.textPrimary,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProsConsCompactToolbar extends StatelessWidget {
+  const _ProsConsCompactToolbar({
+    required this.items,
+    required this.currentIndex,
+    required this.currentItem,
+    required this.onTabSelected,
+    required this.onAddPressed,
+  });
+
+  final List<_ProsConsNavItem> items;
+  final int currentIndex;
+  final _ProsConsNavItem currentItem;
+  final ValueChanged<int> onTabSelected;
+  final VoidCallback onAddPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: const Color(0xFFE7DED0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12.r,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32.w,
+                height: 32.w,
+                decoration: BoxDecoration(
+                  color: currentItem.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Center(
+                  child: FaIcon(
+                    currentItem.icon,
+                    size: 14.sp,
+                    color: currentItem.accent,
+                  ),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currentItem.label,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      currentItem.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11.sp,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: onAddPressed,
+                icon: const Icon(FontAwesomeIcons.plus),
+                label: const Text('Add'),
+                style: FilledButton.styleFrom(
+                  foregroundColor: currentItem.accent,
+                  backgroundColor: currentItem.accent.withValues(alpha: 0.12),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(items.length, (index) {
+                final item = items[index];
+                return Padding(
+                  padding: EdgeInsets.only(right: index == items.length - 1 ? 0 : 8.w),
+                  child: _ProsConsPill(
+                    item: item,
+                    isActive: currentIndex == index,
+                    onTap: () => onTabSelected(index),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

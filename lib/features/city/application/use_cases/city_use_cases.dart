@@ -1,6 +1,7 @@
 import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
+import 'package:go_nomads_app/features/city/domain/entities/city_nomad_summary.dart';
 import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 
 // ============================================================================
@@ -81,6 +82,33 @@ class GetCityByIdParams extends UseCaseParams {
   final String cityId;
 
   const GetCityByIdParams({required this.cityId});
+}
+
+/// 获取城市数字游民决策摘要用例
+class GetCityNomadSummaryUseCase
+    extends UseCase<CityNomadSummary, GetCityNomadSummaryParams> {
+  final ICityRepository _repository;
+
+  GetCityNomadSummaryUseCase(this._repository);
+
+  @override
+  Future<Result<CityNomadSummary>> execute(
+    GetCityNomadSummaryParams params,
+  ) async {
+    if (params.cityId.isEmpty) {
+      return Failure(
+        ValidationException('城市ID不能为空', code: 'EMPTY_CITY_ID'),
+      );
+    }
+
+    return _repository.getCityNomadSummary(params.cityId);
+  }
+}
+
+class GetCityNomadSummaryParams extends UseCaseParams {
+  final String cityId;
+
+  const GetCityNomadSummaryParams({required this.cityId});
 }
 
 // ============================================================================

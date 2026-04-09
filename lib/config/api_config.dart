@@ -43,7 +43,7 @@ class ApiConfig {
   // ============================================================
   // 环境配置
   // ============================================================
-  static const bool kIsProduction = true;
+  static const bool kIsProduction = false;
 
   // ============================================================
   // 部署环境配置
@@ -110,7 +110,7 @@ class ApiConfig {
   /// 是否使用真机测试地址(手动切换)
   /// ⚠️ 雷电模拟器用户请设置为 true
   /// ⚠️ Android 官方模拟器用户请设置为 false
-  static const bool usePhysicalDevice = true;
+  static const bool usePhysicalDevice = false;
 
   /// 是否启用 HTTP 方法重写
   /// ⚠️ 当服务器/网络环境不支持 PUT/DELETE 方法时启用此选项
@@ -189,6 +189,23 @@ class ApiConfig {
   static const String authTokenKey = 'auth_token';
   static const String refreshTokenKey = 'refresh_token';
 
+  // P0 聚合入口
+  static const String migrationWorkspaceEndpoint = '/migration-workspace';
+  static const String exploreDashboardCurrentEndpoint = '/explore-dashboard/current';
+  static const String landHubCurrentEndpoint = '/land-hub/current';
+  static const String profileSnapshotCurrentEndpoint = '/profile-snapshot/current';
+  static const String communitySnapshotCurrentEndpoint = '/community-snapshot/current';
+  static const String inboxSummaryEndpoint = '/inbox/summary';
+  static const String budgetCurrentEndpoint = '/budgets/current';
+  static const String visaProfilesEndpoint = '/visa/profiles';
+  static String migrationWorkspacePlanStateEndpoint(String planId) => '/migration-workspace/plans/$planId/state';
+  static String budgetPlanEndpoint(String planId) => '/budgets/plans/$planId';
+  static String visaProfilePlanEndpoint(String planId) => '/visa/profiles/$planId';
+  static const String communityQuestionsEndpoint = '/community/questions';
+  static String communityQuestionAnswersEndpoint(String questionId) => '/community/questions/$questionId/answers';
+  static String communityQuestionUpvoteEndpoint(String questionId) => '/community/questions/$questionId/upvote';
+  static String communityAnswerUpvoteEndpoint(String answerId) => '/community/answers/$answerId/upvote';
+
   // ============================================================
   // Authentication Endpoints - /api/v1/auth
   // ============================================================
@@ -243,6 +260,7 @@ class ApiConfig {
   static const String cityGroupedByCountryEndpoint = '/cities/grouped-by-country';
   static const String cityCountriesEndpoint = '/cities/countries';
   static const String cityStatisticsEndpoint = '/cities/{id}/statistics';
+  static const String cityNomadSummaryEndpoint = '/cities/{id}/nomad-summary';
   static const String cityCreateEndpoint = '/cities';
   static const String cityUpdateEndpoint = '/cities/{id}';
   static const String cityDeleteEndpoint = '/cities/{id}';

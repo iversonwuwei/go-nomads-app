@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/travel_history/routes/travel_history_routes.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
 import 'package:intl/intl.dart';
 
 /// 旅行历史部分组件
@@ -32,10 +34,21 @@ class TravelHistoryWidget extends StatelessWidget {
           onTap: () => Get.toNamed(TravelHistoryRoutes.travelHistory),
           trailing: const Icon(
             Icons.chevron_right,
-            color: Color(0xFF6b7280),
+            color: AppColors.textSecondary,
           ),
         ),
         SizedBox(height: 16.h),
+        if (!isMobile) ...[
+          Text(
+            l10n.profileCockpitSignalsSubtitle,
+            style: TextStyle(
+              fontSize: 12.sp,
+              height: 1.45,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          SizedBox(height: 14.h),
+        ],
         latestTrip == null
             ? _EmptyTravelHistory(isMobile: isMobile)
             : _LatestTripCard(trip: latestTrip!, isMobile: isMobile),
@@ -54,17 +67,10 @@ class _EmptyTravelHistory extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Container(
+    return CockpitPanel(
       padding: EdgeInsets.symmetric(
-        vertical: isMobile ? 40 : 60,
-        horizontal: isMobile ? 20 : 40,
-      ),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.3),
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
+        vertical: isMobile ? 32 : 44,
+        horizontal: isMobile ? 20 : 34,
       ),
       child: Center(
         child: Column(
@@ -73,23 +79,15 @@ class _EmptyTravelHistory extends StatelessWidget {
             Icon(
               FontAwesomeIcons.compass,
               size: isMobile ? 48 : 64,
-              color: Colors.grey.withValues(alpha: 0.4),
+              color: AppColors.textTertiary.withValues(alpha: 0.7),
             ),
             SizedBox(height: 16.h),
             Text(
               l10n.noTravelHistoryYet,
               style: TextStyle(
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
                 fontSize: isMobile ? 16 : 18,
                 fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              l10n.profileStartNomadJourney,
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: isMobile ? 14 : 16,
               ),
             ),
           ],
@@ -118,29 +116,11 @@ class _LatestTripCard extends StatelessWidget {
       trip.departureTime,
     );
     final daysAgo = DateTime.now().difference(trip.arrivalTime).inDays;
+    final compactDate = trip.isOngoing ? l10n.today : _formatDaysAgo(l10n, daysAgo);
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            trip.isOngoing
-                ? const Color(0xFF10B981).withValues(alpha: 0.08)
-                : const Color(0xFF3B82F6).withValues(alpha: 0.08),
-            trip.isOngoing
-                ? const Color(0xFF059669).withValues(alpha: 0.04)
-                : const Color(0xFF1D4ED8).withValues(alpha: 0.04),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: trip.isOngoing
-              ? const Color(0xFF10B981).withValues(alpha: 0.2)
-              : const Color(0xFF3B82F6).withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
+    return CockpitPanel(
+      padding: EdgeInsets.zero,
+      backgroundColor: (trip.isOngoing ? const Color(0xFFF2FFFA) : const Color(0xFFF5F9FF)),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -167,7 +147,7 @@ class _LatestTripCard extends StatelessWidget {
               );
             }
           },
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(24.r),
           child: Padding(
             padding: EdgeInsets.all(isMobile ? 16 : 20),
             child: Column(
@@ -179,10 +159,10 @@ class _LatestTripCard extends StatelessWidget {
                   children: [
                     _StatusBadge(isOngoing: trip.isOngoing),
                     Text(
-                      trip.isOngoing ? l10n.today : _formatDaysAgo(l10n, daysAgo),
+                      compactDate,
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -204,7 +184,7 @@ class _LatestTripCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: isMobile ? 18 : 20,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1a1a1a),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           SizedBox(height: 2.h),
@@ -212,7 +192,7 @@ class _LatestTripCard extends StatelessWidget {
                             trip.country,
                             style: TextStyle(
                               fontSize: 14.sp,
-                              color: Colors.grey[600],
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -318,13 +298,14 @@ class _CountryFlag extends StatelessWidget {
       width: 48.w,
       height: 48.h,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.68),
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.74)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8.r,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10.r,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -405,11 +386,12 @@ class _NavigationArrow extends StatelessWidget {
       width: 36.w,
       height: 36.h,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.62),
         borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.7)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
@@ -418,7 +400,7 @@ class _NavigationArrow extends StatelessWidget {
       child: Icon(
         Icons.arrow_forward_ios,
         size: 14.r,
-        color: Color(0xFF6b7280),
+        color: AppColors.textSecondary,
       ),
     );
   }
@@ -439,77 +421,140 @@ class _BottomInfoBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(10.r),
+        color: Colors.white.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      ),
+      child: isMobile
+          ? Wrap(
+              spacing: 10.w,
+              runSpacing: 10.h,
+              children: [
+                _InfoPill(
+                  icon: Icons.calendar_today_outlined,
+                  label: dateRange,
+                ),
+                if (durationDays != null)
+                  _InfoPill(
+                    icon: Icons.access_time,
+                    label: '$durationDays ${durationDays == 1 ? l10n.profileDayUnit : l10n.profileDayUnitPlural}',
+                  ),
+                if (hasLocation)
+                  _InfoPill(
+                    icon: Icons.location_on_outlined,
+                    label: l10n.profileCockpitCurrentBase,
+                  ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 16.r,
+                        color: AppColors.textSecondary,
+                      ),
+                      SizedBox(width: 6.w),
+                      Flexible(
+                        child: Text(
+                          dateRange,
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (durationDays != null) ...[
+                  Container(
+                    width: 1.w,
+                    height: 20.h,
+                    color: AppColors.borderLight,
+                  ),
+                  SizedBox(width: 12.w),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 16.r,
+                        color: AppColors.textSecondary,
+                      ),
+                      SizedBox(width: 6.w),
+                      Text(
+                        '$durationDays ${durationDays == 1 ? l10n.profileDayUnit : l10n.profileDayUnitPlural}',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (hasLocation) ...[
+                  Container(
+                    width: 1.w,
+                    height: 20.h,
+                    color: AppColors.borderLight,
+                  ),
+                  SizedBox(width: 12.w),
+                  Icon(
+                    Icons.location_on_outlined,
+                    size: 16.r,
+                    color: AppColors.textSecondary,
+                  ),
+                ],
+              ],
+            ),
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _InfoPill({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.74)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Row(
-              children: [
-                Icon(
-                  Icons.calendar_today_outlined,
-                  size: 16.r,
-                  color: Colors.grey[600],
-                ),
-                SizedBox(width: 6.w),
-                Flexible(
-                  child: Text(
-                    dateRange,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+          Icon(icon, size: 14.r, color: AppColors.textSecondary),
+          SizedBox(width: 6.w),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (durationDays != null) ...[
-            Container(
-              width: 1.w,
-              height: 20.h,
-              color: Colors.grey[300],
-            ),
-            SizedBox(width: 12.w),
-            Row(
-              children: [
-                Icon(
-                  Icons.access_time,
-                  size: 16.r,
-                  color: Colors.grey[600],
-                ),
-                SizedBox(width: 6.w),
-                Text(
-                  '$durationDays ${durationDays == 1 ? l10n.profileDayUnit : l10n.profileDayUnitPlural}',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Colors.grey[700],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-          if (hasLocation) ...[
-            Container(
-              width: 1.w,
-              height: 20.h,
-              color: Colors.grey[300],
-            ),
-            SizedBox(width: 12.w),
-            Icon(
-              Icons.location_on_outlined,
-              size: 16.r,
-              color: Colors.grey[600],
-            ),
-          ],
         ],
       ),
     );

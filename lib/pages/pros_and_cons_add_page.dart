@@ -1,10 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/pros_and_cons_add_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 
 /// Pros & Cons 添加页面
@@ -103,7 +103,9 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.cityPrimary,
         foregroundColor: Colors.white,
@@ -118,43 +120,78 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
             }
           },
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          labelStyle: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 15.sp,
-          ),
-          unselectedLabelStyle: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 15.sp,
-          ),
-          indicatorSize: TabBarIndicatorSize.label,
-          indicatorColor: Colors.white,
-          indicator: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.white,
-                width: 3,
-              ),
-            ),
-          ),
-          tabs: const [
-            Tab(text: '优点'),
-            Tab(text: '挑战'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildProsTab(),
-          _buildConsTab(),
-        ],
+      body: AnimatedBuilder(
+        animation: _tabController,
+        builder: (context, _) {
+          final items = _buildNavItems(l10n);
+          final currentIndex = _tabController.index;
+          final currentItem = items[currentIndex];
+
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
+                child: _ProsConsAddCompactToolbar(
+                  items: items,
+                  currentIndex: currentIndex,
+                  currentItem: currentItem,
+                  onTabSelected: _switchTab,
+                ),
+              ),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 320),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.04, 0),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(currentIndex),
+                    child: currentIndex == 0 ? _buildProsTab() : _buildConsTab(),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  List<_ProsConsAddNavItem> _buildNavItems(AppLocalizations l10n) {
+    return [
+      _ProsConsAddNavItem(
+        index: 0,
+        label: l10n.pros,
+        subtitle: '${_controller.prosConsController.prosList.length} entries',
+        description: l10n.prosConsAddProsHint,
+        icon: FontAwesomeIcons.lightbulb,
+        accent: const Color(0xFF2F6A48),
+      ),
+      _ProsConsAddNavItem(
+        index: 1,
+        label: l10n.cons,
+        subtitle: '${_controller.prosConsController.consList.length} entries',
+        description: l10n.prosConsAddConsHint,
+        icon: FontAwesomeIcons.circleInfo,
+        accent: const Color(0xFF7B3559),
+      ),
+    ];
+  }
+
+  void _switchTab(int index) {
+    _tabController.animateTo(index);
   }
 
   Widget _buildVoteChip({
@@ -560,5 +597,176 @@ class _ProsAndConsAddPageState extends State<ProsAndConsAddPage> with SingleTick
         ],
       );
     });
+  }
+}
+
+class _ProsConsAddNavItem {
+  const _ProsConsAddNavItem({
+    required this.index,
+    required this.label,
+    required this.subtitle,
+    required this.description,
+    required this.icon,
+    required this.accent,
+  });
+
+  final int index;
+  final String label;
+  final String subtitle;
+  final String description;
+  final IconData icon;
+  final Color accent;
+}
+
+class _ProsConsAddPill extends StatelessWidget {
+  const _ProsConsAddPill({
+    required this.item,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final _ProsConsAddNavItem item;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isActive ? item.accent : Colors.white,
+      borderRadius: BorderRadius.circular(999.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999.r),
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FaIcon(item.icon, size: 12.sp, color: isActive ? Colors.white : item.accent),
+              SizedBox(width: 8.w),
+              Text(
+                item.label,
+                style: TextStyle(
+                  color: isActive ? Colors.white : AppColors.textPrimary,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProsConsAddCompactToolbar extends StatelessWidget {
+  const _ProsConsAddCompactToolbar({
+    required this.items,
+    required this.currentIndex,
+    required this.currentItem,
+    required this.onTabSelected,
+  });
+
+  final List<_ProsConsAddNavItem> items;
+  final int currentIndex;
+  final _ProsConsAddNavItem currentItem;
+  final ValueChanged<int> onTabSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: const Color(0xFFE7DED0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12.r,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32.w,
+                height: 32.w,
+                decoration: BoxDecoration(
+                  color: currentItem.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Center(
+                  child: FaIcon(
+                    currentItem.icon,
+                    size: 14.sp,
+                    color: currentItem.accent,
+                  ),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currentItem.label,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      currentItem.subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11.sp,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${currentIndex + 1}/${items.length}',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(items.length, (index) {
+                final item = items[index];
+                return Padding(
+                  padding: EdgeInsets.only(right: index == items.length - 1 ? 0 : 8.w),
+                  child: _ProsConsAddPill(
+                    item: item,
+                    isActive: currentIndex == index,
+                    onTap: () => onTabSelected(index),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

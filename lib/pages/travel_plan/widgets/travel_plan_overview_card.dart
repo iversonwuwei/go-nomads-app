@@ -1,11 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/travel_plan/domain/entities/travel_plan.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/travel_plan/travel_plan_page_controller.dart';
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/cockpit/cockpit_glass_icon_button.dart';
+import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
 
 /// 计划概览卡片组件
 class TravelPlanOverviewCard extends GetView<TravelPlanPageController> {
@@ -176,16 +178,25 @@ class TravelPlanSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.fromLTRB(2, 0, 2, 12),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFFFF4458), size: 20.r),
-          SizedBox(width: 8.w),
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: AppColors.cityPrimary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+            ),
+            child: Icon(icon, color: AppColors.cityPrimary, size: 16.r),
+          ),
+          SizedBox(width: 10.w),
           Text(
             title,
             style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -204,47 +215,63 @@ class TravelPlanErrorView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.travelPlan),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              FontAwesomeIcons.circleExclamation,
-              size: 64.r,
-              color: Colors.red,
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              l10n.failedToGeneratePlan,
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Center(
+            child: CockpitPanel(
+              padding: EdgeInsets.all(24.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: CockpitGlassIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      onTap: Get.back,
+                      iconColor: AppColors.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Icon(
+                    FontAwesomeIcons.circleExclamation,
+                    size: 56.r,
+                    color: const Color(0xFFFF6B6B),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    l10n.failedToGeneratePlan,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    l10n.pleaseTryAgain,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14.sp,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 24.h),
+                  ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.cityPrimary,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+                    ),
+                    child: Text(l10n.goBack),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 8.h),
-            Text(
-              l10n.pleaseTryAgain,
-              style: const TextStyle(
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () => Get.back(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
-                foregroundColor: Colors.white,
-              ),
-              child: Text(l10n.goBack),
-            ),
-          ],
+          ),
         ),
       ),
     );

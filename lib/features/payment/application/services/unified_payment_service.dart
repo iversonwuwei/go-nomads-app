@@ -10,6 +10,7 @@ import 'package:go_nomads_app/features/payment/application/services/wechat_pay_s
 import 'package:go_nomads_app/features/payment/domain/entities/payment_method.dart';
 import 'package:go_nomads_app/features/payment/presentation/controllers/payment_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// 统一支付结果
@@ -318,32 +319,30 @@ class UnifiedPaymentService extends GetxService {
     required UnifiedPaymentResult result,
     VoidCallback? onDismiss,
   }) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              result.success ? Icons.check_circle : Icons.error,
-              color: result.success ? Colors.green : Colors.red,
-            ),
-            SizedBox(width: 8.w),
-            Text(result.success ? '支付成功' : '支付失败'),
-          ],
+    AppBottomDrawer.show<void>(
+      context,
+      title: result.success ? '支付成功' : '支付失败',
+      subtitle: result.success ? '您的会员已激活！' : (result.errorMessage ?? '支付未完成，请重试。'),
+      maxHeightFactor: 0.42,
+      showHandle: false,
+      isDismissible: false,
+      enableDrag: false,
+      child: Center(
+        child: Icon(
+          result.success ? Icons.check_circle : Icons.error,
+          color: result.success ? Colors.green : Colors.red,
+          size: 52.r,
         ),
-        content: Text(
-          result.success ? '您的会员已激活！' : (result.errorMessage ?? '支付未完成，请重试。'),
+      ),
+      footer: SizedBox(
+        width: double.infinity,
+        child: FilledButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            onDismiss?.call();
+          },
+          child: const Text('确定'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              onDismiss?.call();
-            },
-            child: const Text('确定'),
-          ),
-        ],
       ),
     );
   }
