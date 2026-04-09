@@ -13,6 +13,8 @@ import 'package:intl/intl.dart';
 
 /// HotelListPage 控制器
 class HotelListPageController extends GetxController {
+  static const int _pageSize = 20;
+
   final String? cityId;
   final String? cityName;
   final String? countryName;
@@ -28,11 +30,14 @@ class HotelListPageController extends GetxController {
   });
 
   final RxBool isLoading = false.obs;
+  final RxBool isLoadingMore = false.obs;
+  final RxBool hasMore = true.obs;
   final RxList<Hotel> hotels = <Hotel>[].obs;
   final RxBool canManageHotels = false.obs;
   final RxString externalDataStatus = 'not_requested'.obs;
   final RxBool partialExternalData = false.obs;
   final RxnString externalDataMessage = RxnString();
+  final RxInt totalCount = 0.obs;
 
   // 搜索条件
   final RxString searchQuery = ''.obs;
@@ -43,6 +48,9 @@ class HotelListPageController extends GetxController {
 
   late final HotelRepository _hotelRepository;
   final TextEditingController searchController = TextEditingController();
+  int _currentPage = 1;
+
+  bool get canLoadMore => hasMore.value && !isLoading.value && !isLoadingMore.value;
 
   @override
   void onInit() {
@@ -76,14 +84,28 @@ class HotelListPageController extends GetxController {
   }
 
   // 加载酒店数据
-  Future<void> loadHotels() async {
-    isLoading.value = true;
+  Future<void> loadHotels({bool reset = true}) async {
+    if (reset) {
+      isLoading.value = true;
+      _currentPage = 1;
+      hasMore.value = true;
+      totalCount.value = 0;
+    } else {
+      if (!canLoadMore) {
+        return;
+      }
+      isLoadingMore.value = true;
+    }
+
     try {
       log('🏨 HotelListPage - cityId: $cityId, cityName: $cityName');
 
       List<Hotel> loadedHotels = [];
+      final targetPage = reset ? 1 : _currentPage + 1;
 
-      final result = await _hotelRepository.getHotelsForDiscovery(
+      final result = await _hotelRepository.getHotelsPage(
+        page: targetPage,
+        pageSize: _pageSize,
         cityId: cityId,
         cityName: cityName,
         countryName: countryName,
@@ -98,47 +120,59 @@ class HotelListPageController extends GetxController {
 
       result.fold(
         onSuccess: (data) {
-          loadedHotels = data;
+          loadedHotels = data.hotels;
           externalDataStatus.value = _hotelRepository.lastExternalDataStatus;
           partialExternalData.value = _hotelRepository.lastPartialExternalData;
           externalDataMessage.value = _hotelRepository.lastExternalDataMessage;
+          totalCount.value = data.totalCount;
+          _currentPage = data.page;
+          hasMore.value = data.hasMore && data.totalCount > 0;
           log('🏨 找到 ${loadedHotels.length} 个酒店');
         },
         onFailure: (exception) {
           externalDataStatus.value = 'unavailable';
           partialExternalData.value = false;
           externalDataMessage.value = null;
+          if (reset) {
+            hasMore.value = false;
+          }
           log('⚠️ 酒店服务暂不可用: ${exception.message}');
         },
       );
 
-      // 如果有搜索查询，过滤结果
-      if (searchQuery.value.isNotEmpty) {
-        final query = searchQuery.value.toLowerCase();
-        loadedHotels = loadedHotels.where((hotel) {
-          final name = hotel.name.toLowerCase();
-          final description = hotel.description.toLowerCase();
-          return name.contains(query) || description.contains(query);
-        }).toList();
-      }
-
       // 按评分排序
       loadedHotels.sort((a, b) => b.rating.compareTo(a.rating));
 
-      hotels.value = loadedHotels;
+      if (reset) {
+        hotels.value = loadedHotels;
+      } else {
+        final existingIds = hotels.map((hotel) => hotel.id).toSet();
+        final appended = loadedHotels.where((hotel) => !existingIds.contains(hotel.id)).toList();
+        hotels.addAll(appended);
+        hotels.sort((a, b) => b.rating.compareTo(a.rating));
+        hasMore.value = hasMore.value && appended.isNotEmpty;
+      }
     } catch (e) {
       // 酒店服务暂未实现，静默处理错误，显示空状态
       log('⚠️ 酒店服务暂不可用: $e');
     } finally {
-      isLoading.value = false;
+      if (reset) {
+        isLoading.value = false;
+      } else {
+        isLoadingMore.value = false;
+      }
     }
+  }
+
+  Future<void> loadMoreHotels() async {
+    await loadHotels(reset: false);
   }
 
   /// 更新搜索查询
   void updateSearchQuery(String value) {
     searchQuery.value = value;
     if (value.isEmpty || value.length >= 3) {
-      loadHotels();
+      loadHotels(reset: true);
     }
   }
 
@@ -146,7 +180,7 @@ class HotelListPageController extends GetxController {
   void clearSearch() {
     searchController.clear();
     searchQuery.value = '';
-    loadHotels();
+    loadHotels(reset: true);
   }
 
   Future<void> updateCheckInDate(DateTime? value) async {
@@ -155,22 +189,22 @@ class HotelListPageController extends GetxController {
     }
 
     checkInDate.value = DateTime(value.year, value.month, value.day);
-    await loadHotels();
+    await loadHotels(reset: true);
   }
 
   Future<void> updateStayNights(int value) async {
     stayNights.value = value;
-    await loadHotels();
+    await loadHotels(reset: true);
   }
 
   Future<void> updateAdultCount(int value) async {
     adultCount.value = value;
-    await loadHotels();
+    await loadHotels(reset: true);
   }
 
   Future<void> updateRoomCount(int value) async {
     roomCount.value = value;
-    await loadHotels();
+    await loadHotels(reset: true);
   }
 
   String get checkInLabel {
@@ -221,7 +255,7 @@ class HotelListPageController extends GetxController {
       onResult: (result) {
         if (result.needsRefresh) {
           log('🏨 [HotelList] 酒店创建成功，刷新列表');
-          loadHotels();
+          loadHotels(reset: true);
         }
       },
     );

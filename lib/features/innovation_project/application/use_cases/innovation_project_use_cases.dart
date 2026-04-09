@@ -26,6 +26,28 @@ class GetProjectsUseCase {
   }
 }
 
+class GetProjectsPageUseCase {
+  final IInnovationProjectRepository _repository;
+
+  GetProjectsPageUseCase(this._repository);
+
+  Future<Result<InnovationProjectPageResult>> call({
+    int page = 1,
+    int pageSize = 20,
+    String? category,
+    String? stage,
+    String? search,
+  }) {
+    return _repository.getProjectsPage(
+      page: page,
+      pageSize: pageSize,
+      category: category,
+      stage: stage,
+      search: search,
+    );
+  }
+}
+
 /// 获取项目详情用例
 class GetProjectByIdUseCase {
   final IInnovationProjectRepository _repository;

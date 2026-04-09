@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
+import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart'
     as entity;
@@ -7,7 +9,6 @@ import 'package:go_nomads_app/features/coworking/domain/entities/verification_el
 import 'package:go_nomads_app/features/coworking/domain/repositories/icoworking_repository.dart';
 import 'package:go_nomads_app/features/coworking/infrastructure/models/coworking_space_dto.dart';
 import 'package:go_nomads_app/services/http_service.dart';
-import 'package:get/get.dart';
 
 /// Coworking Repository 实现
 /// 负责从 API 获取 Coworking 数据并转换为领域实体
@@ -22,11 +23,11 @@ class CoworkingRepository implements ICoworkingRepository {
   }) async {
     try {
       log('📡 Repository 调用 API:');
-      log('   路径: /coworking');
+      log('   路径: ${ApiConfig.coworkingSpacesEndpoint}');
       log('   参数: cityId=$cityId, page=$page, pageSize=$pageSize');
 
       final response = await _httpService.get(
-        '/coworking',
+        ApiConfig.coworkingSpacesEndpoint,
         queryParameters: {
           'cityId': cityId,
           'page': page,
@@ -74,7 +75,7 @@ class CoworkingRepository implements ICoworkingRepository {
       }
 
       final response = await _httpService.get(
-        '/coworking-spaces',
+        ApiConfig.coworkingSpacesEndpoint,
         queryParameters: queryParams,
       );
 
@@ -102,7 +103,8 @@ class CoworkingRepository implements ICoworkingRepository {
   @override
   Future<Result<entity.CoworkingSpace>> getCoworkingById(String id) async {
     try {
-      final response = await _httpService.get('/coworking/$id');
+      final endpoint = ApiConfig.coworkingDetailEndpoint.replaceAll('{id}', id);
+      final response = await _httpService.get(endpoint);
 
       // HTTP 拦截器已自动解包响应，response.data 直接就是数据
       if (response.data is Map<String, dynamic>) {
@@ -127,8 +129,7 @@ class CoworkingRepository implements ICoworkingRepository {
   @override
   Future<Result<int>> getCityCoworkingCount(String cityId) async {
     try {
-      final response =
-          await _httpService.get('/coworking/cities/$cityId/count');
+      final response = await _httpService.get(ApiConfig.coworkingCityCountEndpoint(cityId));
 
       // HTTP 拦截器已自动解包响应，response.data 直接就是 count 数值
       if (response.data is int) {
@@ -153,7 +154,7 @@ class CoworkingRepository implements ICoworkingRepository {
   ) async {
     try {
       final response = await _httpService.post(
-        '/coworking/cities/counts',
+        ApiConfig.coworkingCitiesCountEndpoint,
         data: cityIds, // 直接发送 cityIds 数组
       );
 
@@ -161,7 +162,7 @@ class CoworkingRepository implements ICoworkingRepository {
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
         final countsList = data['counts'] as List<dynamic>? ?? [];
-        
+
         final counts = <String, int>{};
         for (final item in countsList) {
           if (item is Map<String, dynamic>) {
@@ -198,13 +199,13 @@ class CoworkingRepository implements ICoworkingRepository {
       log('📤 [CoworkingRepository] 创建 Coworking 空间: $requestData');
 
       final response = await _httpService.post(
-        '/coworking',
+        ApiConfig.coworkingSpacesEndpoint,
         data: requestData,
       );
 
       // HTTP 拦截器已自动解包响应，response.data 直接就是 Coworking 数据
       log('📥 [CoworkingRepository] 响应类型: ${response.data.runtimeType}');
-      
+
       if (response.data is Map<String, dynamic>) {
         final responseData = response.data as Map<String, dynamic>;
         final createdDto = CoworkingSpaceDto.fromJson(responseData);
@@ -241,12 +242,12 @@ class CoworkingRepository implements ICoworkingRepository {
     entity.CoworkingSpace space,
   ) async {
     try {
+      final endpoint = ApiConfig.coworkingDetailEndpoint.replaceAll('{id}', id);
       final dto = _convertEntityToDto(space);
       final requestData = dto.toJson();
 
       log('📤 [CoworkingRepository] 发送更新请求: id=$id');
-      final response =
-          await _httpService.put('/coworking/$id', data: requestData);
+      final response = await _httpService.put(endpoint, data: requestData);
 
       // HTTP 拦截器已自动解包响应，response.data 直接就是 Coworking 数据
       log('📥 [CoworkingRepository] 响应类型: ${response.data.runtimeType}');
@@ -289,7 +290,8 @@ class CoworkingRepository implements ICoworkingRepository {
   @override
   Future<Result<void>> deleteCoworkingSpace(String id) async {
     try {
-      await _httpService.delete('/coworking/$id');
+      final endpoint = ApiConfig.coworkingDetailEndpoint.replaceAll('{id}', id);
+      await _httpService.delete(endpoint);
       return Result.success(null);
     } catch (e, stackTrace) {
       return Result.failure(
@@ -305,7 +307,8 @@ class CoworkingRepository implements ICoworkingRepository {
   @override
   Future<Result<VerificationEligibility>> checkVerificationEligibility(String id) async {
     try {
-      final response = await _httpService.get('/coworking/$id/verification-eligibility');
+      final endpoint = '${ApiConfig.coworkingDetailEndpoint.replaceAll('{id}', id)}/verification-eligibility';
+      final response = await _httpService.get(endpoint);
 
       // HTTP 拦截器已自动解包响应，response.data 直接就是数据
       if (response.data is Map<String, dynamic>) {
@@ -336,7 +339,8 @@ class CoworkingRepository implements ICoworkingRepository {
   @override
   Future<Result<entity.CoworkingSpace>> submitVerification(String id) async {
     try {
-      final response = await _httpService.post('/coworking/$id/verifications');
+      final endpoint = '${ApiConfig.coworkingDetailEndpoint.replaceAll('{id}', id)}/verifications';
+      final response = await _httpService.post(endpoint);
 
       // HTTP 拦截器已自动解包响应，response.data 直接就是数据
       if (response.data is Map<String, dynamic>) {

@@ -79,47 +79,39 @@ class LandHubPage extends GetView<LandHubController> {
                         if (!controller.hasData)
                           _LandEmptyState(l10n: l10n)
                         else
-                          Wrap(
-                            spacing: 10.w,
-                            runSpacing: 10.h,
+                          GridView(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 10.w,
+                              mainAxisSpacing: 10.h,
+                              childAspectRatio: 1.18,
+                            ),
                             children: [
-                              SizedBox(
-                                width: 160.w,
-                                child: CockpitMetricCard(
-                                  icon: Icons.location_city_rounded,
-                                  label: l10n.landHubFocusCityLabel,
-                                  value: controller.focusCityName?.isNotEmpty == true
-                                      ? controller.focusCityName!
-                                      : '-',
-                                  accentColor: const Color(0xFF457B9D),
-                                ),
+                              CockpitMetricCard(
+                                icon: Icons.location_city_rounded,
+                                label: l10n.landHubFocusCityLabel,
+                                value: controller.focusCityName?.isNotEmpty == true ? controller.focusCityName! : '-',
+                                accentColor: const Color(0xFF457B9D),
                               ),
-                              SizedBox(
-                                width: 160.w,
-                                child: CockpitMetricCard(
-                                  icon: Icons.schedule_rounded,
-                                  label: l10n.landHubDepartureLabel,
-                                  value: _departureLabel(l10n),
-                                  accentColor: const Color(0xFF2A9D8F),
-                                ),
+                              CockpitMetricCard(
+                                icon: Icons.schedule_rounded,
+                                label: l10n.landHubDepartureLabel,
+                                value: _departureLabel(l10n),
+                                accentColor: const Color(0xFF2A9D8F),
                               ),
-                              SizedBox(
-                                width: 160.w,
-                                child: CockpitMetricCard(
-                                  icon: Icons.savings_rounded,
-                                  label: l10n.landHubBudgetLabel,
-                                  value: _budgetLabel(),
-                                  accentColor: const Color(0xFFE9C46A),
-                                ),
+                              CockpitMetricCard(
+                                icon: Icons.savings_rounded,
+                                label: l10n.landHubBudgetLabel,
+                                value: _budgetLabel(),
+                                accentColor: const Color(0xFFE9C46A),
                               ),
-                              SizedBox(
-                                width: 160.w,
-                                child: CockpitMetricCard(
-                                  icon: Icons.badge_rounded,
-                                  label: l10n.landHubVisaLabel,
-                                  value: _visaLabel(l10n),
-                                  accentColor: const Color(0xFFFF6B6B),
-                                ),
+                              CockpitMetricCard(
+                                icon: Icons.badge_rounded,
+                                label: l10n.landHubVisaLabel,
+                                value: _visaLabel(l10n),
+                                accentColor: const Color(0xFFFF6B6B),
                               ),
                             ],
                           ),

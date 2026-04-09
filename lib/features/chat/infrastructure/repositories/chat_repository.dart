@@ -45,6 +45,28 @@ class ChatRepository implements IChatRepository {
     }
   }
 
+  List<dynamic> _extractListData(dynamic data, {String? listKey}) {
+    if (data is List<dynamic>) {
+      return data;
+    }
+
+    if (data is Map<String, dynamic>) {
+      if (listKey != null && data[listKey] is List<dynamic>) {
+        return data[listKey] as List<dynamic>;
+      }
+
+      if (data['items'] is List<dynamic>) {
+        return data['items'] as List<dynamic>;
+      }
+
+      if (data['data'] is List<dynamic>) {
+        return data['data'] as List<dynamic>;
+      }
+    }
+
+    return const [];
+  }
+
   // ==================== 聊天室管理 ====================
 
   @override
@@ -54,7 +76,7 @@ class ChatRepository implements IChatRepository {
         ApiConfig.chatsEndpoint,
       );
 
-      final List<dynamic> data = response.data;
+      final List<dynamic> data = _extractListData(response.data);
       final rooms = data.map((json) => ChatRoomDto.fromJson(json).toDomain()).toList();
 
       // 保存到本地缓存
@@ -196,7 +218,7 @@ class ChatRepository implements IChatRepository {
         },
       );
 
-      final List<dynamic> data = response.data;
+      final List<dynamic> data = _extractListData(response.data, listKey: 'messages');
       final messages = data.map((json) => ChatMessageDto.fromJson(json).toDomain()).toList();
 
       // 保存到文件存储（按天分文件）
@@ -300,7 +322,7 @@ class ChatRepository implements IChatRepository {
         queryParameters: {'onlineOnly': true},
       );
 
-      final List<dynamic> data = response.data;
+      final List<dynamic> data = _extractListData(response.data, listKey: 'members');
       final users = data.map((json) => OnlineUserDto.fromJson(json).toDomain()).toList();
 
       return Success(users);
@@ -327,7 +349,7 @@ class ChatRepository implements IChatRepository {
         },
       );
 
-      final List<dynamic> data = response.data;
+      final List<dynamic> data = _extractListData(response.data, listKey: 'members');
       final users = data.map((json) => OnlineUserDto.fromJson(json).toDomain()).toList();
 
       return Success(users);

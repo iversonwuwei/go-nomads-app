@@ -70,24 +70,30 @@ class TravelPlanDto {
 
   factory TravelPlanDto.fromJson(Map<String, dynamic> json) {
     return TravelPlanDto(
-      id: json['id'],
-      cityId: json['cityId'],
-      cityName: json['cityName'],
-      cityImage: json['cityImage'],
-      createdAt: json['createdAt'],
-      duration: json['duration'],
-      budget: json['budget'],
-      travelStyle: json['travelStyle'],
-      interests: List<String>.from(json['interests']),
-      departureLocation: json['departureLocation'],
-      departureDate: json['departureDate'],
-      transportation: TransportationPlanDto.fromJson(json['transportation']),
-      accommodation: AccommodationPlanDto.fromJson(json['accommodation']),
-      dailyItineraries: (json['dailyItineraries'] as List).map((e) => DailyItineraryDto.fromJson(e)).toList(),
-      attractions: (json['attractions'] as List).map((e) => AttractionDto.fromJson(e)).toList(),
-      restaurants: (json['restaurants'] as List).map((e) => RestaurantDto.fromJson(e)).toList(),
-      tips: List<String>.from(json['tips']),
-      budgetBreakdown: BudgetBreakdownDto.fromJson(json['budgetBreakdown']),
+      id: json['id']?.toString() ?? '',
+      cityId: json['cityId']?.toString() ?? '',
+      cityName: json['cityName']?.toString() ?? '',
+      cityImage: json['cityImage']?.toString() ?? '',
+      createdAt: _toDateTimeString(json['createdAt']),
+      duration: _toInt(json['duration']),
+      budget: json['budget']?.toString() ?? '',
+      travelStyle: json['travelStyle']?.toString() ?? '',
+      interests: _toStringList(json['interests']),
+      departureLocation: json['departureLocation']?.toString(),
+      departureDate: json['departureDate']?.toString(),
+      transportation: json['transportation'] is Map<String, dynamic>
+          ? TransportationPlanDto.fromJson(json['transportation'] as Map<String, dynamic>)
+          : TransportationPlanDto.empty(),
+      accommodation: json['accommodation'] is Map<String, dynamic>
+          ? AccommodationPlanDto.fromJson(json['accommodation'] as Map<String, dynamic>)
+          : AccommodationPlanDto.empty(),
+      dailyItineraries: _toMapList(json['dailyItineraries']).map(DailyItineraryDto.fromJson).toList(),
+      attractions: _toMapList(json['attractions']).map(AttractionDto.fromJson).toList(),
+      restaurants: _toMapList(json['restaurants']).map(RestaurantDto.fromJson).toList(),
+      tips: _toStringList(json['tips']),
+      budgetBreakdown: json['budgetBreakdown'] is Map<String, dynamic>
+          ? BudgetBreakdownDto.fromJson(json['budgetBreakdown'] as Map<String, dynamic>)
+          : BudgetBreakdownDto.empty(),
     );
   }
 
@@ -139,6 +145,17 @@ class TransportationPlanDto {
     required this.dailyTransportCost,
   });
 
+  factory TransportationPlanDto.empty() {
+    return TransportationPlanDto(
+      arrivalMethod: '',
+      arrivalDetails: '',
+      estimatedCost: 0,
+      localTransport: '',
+      localTransportDetails: '',
+      dailyTransportCost: 0,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'arrivalMethod': arrivalMethod,
@@ -152,12 +169,12 @@ class TransportationPlanDto {
 
   factory TransportationPlanDto.fromJson(Map<String, dynamic> json) {
     return TransportationPlanDto(
-      arrivalMethod: json['arrivalMethod'],
-      arrivalDetails: json['arrivalDetails'],
-      estimatedCost: json['estimatedCost'].toDouble(),
-      localTransport: json['localTransport'],
-      localTransportDetails: json['localTransportDetails'],
-      dailyTransportCost: json['dailyTransportCost'].toDouble(),
+      arrivalMethod: json['arrivalMethod']?.toString() ?? '',
+      arrivalDetails: json['arrivalDetails']?.toString() ?? '',
+      estimatedCost: _toDouble(json['estimatedCost']),
+      localTransport: json['localTransport']?.toString() ?? '',
+      localTransportDetails: json['localTransportDetails']?.toString() ?? '',
+      dailyTransportCost: _toDouble(json['dailyTransportCost']),
     );
   }
 
@@ -195,6 +212,17 @@ class AccommodationPlanDto {
     required this.bookingTips,
   });
 
+  factory AccommodationPlanDto.empty() {
+    return AccommodationPlanDto(
+      type: '',
+      recommendation: '',
+      area: '',
+      pricePerNight: 0,
+      amenities: const [],
+      bookingTips: '',
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'type': type,
@@ -208,12 +236,12 @@ class AccommodationPlanDto {
 
   factory AccommodationPlanDto.fromJson(Map<String, dynamic> json) {
     return AccommodationPlanDto(
-      type: json['type'],
-      recommendation: json['recommendation'],
-      area: json['area'],
-      pricePerNight: json['pricePerNight'].toDouble(),
-      amenities: List<String>.from(json['amenities']),
-      bookingTips: json['bookingTips'],
+      type: json['type']?.toString() ?? '',
+      recommendation: json['recommendation']?.toString() ?? '',
+      area: json['area']?.toString() ?? '',
+      pricePerNight: _toDouble(json['pricePerNight']),
+      amenities: _toStringList(json['amenities']),
+      bookingTips: json['bookingTips']?.toString() ?? '',
     );
   }
 
@@ -254,10 +282,10 @@ class DailyItineraryDto {
 
   factory DailyItineraryDto.fromJson(Map<String, dynamic> json) {
     return DailyItineraryDto(
-      day: json['day'],
-      theme: json['theme'],
-      activities: (json['activities'] as List).map((e) => ActivityDto.fromJson(e)).toList(),
-      notes: json['notes'],
+      day: _toInt(json['day']),
+      theme: json['theme']?.toString() ?? '',
+      activities: _toMapList(json['activities']).map(ActivityDto.fromJson).toList(),
+      notes: json['notes']?.toString() ?? '',
     );
   }
 
@@ -302,12 +330,12 @@ class ActivityDto {
 
   factory ActivityDto.fromJson(Map<String, dynamic> json) {
     return ActivityDto(
-      time: json['time'],
-      name: json['name'],
-      description: json['description'],
-      location: json['location'],
-      estimatedCost: json['estimatedCost'].toDouble(),
-      duration: json['duration'],
+      time: json['time']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+      estimatedCost: _toDouble(json['estimatedCost']),
+      duration: _toInt(json['duration']),
     );
   }
 
@@ -360,14 +388,14 @@ class AttractionDto {
 
   factory AttractionDto.fromJson(Map<String, dynamic> json) {
     return AttractionDto(
-      name: json['name'],
-      description: json['description'],
-      category: json['category'],
-      rating: json['rating'].toDouble(),
-      location: json['location'],
-      entryFee: json['entryFee'].toDouble(),
-      bestTime: json['bestTime'],
-      image: json['image'],
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      rating: _toDouble(json['rating']),
+      location: json['location']?.toString() ?? '',
+      entryFee: _toDouble(json['entryFee']),
+      bestTime: json['bestTime']?.toString() ?? '',
+      image: json['image']?.toString() ?? '',
     );
   }
 
@@ -422,14 +450,14 @@ class RestaurantDto {
 
   factory RestaurantDto.fromJson(Map<String, dynamic> json) {
     return RestaurantDto(
-      name: json['name'],
-      description: json['description'],
-      cuisine: json['cuisine'],
-      rating: json['rating'].toDouble(),
-      priceRange: json['priceRange'],
-      location: json['location'],
-      specialty: json['specialty'],
-      image: json['image'],
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      cuisine: json['cuisine']?.toString() ?? '',
+      rating: _toDouble(json['rating']),
+      priceRange: json['priceRange']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+      specialty: json['specialty']?.toString() ?? '',
+      image: json['image']?.toString() ?? '',
     );
   }
 
@@ -467,6 +495,17 @@ class BudgetBreakdownDto {
     this.currency = 'USD',
   });
 
+  factory BudgetBreakdownDto.empty() {
+    return BudgetBreakdownDto(
+      transportation: 0,
+      accommodation: 0,
+      food: 0,
+      activities: 0,
+      miscellaneous: 0,
+      total: 0,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'transportation': transportation,
@@ -481,13 +520,13 @@ class BudgetBreakdownDto {
 
   factory BudgetBreakdownDto.fromJson(Map<String, dynamic> json) {
     return BudgetBreakdownDto(
-      transportation: json['transportation'].toDouble(),
-      accommodation: json['accommodation'].toDouble(),
-      food: json['food'].toDouble(),
-      activities: json['activities'].toDouble(),
-      miscellaneous: json['miscellaneous'].toDouble(),
-      total: json['total'].toDouble(),
-      currency: json['currency'] ?? 'USD',
+      transportation: _toDouble(json['transportation']),
+      accommodation: _toDouble(json['accommodation']),
+      food: _toDouble(json['food']),
+      activities: _toDouble(json['activities']),
+      miscellaneous: _toDouble(json['miscellaneous']),
+      total: _toDouble(json['total']),
+      currency: json['currency']?.toString() ?? 'USD',
     );
   }
 
@@ -501,4 +540,60 @@ class BudgetBreakdownDto {
       currency: currency,
     );
   }
+}
+
+double _toDouble(dynamic value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+
+  if (value is String) {
+    return double.tryParse(value) ?? 0;
+  }
+
+  return 0;
+}
+
+int _toInt(dynamic value) {
+  if (value is int) {
+    return value;
+  }
+
+  if (value is num) {
+    return value.toInt();
+  }
+
+  if (value is String) {
+    return int.tryParse(value) ?? 0;
+  }
+
+  return 0;
+}
+
+String _toDateTimeString(dynamic value) {
+  if (value is String && value.isNotEmpty) {
+    return value;
+  }
+
+  if (value is DateTime) {
+    return value.toIso8601String();
+  }
+
+  return DateTime.fromMillisecondsSinceEpoch(0).toIso8601String();
+}
+
+List<String> _toStringList(dynamic value) {
+  if (value is List) {
+    return value.where((item) => item != null).map((item) => item.toString()).toList();
+  }
+
+  return const [];
+}
+
+List<Map<String, dynamic>> _toMapList(dynamic value) {
+  if (value is List) {
+    return value.whereType<Map>().map((item) => Map<String, dynamic>.from(item)).toList();
+  }
+
+  return const [];
 }

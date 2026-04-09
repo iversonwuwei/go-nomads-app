@@ -61,8 +61,16 @@ class ConversationListPage extends StatelessWidget {
           color: const Color(0xFF07C160), // 微信绿
           child: ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: controller.conversations.length,
+            itemCount: controller.conversations.length + 1,
             itemBuilder: (context, index) {
+              if (index == controller.conversations.length) {
+                return _ConversationLoadMoreTile(controller: controller);
+              }
+
+              if (index >= controller.conversations.length - 3 && controller.hasMore.value) {
+                controller.loadMoreConversations();
+              }
+
               final conversation = controller.conversations[index];
               return _ConversationTile(
                 conversation: conversation,
@@ -104,6 +112,41 @@ class ConversationListPage extends StatelessWidget {
     );
 
     Get.toNamed(AppRoutes.directChat, arguments: user);
+  }
+}
+
+class _ConversationLoadMoreTile extends StatelessWidget {
+  final ConversationListController controller;
+
+  const _ConversationLoadMoreTile({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.isLoadingMore.value) {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 20.h),
+          child: const Center(child: AppLoadingWidget(fullScreen: false)),
+        );
+      }
+
+      if (!controller.hasMore.value) {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 20.h),
+          child: Center(
+            child: Text(
+              '已加载全部会话',
+              style: TextStyle(
+                color: const Color(0xFF999999),
+                fontSize: 12.sp,
+              ),
+            ),
+          ),
+        );
+      }
+
+      return const SizedBox.shrink();
+    });
   }
 }
 

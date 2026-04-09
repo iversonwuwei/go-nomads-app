@@ -59,6 +59,10 @@ class NotificationsPageController extends GetxController {
     }
   }
 
+  Future<void> loadMoreCurrentTab(int tabIndex) async {
+    await notificationController.loadMoreNotifications();
+  }
+
   /// 全部标记为已读
   Future<void> markAllAsRead() async {
     final success = await notificationController.markAllAsRead();

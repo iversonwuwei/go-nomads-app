@@ -6,6 +6,7 @@ import 'package:go_nomads_app/controllers/hotel_list_page_controller.dart';
 import 'package:go_nomads_app/pages/hotel_list/hotel_card.dart';
 import 'package:go_nomads_app/pages/hotel_list/hotel_empty_state.dart';
 import 'package:go_nomads_app/pages/hotel_list/hotel_search_bar.dart';
+import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
 
@@ -58,50 +59,87 @@ class HotelListPage extends StatelessWidget {
         ),
       ),
       body: RefreshIndicator(
-      onRefresh: controller.loadHotels,
-      child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          // 搜索栏
-          SliverToBoxAdapter(
-            child: HotelSearchBar(controllerTag: _tag),
-          ),
+        onRefresh: controller.loadHotels,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // 搜索栏
+            SliverToBoxAdapter(
+              child: HotelSearchBar(controllerTag: _tag),
+            ),
 
-          // 酒店列表或状态
-          Obx(() {
-            if (controller.isLoading.value) {
-              return const SliverFillRemaining(
-                hasScrollBody: true,
-                child: HotelListSkeleton(),
-              );
-            }
+            // 酒店列表或状态
+            Obx(() {
+              if (controller.isLoading.value) {
+                return const SliverFillRemaining(
+                  hasScrollBody: true,
+                  child: HotelListSkeleton(),
+                );
+              }
 
-            if (controller.hotels.isEmpty) {
-              return SliverFillRemaining(
-                hasScrollBody: false,
-                child: HotelEmptyState(controllerTag: _tag),
-              );
-            }
+              if (controller.hotels.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: HotelEmptyState(controllerTag: _tag),
+                );
+              }
 
-            return SliverPadding(
-              padding: EdgeInsets.all(16.w),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return HotelCard(
-                      controllerTag: _tag,
-                      hotel: controller.hotels[index],
-                    );
-                  },
-                  childCount: controller.hotels.length,
+              return SliverPadding(
+                padding: EdgeInsets.all(16.w),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index >= controller.hotels.length - 2 && controller.canLoadMore) {
+                        controller.loadMoreHotels();
+                      }
+
+                      return HotelCard(
+                        controllerTag: _tag,
+                        hotel: controller.hotels[index],
+                      );
+                    },
+                    childCount: controller.hotels.length,
+                  ),
                 ),
-              ),
-            );
-          }),
-        ],
-      ),
+              );
+            }),
+            Obx(() => SliverToBoxAdapter(
+                  child: _buildLoadMoreIndicator(controller),
+                )),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildLoadMoreIndicator(HotelListPageController controller) {
+    if (controller.hotels.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (controller.isLoadingMore.value) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
+      );
+    }
+
+    if (!controller.hasMore.value) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
+        child: Center(
+          child: Text(
+            '已加载全部酒店',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.sp,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   /// 公开的刷新方法，供外部调用

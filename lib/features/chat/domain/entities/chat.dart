@@ -195,6 +195,9 @@ class ChatRoom {
     if (isMeetupRoom && meetupTitle != null) {
       return meetupTitle!;
     }
+    if (location.country.isEmpty) {
+      return location.city;
+    }
     return '${location.city}, ${location.country}';
   }
 

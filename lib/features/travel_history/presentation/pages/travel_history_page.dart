@@ -101,14 +101,24 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final trip = controller.pendingTrips[index];
+                      if (index >= controller.displayPendingTrips.length - 2 && controller.hasMorePending.value) {
+                        controller.loadMorePendingTrips();
+                      }
+
+                      final trip = controller.displayPendingTrips[index];
                       return TripConfirmationCard(
                         trip: trip,
                         onConfirm: () => controller.confirmTrip(trip),
                         onDismiss: () => controller.dismissTrip(trip),
                       );
                     },
-                    childCount: controller.pendingTrips.length,
+                    childCount: controller.displayPendingTrips.length,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _buildLoadMoreIndicator(
+                    isLoading: controller.isLoadingMorePending.value,
+                    hasMore: controller.hasMorePending.value,
                   ),
                 ),
               ],
@@ -117,7 +127,7 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
               SliverToBoxAdapter(
                 child: _buildSectionHeader(
                   l10n.confirmedTrips,
-                  count: controller.confirmedTrips.length,
+                  count: controller.confirmedTotalCount.value,
                 ),
               ),
 
@@ -130,12 +140,22 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final trip = controller.confirmedTrips[index];
+                      if (index >= controller.displayConfirmedTrips.length - 2 && controller.hasMoreConfirmed.value) {
+                        controller.loadMoreConfirmedTrips();
+                      }
+
+                      final trip = controller.displayConfirmedTrips[index];
                       return _buildTripHistoryCard(context, trip);
                     },
-                    childCount: controller.confirmedTrips.length,
+                    childCount: controller.displayConfirmedTrips.length,
                   ),
                 ),
+              SliverToBoxAdapter(
+                child: _buildLoadMoreIndicator(
+                  isLoading: controller.isLoadingMoreConfirmed.value,
+                  hasMore: controller.hasMoreConfirmed.value,
+                ),
+              ),
 
               // 底部安全区域
               SliverToBoxAdapter(
@@ -487,6 +507,24 @@ class TravelHistoryPage extends GetView<TravelHistoryController> {
         ),
       ),
     );
+  }
+
+  Widget _buildLoadMoreIndicator({
+    required bool isLoading,
+    required bool hasMore,
+  }) {
+    if (isLoading) {
+      return Padding(
+        padding: EdgeInsets.all(16.w),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
+      );
+    }
+
+    if (!hasMore) {
+      return const SizedBox.shrink();
+    }
+
+    return const SizedBox.shrink();
   }
 
   /// 构建信息标签

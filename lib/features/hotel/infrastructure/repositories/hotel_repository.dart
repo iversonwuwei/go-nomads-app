@@ -6,6 +6,24 @@ import 'package:go_nomads_app/features/hotel/domain/repositories/i_hotel_reposit
 import 'package:go_nomads_app/features/hotel/infrastructure/models/hotel_dto.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 
+class HotelPagedResult {
+  final List<Hotel> hotels;
+  final int totalCount;
+  final int page;
+  final int pageSize;
+  final int totalPages;
+
+  const HotelPagedResult({
+    required this.hotels,
+    required this.totalCount,
+    required this.page,
+    required this.pageSize,
+    required this.totalPages,
+  });
+
+  bool get hasMore => page < totalPages && hotels.isNotEmpty;
+}
+
 /// Hotel Repository - 酒店数据仓储
 /// 对接后端 AccommodationService API
 class HotelRepository implements IHotelRepository {
@@ -36,7 +54,7 @@ class HotelRepository implements IHotelRepository {
     int? roomCount,
     String? search,
   }) async {
-    final result = await getHotels(
+    final result = await getHotelsPage(
       cityId: cityId,
       cityName: cityName,
       countryName: countryName,
@@ -49,21 +67,23 @@ class HotelRepository implements IHotelRepository {
       search: search,
     );
 
-    result.onSuccess((hotels) {
-      for (final hotel in hotels) {
+    result.onSuccess((pagedResult) {
+      for (final hotel in pagedResult.hotels) {
         _hotelCache[hotel.id] = hotel;
       }
     });
 
-    if (result is Success<List<Hotel>>) {
-      log('🏨 [HotelRepository] 服务端返回 ${result.data.length} 个酒店');
+    if (result is Success<HotelPagedResult>) {
+      log('🏨 [HotelRepository] 服务端返回 ${result.data.hotels.length} 个酒店');
     }
 
-    return result;
+    return result.fold(
+      onSuccess: (data) => Success(data.hotels),
+      onFailure: (error) => Failure(error),
+    );
   }
 
-  @override
-  Future<Result<List<Hotel>>> getHotels({
+  Future<Result<HotelPagedResult>> getHotelsPage({
     int page = 1,
     int pageSize = 20,
     String? cityId,
@@ -115,7 +135,7 @@ class HotelRepository implements IHotelRepository {
           .join('&');
       final url = queryString.isNotEmpty ? '$_basePath?$queryString' : _basePath;
 
-      log('🏨 HotelRepository.getHotels: $url');
+      log('🏨 HotelRepository.getHotelsPage: $url');
 
       final response = await _httpService.get(url);
       final externalDataStatus = response.data['externalDataStatus']?.toString();
@@ -126,9 +146,13 @@ class HotelRepository implements IHotelRepository {
       _lastPartialExternalData = partialExternalData;
       _lastExternalDataMessage = externalDataMessage;
 
-      // 后端返回 { hotels: [...], totalCount, page, pageSize, totalPages }
       final List<dynamic> hotelsData = response.data['hotels'] ?? [];
       final hotels = hotelsData.map((json) => HotelDto.fromMap(json).toDomain()).toList();
+      final totalCount = response.data['totalCount'] as int? ?? hotels.length;
+      final currentPage = response.data['page'] as int? ?? page;
+      final currentPageSize = response.data['pageSize'] as int? ?? pageSize;
+      final totalPages = response.data['totalPages'] as int? ??
+          (currentPageSize == 0 ? 0 : ((totalCount + currentPageSize - 1) ~/ currentPageSize));
 
       if (externalDataStatus != null && externalDataStatus.isNotEmpty) {
         log('🏨 [HotelRepository] 外部酒店状态: $externalDataStatus, partial=$partialExternalData');
@@ -141,21 +165,71 @@ class HotelRepository implements IHotelRepository {
         _hotelCache[hotel.id] = hotel;
       }
 
-      log('🏨 获取到 ${hotels.length} 个酒店');
-      return Success(hotels);
+      log('🏨 获取到 ${hotels.length} 个酒店, totalCount=$totalCount, page=$currentPage');
+      return Success(HotelPagedResult(
+        hotels: hotels,
+        totalCount: totalCount,
+        page: currentPage,
+        pageSize: currentPageSize,
+        totalPages: totalPages,
+      ));
     } on HttpException catch (e) {
       _lastExternalDataStatus = 'unavailable';
       _lastPartialExternalData = false;
       _lastExternalDataMessage = null;
-      log('❌ HotelRepository.getHotels 失败: ${e.message}');
+      log('❌ HotelRepository.getHotelsPage 失败: ${e.message}');
       return Failure(_convertHttpException(e));
     } catch (e) {
       _lastExternalDataStatus = 'unavailable';
       _lastPartialExternalData = false;
       _lastExternalDataMessage = null;
-      log('❌ HotelRepository.getHotels 异常: $e');
+      log('❌ HotelRepository.getHotelsPage 异常: $e');
       return Failure(NetworkException(e.toString()));
     }
+  }
+
+  @override
+  Future<Result<List<Hotel>>> getHotels({
+    int page = 1,
+    int pageSize = 20,
+    String? cityId,
+    String? cityName,
+    String? countryName,
+    double? latitude,
+    double? longitude,
+    DateTime? checkInDate,
+    int? stayNights,
+    int? adultCount,
+    int? roomCount,
+    String? search,
+    bool? hasWifi,
+    bool? hasCoworkingSpace,
+    double? minPrice,
+    double? maxPrice,
+  }) async {
+    final result = await getHotelsPage(
+      page: page,
+      pageSize: pageSize,
+      cityId: cityId,
+      cityName: cityName,
+      countryName: countryName,
+      latitude: latitude,
+      longitude: longitude,
+      checkInDate: checkInDate,
+      stayNights: stayNights,
+      adultCount: adultCount,
+      roomCount: roomCount,
+      search: search,
+      hasWifi: hasWifi,
+      hasCoworkingSpace: hasCoworkingSpace,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+    );
+
+    return result.fold(
+      onSuccess: (data) => Success(data.hotels),
+      onFailure: (error) => Failure(error),
+    );
   }
 
   String _formatDate(DateTime date) {

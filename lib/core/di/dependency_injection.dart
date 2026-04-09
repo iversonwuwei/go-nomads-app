@@ -1047,6 +1047,7 @@ class DependencyInjection {
 
     // Use Cases
     Get.lazyPut(() => GetProjectsUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
+    Get.lazyPut(() => GetProjectsPageUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
     Get.lazyPut(() => GetProjectByIdUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
     Get.lazyPut(() => CreateProjectUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
     Get.lazyPut(() => UpdateProjectUseCase(Get.find<IInnovationProjectRepository>()), fenix: true);
@@ -1064,7 +1065,7 @@ class DependencyInjection {
     // Controller
     Get.lazyPut(
       () => InnovationProjectStateController(
-        getProjectsUseCase: Get.find<GetProjectsUseCase>(),
+        getProjectsPageUseCase: Get.find<GetProjectsPageUseCase>(),
         getProjectByIdUseCase: Get.find<GetProjectByIdUseCase>(),
         createProjectUseCase: Get.find<CreateProjectUseCase>(),
         updateProjectUseCase: Get.find<UpdateProjectUseCase>(),

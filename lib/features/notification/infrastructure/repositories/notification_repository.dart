@@ -133,10 +133,10 @@ class NotificationRepository implements INotificationRepository {
         '${ApiConfig.apiBaseUrl}/notifications/$notificationId/read',
       );
 
-      if (response.statusCode == 200 && response.data['success'] == true) {
+      if (response.statusCode == 200) {
         return Result.success(true);
       } else {
-        return Result.failure(NetworkException(response.data['message'] ?? '标记已读失败'));
+        return Result.failure(const NetworkException('标记已读失败'));
       }
     } catch (e) {
       return Result.failure(NetworkException('标记已读失败: $e'));
@@ -153,10 +153,10 @@ class NotificationRepository implements INotificationRepository {
         },
       );
 
-      if (response.statusCode == 200 && response.data['success'] == true) {
+      if (response.statusCode == 200) {
         return Result.success(true);
       } else {
-        return Result.failure(NetworkException(response.data['message'] ?? '更新元数据失败'));
+        return Result.failure(const NetworkException('更新元数据失败'));
       }
     } catch (e) {
       return Result.failure(NetworkException('更新元数据失败: $e'));
@@ -178,10 +178,10 @@ class NotificationRepository implements INotificationRepository {
         },
       );
 
-      if (response.statusCode == 200 && response.data['success'] == true) {
+      if (response.statusCode == 200) {
         return Result.success(true);
       } else {
-        return Result.failure(NetworkException(response.data['message'] ?? '批量标记已读失败'));
+        return Result.failure(const NetworkException('批量标记已读失败'));
       }
     } catch (e) {
       return Result.failure(NetworkException('批量标记已读失败: $e'));
@@ -200,10 +200,10 @@ class NotificationRepository implements INotificationRepository {
         '${ApiConfig.apiBaseUrl}/notifications/read/all?userId=$userId',
       );
 
-      if (response.statusCode == 200 && response.data['success'] == true) {
+      if (response.statusCode == 200) {
         return Result.success(true);
       } else {
-        return Result.failure(NetworkException(response.data['message'] ?? '标记所有已读失败'));
+        return Result.failure(const NetworkException('标记所有已读失败'));
       }
     } catch (e) {
       return Result.failure(NetworkException('标记所有已读失败: $e'));
@@ -217,10 +217,10 @@ class NotificationRepository implements INotificationRepository {
         '${ApiConfig.apiBaseUrl}/notifications/$notificationId',
       );
 
-      if (response.statusCode == 200 && response.data['success'] == true) {
+      if (response.statusCode == 200) {
         return Result.success(true);
       } else {
-        return Result.failure(NetworkException(response.data['message'] ?? '删除通知失败'));
+        return Result.failure(const NetworkException('删除通知失败'));
       }
     } catch (e) {
       return Result.failure(NetworkException('删除通知失败: $e'));
@@ -249,11 +249,11 @@ class NotificationRepository implements INotificationRepository {
         },
       );
 
-      if (response.statusCode == 200) {
-        final notification = _mapFromJson(response.data['data']);
+      if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+        final notification = _mapFromJson(response.data as Map<String, dynamic>);
         return Result.success(notification);
       } else {
-        return Result.failure(NetworkException(response.data['message'] ?? '发送通知失败'));
+        return Result.failure(const NetworkException('发送通知失败'));
       }
     } catch (e) {
       return Result.failure(NetworkException('发送通知失败: $e'));
@@ -352,18 +352,10 @@ class NotificationRepository implements INotificationRepository {
 
   /// 将 JSON 映射为 AppNotification 对象
   AppNotification _mapFromJson(Map<String, dynamic> json) {
-    return AppNotification(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      title: json['title'] as String,
-      message: json['message'] as String,
-      type: _stringToType(json['type'] as String),
-      relatedId: json['relatedId'] as String?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-      isRead: json['isRead'] as bool? ?? false,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      readAt: json['readAt'] != null ? DateTime.parse(json['readAt'] as String) : null,
-    );
+    return AppNotification.fromJson({
+      ...json,
+      'type': _typeToString(_stringToType(json['type']?.toString() ?? '')),
+    });
   }
 
   /// 将 NotificationType 转换为字符串

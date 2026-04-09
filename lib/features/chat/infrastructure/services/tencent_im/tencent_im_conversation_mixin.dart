@@ -7,6 +7,18 @@ import 'package:tencent_cloud_chat_sdk/models/v2_tim_conversation.dart';
 import 'package:tencent_cloud_chat_sdk/models/v2_tim_message.dart';
 import 'package:tencent_cloud_chat_sdk/tencent_im_sdk_plugin.dart';
 
+class ConversationPageResult {
+  final List<V2TimConversation> conversations;
+  final String nextSeq;
+  final bool isFinished;
+
+  const ConversationPageResult({
+    required this.conversations,
+    required this.nextSeq,
+    required this.isFinished,
+  });
+}
+
 /// 腾讯云IM服务 - 会话管理模块扩展
 mixin TencentIMConversationMixin {
   bool get isLoggedIn;
@@ -75,11 +87,17 @@ mixin TencentIMConversationMixin {
   }
 
   /// 获取会话列表
-  Future<List<V2TimConversation>> getConversationList({
+  Future<ConversationPageResult> getConversationPage({
     int count = 20,
     String? nextSeq,
   }) async {
-    if (!isLoggedIn) return [];
+    if (!isLoggedIn) {
+      return const ConversationPageResult(
+        conversations: [],
+        nextSeq: '0',
+        isFinished: true,
+      );
+    }
 
     try {
       final result = await TencentImSDKPlugin.v2TIMManager
@@ -87,13 +105,34 @@ mixin TencentIMConversationMixin {
           .getConversationList(count: count, nextSeq: nextSeq ?? '0');
 
       if (result.code == 0) {
-        return result.data?.conversationList ?? [];
+        return ConversationPageResult(
+          conversations: result.data?.conversationList ?? [],
+          nextSeq: result.data?.nextSeq ?? '0',
+          isFinished: result.data?.isFinished ?? true,
+        );
       }
-      return [];
+
+      return const ConversationPageResult(
+        conversations: [],
+        nextSeq: '0',
+        isFinished: true,
+      );
     } catch (e) {
-      log('❌ 获取会话列表异常: $e');
-      return [];
+      log('❌ 获取会话分页异常: $e');
+      return const ConversationPageResult(
+        conversations: [],
+        nextSeq: '0',
+        isFinished: true,
+      );
     }
+  }
+
+  Future<List<V2TimConversation>> getConversationList({
+    int count = 20,
+    String? nextSeq,
+  }) async {
+    final result = await getConversationPage(count: count, nextSeq: nextSeq);
+    return result.conversations;
   }
 
   /// 获取C2C历史消息

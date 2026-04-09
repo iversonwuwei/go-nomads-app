@@ -109,14 +109,21 @@ class InnovationListPage extends StatelessWidget {
 
         // Footer (loading indicator)
         if (index == projects.length + 1) {
+          final stateController = controller.stateController;
           return InnovationListLoadingIndicator(
-            isLoading: controller.stateController?.isLoading.value ?? false,
-            hasMore: false,
+            isLoading: stateController?.isLoadingMore.value ?? false,
+            hasMore: stateController?.hasMore.value ?? false,
           );
         }
 
         // Project card
-        final project = projects[index - 1];
+        final projectIndex = index - 1;
+        final stateController = controller.stateController;
+        if (projectIndex >= projects.length - 3 && (stateController?.canLoadMore ?? false)) {
+          controller.loadMoreProjects();
+        }
+
+        final project = projects[projectIndex];
         return InnovationProjectCard(
           project: project,
           controllerTag: _controllerTag,

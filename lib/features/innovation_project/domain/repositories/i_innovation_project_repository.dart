@@ -2,8 +2,34 @@ import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
 
+class InnovationProjectPageResult {
+  final List<InnovationProject> items;
+  final int total;
+  final int page;
+  final int pageSize;
+
+  const InnovationProjectPageResult({
+    required this.items,
+    required this.total,
+    required this.page,
+    required this.pageSize,
+  });
+
+  int get totalPages => pageSize == 0 ? 0 : ((total + pageSize - 1) ~/ pageSize);
+  bool get hasMore => page < totalPages && items.isNotEmpty;
+}
+
 /// 创新项目仓储接口
 abstract class IInnovationProjectRepository {
+  /// 获取带分页元数据的项目列表
+  Future<Result<InnovationProjectPageResult>> getProjectsPage({
+    int page = 1,
+    int pageSize = 20,
+    String? category,
+    String? stage,
+    String? search,
+  });
+
   /// 获取所有项目列表
   Future<Result<List<InnovationProject>>> getProjects({
     int page = 1,

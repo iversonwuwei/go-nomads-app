@@ -476,6 +476,28 @@ class CityListController extends GetxController {
   Future<void> _searchCities(String query) async {
     log('🔍 搜索城市: $query');
 
+    if (selectedRegion.value != null) {
+      final filteredResult = await _cityRepository.getCitiesBasic(
+        page: 1,
+        pageSize: _pageSize,
+        search: query,
+        region: selectedRegion.value,
+      );
+
+      filteredResult.fold(
+        onSuccess: (data) {
+          cities.assignAll(data);
+          hasMore.value = data.length >= _pageSize;
+          log('✅ 分区搜索成功: ${data.length} 个城市');
+        },
+        onFailure: (error) {
+          errorMessage.value = error.message;
+          log('❌ 分区搜索失败: ${error.message}');
+        },
+      );
+      return;
+    }
+
     // 先尝试 Elasticsearch
     final esResult = await _searchService.searchCities(
       query: query,
@@ -551,6 +573,35 @@ class CityListController extends GetxController {
   }
 
   Future<void> _loadMoreFromSearch() async {
+    if (selectedRegion.value != null) {
+      final result = await _cityRepository.getCitiesBasic(
+        page: _currentPage + 1,
+        pageSize: _pageSize,
+        search: searchQuery.value,
+        region: selectedRegion.value,
+      );
+
+      result.fold(
+        onSuccess: (data) {
+          if (data.isEmpty) {
+            hasMore.value = false;
+          } else {
+            cities.addAll(data);
+            _currentPage++;
+            hasMore.value = data.length >= _pageSize;
+
+            final ids = data.map((c) => c.id).toList();
+            Future.microtask(() => _loadCityCountsAsync(ids));
+            Future.microtask(() => _loadCityRatingsAsync(ids));
+          }
+        },
+        onFailure: (error) {
+          log('❌ 分区加载更多失败: ${error.message}');
+        },
+      );
+      return;
+    }
+
     final esResult = await _searchService.searchCities(
       query: searchQuery.value,
       page: _currentPage + 1,

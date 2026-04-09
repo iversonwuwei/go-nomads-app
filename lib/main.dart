@@ -44,6 +44,10 @@ var _needsFirstLaunchPrivacyConsent = false;
 /// 全局变量：标记首次启动法律文档同意已通过（用于控制SDK初始化时机）
 var _privacyConsentCompleted = false;
 
+/// 全局路由观察器保持单例，避免 MaterialApp 重建时重复挂载观察器。
+final BottomNavRouteObserver _bottomNavRouteObserver = BottomNavRouteObserver();
+final PageLifecycleObserver _pageLifecycleObserver = PageLifecycleObserver();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -242,18 +246,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localeController = Get.put(LocaleController());
+    final localeController = Get.isRegistered<LocaleController>()
+        ? Get.find<LocaleController>()
+        : Get.put(LocaleController(), permanent: true);
 
     return ScreenUtilInit(
       designSize: const Size(390, 844), // iPhone 14 Pro 的设计尺寸
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return Obx(() => GetMaterialApp(
+        return GetMaterialApp(
               title: '行途 - GO-NOMADS',
 
               // 国际化配置
-              locale: localeController.uiLocale.value,
+          locale: Get.locale ?? localeController.uiLocale.value,
               localizationsDelegates: const [
                 AppLocalizations.delegate,
                 GlobalMaterialLocalizations.delegate,
@@ -304,10 +310,10 @@ class MyApp extends StatelessWidget {
               navigatorObservers: [
                 appRouteObserver,
                 keyboardDismissObserver,
-                BottomNavRouteObserver(),
-                PageLifecycleObserver(),
+            _bottomNavRouteObserver,
+            _pageLifecycleObserver,
               ],
-            ));
+        );
       },
     );
   }

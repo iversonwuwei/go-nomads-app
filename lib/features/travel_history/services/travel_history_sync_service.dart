@@ -11,6 +11,22 @@ import '../data/models/travel_history_api_dto.dart';
 import '../data/repositories/travel_history_api_repository.dart';
 import '../domain/entities/candidate_trip.dart';
 
+class CandidateTripPageResult {
+  final List<CandidateTrip> items;
+  final int totalCount;
+  final int page;
+  final int pageSize;
+
+  const CandidateTripPageResult({
+    required this.items,
+    required this.totalCount,
+    required this.page,
+    required this.pageSize,
+  });
+
+  bool get hasMore => page * pageSize < totalCount;
+}
+
 /// 旅行历史同步服务
 /// 负责在本地 SQLite 和后端服务之间同步旅行历史数据
 class TravelHistorySyncService {
@@ -48,16 +64,16 @@ class TravelHistorySyncService {
   /// 同步已确认的旅行到后端
   Future<void> syncConfirmedTripsToBackend() async {
     if (isSyncing.value) return;
-    
+
     // 检查是否有有效的 token
     final tokenService = Get.find<TokenStorageService>();
     final token = await tokenService.getAccessToken();
-    
+
     if (token == null || token.isEmpty) {
       log('⚠️ 用户未登录，跳过同步旅行历史到后端');
       return;
     }
-    
+
     isSyncing.value = true;
 
     try {
@@ -119,35 +135,110 @@ class TravelHistorySyncService {
       // 检查是否有有效的 token
       final tokenService = Get.find<TokenStorageService>();
       final token = await tokenService.getAccessToken();
-      
+
       if (token == null || token.isEmpty) {
         log('⚠️ 用户未登录，跳过从后端获取旅行历史');
         return <CandidateTrip>[];
       }
-      
+
       log('📥 正在从后端获取旅行历史...');
-      log('🔗 API URL: ${ApiConfig.currentApiBaseUrl}${ApiConfig.travelHistoryConfirmedEndpoint}');
+      log('🔗 API URL: ${ApiConfig.currentApiBaseUrl}${ApiConfig.travelHistoryEndpoint}');
 
-      final result = await _apiRepository.getConfirmedTravelHistory();
+      const syncPageSize = 100;
+      final collectedTrips = <CandidateTrip>[];
+      var page = 1;
+      var hasMore = true;
 
-      return switch (result) {
-        Success(data: final apiTrips) => () {
-            log('✅ 从后端获取到 ${apiTrips.length} 条旅行历史');
-            if (apiTrips.isNotEmpty) {
-              log('📋 第一条数据: ${apiTrips.first.city}, ${apiTrips.first.country}');
-            }
-            return apiTrips.map(_apiDtoToLocalTrip).toList();
-          }(),
-        Failure(exception: final exception) => () {
-            log('❌ 从后端获取旅行历史失败: ${exception.message}');
-            log('📍 错误代码: ${exception.code}');
-            return <CandidateTrip>[];
-          }(),
-      };
+      while (hasMore) {
+        final result = await _apiRepository.getTravelHistory(
+          page: page,
+          pageSize: syncPageSize,
+          isConfirmed: true,
+        );
+
+        final pageTrips = switch (result) {
+          Success(data: final apiTrips) => () {
+              final mappedTrips = apiTrips.items.cast<TravelHistoryApiDto>().map(_apiDtoToLocalTrip).toList();
+              collectedTrips.addAll(mappedTrips);
+              hasMore = apiTrips.hasMore;
+              page += 1;
+              return mappedTrips;
+            }(),
+          Failure(exception: final exception) => () {
+              log('❌ 从后端获取旅行历史失败: ${exception.message}');
+              log('📍 错误代码: ${exception.code}');
+              hasMore = false;
+              return <CandidateTrip>[];
+            }(),
+        };
+
+        if (pageTrips.isEmpty && !hasMore) {
+          break;
+        }
+      }
+
+      log('✅ 从后端获取到 ${collectedTrips.length} 条旅行历史');
+      if (collectedTrips.isNotEmpty) {
+        log('📋 第一条数据: ${collectedTrips.first.cityName}, ${collectedTrips.first.countryName}');
+      }
+
+      return collectedTrips;
     } catch (e, stackTrace) {
       log('❌ 从后端获取旅行历史异常: $e');
       log('📍 堆栈: $stackTrace');
       return [];
+    }
+  }
+
+  Future<CandidateTripPageResult> fetchTravelHistoryPage({
+    int page = 1,
+    int pageSize = 20,
+    bool? isConfirmed,
+  }) async {
+    try {
+      final token = await Get.find<TokenStorageService>().getAccessToken();
+      if (token == null || token.isEmpty) {
+        log('⚠️ 用户未登录，跳过分页获取旅行历史');
+        return CandidateTripPageResult(
+          items: const <CandidateTrip>[],
+          totalCount: 0,
+          page: page,
+          pageSize: pageSize,
+        );
+      }
+
+      final result = await _apiRepository.getTravelHistory(
+        page: page,
+        pageSize: pageSize,
+        isConfirmed: isConfirmed,
+      );
+
+      return switch (result) {
+        Success(data: final data) => CandidateTripPageResult(
+            items: data.items.cast<TravelHistoryApiDto>().map(_apiDtoToLocalTrip).toList(),
+            totalCount: data.totalCount,
+            page: page,
+            pageSize: pageSize,
+          ),
+        Failure(exception: final exception) => () {
+            log('❌ 分页获取旅行历史失败: ${exception.message}');
+            return CandidateTripPageResult(
+              items: const <CandidateTrip>[],
+              totalCount: 0,
+              page: page,
+              pageSize: pageSize,
+            );
+          }(),
+      };
+    } catch (e, stackTrace) {
+      log('❌ 分页获取旅行历史异常: $e');
+      log('📍 堆栈: $stackTrace');
+      return CandidateTripPageResult(
+        items: const <CandidateTrip>[],
+        totalCount: 0,
+        page: page,
+        pageSize: pageSize,
+      );
     }
   }
 

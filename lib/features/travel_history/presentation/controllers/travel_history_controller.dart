@@ -16,6 +16,8 @@ import '../../services/travel_history_sync_service.dart';
 /// 旅行历史控制器
 /// 管理旅行历史页面的状态和业务逻辑
 class TravelHistoryController extends GetxController {
+  static const int _pageSize = 20;
+
   late final TravelDetectionService _detectionService;
   late final ReverseGeocodingService _geocodingService;
   late final TravelHistoryDao _dao;
@@ -41,6 +43,18 @@ class TravelHistoryController extends GetxController {
 
   /// 统计信息
   final Rx<Map<String, dynamic>> statistics = Rx<Map<String, dynamic>>({});
+
+  final RxInt visiblePendingCount = _pageSize.obs;
+  final RxBool isLoadingMorePending = false.obs;
+  final RxBool isLoadingMoreConfirmed = false.obs;
+  final RxBool hasMorePending = false.obs;
+  final RxBool hasMoreConfirmed = false.obs;
+  final RxInt confirmedTotalCount = 0.obs;
+
+  int _confirmedCurrentPage = 1;
+
+  List<CandidateTrip> get displayPendingTrips => pendingTrips.take(visiblePendingCount.value).toList();
+  List<CandidateTrip> get displayConfirmedTrips => confirmedTrips.toList();
 
   @override
   void onInit() {
@@ -87,6 +101,7 @@ class TravelHistoryController extends GetxController {
 
     ever(_detectionService.pendingTrips, (trips) {
       pendingTrips.value = trips;
+      _syncPendingPagination();
     });
 
     ever(_detectionService.homeLocation, (home) {
@@ -110,7 +125,7 @@ class TravelHistoryController extends GetxController {
 
       final preferencesRepo = Get.find<IUserPreferencesRepository>();
       final preferences = await preferencesRepo.getCurrentUserPreferences();
-      
+
       if (preferences.autoTravelDetectionEnabled) {
         if (!_detectionService.isRunning.value) {
           await _detectionService.start();
@@ -122,7 +137,7 @@ class TravelHistoryController extends GetxController {
           log('🔄 从后端恢复停止自动旅行检测');
         }
       }
-      
+
       isAutoDetectionEnabled.value = _detectionService.isEnabled.value;
     } catch (e) {
       log('⚠️ 从后端加载自动检测状态失败: $e');
@@ -134,18 +149,19 @@ class TravelHistoryController extends GetxController {
     isLoading.value = true;
     try {
       log('📂 开始加载旅行历史数据...');
-      
+
       // 首先从后端同步数据
       await _syncWithBackend();
 
-      // 加载已确认的旅行
-      confirmedTrips.value = await _detectionService.getConfirmedTrips();
-      log('✅ 已加载 ${confirmedTrips.length} 条已确认旅行');
+      // 真实分页加载已确认的旅行历史
+      await _loadConfirmedTrips(reset: true);
+      log('✅ 已加载 ${confirmedTrips.length}/${confirmedTotalCount.value} 条已确认旅行');
 
       // 刷新待确认的旅行
       await _detectionService.refreshPendingTrips();
       pendingTrips.value = _detectionService.pendingTrips;
       log('✅ 已加载 ${pendingTrips.length} 条待确认旅行');
+      _resetPendingPagination();
 
       // 加载统计信息
       statistics.value = await _detectionService.getStatistics();
@@ -176,13 +192,13 @@ class TravelHistoryController extends GetxController {
   /// 手动同步
   Future<void> syncWithBackend() async {
     if (isSyncing.value) return;
-    
+
     try {
       await _syncService.fullSync();
-      
+
       // 重新加载数据
-      confirmedTrips.value = await _detectionService.getConfirmedTrips();
-      
+      await _loadConfirmedTrips(reset: true);
+
       final l10n = AppLocalizations.of(Get.context!)!;
       AppToast.success(l10n.syncCompleted);
     } catch (e) {
@@ -242,6 +258,9 @@ class TravelHistoryController extends GetxController {
       pendingTrips.removeWhere((t) => t.id == trip.id);
       final confirmedTrip = trip.confirm();
       confirmedTrips.insert(0, confirmedTrip);
+      confirmedTotalCount.value += 1;
+      _syncPendingPagination();
+      hasMoreConfirmed.value = confirmedTrips.length < confirmedTotalCount.value;
 
       final l10n = AppLocalizations.of(Get.context!)!;
       AppToast.success(l10n.travelSaved);
@@ -252,6 +271,7 @@ class TravelHistoryController extends GetxController {
       _syncService.confirmAndSync(confirmedTrip).then((synced) {
         if (synced) {
           log('✅ 旅行已同步到后端: ${trip.displayName}');
+          _loadConfirmedTrips(reset: true);
         } else {
           log('⚠️ 旅行未能同步到后端，将在下次同步时重试: ${trip.displayName}');
         }
@@ -278,6 +298,7 @@ class TravelHistoryController extends GetxController {
     try {
       await _detectionService.dismissTrip(trip.id!);
       pendingTrips.removeWhere((t) => t.id == trip.id);
+      _syncPendingPagination();
 
       log('❌ 旅行已忽略: ${trip.displayName}');
     } catch (e) {
@@ -337,6 +358,8 @@ class TravelHistoryController extends GetxController {
   Future<void> deleteTripHistory(CandidateTrip trip) async {
     // TODO: 实现删除功能
     confirmedTrips.removeWhere((t) => t.id == trip.id);
+    confirmedTotalCount.value = (confirmedTotalCount.value - 1).clamp(0, 1 << 31);
+    hasMoreConfirmed.value = confirmedTrips.length < confirmedTotalCount.value;
 
     // 通知其他组件旅行历史已变更
     DataEventBus.instance.emit(DataChangedEvent(
@@ -383,6 +406,9 @@ class TravelHistoryController extends GetxController {
       await _detectionService.clearAllData();
       pendingTrips.clear();
       confirmedTrips.clear();
+      _syncPendingPagination();
+      confirmedTotalCount.value = 0;
+      hasMoreConfirmed.value = false;
       homeLocation.value = null;
       log('✅ 数据清除完成');
     }
@@ -398,5 +424,102 @@ class TravelHistoryController extends GetxController {
   void onClose() {
     // 不停止检测服务，让它继续在后台运行
     super.onClose();
+  }
+
+  Future<void> loadMorePendingTrips() async {
+    if (isLoadingMorePending.value || !hasMorePending.value) {
+      return;
+    }
+
+    isLoadingMorePending.value = true;
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    visiblePendingCount.value = (visiblePendingCount.value + _pageSize).clamp(0, pendingTrips.length);
+    hasMorePending.value = visiblePendingCount.value < pendingTrips.length;
+    isLoadingMorePending.value = false;
+  }
+
+  Future<void> loadMoreConfirmedTrips() async {
+    if (isLoadingMoreConfirmed.value || !hasMoreConfirmed.value) {
+      return;
+    }
+
+    await _loadConfirmedTrips(reset: false);
+  }
+
+  void _resetPendingPagination() {
+    visiblePendingCount.value = pendingTrips.length < _pageSize ? pendingTrips.length : _pageSize;
+    hasMorePending.value = visiblePendingCount.value < pendingTrips.length;
+  }
+
+  void _syncPendingPagination() {
+    if (pendingTrips.isEmpty) {
+      visiblePendingCount.value = 0;
+      hasMorePending.value = false;
+      return;
+    }
+
+    if (visiblePendingCount.value == 0) {
+      visiblePendingCount.value = pendingTrips.length < _pageSize ? pendingTrips.length : _pageSize;
+    } else if (visiblePendingCount.value > pendingTrips.length) {
+      visiblePendingCount.value = pendingTrips.length;
+    }
+
+    hasMorePending.value = visiblePendingCount.value < pendingTrips.length;
+  }
+
+  Future<void> _loadConfirmedTrips({required bool reset}) async {
+    if (reset) {
+      _confirmedCurrentPage = 1;
+      hasMoreConfirmed.value = true;
+    }
+
+    isLoadingMoreConfirmed.value = !reset;
+
+    try {
+      final result = await _syncService.fetchTravelHistoryPage(
+        page: _confirmedCurrentPage,
+        pageSize: _pageSize,
+        isConfirmed: true,
+      );
+
+      if (reset) {
+        confirmedTrips.assignAll(result.items);
+      } else {
+        confirmedTrips.addAll(
+          result.items.where((item) => confirmedTrips.every((existing) => !_isSameConfirmedTrip(existing, item))),
+        );
+      }
+
+      confirmedTotalCount.value = result.totalCount;
+      hasMoreConfirmed.value = result.hasMore;
+      if (result.items.isNotEmpty) {
+        _confirmedCurrentPage = result.page + 1;
+      }
+
+      if (reset && result.items.isEmpty && result.totalCount == 0) {
+        final localConfirmedTrips = await _detectionService.getConfirmedTrips();
+        confirmedTrips.assignAll(localConfirmedTrips);
+        confirmedTotalCount.value = localConfirmedTrips.length;
+        hasMoreConfirmed.value = false;
+      }
+    } catch (e) {
+      log('❌ 加载已确认旅行历史分页失败: $e');
+      if (reset) {
+        final localConfirmedTrips = await _detectionService.getConfirmedTrips();
+        confirmedTrips.assignAll(localConfirmedTrips);
+        confirmedTotalCount.value = localConfirmedTrips.length;
+        hasMoreConfirmed.value = false;
+      }
+    } finally {
+      isLoadingMoreConfirmed.value = false;
+    }
+  }
+
+  bool _isSameConfirmedTrip(CandidateTrip left, CandidateTrip right) {
+    if (left.backendId != null && right.backendId != null) {
+      return left.backendId == right.backendId;
+    }
+
+    return left.cityName == right.cityName && left.arrivalTime == right.arrivalTime;
   }
 }

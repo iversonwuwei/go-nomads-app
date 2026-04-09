@@ -28,22 +28,20 @@ class AppNotification extends Equatable {
 
   /// 从 JSON 创建 (API 返回 camelCase)
   factory AppNotification.fromJson(Map<String, dynamic> json) {
+    final createdAt = DateTime.tryParse(json['createdAt']?.toString() ?? '');
+    final readAt = DateTime.tryParse(json['readAt']?.toString() ?? '');
+
     return AppNotification(
-      id: json['id'] as String,
-      userId: json['userId'] as String, // API 字段: userId (camelCase)
-      title: json['title'] as String,
-      message: json['message'] as String,
-      type: NotificationType.fromString(json['type'] as String),
-      relatedId: json['relatedId'] as String?, // API 字段: relatedId
-      metadata: json['metadata'] != null
-          ? Map<String, dynamic>.from(json['metadata'] as Map)
-          : null,
+      id: json['id']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '', // API 字段: userId (camelCase)
+      title: json['title']?.toString() ?? '',
+      message: json['message']?.toString() ?? '',
+      type: NotificationType.fromString(json['type']?.toString() ?? ''),
+      relatedId: json['relatedId']?.toString(), // API 字段: relatedId
+      metadata: json['metadata'] is Map ? Map<String, dynamic>.from(json['metadata'] as Map) : null,
       isRead: json['isRead'] as bool? ?? false, // API 字段: isRead
-      createdAt:
-          DateTime.parse(json['createdAt'] as String), // API 字段: createdAt
-      readAt: json['readAt'] != null
-          ? DateTime.parse(json['readAt'] as String) // API 字段: readAt
-          : null,
+      createdAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(0), // API 字段: createdAt
+      readAt: readAt, // API 字段: readAt
     );
   }
 

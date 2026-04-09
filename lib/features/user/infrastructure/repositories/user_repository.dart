@@ -147,7 +147,7 @@ class UserRepository extends BaseRepository implements IUserRepository {
       final token = await _tokenService.getAccessToken();
 
       final response = await _dio.get(
-        '${ApiConfig.currentApiBaseUrl}${ApiConfig.usersEndpoint}',
+        '${ApiConfig.currentApiBaseUrl}${ApiConfig.userSearchEndpoint}',
         queryParameters: {
           'q': query,
           'page': page,
@@ -161,7 +161,8 @@ class UserRepository extends BaseRepository implements IUserRepository {
       );
 
       if (response.data['success'] == true && response.data['data'] != null) {
-        final List<dynamic> usersData = response.data['data'];
+        final pagedData = response.data['data'] as Map<String, dynamic>;
+        final List<dynamic> usersData = (pagedData['items'] as List?) ?? const [];
         final users = usersData
             .map((json) => UserDto.fromJson(json as Map<String, dynamic>))
             .map((dto) => dto.toDomain())

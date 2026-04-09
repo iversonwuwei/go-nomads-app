@@ -10,6 +10,9 @@ import '../layouts/bottom_nav/bottom_nav_controller.dart';
 /// 当路由 push / pop / replace 时，自动调用
 /// [BottomNavController.updateIndexByRoute] 更新 currentIndex。
 class BottomNavRouteObserver extends NavigatorObserver {
+  bool _syncScheduled = false;
+  String? _lastSyncedRoute;
+
   @override
   void didPop(Route route, Route? previousRoute) {
     super.didPop(route, previousRoute);
@@ -35,14 +38,24 @@ class BottomNavRouteObserver extends NavigatorObserver {
   }
 
   void _syncBottomNavIndex(String trigger) {
-    if (!Get.isRegistered<BottomNavController>()) return;
+    if (!Get.isRegistered<BottomNavController>() || _syncScheduled) return;
+
+    _syncScheduled = true;
 
     // 延迟到下一帧，确保 Get.currentRoute 已更新
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncScheduled = false;
+      if (!Get.isRegistered<BottomNavController>()) return;
+
       final controller = Get.find<BottomNavController>();
+      if (controller.isClosed) return;
+
       final route = Get.currentRoute;
+      if (route.isEmpty || route == _lastSyncedRoute) return;
+
+      _lastSyncedRoute = route;
       log('🔄 BottomNavRouteObserver.$trigger → currentRoute=$route');
-      controller.updateIndexByRoute();
+      controller.updateIndexByRoute(route: route);
     });
   }
 }

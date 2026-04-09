@@ -163,7 +163,7 @@ class MembershipApiService {
       expiryDate: response.expiryDate?.toIso8601String(),
       autoRenew: response.autoRenew,
       aiUsageThisMonth: response.aiUsageThisMonth,
-      isModerator: response.canApplyModerator,
+      isModerator: false,
       moderatorDeposit: response.moderatorDeposit,
     );
   }
@@ -230,14 +230,21 @@ class MembershipResponse {
   });
 
   factory MembershipResponse.fromJson(Map<String, dynamic> json) {
+    final startDate = json['startDate'] != null ? DateTime.tryParse(json['startDate'] as String) : null;
+    final expiryDate = json['expiryDate'] != null ? DateTime.tryParse(json['expiryDate'] as String) : null;
+
     return MembershipResponse(
       id: json['id'] as String? ?? '',
       userId: json['userId'] as String? ?? '',
       level: json['level'] as int? ?? 0,
       levelName: json['levelName'] as String? ?? 'Free',
-      billingCycle: json['billingCycle'] as String? ?? 'yearly',
-      startDate: json['startDate'] != null ? DateTime.tryParse(json['startDate'] as String) : null,
-      expiryDate: json['expiryDate'] != null ? DateTime.tryParse(json['expiryDate'] as String) : null,
+      billingCycle: _resolveBillingCycle(
+        rawValue: json['billingCycle'] as String?,
+        startDate: startDate,
+        expiryDate: expiryDate,
+      ),
+      startDate: startDate,
+      expiryDate: expiryDate,
       autoRenew: json['autoRenew'] as bool? ?? false,
       aiUsageThisMonth: json['aiUsageThisMonth'] as int? ?? 0,
       aiUsageLimit: json['aiUsageLimit'] as int? ?? 0,
@@ -271,6 +278,23 @@ class MembershipResponse {
       'canUseAI': canUseAI,
       'canApplyModerator': canApplyModerator,
     };
+  }
+
+  static String _resolveBillingCycle({
+    required String? rawValue,
+    required DateTime? startDate,
+    required DateTime? expiryDate,
+  }) {
+    if (rawValue != null && rawValue.isNotEmpty) {
+      return rawValue;
+    }
+
+    if (startDate != null && expiryDate != null) {
+      final durationDays = expiryDate.difference(startDate).inDays;
+      return durationDays <= 31 ? 'monthly' : 'yearly';
+    }
+
+    return 'yearly';
   }
 }
 

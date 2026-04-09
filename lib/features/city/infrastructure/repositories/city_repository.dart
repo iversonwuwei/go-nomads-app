@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
-import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_nomad_summary.dart';
@@ -421,23 +421,40 @@ class CityRepository implements ICityRepository {
 
   @override
   Future<Result<List<City>>> getFavoriteCities() async {
+    final pagedResult = await getFavoriteCitiesPage(page: 1, pageSize: 100);
+
+    return pagedResult.fold(
+      onSuccess: (data) => Success(data.items),
+      onFailure: Failure.new,
+    );
+  }
+
+  @override
+  Future<Result<FavoriteCitiesPageResult>> getFavoriteCitiesPage({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     try {
       // 使用新的 /details 端点获取完整城市信息
       final response = await _httpService.get(
         '/user-favorite-cities/details',
-        queryParameters: {'page': 1, 'pageSize': 100},
+        queryParameters: {'page': page, 'pageSize': pageSize},
       );
 
       final data = response.data as Map<String, dynamic>;
       final items = data['items'] as List<dynamic>? ?? [];
-
       final cities = items.map((json) => City.fromJson(json as Map<String, dynamic>)).toList();
 
-      return Success(cities);
+      return Success(FavoriteCitiesPageResult(
+        items: cities,
+        totalCount: data['total'] as int? ?? cities.length,
+        page: data['page'] as int? ?? page,
+        pageSize: data['pageSize'] as int? ?? pageSize,
+      ));
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
     } catch (e) {
-      return Failure(UnknownException('获取收藏城市失败: ${e.toString()}'));
+      return Failure(UnknownException('获取收藏城市分页失败: ${e.toString()}'));
     }
   }
 

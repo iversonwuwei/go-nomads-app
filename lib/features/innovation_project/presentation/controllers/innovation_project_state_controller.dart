@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/core/sync/sync.dart';
 import 'package:go_nomads_app/features/innovation_project/application/use_cases/innovation_project_use_cases.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/features/innovation_project/infrastructure/models/innovation_project_dto.dart';
-import 'package:get/get.dart';
 
 /// 创新项目状态控制器
 class InnovationProjectStateController extends GetxController {
-  final GetProjectsUseCase _getProjectsUseCase;
+  final GetProjectsPageUseCase _getProjectsPageUseCase;
   final GetProjectByIdUseCase _getProjectByIdUseCase;
   final CreateProjectUseCase _createProjectUseCase;
   final UpdateProjectUseCase _updateProjectUseCase;
@@ -26,7 +26,7 @@ class InnovationProjectStateController extends GetxController {
   final GetFeaturedProjectsUseCase? _getFeaturedProjectsUseCase;
 
   InnovationProjectStateController({
-    required GetProjectsUseCase getProjectsUseCase,
+    required GetProjectsPageUseCase getProjectsPageUseCase,
     required GetProjectByIdUseCase getProjectByIdUseCase,
     required CreateProjectUseCase createProjectUseCase,
     required UpdateProjectUseCase updateProjectUseCase,
@@ -40,7 +40,7 @@ class InnovationProjectStateController extends GetxController {
     required GetPopularProjectsUseCase getPopularProjectsUseCase,
     GetMyProjectsUseCase? getMyProjectsUseCase,
     GetFeaturedProjectsUseCase? getFeaturedProjectsUseCase,
-  })  : _getProjectsUseCase = getProjectsUseCase,
+  })  : _getProjectsPageUseCase = getProjectsPageUseCase,
         _getProjectByIdUseCase = getProjectByIdUseCase,
         _createProjectUseCase = createProjectUseCase,
         _updateProjectUseCase = updateProjectUseCase,
@@ -60,7 +60,18 @@ class InnovationProjectStateController extends GetxController {
   final currentProject = Rx<InnovationProject?>(null);
   final teamMembers = <TeamMember>[].obs;
   final isLoading = false.obs;
+  final isLoadingMore = false.obs;
+  final hasMore = true.obs;
+  final totalCount = 0.obs;
+  final currentPage = 1.obs;
+  final currentPageSize = 20.obs;
   final errorMessage = Rx<String?>(null);
+
+  String? _currentCategory;
+  String? _currentStage;
+  String? _currentSearch;
+
+  bool get canLoadMore => hasMore.value && !isLoading.value && !isLoadingMore.value;
 
   // 事件订阅
   StreamSubscription<DataChangedEvent>? _dataChangedSubscription;
@@ -145,38 +156,87 @@ class InnovationProjectStateController extends GetxController {
     String? stage,
     String? search,
     bool forceRefresh = false,
+    bool append = false,
   }) async {
-    // 强制刷新或无数据时加载
-    if (!forceRefresh && projects.isNotEmpty && isLoading.value) {
+    if (append) {
+      if (!canLoadMore) {
+        return;
+      }
+    } else if (!forceRefresh && isLoading.value) {
       return;
     }
 
-    isLoading.value = true;
-    errorMessage.value = null;
-    log('📱 [InnovationProjectStateController] getProjects 开始, forceRefresh: $forceRefresh');
+    final effectiveCategory = category ?? _currentCategory;
+    final effectiveStage = stage ?? _currentStage;
+    final effectiveSearch = search ?? _currentSearch;
+    final targetPage = append ? currentPage.value + 1 : page;
+    final effectivePageSize = append ? currentPageSize.value : pageSize;
 
-    final result = await _getProjectsUseCase(
-      page: page,
-      pageSize: pageSize,
-      category: category,
-      stage: stage,
-      search: search,
+    if (append) {
+      isLoadingMore.value = true;
+    } else {
+      isLoading.value = true;
+      errorMessage.value = null;
+    }
+
+    _currentCategory = effectiveCategory;
+    _currentStage = effectiveStage;
+    _currentSearch = effectiveSearch;
+
+    log('📱 [InnovationProjectStateController] getProjects 开始, forceRefresh: $forceRefresh, append: $append, page: $targetPage');
+
+    final result = await _getProjectsPageUseCase(
+      page: targetPage,
+      pageSize: effectivePageSize,
+      category: effectiveCategory,
+      stage: effectiveStage,
+      search: effectiveSearch,
     );
 
     result.fold(
       onSuccess: (data) {
-        log('✅ [InnovationProjectStateController] 加载项目成功，数量: ${data.length}');
-        projects.value = data;
-        projects.refresh(); // 强制刷新通知
+        log('✅ [InnovationProjectStateController] 加载项目成功，数量: ${data.items.length}');
+
+        if (append) {
+          final existingIds = projects.map((item) => item.uuid ?? item.id.toString()).toSet();
+          final appended = data.items.where((item) => !existingIds.contains(item.uuid ?? item.id.toString())).toList();
+          projects.addAll(appended);
+          hasMore.value = data.hasMore && appended.isNotEmpty;
+        } else {
+          projects.value = data.items;
+          hasMore.value = data.hasMore;
+        }
+
+        totalCount.value = data.total;
+        currentPage.value = data.page;
+        currentPageSize.value = data.pageSize;
+        projects.refresh();
       },
       onFailure: (exception) {
         log('❌ [InnovationProjectStateController] 加载项目失败: ${exception.message}');
         errorMessage.value = exception.message;
+        if (!append) {
+          hasMore.value = false;
+        }
       },
     );
 
-    isLoading.value = false;
+    if (append) {
+      isLoadingMore.value = false;
+    } else {
+      isLoading.value = false;
+    }
     log('📱 [InnovationProjectStateController] getProjects 完成, 当前项目数: ${projects.length}');
+  }
+
+  Future<void> loadMoreProjects() async {
+    await getProjects(
+      pageSize: currentPageSize.value,
+      category: _currentCategory,
+      stage: _currentStage,
+      search: _currentSearch,
+      append: true,
+    );
   }
 
   /// 获取项目详情

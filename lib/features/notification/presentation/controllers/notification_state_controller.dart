@@ -1,13 +1,14 @@
 import 'dart:developer';
 
+import 'package:get/get.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
 import 'package:go_nomads_app/features/notification/domain/repositories/i_notification_repository.dart';
-import 'package:get/get.dart';
 
 /// 通知状态控制器
 class NotificationStateController extends GetxController {
   final INotificationRepository _repository;
+  static const int _defaultPageSize = 20;
 
   NotificationStateController(this._repository);
 
@@ -17,11 +18,23 @@ class NotificationStateController extends GetxController {
   // 未读数量
   final unreadCount = 0.obs;
 
+  // 分页状态
+  final totalCount = 0.obs;
+  final hasMore = true.obs;
+  final isLoadingMore = false.obs;
+
   // 加载状态
   final isLoading = false.obs;
 
   // 错误信息
   final errorMessage = ''.obs;
+
+  int _currentPage = 1;
+  int _pageSize = _defaultPageSize;
+  bool? _currentIsReadFilter;
+  NotificationType? _currentTypeFilter;
+
+  bool get canLoadMore => hasMore.value && !isLoading.value && !isLoadingMore.value;
 
   @override
   void onInit() {
@@ -35,15 +48,26 @@ class NotificationStateController extends GetxController {
   Future<void> loadNotifications({
     bool? isRead,
     NotificationType? type,
+    bool forceRefresh = false,
   }) async {
+    if (isLoading.value && !forceRefresh) {
+      return;
+    }
+
     log('🔔 开始加载通知列表: isRead=$isRead');
+    _currentIsReadFilter = isRead;
+    _currentTypeFilter = type;
+    _currentPage = 1;
+    _pageSize = _defaultPageSize;
     isLoading.value = true;
     errorMessage.value = '';
+    hasMore.value = true;
 
     final result = await _repository.getUserNotifications(
       isRead: isRead,
       type: type,
-      limit: 50,
+      limit: _pageSize,
+      offset: 0,
     );
 
     result.fold(
@@ -51,14 +75,53 @@ class NotificationStateController extends GetxController {
         log('✅ 加载成功: ${response.notifications.length} 条通知, 未读: ${response.unreadCount}');
         notifications.value = response.notifications;
         unreadCount.value = response.unreadCount;
+        totalCount.value = response.totalCount;
+        hasMore.value = notifications.length < response.totalCount;
       },
       onFailure: (error) {
         log('❌ 加载失败: ${error.message}');
         errorMessage.value = error.message;
+        totalCount.value = 0;
+        hasMore.value = false;
       },
     );
 
     isLoading.value = false;
+  }
+
+  Future<void> loadMoreNotifications() async {
+    if (!canLoadMore) {
+      return;
+    }
+
+    isLoadingMore.value = true;
+
+    final nextOffset = _currentPage * _pageSize;
+    final result = await _repository.getUserNotifications(
+      isRead: _currentIsReadFilter,
+      type: _currentTypeFilter,
+      limit: _pageSize,
+      offset: nextOffset,
+    );
+
+    result.fold(
+      onSuccess: (response) {
+        final existingIds = notifications.map((item) => item.id).toSet();
+        final appended = response.notifications.where((item) => !existingIds.contains(item.id)).toList();
+
+        notifications.addAll(appended);
+        unreadCount.value = response.unreadCount;
+        totalCount.value = response.totalCount;
+        _currentPage += 1;
+        hasMore.value = notifications.length < response.totalCount && appended.isNotEmpty;
+      },
+      onFailure: (error) {
+        log('❌ 加载更多通知失败: ${error.message}');
+        errorMessage.value = error.message;
+      },
+    );
+
+    isLoadingMore.value = false;
   }
 
   /// 刷新未读数量（单独调用，用于更新徽章）
@@ -126,11 +189,14 @@ class NotificationStateController extends GetxController {
     return result.fold(
       onSuccess: (_) {
         // 从列表中移除
-        final wasUnread = notifications
-            .firstWhere((n) => n.id == notificationId, orElse: () => notifications.first)
-            .isRead == false;
+        final notification = notifications.firstWhereOrNull((n) => n.id == notificationId);
+        final wasUnread = notification?.isRead == false;
 
         notifications.removeWhere((n) => n.id == notificationId);
+        if (totalCount.value > 0) {
+          totalCount.value--;
+        }
+        hasMore.value = notifications.length < totalCount.value;
 
         if (wasUnread && unreadCount.value > 0) {
           unreadCount.value--;
@@ -211,7 +277,11 @@ class NotificationStateController extends GetxController {
   @override
   Future<void> refresh() async {
     // 只需要调用一次 loadNotifications，它会同时获取列表和未读数
-    await loadNotifications();
+    await loadNotifications(
+      isRead: _currentIsReadFilter,
+      type: _currentTypeFilter,
+      forceRefresh: true,
+    );
   }
 
   /// 清除所有通知数据（用户登出时调用）
@@ -219,6 +289,9 @@ class NotificationStateController extends GetxController {
     log('🔔 清除通知数据');
     notifications.clear();
     unreadCount.value = 0;
+    totalCount.value = 0;
+    hasMore.value = true;
+    isLoadingMore.value = false;
     errorMessage.value = '';
   }
 
@@ -227,7 +300,10 @@ class NotificationStateController extends GetxController {
     // 清空所有响应式变量
     notifications.clear();
     unreadCount.value = 0;
+    totalCount.value = 0;
+    hasMore.value = true;
     isLoading.value = false;
+    isLoadingMore.value = false;
     errorMessage.value = '';
 
     super.onClose();

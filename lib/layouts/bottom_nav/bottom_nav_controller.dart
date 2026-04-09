@@ -191,31 +191,37 @@ class BottomNavController extends GetxController {
   }
 
   /// 根据当前路由更新选中的标签索引
-  void updateIndexByRoute() {
-    final currentRoute = Get.currentRoute;
+  void updateIndexByRoute({String? route}) {
+    final currentRoute = route ?? Get.currentRoute;
     if (currentRoute == AppRoutes.aiAssistantTab) {
       return;
     }
 
+    int? nextIndex;
+
     if (currentRoute == AppRoutes.home || currentRoute == AppRoutes.explore) {
-      currentIndex.value = 0;
+      nextIndex = 0;
     } else if (currentRoute == AppRoutes.land ||
         currentRoute == AppRoutes.migrationWorkspace ||
         currentRoute == AppRoutes.aiPlannerTab ||
         currentRoute == AppRoutes.travelPlan ||
         currentRoute == AppRoutes.createTravelPlan ||
         currentRoute == AppRoutes.travelHistory) {
-      currentIndex.value = 1;
+      nextIndex = 1;
     } else if (currentRoute == AppRoutes.communityHub || currentRoute == AppRoutes.community) {
-      currentIndex.value = 2;
+      nextIndex = 2;
     } else if (currentRoute == AppRoutes.inbox ||
         currentRoute == AppRoutes.conversations ||
         currentRoute == AppRoutes.notifications) {
-      currentIndex.value = 3;
+      nextIndex = 3;
     } else if (currentRoute == AppRoutes.me ||
         currentRoute == AppRoutes.profile ||
         currentRoute == AppRoutes.profileEdit) {
-      currentIndex.value = 4;
+      nextIndex = 4;
+    }
+
+    if (nextIndex != null && currentIndex.value != nextIndex) {
+      currentIndex.value = nextIndex;
     }
   }
 

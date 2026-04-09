@@ -1,3 +1,4 @@
+import 'package:go_nomads_app/config/api_config.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/repositories/i_innovation_project_repository.dart';
@@ -9,12 +10,12 @@ class InnovationProjectRepository implements IInnovationProjectRepository {
   final HttpService _httpService;
 
   /// API 基础路径
-  static const String _basePath = '/innovations';
+  static const String _basePath = ApiConfig.innovationProjectsEndpoint;
 
   InnovationProjectRepository(this._httpService);
 
   @override
-  Future<Result<List<InnovationProject>>> getProjects({
+  Future<Result<InnovationProjectPageResult>> getProjectsPage({
     int page = 1,
     int pageSize = 20,
     String? category,
@@ -35,8 +36,6 @@ class InnovationProjectRepository implements IInnovationProjectRepository {
         queryParameters: queryParams,
       );
 
-      // HttpService 拦截器会自动解包 ApiResponse，response.data 已经是内层的 data 字段
-      // 即 {items: [...], total: 3, page: 1, pageSize: 20, totalPages: 1}
       final pagedData = response.data as Map<String, dynamic>;
       final items = (pagedData['items'] as List)
           .map((json) {
@@ -48,7 +47,12 @@ class InnovationProjectRepository implements IInnovationProjectRepository {
             }
           })
           .toList();
-      return Success(items);
+      return Success(InnovationProjectPageResult(
+        items: items,
+        total: pagedData['total'] as int? ?? items.length,
+        page: pagedData['page'] as int? ?? page,
+        pageSize: pagedData['pageSize'] as int? ?? pageSize,
+      ));
     } on HttpException catch (e) {
       return Failure(_convertHttpException(e));
     } catch (e, stackTrace) {
@@ -56,6 +60,28 @@ class InnovationProjectRepository implements IInnovationProjectRepository {
       print('堆栈: $stackTrace');
       return Failure(UnknownException('获取项目列表失败: $e'));
     }
+  }
+
+  @override
+  Future<Result<List<InnovationProject>>> getProjects({
+    int page = 1,
+    int pageSize = 20,
+    String? category,
+    String? stage,
+    String? search,
+  }) async {
+    final result = await getProjectsPage(
+      page: page,
+      pageSize: pageSize,
+      category: category,
+      stage: stage,
+      search: search,
+    );
+
+    return result.fold(
+      onSuccess: (data) => Success(data.items),
+      onFailure: (error) => Failure(error),
+    );
   }
 
   @override

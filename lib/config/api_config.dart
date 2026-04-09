@@ -226,6 +226,7 @@ class ApiConfig {
   // User Endpoints - /api/v1/users
   // ============================================================
   static const String usersEndpoint = '/users';
+  static const String userSearchEndpoint = '/users/search';
   static const String userDetailEndpoint = '/users/{id}';
   static const String userMeEndpoint = '/users/me';
   static const String userMeStatsEndpoint = '/users/me/stats';
@@ -315,16 +316,18 @@ class ApiConfig {
   static const String productDeleteEndpoint = '/products/{id}';
 
   // ============================================================
-  // Coworking Space Endpoints - /api/v1/coworking-spaces (待后端实现)
+  // Coworking Space Endpoints - /api/v1/coworking
   // ============================================================
-  static const String coworkingSpacesEndpoint = '/coworking-spaces';
-  static const String coworkingDetailEndpoint = '/coworking-spaces/{id}';
+  static const String coworkingSpacesEndpoint = '/coworking';
+  static const String coworkingDetailEndpoint = '/coworking/{id}';
+  static String coworkingCityCountEndpoint(String cityId) => '/coworking/cities/$cityId/count';
+  static const String coworkingCitiesCountEndpoint = '/coworking/cities/counts';
 
   // ============================================================
-  // Innovation Project Endpoints - /api/v1/innovation-projects (待后端实现)
+  // Innovation Project Endpoints - /api/v1/innovations
   // ============================================================
-  static const String innovationProjectsEndpoint = '/innovation-projects';
-  static const String innovationDetailEndpoint = '/innovation-projects/{id}';
+  static const String innovationProjectsEndpoint = '/innovations';
+  static const String innovationDetailEndpoint = '/innovations/{id}';
 
   // ============================================================
   // Event Endpoints - /api/v1/events
@@ -362,7 +365,7 @@ class ApiConfig {
   static String get notificationHubUrl => '$baseUrl/hubs/notification';
 
   // ============================================================
-  // Chat Endpoints - /api/v1/chats (待后端实现)
+  // Chat Endpoints - /api/v1/chats
   // ============================================================
   static const String chatsEndpoint = '/chats';
   static const String chatDetailEndpoint = '/chats/{id}';

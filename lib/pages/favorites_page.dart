@@ -5,7 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/core/core.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
+import 'package:go_nomads_app/features/city/domain/repositories/i_city_repository.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_state_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -26,16 +28,24 @@ class FavoritesPage extends StatefulWidget {
 }
 
 class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMixin<FavoritesPage> {
+  static const int _pageSize = 20;
+
   late final CityStateController _cityController;
+  late final ICityRepository _cityRepository;
   late final UserStateController _userController;
 
   String _sortBy = 'score'; // score, price, name
   bool _isLoading = true;
+  bool _isLoadingMore = false;
+  int _currentPage = 1;
+  int _totalCount = 0;
+  final List<City> _favoriteCities = <City>[];
 
   @override
   void initState() {
     super.initState();
     _cityController = Get.find<CityStateController>();
+    _cityRepository = Get.find<ICityRepository>();
     _userController = Get.find<UserStateController>();
     _loadFavorites();
   }
@@ -49,12 +59,79 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
 
   Future<void> _loadFavorites() async {
     setState(() => _isLoading = true);
-    await _cityController.loadFavoriteCities();
-    setState(() => _isLoading = false);
+    final result = await _cityRepository.getFavoriteCitiesPage(
+      page: 1,
+      pageSize: _pageSize,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = false;
+      _isLoadingMore = false;
+      _currentPage = 1;
+    });
+
+    result.fold(
+      onSuccess: (data) {
+        setState(() {
+          _favoriteCities
+            ..clear()
+            ..addAll(data.items);
+          _totalCount = data.totalCount;
+          _currentPage = data.page;
+        });
+      },
+      onFailure: (exception) {
+        AppToast.error(exception.message);
+      },
+    );
+  }
+
+  bool get _hasMoreFavorites => _favoriteCities.length < _totalCount;
+
+  Future<void> _loadMoreFavorites() async {
+    if (_isLoadingMore || !_hasMoreFavorites) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    final result = await _cityRepository.getFavoriteCitiesPage(
+      page: _currentPage + 1,
+      pageSize: _pageSize,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    result.fold(
+      onSuccess: (data) {
+        setState(() {
+          _favoriteCities.addAll(
+            data.items.where((item) => _favoriteCities.every((existing) => existing.id != item.id)),
+          );
+          _totalCount = data.totalCount;
+          _currentPage = data.page;
+          _isLoadingMore = false;
+        });
+      },
+      onFailure: (exception) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+        AppToast.error(exception.message);
+      },
+    );
   }
 
   List<City> get _sortedCities {
-    final cities = List<City>.from(_cityController.favoriteCities);
+    final cities = List<City>.from(_favoriteCities);
     switch (_sortBy) {
       case 'price':
         cities.sort((a, b) => (a.averageCost ?? 0).compareTo(b.averageCost ?? 0));
@@ -93,7 +170,7 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                   ),
                 ),
                 Text(
-                  '${_cityController.favoriteCities.length} ${l10n.cities}',
+                  '$_totalCount ${l10n.cities}',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.6),
                     fontSize: isMobile ? 12 : 14,
@@ -136,8 +213,16 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
                 color: Colors.orange,
                 child: ListView.builder(
                   padding: EdgeInsets.all(isMobile ? 16 : 24),
-                  itemCount: cities.length,
+                  itemCount: cities.length + 1,
                   itemBuilder: (context, index) {
+                    if (index == cities.length) {
+                      return _buildLoadMoreIndicator(isMobile);
+                    }
+
+                    if (index >= cities.length - 3 && _hasMoreFavorites) {
+                      _loadMoreFavorites();
+                    }
+
                     final city = cities[index];
                     return _buildFavoriteCard(city, isMobile);
                   },
@@ -555,10 +640,45 @@ class _FavoritesPageState extends State<FavoritesPage> with RouteAwareRefreshMix
     if (result) {
       // 从收藏列表中移除
       _cityController.favoriteCities.removeWhere((c) => c.id == city.id);
+      setState(() {
+        _favoriteCities.removeWhere((c) => c.id == city.id);
+        _totalCount = (_totalCount - 1).clamp(0, 1 << 31);
+      });
+
+      if (_hasMoreFavorites) {
+        _loadMoreFavorites();
+      }
+
       AppToast.success(
         l10n.favoriteRemoved,
         title: l10n.removeFromFavorites,
       );
     }
+  }
+
+  Widget _buildLoadMoreIndicator(bool isMobile) {
+    if (_isLoadingMore) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 20.h),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
+      );
+    }
+
+    if (!_hasMoreFavorites) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: 12.h, top: 4.h),
+        child: Center(
+          child: Text(
+            '已加载全部收藏城市',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: isMobile ? 12 : 13,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 }

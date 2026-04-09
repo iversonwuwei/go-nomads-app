@@ -138,6 +138,12 @@ class InnovationListPageController extends GetxController with WidgetsBindingObs
     await loadProjects(forceRefresh: true);
   }
 
+  Future<void> loadMoreProjects() async {
+    if (controllerInitialized.value && stateController != null) {
+      await stateController!.loadMoreProjects();
+    }
+  }
+
   /// 获取显示的项目列表
   List<InnovationProject> get displayProjects {
     if (controllerInitialized.value && stateController != null && stateController!.projects.isNotEmpty) {
@@ -196,7 +202,7 @@ class InnovationListPageController extends GetxController with WidgetsBindingObs
           followedProjects[projectId] = isLiked;
           // 显示提示
           AppToast.success(isLiked ? '已关注该项目' : '已取消关注');
-          
+
           // 发送数据变更事件，通知其他页面（携带新的关注状态）
           DataEventBus.instance.emit(DataChangedEvent(
             entityType: 'innovation_project',

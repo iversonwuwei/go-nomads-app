@@ -10,6 +10,8 @@ import 'package:tencent_cloud_chat_sdk/models/v2_tim_conversation.dart';
 /// 会话列表控制器 — 微信风格消息列表
 /// 通过腾讯云IM的会话管理API获取所有C2C会话
 class ConversationListController extends GetxController {
+  static const int _pageSize = 20;
+
   // ==================== 状态 ====================
 
   /// 会话列表
@@ -20,6 +22,8 @@ class ConversationListController extends GetxController {
 
   /// 是否已初始化IM
   final isIMReady = false.obs;
+  final isLoadingMore = false.obs;
+  final hasMore = true.obs;
 
   /// 总未读消息数
   final totalUnreadCount = 0.obs;
@@ -37,6 +41,7 @@ class ConversationListController extends GetxController {
   StreamSubscription? _syncFinishSubscription;
   Worker? _currentUserWorker;
   bool _isInitializing = false;
+  String _nextSeq = '0';
 
   // ==================== 生命周期 ====================
 
@@ -116,7 +121,7 @@ class ConversationListController extends GetxController {
       _setupMessageListener();
 
       // 首次加载会话列表
-      await loadConversations();
+      await loadConversations(forceRefresh: true);
 
       // SDK 登录后会话数据可能尚未从服务端同步完成，
       // 如果首次拉取为空，延迟 2 秒后重试一次
@@ -124,7 +129,7 @@ class ConversationListController extends GetxController {
         Future.delayed(const Duration(seconds: 2), () {
           if (conversations.isEmpty && _imService != null && _imService!.isLoggedIn) {
             log('💬 首次加载为空，延迟重新拉取会话列表');
-            loadConversations();
+            loadConversations(forceRefresh: true);
           }
         });
       }
@@ -132,7 +137,7 @@ class ConversationListController extends GetxController {
       // 保底定期刷新（60秒，降低频率因为已有监听器实时更新）
       _refreshTimer = Timer.periodic(
         const Duration(seconds: 60),
-        (_) => loadConversations(),
+        (_) => loadConversations(forceRefresh: true),
       );
     } catch (e) {
       log('❌ ConversationListController 初始化异常: $e');
@@ -166,30 +171,48 @@ class ConversationListController extends GetxController {
 
     _syncFinishSubscription = _imService!.onSyncServerFinish.listen((_) {
       log('💬 ConversationList: 服务端同步完成，刷新列表');
-      loadConversations();
+      loadConversations(forceRefresh: true);
     });
 
     _newConversationSubscription = _imService!.onNewConversation.listen((_) {
       log('💬 ConversationList: 新会话，刷新列表');
-      loadConversations();
+      loadConversations(forceRefresh: true);
     });
 
     _conversationChangedSubscription = _imService!.onConversationChanged.listen((_) {
       log('💬 ConversationList: 会话变更，刷新列表');
-      loadConversations();
+      loadConversations(forceRefresh: true);
     });
   }
 
   // ==================== 数据加载 ====================
 
   /// 加载会话列表（只显示与当前用户聊过天的会话）
-  Future<void> loadConversations() async {
+  Future<void> loadConversations({bool forceRefresh = false}) async {
     if (_imService == null || !_imService!.isLoggedIn) {
       return;
     }
 
+    if (forceRefresh) {
+      isLoading.value = true;
+      _nextSeq = '0';
+      hasMore.value = true;
+    } else {
+      if (isLoadingMore.value || !hasMore.value) {
+        return;
+      }
+      isLoadingMore.value = true;
+    }
+
     try {
-      final convList = await _imService!.getConversationList(count: 100);
+      final page = await _imService!.getConversationPage(
+        count: _pageSize,
+        nextSeq: _nextSeq,
+      );
+
+      final convList = page.conversations;
+      _nextSeq = page.nextSeq;
+      hasMore.value = !page.isFinished && page.nextSeq != '0';
 
       // 按最后消息时间倒序排列
       convList.sort((a, b) {
@@ -197,11 +220,24 @@ class ConversationListController extends GetxController {
         final bTime = b.lastMessage?.timestamp ?? 0;
         return bTime.compareTo(aTime);
       });
-      conversations.value = convList;
+
+      if (forceRefresh) {
+        conversations.value = convList;
+      } else {
+        final existingIds = conversations.map((item) => item.conversationID).toSet();
+        final appended = convList.where((item) => !existingIds.contains(item.conversationID)).toList();
+        conversations.addAll(appended);
+        conversations.sort((a, b) {
+          final aTime = a.lastMessage?.timestamp ?? 0;
+          final bTime = b.lastMessage?.timestamp ?? 0;
+          return bTime.compareTo(aTime);
+        });
+        hasMore.value = hasMore.value && appended.isNotEmpty;
+      }
 
       // 计算总未读数
       int unread = 0;
-      for (final conv in convList) {
+      for (final conv in conversations) {
         unread += conv.unreadCount ?? 0;
       }
       totalUnreadCount.value = unread;
@@ -210,13 +246,21 @@ class ConversationListController extends GetxController {
     } catch (e) {
       log('❌ 加载会话列表异常: $e');
     } finally {
-      isLoading.value = false;
+      if (forceRefresh) {
+        isLoading.value = false;
+      } else {
+        isLoadingMore.value = false;
+      }
     }
+  }
+
+  Future<void> loadMoreConversations() async {
+    await loadConversations(forceRefresh: false);
   }
 
   /// 下拉刷新
   Future<void> onRefresh() async {
-    await loadConversations();
+    await loadConversations(forceRefresh: true);
   }
 
   // ==================== 会话操作 ====================
@@ -238,7 +282,7 @@ class ConversationListController extends GetxController {
 
     await _imService!.markC2CMessageAsRead(userId);
     // 刷新列表以更新未读数
-    await loadConversations();
+    await loadConversations(forceRefresh: true);
   }
 
   // ==================== 消息监听 ====================
@@ -249,7 +293,7 @@ class ConversationListController extends GetxController {
 
     _messageSubscription = _imService!.onNewMessage.listen((_) {
       log('💬 ConversationList: 收到新消息，刷新列表');
-      loadConversations();
+      loadConversations(forceRefresh: true);
     });
   }
 

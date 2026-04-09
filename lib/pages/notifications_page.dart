@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/notifications_page_controller.dart';
 import 'package:go_nomads_app/features/notification/domain/entities/app_notification.dart';
+import 'package:go_nomads_app/features/notification/presentation/controllers/notification_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
@@ -129,6 +130,10 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
+                      if (index >= notifications.length - 2 && notificationController.canLoadMore) {
+                        _controller.loadMoreCurrentTab(currentIndex);
+                      }
+
                       final notification = notifications[index];
                       return Padding(
                         padding: EdgeInsets.only(bottom: index == notifications.length - 1 ? 0 : 8.h),
@@ -138,6 +143,10 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                     childCount: notifications.length,
                   ),
                 ),
+              ),
+            if (notifications.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _buildLoadMoreIndicator(notificationController),
               ),
           ],
         ),
@@ -288,6 +297,32 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
         ],
       ),
     );
+  }
+
+  Widget _buildLoadMoreIndicator(NotificationStateController controller) {
+    if (controller.isLoadingMore.value) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
+        child: const Center(child: AppLoadingWidget(fullScreen: false)),
+      );
+    }
+
+    if (!controller.hasMore.value) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 20.h),
+        child: Center(
+          child: Text(
+            '已加载全部通知',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.sp,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildNotificationCard(AppNotification notification, bool isMobile) {

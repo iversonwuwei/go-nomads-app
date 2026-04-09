@@ -4,6 +4,22 @@ import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_nomad_summary.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_region_tab.dart';
 
+class FavoriteCitiesPageResult {
+  final List<City> items;
+  final int totalCount;
+  final int page;
+  final int pageSize;
+
+  const FavoriteCitiesPageResult({
+    required this.items,
+    required this.totalCount,
+    required this.page,
+    required this.pageSize,
+  });
+
+  bool get hasMore => page * pageSize < totalCount;
+}
+
 /// 城市仓储接口 (Domain Layer)
 /// 定义城市数据访问的抽象契约,不依赖具体实现
 abstract class ICityRepository implements IRepository {
@@ -66,6 +82,12 @@ abstract class ICityRepository implements IRepository {
 
   /// 获取用户收藏的城市列表
   Future<Result<List<City>>> getFavoriteCities();
+
+  /// 获取用户收藏的城市列表（分页）
+  Future<Result<FavoriteCitiesPageResult>> getFavoriteCitiesPage({
+    int page = 1,
+    int pageSize = 20,
+  });
 
   /// 获取用户收藏的城市ID列表
   Future<Result<List<String>>> getUserFavoriteCityIds();

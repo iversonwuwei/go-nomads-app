@@ -138,6 +138,7 @@ class AttachmentDto {
 /// ChatMessage DTO - 基础设施层数据传输对象
 class ChatMessageDto {
   final String id;
+  final String? roomId;
   final AuthorDto author;
   final String message;
   final String messageType;
@@ -148,6 +149,7 @@ class ChatMessageDto {
 
   ChatMessageDto({
     required this.id,
+    this.roomId,
     required this.author,
     required this.message,
     this.messageType = 'text',
@@ -160,6 +162,7 @@ class ChatMessageDto {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'roomId': roomId,
       'author': author.toJson(),
       'message': message,
       'messageType': messageType,
@@ -173,6 +176,7 @@ class ChatMessageDto {
   factory ChatMessageDto.fromJson(Map<String, dynamic> json) {
     return ChatMessageDto(
       id: json['id'] as String? ?? '',
+      roomId: json['roomId'] as String?,
       author: json['author'] != null
           ? AuthorDto.fromJson(json['author'] as Map<String, dynamic>)
           : AuthorDto(userId: '', userName: ''),
@@ -221,6 +225,7 @@ class ChatMessageDto {
 
     return ChatMessage(
       id: id,
+      roomId: roomId,
       author: MessageAuthor(
         userId: author.userId,
         userName: author.userName,
@@ -303,9 +308,15 @@ class ChatRoomDto {
 
   /// 转换为领域实体
   ChatRoom toDomain() {
+    final parsedRoomType = switch (roomType) {
+      'meetup' => ChatRoomType.meetup,
+      'direct' => ChatRoomType.direct,
+      _ => ChatRoomType.city,
+    };
+
     return ChatRoom(
       id: id,
-      roomType: roomType == 'meetup' ? ChatRoomType.meetup : ChatRoomType.city,
+      roomType: parsedRoomType,
       meetupId: meetupId,
       meetupTitle: roomType == 'meetup' ? name : null,
       location: RoomLocation(
