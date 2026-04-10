@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 社区亮点展示
 class RegisterFeatureHighlights extends StatelessWidget {
-  const RegisterFeatureHighlights({super.key});
+  final PreAuthMarketingCopy? copy;
+
+  const RegisterFeatureHighlights({super.key, this.copy});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +23,7 @@ class RegisterFeatureHighlights extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.joinMembers,
+            copy?.registerHighlightsTitle ?? l10n.joinMembers,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
@@ -30,32 +33,32 @@ class RegisterFeatureHighlights extends StatelessWidget {
           SizedBox(height: 16.h),
           _FeatureItem(
             emoji: '🍹',
-            title: l10n.attendMeetups,
-            subtitle: l10n.inCitiesWorldwide,
+            title: copy?.registerHighlightsMeetupsTitle ?? l10n.attendMeetups,
+            subtitle: copy?.registerHighlightsMeetupsSubtitle ?? l10n.inCitiesWorldwide,
           ),
           SizedBox(height: 12.h),
           _FeatureItem(
             emoji: '❤️',
-            title: l10n.meetNewPeople,
-            subtitle: l10n.forDatingAndFriends,
+            title: copy?.registerHighlightsPeopleTitle ?? l10n.meetNewPeople,
+            subtitle: copy?.registerHighlightsPeopleSubtitle ?? l10n.forDatingAndFriends,
           ),
           SizedBox(height: 12.h),
           _FeatureItem(
             emoji: '🧪',
-            title: l10n.researchDestinations,
-            subtitle: l10n.findBestPlace,
+            title: copy?.registerHighlightsDestinationsTitle ?? l10n.researchDestinations,
+            subtitle: copy?.registerHighlightsDestinationsSubtitle ?? l10n.findBestPlace,
           ),
           SizedBox(height: 12.h),
           _FeatureItem(
             emoji: '💬',
-            title: l10n.joinExclusiveChat,
-            subtitle: l10n.messagesSentThisMonth,
+            title: copy?.registerHighlightsChatTitle ?? l10n.joinExclusiveChat,
+            subtitle: copy?.registerHighlightsChatSubtitle ?? l10n.messagesSentThisMonth,
           ),
           SizedBox(height: 12.h),
           _FeatureItem(
             emoji: '🗺️',
-            title: l10n.trackTravels,
-            subtitle: l10n.shareJourney,
+            title: copy?.registerHighlightsTravelsTitle ?? l10n.trackTravels,
+            subtitle: copy?.registerHighlightsTravelsSubtitle ?? l10n.shareJourney,
           ),
         ],
       ),

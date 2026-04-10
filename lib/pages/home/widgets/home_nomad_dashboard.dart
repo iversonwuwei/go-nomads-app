@@ -6,8 +6,10 @@ import 'package:go_nomads_app/pages/home/home_page_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_hero_banner.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_metric_card.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_section_header.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_card_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_section_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_state_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_subsection_header.dart';
 
 class HomeNomadDashboard extends GetView<HomePageController> {
   final bool isMobile;
@@ -28,14 +30,16 @@ class HomeNomadDashboard extends GetView<HomePageController> {
         _SummaryCardData(
           title: l10n.homeDashboardMigrationTitle,
           headline: '${controller.migrationWorkspace.value?.activePlans ?? 0}',
-          supporting: controller.migrationWorkspace.value?.recommendedAction ?? '',
+          supporting:
+              controller.migrationWorkspace.value?.recommendedAction ?? '',
           routeName: AppRoutes.migrationWorkspace,
           accentColor: const Color(0xFFFF6B6B),
           icon: Icons.flight_takeoff_rounded,
         ),
         _SummaryCardData(
           title: l10n.homeDashboardBudgetTitle,
-          headline: '\$${controller.budgetCenter.value?.forecastMonthlyCostUsd.round() ?? 0}',
+          headline:
+              '\$${controller.budgetCenter.value?.forecastMonthlyCostUsd.round() ?? 0}',
           supporting: controller.budgetCenter.value?.recommendedAction ?? '',
           routeName: AppRoutes.budgetCenter,
           accentColor: const Color(0xFF2A9D8F),
@@ -43,7 +47,8 @@ class HomeNomadDashboard extends GetView<HomePageController> {
         ),
         _SummaryCardData(
           title: l10n.homeDashboardVisaTitle,
-          headline: '${controller.visaCenter.value?.attentionRequiredCount ?? 0}',
+          headline:
+              '${controller.visaCenter.value?.attentionRequiredCount ?? 0}',
           supporting: controller.visaCenter.value?.recommendedAction ?? '',
           routeName: AppRoutes.visaCenter,
           accentColor: const Color(0xFFE9C46A),
@@ -51,7 +56,8 @@ class HomeNomadDashboard extends GetView<HomePageController> {
         ),
         _SummaryCardData(
           title: l10n.homeDashboardInboxTitle,
-          headline: '${controller.inboxSummary.value?.unreadNotifications ?? 0}',
+          headline:
+              '${controller.inboxSummary.value?.unreadNotifications ?? 0}',
           supporting: controller.inboxSummary.value == null
               ? ''
               : '${controller.inboxSummary.value!.actionRequiredCount} action required',
@@ -61,7 +67,8 @@ class HomeNomadDashboard extends GetView<HomePageController> {
         ),
       ];
 
-      return CockpitPanel(
+      return AppSectionSurface(
+        title: l10n.homeDashboardTitle,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -70,49 +77,44 @@ class HomeNomadDashboard extends GetView<HomePageController> {
               title: l10n.homeDashboardTitle,
               subtitle: '',
               gradient: const LinearGradient(
-                colors: [Color(0xFFFFF1F2), Color(0xFFF7FAFC), Color(0xFFEAF4FF)],
+                colors: [
+                  Color(0xFFFFF1F2),
+                  Color(0xFFF7FAFC),
+                  Color(0xFFEAF4FF)
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               metrics: [
                 CockpitHeroMetric(
                   icon: Icons.flight_takeoff_rounded,
-                  label: '${controller.migrationWorkspace.value?.activePlans ?? 0} ${l10n.homeDashboardMigrationTitle}',
+                  label:
+                      '${controller.migrationWorkspace.value?.activePlans ?? 0} ${l10n.homeDashboardMigrationTitle}',
                 ),
                 CockpitHeroMetric(
                   icon: Icons.badge_rounded,
-                  label: '${controller.visaCenter.value?.attentionRequiredCount ?? 0} ${l10n.homeDashboardVisaTitle}',
+                  label:
+                      '${controller.visaCenter.value?.attentionRequiredCount ?? 0} ${l10n.homeDashboardVisaTitle}',
                 ),
                 CockpitHeroMetric(
                   icon: Icons.mark_email_unread_rounded,
-                  label: '${controller.inboxSummary.value?.actionRequiredCount ?? 0} ${l10n.inboxActionRequired}',
+                  label:
+                      '${controller.inboxSummary.value?.actionRequiredCount ?? 0} ${l10n.inboxActionRequired}',
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            if (controller.isLoadingDashboard.value && !controller.hasDashboardData)
+            if (controller.isLoadingDashboard.value &&
+                !controller.hasDashboardData)
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      l10n.homeDashboardLoading,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                    ),
-                  ],
-                ),
+                child:
+                    AppStateSurface.loading(message: l10n.homeDashboardLoading),
               ),
             LayoutBuilder(
               builder: (context, constraints) {
-                final cardWidth = isMobile ? (constraints.maxWidth - 12) / 2 : 220.0;
+                final cardWidth =
+                    isMobile ? (constraints.maxWidth - 12) / 2 : 220.0;
 
                 return Wrap(
                   spacing: 12,
@@ -130,7 +132,7 @@ class HomeNomadDashboard extends GetView<HomePageController> {
             ),
             if (controller.priorityQueueTasks.isNotEmpty) ...[
               const SizedBox(height: 18),
-              CockpitSectionHeader(
+              AppSubsectionHeader(
                 title: l10n.homePriorityQueueTitle,
               ),
               const SizedBox(height: 10),
@@ -155,19 +157,11 @@ class _PromptCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CockpitPanel(
-      gradient: const LinearGradient(
-        colors: [Color(0xFFFFF1F2), Color(0xFFF7FAFC)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
+    return AppSectionSurface(
+      title: l10n.homeDashboardPromptTitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CockpitSectionHeader(
-            title: l10n.homeDashboardPromptTitle,
-          ),
-          const SizedBox(height: 16),
           FilledButton.tonalIcon(
             onPressed: () => Get.toNamed(AppRoutes.login),
             icon: const Icon(Icons.login_rounded),
@@ -222,63 +216,58 @@ class _PriorityTaskTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return AppCardSurface(
       onTap: () => Get.toNamed(task.routeName),
+      padding: const EdgeInsets.all(14),
+      backgroundColor: Colors.white,
       borderRadius: BorderRadius.circular(18),
-      child: Ink(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: Colors.white,
-          border: Border.all(color: AppColors.borderLight),
-          boxShadow: [
-            BoxShadow(
-              color: task.accentColor.withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
+      boxShadow: [
+        BoxShadow(
+          color: task.accentColor.withValues(alpha: 0.06),
+          blurRadius: 16,
+          offset: const Offset(0, 8),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: task.accentColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(task.icon, size: 16, color: task.accentColor),
+      ],
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: task.accentColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    task.title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    task.detail,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                          height: 1.4,
-                        ),
-                  ),
-                ],
-              ),
+            child: Icon(task.icon, size: 16, color: task.accentColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  task.detail,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.iconSecondary),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_forward_ios_rounded,
+              size: 14, color: AppColors.iconSecondary),
+        ],
       ),
     );
   }

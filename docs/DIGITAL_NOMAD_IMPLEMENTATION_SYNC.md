@@ -37,8 +37,52 @@
 - Community 现在补上了真实 Q&A 写模型和互动持久化；首页 intelligence feed 与 question detail 优先消费真实 `community_questions/community_answers` 数据，独立 Meetup 列表、详情页、RSVP、SignalR 主链路仍未纳入本轮。
 - P1 当前状态: 未系统启动。Nomad Circles、联合办公增强、长住/Coliving、收件箱统一化深化、Nomad Profile 匹配升级仍是 backlog。
 - P2 当前状态: 未系统启动。上下文 AI 助手、自动化推荐匹配、国际化/本地协助工具、商业化增强仍是 backlog。
-- Post-P 当前状态: 未启动。统一 UI/UX 驾驶舱式重设计应在 P* 功能主链路基本闭环后再进入。
+- Post-P 当前状态: 已启动 UI 标准化准备阶段。当前先做高频反馈组件、auth 壳层、图标语义和提示文案标准化，不做一次性全量换皮。
 - 工程说明: 当前策略一直是按风险受控的 backend-driven slice 逐步替换关键决策面，而不是一次性完成全量页面重写；因此“很多页面还没有完成改造”是当前真实状态，不是你看错了。
+
+## 2A. UI Standardization Baseline
+
+### 当前问题
+
+- glass panel / hero / metric / action card 体系只覆盖部分一级产品面，auth、反馈类组件、弹层和辅助交互仍未收口到统一语言。
+- 图标来源混用 Material、FontAwesome 和局部自定义映射，同一语义在不同页面使用不同 icon。
+- 提示文字存在英文默认标题、长句提示、重复 toast 和页面内临时拼接文案并存的问题。
+- 页面内部仍有较多临时色值、半径、边距和状态样式，组件可复用性不足。
+
+### 本轮标准化原则
+
+- 优先统一语义，而不是先统一皮肤；先把“提示是什么、图标代表什么、组件承担什么职责”收口，再扩展到更大面积视觉升级。
+- 提示组件统一为 success / error / warning / info 四类，文案采用“结果 + 下一步”短句结构。
+- 图标采用双轨制: 通用系统语义优先 Material Symbols；品牌/平台图标继续用 FontAwesome。公共动作通过 token 映射输出，不允许页面局部随意替换。
+- 组件采用渐进替换，不做全量重写。优先覆盖登录前主链路、权限提示、底部抽屉、toast 和状态卡。
+
+### 首批组件目标
+
+- App feedback primitives: toast、loading dialog、inline notice、status card、empty state。
+- App form primitives: field shell、section label、helper/error text、submit bar。
+- App icon primitives: icon token、size token、state icon mapping。
+- App surface primitives: section card、bottom drawer header、modal action row。
+
+### 首批页面接入顺序
+
+- Login / Register / Forgot Password
+- First Launch Privacy / Permission Purpose Dialog
+- Share / Report / Common Bottom Drawer
+
+### 当前落地状态
+
+- 已完成 Phase 1: auth 链路与反馈基础件已统一到 `AppUiTokens`、`AppIcons`、`AppInputField`、`AppPrimaryButton`、`AuthStepShell`。
+- 已完成 Phase 2 的首批高频交互: Permission Purpose Dialog、Share Bottom Sheet、Report Dialog、AppBar/Sliver 的 back/share/report 动作按钮已切到统一容器和 icon 语义。
+- 已启动 Phase 3: 新增 `AppSectionSurface`、`AppStateSurface` 两个页面壳层基础件，并已接入 Explore Dashboard、Land Hub、Community、Inbox、Me。
+- 已开始把二级模块接到同一套标准件，Profile 的 collaboration widget 已切到共享 section surface，内部 tag 空态已使用统一 state surface。
+- Profile 的 snapshot widget 已切到共享 section surface，Travel History 与 Travel Plans 的 loading/empty 卡片也已改用统一 state surface。
+- 已补充并执行 [DIGITAL_NOMAD_UI_SECONDARY_MODULE_CLEANUP.md](DIGITAL_NOMAD_UI_SECONDARY_MODULE_CLEANUP.md)：Home / Community 的 subsection header、ProfileSectionHeader wrapper、Profile Header bio、Travel History / Travel Plans 的 interactive card、Badges / Social Links / Nomad Stats 卡片、Skills / Interests 空态均已切到 shared surface 语言。
+- 本轮执行单覆盖范围已完成静态验证，Home / Community / Profile 范围内不再残留旧的 `CockpitPanel` / `CockpitSectionHeader` 组合；当前下一步只剩更深层的详情区块和复杂状态卡迁移。
+
+### 风险与边界
+
+- 本轮不改业务接口、不改 backend app/config 契约、不改导航结构。
+- 若单个页面在替换统一组件后出现布局或交互回退，允许局部回滚，不阻塞其他页面继续标准化。
 
 ## 3. Current API Usage Matrix
 
@@ -47,6 +91,9 @@
 - GET /api/v1/explore-dashboard/current
   - 用途: Explore Dashboard 首页聚合读取
   - 客户端: IExploreDashboardRepository
+- GET /api/v1/app/config
+  - 用途: Flutter 静态配置中心读取，优先承接社区准则文案和首次法律文档同意版本
+  - 客户端: AppConfigService
 - GET /api/v1/migration-workspace
   - 用途: Migration Workspace 列表与首页摘要
   - 客户端: IMigrationWorkspaceRepository
@@ -77,6 +124,231 @@
 - City Detail Decision Panel
   - 当前方式: `CityDecisionPanel` 仍基于 `CityDetailStateController.currentCity` 与 `AiStateController.currentGuide` 在客户端推导 budget、network、video call、visa、timezone、community、climate、safety 等信号。
   - 问题: 城市决策信号与推荐资源没有统一快照，CityDetail、guide、cost summary、meetups、coworking、hotels 的刷新时序分散，导致页面虽然有“决策面板”，但仍缺少真正的 backend-driven nomad snapshot。
+- Community Guidelines + First-Launch Legal Consent Version
+  - 当前方式: 社区准则页面正文已切到 app/config；首次启动法律文档同意版本已优先读取 app/config。首启隐私弹窗的标题、说明、勾选提示、按钮、底部说明、摘要兜底、未勾选提示和拒绝确认弹窗文案均已优先读取 app/config，并保留本地 fallback。
+  - 本轮切片: Flutter 首启隐私弹窗优先读取 `GET /api/v1/app/config` 中 locale 对应的 `legal.first_launch.dialog.*` 静态文本；摘要卡片继续优先读取隐私政策 `summary`，隐私政策/用户协议链接标题优先读取 legal document `title`。当 backend 未发布这些键时，继续回退到客户端本地默认值，确保首启流程不阻塞。
+  - 后台治理约束: admin 对 `legal.first_launch.dialog.*` 的修改与发布必须走 Gateway 的 `/api/v1/admin/*` 链路；ConfigService bootstrap 只会修正仍由 bootstrap 持有的默认值，不会覆盖管理员已发布的首启文案。
+
+### App Config Key Contract
+
+- StaticTexts
+  - `legal.community_guidelines.sections_json`
+    - 含义: 社区准则章节数组 JSON，按 locale 发布。
+    - 形状:
+
+      ```json
+      [
+        {
+          "title": "1. 尊重与友善",
+          "content": "请尊重他人观点与文化差异，避免人身攻击、歧视、骚扰或仇恨言论。"
+        }
+      ]
+      ```
+
+  - `legal.first_launch.dialog.title`
+  - `legal.first_launch.dialog.intro`
+  - `legal.first_launch.dialog.privacy_checkbox_prefix`
+  - `legal.first_launch.dialog.terms_checkbox_prefix`
+  - `legal.first_launch.dialog.decline_tip_prefix`
+  - `legal.first_launch.dialog.sdk_link_label`
+  - `legal.first_launch.dialog.agree_button`
+  - `legal.first_launch.dialog.reject_button`
+  - `legal.first_launch.dialog.summary_fallback_title`
+  - `legal.first_launch.dialog.summary_fallback_content`
+  - `legal.first_launch.dialog.unchecked_toast_title`
+  - `legal.first_launch.dialog.unchecked_toast_message`
+  - `legal.first_launch.dialog.decline_confirm_title`
+  - `legal.first_launch.dialog.decline_confirm_message`
+  - `legal.first_launch.dialog.decline_confirm_cancel`
+  - `legal.first_launch.dialog.decline_confirm_exit`
+  - `auth.forgot_password.step.account.title`
+  - `auth.forgot_password.step.account.description`
+  - `auth.forgot_password.step.account.input_label`
+  - `auth.forgot_password.step.account.send_code_button`
+  - `auth.forgot_password.step.verify.title`
+  - `auth.forgot_password.step.verify.description_template`
+  - `auth.forgot_password.step.verify.code_label`
+  - `auth.forgot_password.step.verify.resend_countdown_template`
+  - `auth.forgot_password.step.verify.resend_button`
+  - `auth.forgot_password.step.verify.next_button`
+  - `auth.forgot_password.step.reset.title`
+  - `auth.forgot_password.step.reset.description`
+  - `auth.forgot_password.step.reset.new_password_label`
+  - `auth.forgot_password.step.reset.confirm_password_label`
+  - `auth.forgot_password.step.reset.submit_button`
+  - `auth.forgot_password.toast.account_required`
+  - `auth.forgot_password.toast.code_sent_email`
+  - `auth.forgot_password.toast.code_sent_phone`
+  - `auth.forgot_password.toast.send_failed_fallback`
+  - `auth.forgot_password.toast.code_required`
+  - `auth.forgot_password.toast.code_incomplete`
+  - `auth.forgot_password.toast.new_password_required`
+  - `auth.forgot_password.toast.password_min_length`
+  - `auth.forgot_password.toast.confirm_password_required`
+  - `auth.forgot_password.toast.password_mismatch`
+  - `auth.forgot_password.toast.reset_success`
+  - `auth.forgot_password.toast.reset_failed_fallback`
+  - `auth.login.terms.prefix`
+  - `auth.login.terms.connector`
+  - `auth.login.terms.suffix`
+  - `auth.register.terms.prefix`
+  - `auth.register.terms.connector`
+  - `auth.register.terms.community_prefix`
+  - `auth.register.terms.suffix`
+  - `auth.legal_links.prefix`
+  - `auth.legal_links.connector`
+  - `auth.legal_links.suffix`
+  - `brand.loading.title`
+  - `brand.loading.tagline`
+  - `brand.footer.copyright`
+  - `brand.footer.icp_record`
+  - `auth.login.header.title`
+  - `auth.login.header.subtitle`
+  - `auth.login.link.register_prefix`
+  - `auth.login.community.title`
+  - `auth.login.community.subtitle`
+  - `auth.login.community.badge.meetups`
+  - `auth.login.community.badge.messages`
+  - `auth.login.community.badge.cities`
+  - `auth.register.header.title`
+  - `auth.register.header.subtitle`
+  - `auth.register.link.login_prefix`
+  - `auth.register.highlights.title`
+  - `auth.register.highlights.meetups.title`
+  - `auth.register.highlights.meetups.subtitle`
+  - `auth.register.highlights.people.title`
+  - `auth.register.highlights.people.subtitle`
+  - `auth.register.highlights.destinations.title`
+  - `auth.register.highlights.destinations.subtitle`
+  - `auth.register.highlights.chat.title`
+  - `auth.register.highlights.chat.subtitle`
+  - `auth.register.highlights.travels.title`
+  - `auth.register.highlights.travels.subtitle`
+  - `legal.first_launch.dialog.decline_tip_link_separator`
+  - `legal.first_launch.dialog.decline_tip_link_final_connector`
+  - `legal.first_launch.dialog.decline_tip_suffix`
+  - `auth.login.form.tab.email`
+  - `auth.login.form.tab.phone`
+  - `auth.login.form.email.label`
+  - `auth.login.form.email.hint`
+  - `auth.login.form.password.label`
+  - `auth.login.form.password.hint`
+  - `auth.login.form.remember_me`
+  - `auth.login.form.forgot_password`
+  - `auth.login.form.submit_email_button`
+  - `auth.login.form.phone.label`
+  - `auth.login.form.phone.hint`
+  - `auth.login.form.sms_code.label`
+  - `auth.login.form.sms_code.hint`
+  - `auth.login.form.sms_code.send_button`
+  - `auth.login.form.submit_phone_button`
+  - `auth.register.form.username.label`
+  - `auth.register.form.username.hint`
+  - `auth.register.form.email.label`
+  - `auth.register.form.email.hint`
+  - `auth.register.form.verification_code.label`
+  - `auth.register.form.verification_code.hint`
+  - `auth.register.form.verification_code.send_button`
+  - `auth.register.form.verification_code.resend_button`
+  - `auth.register.form.password.label`
+  - `auth.register.form.password.hint`
+  - `auth.register.form.confirm_password.label`
+  - `auth.register.form.confirm_password.hint`
+  - `auth.register.form.submit_button`
+  - `auth.register.form.toast.terms_required_title`
+  - `auth.register.form.toast.terms_required_message`
+  - `auth.register.form.toast.welcome_message`
+  - `auth.register.form.toast.success_title`
+  - `permission.location.purpose_dialog_json`
+  - `permission.calendar.purpose_dialog_json`
+  - `permission.notification.purpose_dialog_json`
+  - `permission.location.dialog.title`
+  - `permission.location.dialog.description`
+  - `permission.location.dialog.cancel_button`
+  - `permission.location.dialog.confirm_button`
+  - `permission.location.status.loading`
+  - `permission.location.status.disabled`
+  - `permission.location.status.enable_action`
+
+- SystemSettings
+  - section=`legal_documents`, key=`privacy_policy_version`
+  - section=`legal_documents`, key=`terms_of_service_version`
+
+### Client Fallback Rules
+
+- `GET /api/v1/app/config` 失败或未命中目标 key 时，Flutter 必须继续使用本地社区准则文案、首启弹窗默认文案、登录/注册表单默认文案、品牌/备案默认文案、权限用途说明默认文案、位置权限弹窗/状态卡片默认文案和既有默认版本，不能阻塞首次启动、注册或登录流程。
+- 后端配置优先级高于本地默认值，但法律文档正文、摘要和文档标题仍继续以 `/api/v1/users/legal/*` 为 source of truth；`app/config` 在本轮负责补充“社区准则正文”“首启隐私弹窗外围与交互文案”“找回密码流程文案”“登录/注册法律包装文案”“登录/注册表单壳层文案”“品牌与备案壳层文案”“权限用途说明弹窗文案”和“本地 consent 版本号”。
+
+### 当前切片: Location Permission Widget Governance
+
+- 目标: 把位置权限请求弹窗与位置状态卡片中的标题、说明、按钮和状态提示迁到 `GET /api/v1/app/config`，让 admin 可在不发版的情况下调整位置权限前置引导文案。
+- 范围: 仅迁移 `LocationPermissionDialog` 与 `LocationInfoWidget` 中的文案 ownership，不改变 `controller.getCurrentLocation()` 调用时序、按钮行为、图标、配色或卡片布局。
+- 客户端原则: 位置权限弹窗与状态卡片优先读取 `permission.location.dialog.*` 和 `permission.location.status.*`；远端未命中时继续回退到当前本地默认中文，不能阻塞定位申请和位置刷新链路。
+- 发布安全: 新 key 保持匿名可读，但只承载公开展示文案；如果 app/config 暂时缺失，位置权限弹窗和位置状态卡片必须继续以本地默认文案正常工作。
+
+### 已完成切片: Pre-Auth Marketing Shell Governance
+
+- 目标: 把登录/注册第一页可见的 header、副标题、跳转提示、登录亮点和注册亮点文案迁到 `GET /api/v1/app/config`，让 admin 可在不发版的情况下调整登录前营销与引导话术。
+- 范围: 仅迁移 `LoginHeader`、`LoginCommunityHighlight`、`LoginRegisterLink`、`RegisterHeader`、`RegisterFeatureHighlights`、`RegisterLoginLink` 的文案 ownership；不改变登录模式切换、表单校验、注册提交、图标、emoji 或布局结构。
+- 客户端原则: `LoginPage` 与 `RegisterPage` 页面级只读取一次 pre-auth marketing copy，再透传给子组件；远端未命中时继续回退到当前 l10n 文案，不能阻塞匿名用户进入登录/注册页。
+- 发布安全: 新 key 保持匿名可读，但只承载公开 marketing / onboarding 文案；若 app/config 暂时缺失，登录/注册页必须继续使用现有本地国际化文案稳定展示。
+
+### 已完成切片: Auth Entry Form Copy Governance
+
+- 目标: 收口首启隐私弹窗 decline tip 中剩余的连接符硬编码，并把登录/注册表单中的 tab、字段标题、placeholder、发送验证码按钮、主 CTA 和注册成功前置 toast 文案迁到 `GET /api/v1/app/config`，让 admin 可在不发版的情况下调整匿名入口表单体验。
+- 范围: 仅迁移 `FirstLaunchPrivacyDialog` 的 decline tip 连接符/结尾标点，以及 `LoginPage`、`LoginEmailForm`、`LoginPhoneForm`、`RegisterForm`、`RegisterSubmitButton` 中的展示 copy ownership；不改变登录模式切换、校验语义、验证码发送逻辑、注册提交接口或倒计时行为。
+- 客户端原则: `LoginPage` 与 `RegisterPage` 页面级分别只读取一次 entry copy bundle，再透传给 tab 和表单子组件；`FirstLaunchPrivacyDialog` 继续复用现有 dialog copy 结构，只新增 decline tip 链接分隔符 key；远端未命中时继续回退到当前 l10n / 本地默认文案。
+- 发布安全: 新 key 保持匿名可读，但只承载公开入口 UI copy；若 app/config 暂时缺失，首启弹窗与登录/注册页必须继续稳定展示并允许用户继续完成登录或注册流程。
+
+### 已完成切片: Auth Entry Feedback Copy Governance
+
+- 目标: 把登录/注册入口动作后的 toast、发送验证码反馈和登录 loading 文案迁到 `GET /api/v1/app/config`，让 admin 可在不发版的情况下调整匿名入口的反馈话术。
+- 范围: 仅迁移 `LoginController` 与 `RegisterController` 中用户可见的反馈 copy ownership，包括协议未勾选提醒、短信/邮箱验证码发送反馈、登录成功/失败提示、社交登录 loading 文案和注册失败提示；不改变字段校验规则、倒计时格式、接口错误优先级、社交登录流程或注册提交逻辑。
+- 客户端原则: `LoginPage` 与 `RegisterPage` 继续页面级只读取一次 entry copy bundle，但 bundle 会新增 feedback 子结构并注入各自 controller；远端未命中时继续回退到当前 l10n / 本地默认文案，不能阻塞发送验证码、登录、社交登录或注册流程。
+- 发布安全: 新 key 保持匿名可读，但只承载公开反馈文案；若 app/config 暂时缺失，控制器必须继续使用现有本地文案完成 toast 与 loading 展示，不能因为 copy 缺失影响交互闭环。
+
+### 已完成切片: Auth Social Entry Copy Governance
+
+- 目标: 把登录页社交登录区域中的分隔线、平台按钮标签和暂未开放入口提示迁到 `GET /api/v1/app/config`，让 admin 可在不发版的情况下调整第三方登录入口的话术。
+- 范围: 仅迁移 `LoginSocialButtons` 中分隔线文案、各平台按钮标签，以及 Facebook 暂不可用时的 info toast 标题/内容；不改变中国区/国际区分流、iOS 平台判断、provider 图标配色、社交登录调用顺序或真实 provider 可用性。
+- 客户端原则: `LoginPage` 页面级继续只读取一次 entry copy bundle，并新增 social 子结构透传给 `LoginSocialButtons`；按钮点击时仍把当前展示标签传给 `LoginController.handleSocialLogin()`，远端未命中时继续回退现有 l10n / 品牌名。
+- 发布安全: 新 key 保持匿名可读，但只承载公开入口 UI copy；若 app/config 暂时缺失，登录页社交入口必须继续稳定展示，Facebook 未开放提示也必须继续使用本地默认文案。
+
+### 当前切片: Auth Form Validation Copy Governance
+
+- 目标: 把登录/注册表单中的字段级校验错误提示和验证码倒计时模板迁到 `GET /api/v1/app/config`，让 admin 可在不发版的情况下调整匿名入口的微交互反馈。
+- 范围: 仅迁移 `LoginEmailForm`、`LoginPhoneForm`、`RegisterForm` 中 error text 与倒计时模板的文案 ownership；不改变 controller 内部 error key、字段校验规则、验证码长度判断、倒计时秒数、按钮禁用逻辑或提交接口。
+- 客户端原则: 继续复用现有 `LoginFormCopy` / `RegisterFormCopy` 承载新增 validation/countdown 字段；表单组件按 error key 映射远端文案，未命中时回退当前本地默认错误提示或字符串模板，其中倒计时模板使用 `{seconds}` 占位。
+- 发布安全: 新 key 保持匿名可读，但只承载公开表单文案；若 app/config 暂时缺失，登录/注册表单必须继续正常显示字段错误与验证码倒计时，不能影响输入校验和发送按钮状态机。
+
+### 下一切片: Forgot Password Copy Governance
+
+- 目标: 把 forgot-password 三步流中的标题、步骤说明、按钮和关键 toast 迁到 `GET /api/v1/app/config`，让 admin 可以在不发版的情况下调整登录前找回密码体验。
+- 范围: 仅迁移文案 ownership，不改变找回密码接口契约、步骤流转、验证码发送逻辑或密码重置写接口。
+- 客户端原则: ForgotPasswordController 在进入页面时异步读取 `auth.forgot_password.*`，页面继续走 controller + GetX 现有结构；如果远端未命中则回退到本地默认中文，不阻塞找回密码流程。
+- 占位符约束: `auth.forgot_password.step.verify.description_template` 使用 `{target}` 占位脱敏目标，`auth.forgot_password.step.verify.resend_countdown_template` 使用 `{seconds}` 占位倒计时秒数。
+- 发布安全: 新 key 仍必须遵循“先发配置、后发消费”或“消费代码自带 fallback”；toast 与步骤标题必须可在空配置下稳定回退。
+
+### 下一切片: Login/Register Legal Wrapper Governance
+
+- 目标: 把登录页勾选框、注册页勾选框以及底部 legal links 的包装层文案迁到 `GET /api/v1/app/config`，让 admin 可调整登录前合规话术，而不改动法律正文标题和跳转逻辑。
+- 范围: 仅迁移 wrapper text ownership，不改变 `termsAndConditions`、`privacyPolicy`、`communityGuidelines` 三个链接标题的来源；这些标题仍继续使用现有 l10n / 业务来源。
+- 客户端原则: `LoginTermsCheckbox`、`RegisterTermsCheckbox`、`LegalLinksWidget` 直接读取 `auth.login.terms.*`、`auth.register.terms.*`、`auth.legal_links.*`；未命中时回退到当前本地文案。
+- 发布安全: 新 key 必须与现有跳转一同保持可空回退，不能因为匿名 app/config 读取失败导致登录/注册页丢失法律链接。
+
+### 下一切片: Brand/Footer Copy Governance
+
+- 目标: 把登录前与全局 loading 壳层中的品牌标题、副标题、版权和备案号迁到 `GET /api/v1/app/config`，让 admin 可在不发版的情况下调整品牌展示与备案信息。
+- 范围: 仅迁移 `CopyrightWidget` 和 `AppLoadingWidget` 中的静态壳层文案 ownership，不改变 logo、配色、loading 动效或布局结构。
+- 客户端原则: `CopyrightWidget` 读取 `brand.footer.*`，`AppLoadingWidget` 读取 `brand.loading.*`；远端未命中时必须回退到现有本地默认文案，不能影响任意页面的加载态显示。
+- 发布安全: 品牌类 key 保持匿名可读，但只允许公开展示文本；如部署顺序出现 app/config 暂时缺失，页面必须继续显示本地默认品牌信息。
+
+### 下一切片: Permission Purpose Dialog Governance
+
+- 目标: 把位置、日历、通知三种权限申请前的用途说明弹窗文案迁到 `GET /api/v1/app/config`，让 admin 可在不发版的情况下调整首次授权前的合规说明。
+- 范围: 仅迁移 `PermissionPurposeDialog` 中 title、description、用途列表、note、confirmText 的文案 ownership；图标、配色、弹窗结构、`Get.back()` 关闭行为和后续系统权限申请时序保持不变。
+- 客户端原则: `PermissionPurposeDialog` 优先读取 `permission.*.purpose_dialog_json`，按 JSON 解析 title、description、purposes、note、confirmText；远端未命中时继续回退到现有本地默认文案，不能阻塞任何权限申请链路。
+- 发布安全: 该批 key 保持匿名可读，但仅包含公开合规说明文案；若 app/config 暂时缺失，位置/日历/通知权限弹窗必须继续使用本地 fallback 正常展示。
 
 ## 4. Backend-Driven Slices
 

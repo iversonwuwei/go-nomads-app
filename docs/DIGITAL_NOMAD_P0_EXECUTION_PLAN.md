@@ -24,6 +24,59 @@
 - P0 阶段不引入复杂推荐系统，不先做 P2 级智能化。
 - 当前 P0 至 P2 阶段优先交付功能闭环，不在中途做大面积 UI 换皮。
 - 全部 P* 功能完成后再启动统一 UI/UX 重设计，设计方向参考新能源车 App 的驾驶舱式信息组织与高焦点交互。
+- 2026-04 新决策: 进入 Post-P UI 标准化阶段，优先做高频交互与基础组件统一，不一次性重写全部页面。
+- 本轮先收口提示文字、图标语义、反馈组件、表单壳层、弹层/底部抽屉和状态卡，再逐步扩展到一级产品页。
+- 本轮 UI 优化不得改变既有业务契约、导航语义、登录态恢复和关键写操作链路。
+
+## 2A. Post-P UI Standardization Wave
+
+### 目标
+
+- 将 go-nomads-app 从“局部有驾驶舱风格”收口为“整端有统一产品语言”的 Flutter 应用。
+- 统一提示文字语气、图标来源、组件语义、状态反馈和表单容器，减少页面之间的视觉与交互漂移。
+- 优先提升登录前链路、系统反馈组件、权限提示和基础操作组件的专业度与可复用性。
+
+### 首批范围
+
+- Auth 流程: login、register、forgot password。
+- 反馈组件: toast、loading dialog、bottom drawer、inline notice、empty/error/loading state。
+- 图标标准: 通用功能图标、状态图标、品牌图标的来源和尺寸规则。
+- 通用容器: hero header、section card、form field shell、action row。
+
+### 统一标准
+
+- 提示文字分为四类: success、error、warning、info；标题和正文语气保持简短、明确、可执行，不使用教程式长句。
+- 图标分为三类: navigation/system 使用 Material Symbols 语义图标；brand/platform 使用 FontAwesome 品牌图标；高频产品动作使用统一 token 映射，禁止页面内临时挑选相近 icon。
+- 组件统一遵循 token 化约束: 颜色、圆角、间距、描边、阴影、状态色由公共配置导出，页面不再散写魔法数和临时色值。
+- 表单与反馈组件必须同时覆盖 loading、error、empty、disabled、success 五类状态，避免只做 happy path 视觉。
+
+### 分阶段实施
+
+- Phase 1: 建立通用 token 与组件封装，落地 auth + feedback 场景。
+- Phase 2: 将权限弹窗、分享面板、举报、列表空态和状态卡切到统一语义。
+- Phase 3: 将 Explore / Land / Community / Inbox / Me 的局部页面壳层统一到同一套组件语言。
+
+### 当前执行状态
+
+- 已完成 Phase 1: auth、toast、loading dialog、bottom drawer 的基础组件标准化。
+- 已完成 Phase 2 的高频交互子集: 权限用途说明、分享面板、举报面板、顶部动作按钮已统一到同一套 token 与 icon 规则。
+- 已启动 Phase 3: 新增 `AppSectionSurface` 与 `AppStateSurface`，并已接入 Explore Dashboard、Land Hub、Community、Inbox、Me 的 section shell 与 loading/empty/error 面板。
+- 已开始推进二级模块: Profile 的协作资料模块已切到共享 section surface，tag 空态也接入了统一 state surface。
+- Profile 的 Snapshot、Travel History、Travel Plans 也已开始接入统一二级内容语言，其中 section 外壳与 loading/empty 卡片优先切到共享 surface。
+- 已形成并执行 [DIGITAL_NOMAD_UI_SECONDARY_MODULE_CLEANUP.md](DIGITAL_NOMAD_UI_SECONDARY_MODULE_CLEANUP.md)，本轮范围内的 Home / Community / Profile 二级标题、二级交互卡片、二级 empty/loading state 以及 Profile 深层资料卡片已按执行单完成统一，并通过定向 `flutter analyze`。
+- Phase 3 下一步只保留更深层的详情区块和复杂状态卡，不再继续回头修本轮执行单已覆盖的模块。
+
+### 验收标准
+
+- 同类提示在不同页面的标题结构、颜色语义、图标语义保持一致。
+- 登录前主链路不再出现多套 loading/dialog/toast 样式并存。
+- 新增 UI 组件至少在两个真实页面复用，而不是只为单页包装。
+- `flutter analyze` 通过；高频路径至少完成登录、找回密码、权限提示三类场景静态验证。
+
+### 回滚边界
+
+- 所有 UI 标准化优先采用“新增公共组件 + 页面渐进替换”的方式，不直接删除旧组件实现。
+- 若某个页面替换后出现体验回退，可单页回退到原组件，不影响其他页面。
 
 ## 2. Target Information Architecture
 

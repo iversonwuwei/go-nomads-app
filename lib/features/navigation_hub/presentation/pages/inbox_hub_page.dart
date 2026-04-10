@@ -9,11 +9,11 @@ import 'package:go_nomads_app/features/notification/domain/entities/app_notifica
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_glass_icon_button.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_hero_banner.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_metric_card.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_section_header.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_section_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_state_surface.dart';
 
 class InboxHubPage extends GetView<InboxHubController> {
   const InboxHubPage({super.key});
@@ -31,7 +31,7 @@ class InboxHubPage extends GetView<InboxHubController> {
           final unreadNotifications = controller.unreadNotifications > 0
               ? controller.unreadNotifications
               : navController.unreadCount.value;
-            final totalUnread = unreadMessages + unreadNotifications + controller.systemActionItems.length;
+          final totalUnread = unreadMessages + unreadNotifications + controller.systemActionItems.length;
 
           return RefreshIndicator(
             color: AppColors.cityPrimary,
@@ -121,33 +121,37 @@ class InboxHubPage extends GetView<InboxHubController> {
                   ],
                 ),
                 SizedBox(height: 18.h),
-                CockpitSectionHeader(
+                AppSectionSurface(
                   title: l10n.inboxSystemActionCenter,
-                ),
-                SizedBox(height: 12.h),
-                if (controller.isLoading.value && controller.systemActionItems.isEmpty)
-                  const _InboxLoadingState()
-                else if (controller.systemActionItems.isEmpty)
-                  _InboxEmptyState(message: l10n.inboxSystemActionEmpty)
-                else
-                  ...controller.systemActionItems.map(
-                    (item) => Padding(
-                      padding: EdgeInsets.only(bottom: 10.h),
-                      child: HubActionCard(
-                        icon: item.routeName == AppRoutes.migrationWorkspace
-                            ? FontAwesomeIcons.route
-                            : item.routeName == AppRoutes.budgetCenter
-                                ? FontAwesomeIcons.wallet
-                                : item.routeName == AppRoutes.membershipPlan
-                                    ? FontAwesomeIcons.gem
-                                    : FontAwesomeIcons.passport,
-                        title: item.title,
-                        subtitle: '',
-                        badgeCount: item.badgeCount,
-                        onTap: () => Get.toNamed(item.routeName),
-                      ),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (controller.isLoading.value && controller.systemActionItems.isEmpty)
+                        const _InboxLoadingState()
+                      else if (controller.systemActionItems.isEmpty)
+                        _InboxEmptyState(message: l10n.inboxSystemActionEmpty)
+                      else
+                        ...controller.systemActionItems.map(
+                          (item) => Padding(
+                            padding: EdgeInsets.only(bottom: 10.h),
+                            child: HubActionCard(
+                              icon: item.routeName == AppRoutes.migrationWorkspace
+                                  ? FontAwesomeIcons.route
+                                  : item.routeName == AppRoutes.budgetCenter
+                                      ? FontAwesomeIcons.wallet
+                                      : item.routeName == AppRoutes.membershipPlan
+                                          ? FontAwesomeIcons.gem
+                                          : FontAwesomeIcons.passport,
+                              title: item.title,
+                              subtitle: '',
+                              badgeCount: item.badgeCount,
+                              onTap: () => Get.toNamed(item.routeName),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
+                ),
                 SizedBox(height: 18.h),
                 HubActionCard(
                   icon: FontAwesomeIcons.solidCommentDots,
@@ -164,27 +168,31 @@ class InboxHubPage extends GetView<InboxHubController> {
                   badgeCount: unreadNotifications,
                   onTap: () => Get.toNamed(AppRoutes.notifications),
                 ),
-                CockpitSectionHeader(
+                AppSectionSurface(
                   title: l10n.inboxRecentNotifications,
-                ),
-                SizedBox(height: 12.h),
-                if (controller.isLoading.value && controller.recentNotifications.isEmpty)
-                  const _InboxLoadingState()
-                else if (controller.errorMessage.value != null && controller.recentNotifications.isEmpty)
-                  _InboxErrorState(
-                    message: controller.errorMessage.value!,
-                    retryLabel: l10n.migrationWorkspaceRetry,
-                    onRetry: controller.refreshSummary,
-                  )
-                else if (controller.recentNotifications.isEmpty)
-                  _InboxEmptyState(message: l10n.inboxNoRecentNotifications)
-                else
-                  ...controller.recentNotifications.take(3).map(
-                    (notification) => Padding(
-                      padding: EdgeInsets.only(bottom: 10.h),
-                      child: _NotificationPreviewCard(notification: notification),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (controller.isLoading.value && controller.recentNotifications.isEmpty)
+                        const _InboxLoadingState()
+                      else if (controller.errorMessage.value != null && controller.recentNotifications.isEmpty)
+                        _InboxErrorState(
+                          message: controller.errorMessage.value!,
+                          retryLabel: l10n.migrationWorkspaceRetry,
+                          onRetry: controller.refreshSummary,
+                        )
+                      else if (controller.recentNotifications.isEmpty)
+                        _InboxEmptyState(message: l10n.inboxNoRecentNotifications)
+                      else
+                        ...controller.recentNotifications.take(3).map(
+                              (notification) => Padding(
+                                padding: EdgeInsets.only(bottom: 10.h),
+                                child: _NotificationPreviewCard(notification: notification),
+                              ),
+                            ),
+                    ],
                   ),
+                ),
               ],
             ),
           );
@@ -223,15 +231,7 @@ class _InboxLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 32.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: const Center(child: AppLoadingWidget(fullScreen: false)),
-    );
+    return AppStateSurface.loading();
   }
 }
 
@@ -248,34 +248,15 @@ class _InboxErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(18.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: Column(
-        children: [
-          Text(
-            message,
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14.sp,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 14.h),
-          OutlinedButton(
-            onPressed: onRetry,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.cityPrimary,
-              side: const BorderSide(color: AppColors.cityPrimary),
-            ),
-            child: Text(retryLabel),
-          ),
-        ],
+    return AppStateSurface.message(
+      message: message,
+      action: OutlinedButton(
+        onPressed: onRetry,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.cityPrimary,
+          side: const BorderSide(color: AppColors.cityPrimary),
+        ),
+        child: Text(retryLabel),
       ),
     );
   }
@@ -288,22 +269,7 @@ class _InboxEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(18.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 14.sp,
-        ),
-        textAlign: TextAlign.center,
-      ),
-    );
+    return AppStateSurface.message(message: message);
   }
 }
 

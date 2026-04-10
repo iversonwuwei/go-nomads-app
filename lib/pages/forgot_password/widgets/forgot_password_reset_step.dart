@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_icons.dart';
 import 'package:go_nomads_app/controllers/forgot_password_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/auth/auth_step_shell.dart';
+import 'package:go_nomads_app/widgets/buttons/app_primary_button.dart';
+import 'package:go_nomads_app/widgets/forms/app_input_field.dart';
 
 /// 步骤3：设置新密码 / Step 3: Set new password
 class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
@@ -14,160 +18,49 @@ class ForgotPasswordResetStep extends GetView<ForgotPasswordController> {
     final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 16.h),
-          // 图标
-          Center(
-            child: Container(
-              width: 72.w,
-              height: 72.h,
-              decoration: BoxDecoration(
-                color: AppColors.accent.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child:
-                  Icon(Icons.vpn_key_outlined, size: 36.r, color: AppColors.accent),
-            ),
-          ),
-          SizedBox(height: 24.h),
-          Center(
-            child: Text(
-              '请设置您的新密码',
-              style: TextStyle(
-                fontSize: 15.sp,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          SizedBox(height: 32.h),
-          // 新密码
-          Text(
-            '新密码',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Obx(() => TextField(
-                controller: controller.newPasswordController,
-                obscureText: !controller.newPasswordVisible.value,
-                decoration: InputDecoration(
+      child: AuthStepShell(
+        icon: AppIcons.password,
+        description: controller.resetStepDescription,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Obx(() => AppInputField(
+                  controller: controller.newPasswordController,
+                  labelText: controller.resetNewPasswordLabel,
                   hintText: l10n.createPassword,
-                  hintStyle: TextStyle(color: AppColors.textTertiary),
-                  prefixIcon:
-                      Icon(Icons.lock_outline, color: AppColors.textTertiary),
+                  prefixIcon: AppIcons.password,
+                  obscureText: !controller.newPasswordVisible.value,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      controller.newPasswordVisible.value
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      color: AppColors.textTertiary,
+                      controller.newPasswordVisible.value ? AppIcons.visibilityOn : AppIcons.visibilityOff,
+                      color: AppColors.icon,
                     ),
                     onPressed: () => controller.newPasswordVisible.toggle(),
                   ),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: AppColors.accent),
-                  ),
-                ),
-              )),
-          SizedBox(height: 20.h),
-          // 确认密码
-          Text(
-            '确认密码',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Obx(() => TextField(
-                controller: controller.confirmPasswordController,
-                obscureText: !controller.confirmPasswordVisible.value,
-                decoration: InputDecoration(
+                )),
+            SizedBox(height: 20.h),
+            Obx(() => AppInputField(
+                  controller: controller.confirmPasswordController,
+                  labelText: controller.resetConfirmPasswordLabel,
                   hintText: l10n.reenterPassword,
-                  hintStyle: TextStyle(color: AppColors.textTertiary),
-                  prefixIcon:
-                      Icon(Icons.lock_outline, color: AppColors.textTertiary),
+                  prefixIcon: AppIcons.password,
+                  obscureText: !controller.confirmPasswordVisible.value,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      controller.confirmPasswordVisible.value
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                      color: AppColors.textTertiary,
+                      controller.confirmPasswordVisible.value ? AppIcons.visibilityOn : AppIcons.visibilityOff,
+                      color: AppColors.icon,
                     ),
-                    onPressed: () =>
-                        controller.confirmPasswordVisible.toggle(),
+                    onPressed: () => controller.confirmPasswordVisible.toggle(),
                   ),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: Colors.grey.shade200),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.r),
-                    borderSide: BorderSide(color: AppColors.accent),
-                  ),
-                ),
-              )),
-          SizedBox(height: 32.h),
-          // 提交按钮
-          Obx(() => SizedBox(
-                width: double.infinity,
-                height: 48.h,
-                child: ElevatedButton(
-                  onPressed: controller.isLoading.value
-                      ? null
-                      : controller.resetPassword,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        AppColors.accent.withValues(alpha: 0.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: controller.isLoading.value
-                      ? SizedBox(
-                          width: 20.w,
-                          height: 20.h,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          l10n.reset,
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
-              )),
-        ],
+                )),
+            SizedBox(height: 32.h),
+            Obx(() => AppPrimaryButton(
+                  label: controller.resetSubmitButton,
+                  onPressed: controller.resetPassword,
+                  isLoading: controller.isLoading.value,
+                )),
+          ],
+        ),
       ),
     );
   }

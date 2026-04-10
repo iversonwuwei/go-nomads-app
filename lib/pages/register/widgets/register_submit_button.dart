@@ -1,50 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
+import 'package:go_nomads_app/widgets/buttons/app_primary_button.dart';
 
 /// 注册提交按钮
 class RegisterSubmitButton extends GetView<RegisterController> {
-  const RegisterSubmitButton({super.key});
+  final RegisterFormCopy? copy;
+
+  const RegisterSubmitButton({super.key, this.copy});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Obx(() => ElevatedButton(
-          onPressed: controller.isRegistering.value
-              ? null
-              : () => controller.register(
-                    termsRequiredTitle: l10n.termsRequired,
-                    pleaseAgreeToTerms: l10n.pleaseAgreeToTerms,
-                    welcomeToCommunity: l10n.welcomeToCommunity,
-                    successTitle: l10n.success,
-                  ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: RegisterConstants.primaryColor,
-            foregroundColor: Colors.white,
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(RegisterConstants.buttonBorderRadius),
-            ),
-            elevation: 0,
-            disabledBackgroundColor: Colors.grey.shade400,
+    return Obx(() => AppPrimaryButton(
+          label: copy?.submitButton ?? l10n.joinNomads,
+          isLoading: controller.isRegistering.value,
+          onPressed: () => controller.register(
+            termsRequiredTitle: copy?.termsRequiredTitle ?? l10n.termsRequired,
+            pleaseAgreeToTerms: copy?.termsRequiredMessage ?? l10n.pleaseAgreeToTerms,
+            welcomeToCommunity: copy?.welcomeToastMessage ?? l10n.welcomeToCommunity,
+            successTitle: copy?.successTitle ?? l10n.success,
           ),
-          child: controller.isRegistering.value
-              ? SizedBox(
-                  height: 20.h,
-                  width: 20.w,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(
-                  l10n.joinNomads,
-                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
-                ),
+          fontSize: 18.sp,
         ));
   }
 }

@@ -9,7 +9,8 @@ import 'package:go_nomads_app/pages/profile/profile_controller.dart';
 import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_card_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_state_surface.dart';
 
 /// 旅行计划部分组件
 class TravelPlansWidget extends StatelessWidget {
@@ -29,7 +30,6 @@ class TravelPlansWidget extends StatelessWidget {
     return Obx(() {
       final latestPlan = profileController.latestTravelPlan;
       final isLoading = profileController.isPageLoading && latestPlan == null;
-
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -43,25 +43,36 @@ class TravelPlansWidget extends StatelessWidget {
                         style: OutlinedButton.styleFrom(
                           minimumSize: Size(40.w, 40.h),
                           foregroundColor: AppColors.cityPrimary,
-                          side: BorderSide(color: AppColors.cityPrimary.withValues(alpha: 0.2)),
+                          side: BorderSide(
+                            color: AppColors.cityPrimary.withValues(alpha: 0.2),
+                          ),
                           backgroundColor: Colors.white.withValues(alpha: 0.42),
                           padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
                         ),
                         child: Icon(FontAwesomeIcons.plus, size: 16.r),
                       )
                     : OutlinedButton.icon(
-                    onPressed: () => Get.toNamed(AppRoutes.cityList),
-                    icon: Icon(FontAwesomeIcons.plus, size: 16.r),
-                    label: Text(l10n.createNew),
+                        onPressed: () => Get.toNamed(AppRoutes.cityList),
+                        icon: Icon(FontAwesomeIcons.plus, size: 16.r),
+                        label: Text(l10n.createNew),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.cityPrimary,
-                          side: BorderSide(color: AppColors.cityPrimary.withValues(alpha: 0.2)),
+                          side: BorderSide(
+                            color: AppColors.cityPrimary.withValues(alpha: 0.2),
+                          ),
                           backgroundColor: Colors.white.withValues(alpha: 0.42),
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
-                    ),
-                  )
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 10.h,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                        ),
+                      )
                 : null,
           ),
           SizedBox(height: 16.h),
@@ -94,9 +105,9 @@ class _LoadingPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CockpitPanel(
+    return AppStateSurface(
       padding: EdgeInsets.all(24.w),
-      child: const Center(child: AppLoadingWidget(fullScreen: false)),
+      content: const Center(child: AppLoadingWidget(fullScreen: false)),
     );
   }
 }
@@ -109,9 +120,9 @@ class _EmptyPlansCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CockpitPanel(
+    return AppStateSurface(
       padding: EdgeInsets.all(24.w),
-      child: Column(
+      content: Column(
         children: [
           Container(
             padding: EdgeInsets.all(16.w),
@@ -169,7 +180,7 @@ class _LatestPlanCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    return GestureDetector(
+    return AppCardSurface(
       onTap: () {
         Get.toNamed(
           AppRoutes.travelPlan,
@@ -181,103 +192,103 @@ class _LatestPlanCard extends StatelessWidget {
           },
         );
       },
-      child: CockpitPanel(
-        padding: EdgeInsets.zero,
-        backgroundColor: Colors.white.withValues(alpha: 0.72),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 城市图片
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-              child: Stack(
-                children: [
-                  _CityImage(imageUrl: plan.cityImage),
-                  _GradientOverlay(),
-                  _CityNameOverlay(plan: plan),
-                  const _AiTag(),
-                ],
-              ),
+      backgroundColor: Colors.white.withValues(alpha: 0.72),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 城市图片
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            child: Stack(
+              children: [
+                _CityImage(imageUrl: plan.cityImage),
+                _GradientOverlay(),
+                _CityNameOverlay(plan: plan),
+                const _AiTag(),
+              ],
             ),
-            // 计划详情
-            Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!isMobile)
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 8.w,
-                      children: [
-                        _PlanTag(
+          ),
+          // 计划详情
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!isMobile)
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 8.w,
+                    children: [
+                      _PlanTag(
+                        icon: FontAwesomeIcons.calendarDays,
+                        label: l10n.durationDays(plan.duration.toString()),
+                      ),
+                      _PlanTag(
+                        icon: FontAwesomeIcons.dollarSign,
+                        label: plan.budgetLevelDisplay,
+                      ),
+                      _PlanTag(
+                        icon: FontAwesomeIcons.paintbrush,
+                        label: plan.travelStyleDisplay,
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _PlanStatTile(
                           icon: FontAwesomeIcons.calendarDays,
                           label: l10n.durationDays(plan.duration.toString()),
                         ),
-                        _PlanTag(
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: _PlanStatTile(
                           icon: FontAwesomeIcons.dollarSign,
                           label: plan.budgetLevelDisplay,
                         ),
-                        _PlanTag(
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: _PlanStatTile(
                           icon: FontAwesomeIcons.paintbrush,
                           label: plan.travelStyleDisplay,
                         ),
-                      ],
-                    )
-                  else
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _PlanStatTile(
-                            icon: FontAwesomeIcons.calendarDays,
-                            label: l10n.durationDays(plan.duration.toString()),
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: _PlanStatTile(
-                            icon: FontAwesomeIcons.dollarSign,
-                            label: plan.budgetLevelDisplay,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: _PlanStatTile(
-                            icon: FontAwesomeIcons.paintbrush,
-                            label: plan.travelStyleDisplay,
-                          ),
-                        ),
-                      ],
-                    ),
-                  SizedBox(height: 12.h),
-                  Row(
-                    children: [
-                      Icon(
-                        FontAwesomeIcons.clock,
-                        size: 12.r,
-                        color: Colors.grey[500],
-                      ),
-                      SizedBox(width: 6.w),
-                      Text(
-                        isMobile ? plan.formattedCreatedAt : '${l10n.createdAt} ${plan.formattedCreatedAt}',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                      const Spacer(),
-                      Icon(
-                        FontAwesomeIcons.chevronRight,
-                        size: isMobile ? 12.r : 14.r,
-                        color: isMobile ? AppColors.cityPrimary : Colors.grey[400],
                       ),
                     ],
                   ),
-                ],
-              ),
+                SizedBox(height: 12.h),
+                Row(
+                  children: [
+                    Icon(
+                      FontAwesomeIcons.clock,
+                      size: 12.r,
+                      color: Colors.grey[500],
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      isMobile
+                          ? plan.formattedCreatedAt
+                          : '${l10n.createdAt} ${plan.formattedCreatedAt}',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      FontAwesomeIcons.chevronRight,
+                      size: isMobile ? 12.r : 14.r,
+                      color:
+                          isMobile ? AppColors.cityPrimary : Colors.grey[400],
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

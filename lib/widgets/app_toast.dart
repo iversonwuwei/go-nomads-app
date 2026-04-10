@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_icons.dart';
 
 /// Toast 类型
 enum ToastType {
@@ -62,7 +63,7 @@ class AppToast {
     final config = _ToastConfig(
       backgroundColor: backgroundColor ?? Colors.black87,
       textColor: textColor ?? Colors.white,
-      icon: icon ?? FontAwesomeIcons.circleInfo,
+      icon: icon ?? AppIcons.info,
       indicatorColor: (backgroundColor ?? Colors.black87).withValues(alpha: 0.8),
       shadowColor: (backgroundColor ?? Colors.black87).withValues(alpha: 0.3),
     );
@@ -238,35 +239,35 @@ class AppToast {
     switch (type) {
       case ToastType.success:
         return _ToastConfig(
-          backgroundColor: const Color(0xFF10B981), // Green
+          backgroundColor: AppColors.feedbackSuccess,
           textColor: Colors.white,
-          icon: FontAwesomeIcons.circleCheck,
-          indicatorColor: const Color(0xFF059669),
-          shadowColor: const Color(0xFF10B981).withValues(alpha: 0.3),
+          icon: AppIcons.success,
+          indicatorColor: AppColors.feedbackSuccessDark,
+          shadowColor: AppColors.feedbackSuccess.withValues(alpha: 0.3),
         );
       case ToastType.error:
         return _ToastConfig(
-          backgroundColor: const Color(0xFFEF4444), // Red
+          backgroundColor: AppColors.feedbackError,
           textColor: Colors.white,
-          icon: FontAwesomeIcons.circleExclamation,
-          indicatorColor: const Color(0xFFDC2626),
-          shadowColor: const Color(0xFFEF4444).withValues(alpha: 0.3),
+          icon: AppIcons.error,
+          indicatorColor: AppColors.feedbackErrorDark,
+          shadowColor: AppColors.feedbackError.withValues(alpha: 0.3),
         );
       case ToastType.warning:
         return _ToastConfig(
-          backgroundColor: const Color(0xFFF59E0B), // Orange
+          backgroundColor: AppColors.feedbackWarning,
           textColor: Colors.white,
-          icon: FontAwesomeIcons.triangleExclamation,
-          indicatorColor: const Color(0xFFD97706),
-          shadowColor: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+          icon: AppIcons.warning,
+          indicatorColor: AppColors.feedbackWarningDark,
+          shadowColor: AppColors.feedbackWarning.withValues(alpha: 0.3),
         );
       case ToastType.info:
         return _ToastConfig(
-          backgroundColor: const Color(0xFF3B82F6), // Blue
+          backgroundColor: AppColors.feedbackInfo,
           textColor: Colors.white,
-          icon: FontAwesomeIcons.circleInfo,
-          indicatorColor: const Color(0xFF2563EB),
-          shadowColor: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+          icon: AppIcons.info,
+          indicatorColor: AppColors.feedbackInfoDark,
+          shadowColor: AppColors.feedbackInfo.withValues(alpha: 0.3),
         );
     }
   }

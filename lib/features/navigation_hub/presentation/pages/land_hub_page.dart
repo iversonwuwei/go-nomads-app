@@ -7,12 +7,11 @@ import 'package:go_nomads_app/features/navigation_hub/presentation/controllers/l
 import 'package:go_nomads_app/features/navigation_hub/presentation/widgets/hub_action_card.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_glass_icon_button.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_hero_banner.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_metric_card.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_section_header.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_section_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_state_surface.dart';
 
 class LandHubPage extends GetView<LandHubController> {
   const LandHubPage({super.key});
@@ -67,15 +66,11 @@ class LandHubPage extends GetView<LandHubController> {
                 if (controller.isLoading.value && !controller.hasData)
                   const _LandLoadingState()
                 else ...[
-                  CockpitPanel(
-                    padding: EdgeInsets.all(16.w),
+                  AppSectionSurface(
+                    title: l10n.landHubCurrentFocusTitle,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CockpitSectionHeader(
-                          title: l10n.landHubCurrentFocusTitle,
-                        ),
-                        SizedBox(height: 12.h),
                         if (!controller.hasData)
                           _LandEmptyState(l10n: l10n)
                         else
@@ -135,15 +130,11 @@ class LandHubPage extends GetView<LandHubController> {
                     ),
                   ),
                   SizedBox(height: 14.h),
-                  CockpitPanel(
-                    padding: EdgeInsets.all(16.w),
+                  AppSectionSurface(
+                    title: l10n.landHubArrivalLaneTitle,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CockpitSectionHeader(
-                          title: l10n.landHubArrivalLaneTitle,
-                        ),
-                        SizedBox(height: 12.h),
                         ..._buildArrivalChecklist(l10n).map(
                           (item) => Padding(
                             padding: EdgeInsets.only(bottom: 10.h),
@@ -154,15 +145,11 @@ class LandHubPage extends GetView<LandHubController> {
                     ),
                   ),
                   SizedBox(height: 14.h),
-                  CockpitPanel(
-                    padding: EdgeInsets.all(16.w),
+                  AppSectionSurface(
+                    title: l10n.landHubPlanningLaneTitle,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CockpitSectionHeader(
-                          title: l10n.landHubPlanningLaneTitle,
-                        ),
-                        SizedBox(height: 12.h),
                         HubActionCard(
                           icon: FontAwesomeIcons.route,
                           title: l10n.migrationWorkspace,
@@ -193,15 +180,11 @@ class LandHubPage extends GetView<LandHubController> {
                     ),
                   ),
                   SizedBox(height: 14.h),
-                  CockpitPanel(
-                    padding: EdgeInsets.all(16.w),
+                  AppSectionSurface(
+                    title: l10n.landHubResourceLaneTitle,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CockpitSectionHeader(
-                          title: l10n.landHubResourceLaneTitle,
-                        ),
-                        SizedBox(height: 12.h),
                         HubActionCard(
                           icon: FontAwesomeIcons.clockRotateLeft,
                           title: l10n.travelHistory,
@@ -558,15 +541,7 @@ class _LandLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 48.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: const Center(child: AppLoadingWidget(fullScreen: false)),
-    );
+    return AppStateSurface.loading();
   }
 }
 
@@ -577,21 +552,18 @@ class _LandEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 4.h),
-        FilledButton.tonalIcon(
-          onPressed: () => Get.toNamed(AppRoutes.createTravelPlan),
-          icon: const Icon(Icons.add_circle_outline_rounded),
-          label: Text(l10n.createTravelPlan),
-          style: FilledButton.styleFrom(
-            minimumSize: Size(0, 38.h),
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 0),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
-          ),
+    return AppStateSurface.message(
+      message: l10n.landHubPendingLabel,
+      action: FilledButton.tonalIcon(
+        onPressed: () => Get.toNamed(AppRoutes.createTravelPlan),
+        icon: const Icon(Icons.add_circle_outline_rounded),
+        label: Text(l10n.createTravelPlan),
+        style: FilledButton.styleFrom(
+          minimumSize: Size(0, 38.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
-      ],
+      ),
     );
   }
 }

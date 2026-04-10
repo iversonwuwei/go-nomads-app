@@ -8,7 +8,8 @@ import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_card_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_state_surface.dart';
 import 'package:intl/intl.dart';
 
 /// 旅行历史部分组件
@@ -67,12 +68,12 @@ class _EmptyTravelHistory extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return CockpitPanel(
+    return AppStateSurface(
       padding: EdgeInsets.symmetric(
         vertical: isMobile ? 32 : 44,
         horizontal: isMobile ? 20 : 34,
       ),
-      child: Center(
+      content: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -116,102 +117,97 @@ class _LatestTripCard extends StatelessWidget {
       trip.departureTime,
     );
     final daysAgo = DateTime.now().difference(trip.arrivalTime).inDays;
-    final compactDate = trip.isOngoing ? l10n.today : _formatDaysAgo(l10n, daysAgo);
+    final compactDate =
+        trip.isOngoing ? l10n.today : _formatDaysAgo(l10n, daysAgo);
 
-    return CockpitPanel(
-      padding: EdgeInsets.zero,
-      backgroundColor: (trip.isOngoing ? const Color(0xFFF2FFFA) : const Color(0xFFF5F9FF)),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Get.toNamed(
-              TravelHistoryRoutes.visitedPlaces,
-              arguments: {
-                'travelHistoryId': trip.id,
-                'cityId': trip.cityId,
-                'cityName': trip.city,
-                'countryName': trip.country,
-              },
-            );
+    return AppCardSurface(
+      backgroundColor:
+          trip.isOngoing ? const Color(0xFFF2FFFA) : const Color(0xFFF5F9FF),
+      onTap: () {
+        Get.toNamed(
+          TravelHistoryRoutes.visitedPlaces,
+          arguments: {
+            'travelHistoryId': trip.id,
+            'cityId': trip.cityId,
+            'cityName': trip.city,
+            'countryName': trip.country,
           },
-          onLongPress: () {
-            if (trip.canNavigateToCityDetail) {
-              Get.toNamed(
-                AppRoutes.cityDetail,
-                arguments: {
-                  'cityId': trip.cityId,
-                  'cityName': trip.city,
-                  'cityImage': '',
-                },
-              );
-            }
-          },
-          borderRadius: BorderRadius.circular(24.r),
-          child: Padding(
-            padding: EdgeInsets.all(isMobile ? 16 : 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        );
+      },
+      onLongPress: () {
+        if (trip.canNavigateToCityDetail) {
+          Get.toNamed(
+            AppRoutes.cityDetail,
+            arguments: {
+              'cityId': trip.cityId,
+              'cityName': trip.city,
+              'cityImage': '',
+            },
+          );
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.all(isMobile ? 16 : 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 顶部：状态标签和时间
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 顶部：状态标签和时间
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _StatusBadge(isOngoing: trip.isOngoing),
-                    Text(
-                      compactDate,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.h),
-
-                // 城市和国家
-                Row(
-                  children: [
-                    _CountryFlag(country: trip.country),
-                    SizedBox(width: 14.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            trip.city,
-                            style: TextStyle(
-                              fontSize: isMobile ? 18 : 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 2.h),
-                          Text(
-                            trip.country,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _NavigationArrow(),
-                  ],
-                ),
-                SizedBox(height: 16.h),
-
-                // 底部信息栏
-                _BottomInfoBar(
-                  dateRange: dateRange,
-                  durationDays: trip.durationDays,
-                  hasLocation: trip.latitude != null && trip.longitude != null,
+                _StatusBadge(isOngoing: trip.isOngoing),
+                Text(
+                  compactDate,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
-          ),
+            SizedBox(height: 16.h),
+
+            // 城市和国家
+            Row(
+              children: [
+                _CountryFlag(country: trip.country),
+                SizedBox(width: 14.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        trip.city,
+                        style: TextStyle(
+                          fontSize: isMobile ? 18 : 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        trip.country,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _NavigationArrow(),
+              ],
+            ),
+            SizedBox(height: 16.h),
+
+            // 底部信息栏
+            _BottomInfoBar(
+              dateRange: dateRange,
+              durationDays: trip.durationDays,
+              hasLocation: trip.latitude != null && trip.longitude != null,
+            ),
+          ],
         ),
       ),
     );
@@ -442,7 +438,8 @@ class _BottomInfoBar extends StatelessWidget {
                 if (durationDays != null)
                   _InfoPill(
                     icon: Icons.access_time,
-                    label: '$durationDays ${durationDays == 1 ? l10n.profileDayUnit : l10n.profileDayUnitPlural}',
+                    label:
+                        '$durationDays ${durationDays == 1 ? l10n.profileDayUnit : l10n.profileDayUnitPlural}',
                   ),
                 if (hasLocation)
                   _InfoPill(

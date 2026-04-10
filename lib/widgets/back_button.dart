@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_icons.dart';
+import 'package:go_nomads_app/widgets/buttons/app_icon_action_button.dart';
 
 /// 普通 AppBar 的回退按钮
 /// 用于不带跑马灯效果的页面
@@ -20,12 +21,10 @@ class AppBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: FaIcon(
-        FontAwesomeIcons.arrowLeft,
-        color: color ?? AppColors.textPrimary,
-        size: size,
-      ),
+    return AppIconActionButton(
+      icon: AppIcons.back,
+      iconColor: color ?? AppColors.textPrimary,
+      size: size,
       onPressed: onPressed ?? () => Get.back(),
     );
   }
@@ -48,32 +47,15 @@ class SliverBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isScrolled = opacity > 0.5;
-    
-    return Container(
+
+    return AppIconActionButton(
+      icon: AppIcons.back,
+      iconColor: isScrolled ? Colors.black87 : Colors.white,
+      size: size,
+      onPressed: onPressed ?? () => Get.back(),
+      backgroundColor:
+          isScrolled ? AppColors.surfaceMuted.withValues(alpha: 0.92) : Colors.black.withValues(alpha: 0.28),
       margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.w),
-      decoration: BoxDecoration(
-        color: isScrolled
-            ? Colors.grey.withValues(alpha: 0.1)
-            : Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 8.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: IconButton(
-        icon: FaIcon(
-          FontAwesomeIcons.arrowLeft,
-          color: isScrolled ? Colors.black87 : Colors.white,
-          size: size,
-        ),
-        onPressed: onPressed ?? () => Get.back(),
-        padding: EdgeInsets.all(8.w),
-        constraints: const BoxConstraints(),
-      ),
     );
   }
 }

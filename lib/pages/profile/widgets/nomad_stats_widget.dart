@@ -5,6 +5,7 @@ import 'package:go_nomads_app/features/user/presentation/controllers/user_state_
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_card_surface.dart';
 
 /// 统计数据部分组件 (高级定制 Bento 网格风格)
 class NomadStatsWidget extends StatelessWidget {
@@ -100,7 +101,8 @@ class NomadStatsWidget extends StatelessWidget {
               Expanded(
                 child: _BentoSquareCard(
                   title: l10n.favorites,
-                  value: (stats?.favoriteCitiesCount ?? favoriteCityCount).toString(),
+                  value: (stats?.favoriteCitiesCount ?? favoriteCityCount)
+                      .toString(),
                   emoji: '❤️',
                   gradient: const [Color(0xFFFFF0F0), Color(0xFFFFE0E0)],
                   textColor: const Color(0xFFFF4458),
@@ -137,25 +139,23 @@ class _BentoHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return AppCardSurface(
       onTap: onTap,
-      child: Container(
-        height: 110.h,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: gradient,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24.r),
-          boxShadow: [
-            BoxShadow(
-              color: gradient.last.withValues(alpha: 0.3),
-              blurRadius: 16.r,
-              offset: Offset(0, 8.h),
-            ),
-          ],
+      gradient: LinearGradient(
+        colors: gradient,
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(24.r),
+      boxShadow: [
+        BoxShadow(
+          color: gradient.last.withValues(alpha: 0.3),
+          blurRadius: 16.r,
+          offset: Offset(0, 8.h),
         ),
+      ],
+      child: SizedBox(
+        height: 110.h,
         child: Stack(
           clipBehavior: Clip.hardEdge,
           children: [
@@ -193,7 +193,8 @@ class _BentoHeroCard extends StatelessWidget {
                       ),
                       if (actionText != null)
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.w, vertical: 4.h),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12.r),
@@ -262,34 +263,34 @@ class _BentoSquareCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return AppCardSurface(
       onTap: onTap,
-      child: Container(
+      gradient: LinearGradient(
+        colors: gradient,
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(24.r),
+      border: isLight
+          ? Border.all(color: Colors.grey.withValues(alpha: 0.15), width: 1.5)
+          : null,
+      boxShadow: isLight
+          ? [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10.r,
+                offset: Offset(0, 4.h),
+              )
+            ]
+          : [
+              BoxShadow(
+                color: gradient.last.withValues(alpha: 0.3),
+                blurRadius: 12.r,
+                offset: Offset(0, 6.h),
+              )
+            ],
+      child: SizedBox(
         height: 130.h,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: gradient,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24.r),
-          border: isLight ? Border.all(color: Colors.grey.withValues(alpha: 0.15), width: 1.5) : null,
-          boxShadow: isLight
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10.r,
-                    offset: Offset(0, 4.h),
-                  )
-                ]
-              : [
-                  BoxShadow(
-                    color: gradient.last.withValues(alpha: 0.3),
-                    blurRadius: 12.r,
-                    offset: Offset(0, 6.h),
-                  )
-                ],
-        ),
         child: Stack(
           clipBehavior: Clip.hardEdge,
           children: [
@@ -314,7 +315,9 @@ class _BentoSquareCard extends StatelessWidget {
                 child: Icon(
                   Icons.arrow_outward_rounded,
                   size: 20.r,
-                  color: isLight ? Colors.grey[400] : textColor.withValues(alpha: 0.5),
+                  color: isLight
+                      ? Colors.grey[400]
+                      : textColor.withValues(alpha: 0.5),
                 ),
               ),
             Padding(
@@ -327,7 +330,9 @@ class _BentoSquareCard extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: isLight ? Colors.grey[600] : textColor.withValues(alpha: 0.9),
+                      color: isLight
+                          ? Colors.grey[600]
+                          : textColor.withValues(alpha: 0.9),
                       fontWeight: FontWeight.w700,
                     ),
                   ),

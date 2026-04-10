@@ -1,26 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_icons.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_form_field.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
+import 'package:go_nomads_app/widgets/buttons/app_primary_button.dart';
 
 /// 邮箱登录表单 - 响应式验证
 class LoginEmailForm extends GetView<LoginController> {
-  const LoginEmailForm({super.key});
+  final LoginFormCopy? copy;
+
+  const LoginEmailForm({super.key, this.copy});
+
+  String _copyOrFallback(String? remote, String fallback) {
+    if (remote == null) return fallback;
+    final trimmed = remote.trim();
+    return trimmed.isEmpty ? fallback : trimmed;
+  }
 
   String? _getErrorText(String? errorKey, AppLocalizations l10n) {
     if (errorKey == null) return null;
     switch (errorKey) {
       case 'emailRequired':
-        return l10n.email;
+        return _copyOrFallback(copy?.emailRequiredError, '请输入邮箱');
       case 'emailInvalid':
-        return l10n.email;
+        return _copyOrFallback(copy?.emailInvalidError, l10n.invalidEmailFormat);
       case 'passwordRequired':
-        return l10n.password;
+        return _copyOrFallback(copy?.passwordRequiredError, l10n.pleaseEnterPassword);
       default:
         return errorKey;
     }
@@ -35,9 +46,9 @@ class LoginEmailForm extends GetView<LoginController> {
         // 邮箱输入
         Obx(() => LoginFormField(
               controller: controller.emailController,
-              labelText: l10n.email,
-              hintText: l10n.email,
-              prefixIcon: FontAwesomeIcons.envelope,
+              labelText: copy?.emailLabel ?? l10n.email,
+              hintText: copy?.emailHint ?? l10n.email,
+              prefixIcon: AppIcons.email,
               keyboardType: TextInputType.emailAddress,
               errorText:
                   controller.showValidationErrors.value ? _getErrorText(controller.emailError.value, l10n) : null,
@@ -48,13 +59,14 @@ class LoginEmailForm extends GetView<LoginController> {
         // 密码输入
         Obx(() => LoginFormField(
               controller: controller.passwordController,
-              labelText: l10n.password,
-              hintText: l10n.password,
-              prefixIcon: FontAwesomeIcons.lock,
+              labelText: copy?.passwordLabel ?? l10n.password,
+              hintText: copy?.passwordHint ?? l10n.password,
+              prefixIcon: AppIcons.password,
               obscureText: controller.obscurePassword.value,
               suffixIcon: IconButton(
                 icon: Icon(
-                  controller.obscurePassword.value ? FontAwesomeIcons.eye : FontAwesomeIcons.eyeSlash,
+                  controller.obscurePassword.value ? AppIcons.visibilityOn : AppIcons.visibilityOff,
+                  color: AppColors.icon,
                 ),
                 onPressed: controller.togglePasswordVisibility,
               ),
@@ -65,12 +77,15 @@ class LoginEmailForm extends GetView<LoginController> {
         SizedBox(height: 16.h),
 
         // 记住我 & 忘记密码
-        _RememberMeRow(l10n: l10n),
+        _RememberMeRow(
+          rememberMeLabel: copy?.rememberMe ?? l10n.rememberMe,
+          forgotPasswordLabel: copy?.forgotPassword ?? l10n.forgotPassword,
+        ),
 
         SizedBox(height: 24.h),
 
         // 登录按钮
-        _LoginButton(l10n: l10n),
+        _LoginButton(label: copy?.emailSubmitButton ?? l10n.clickToLoginOrRegister),
       ],
     );
   }
@@ -78,9 +93,13 @@ class LoginEmailForm extends GetView<LoginController> {
 
 /// 记住我和忘记密码行
 class _RememberMeRow extends GetView<LoginController> {
-  final AppLocalizations l10n;
+  final String rememberMeLabel;
+  final String forgotPasswordLabel;
 
-  const _RememberMeRow({required this.l10n});
+  const _RememberMeRow({
+    required this.rememberMeLabel,
+    required this.forgotPasswordLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +114,7 @@ class _RememberMeRow extends GetView<LoginController> {
                   activeColor: LoginConstants.primaryColor,
                 )),
             Text(
-              l10n.rememberMe,
+              rememberMeLabel,
               style: TextStyle(fontSize: 14.sp, color: Colors.black87),
             ),
           ],
@@ -105,7 +124,7 @@ class _RememberMeRow extends GetView<LoginController> {
             Get.toNamed(AppRoutes.forgotPassword);
           },
           child: Text(
-            l10n.forgotPassword,
+            forgotPasswordLabel,
             style: TextStyle(
               fontSize: 14.sp,
               color: LoginConstants.primaryColor,
@@ -120,30 +139,16 @@ class _RememberMeRow extends GetView<LoginController> {
 
 /// 登录按钮
 class _LoginButton extends GetView<LoginController> {
-  final AppLocalizations l10n;
+  final String label;
 
-  const _LoginButton({required this.l10n});
+  const _LoginButton({required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => controller.loginWithEmail(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: LoginConstants.primaryColor,
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: 16.h),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(LoginConstants.buttonBorderRadius),
-          ),
-          elevation: 0,
-        ),
-        child: Text(
-          l10n.clickToLoginOrRegister,
-          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
-        ),
-      ),
+    return AppPrimaryButton(
+      label: label,
+      onPressed: () => controller.loginWithEmail(context),
+      fontSize: 18.sp,
     );
   }
 }

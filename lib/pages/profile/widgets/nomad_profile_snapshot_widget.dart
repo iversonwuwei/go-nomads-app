@@ -3,8 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_section_header.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_section_surface.dart';
 
 class NomadProfileSnapshotWidget extends GetView<ProfileController> {
   const NomadProfileSnapshotWidget({super.key});
@@ -63,15 +62,13 @@ class NomadProfileSnapshotWidget extends GetView<ProfileController> {
         ),
       ];
 
-      return CockpitPanel(
+      return AppSectionSurface(
+        title: l10n.profileSnapshotTitle,
+        subtitle: isMobile ? null : l10n.profileSnapshotSubtitle,
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CockpitSectionHeader(
-              title: l10n.profileSnapshotTitle,
-              subtitle: isMobile ? '' : l10n.profileSnapshotSubtitle,
-            ),
             if ((snapshot.departureDateLabel ?? '').isNotEmpty) ...[
               const SizedBox(height: 16),
               Container(

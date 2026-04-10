@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_card_surface.dart';
 
 /// 社交链接部分组件
 class SocialLinksWidget extends StatelessWidget {
@@ -56,33 +57,28 @@ class _SocialLinkButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, color) = _getPlatformStyle(platform);
 
-    return InkWell(
+    return AppCardSurface(
       onTap: () {
         // TODO: 实现打开链接功能
       },
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      backgroundColor: color.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(8.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 20.r, color: color),
-            SizedBox(width: 8.w),
-            Text(
-              platform.toUpperCase(),
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
+      border: Border.all(color: color.withValues(alpha: 0.3)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20.r, color: color),
+          SizedBox(width: 8.w),
+          Text(
+            platform.toUpperCase(),
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: color,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

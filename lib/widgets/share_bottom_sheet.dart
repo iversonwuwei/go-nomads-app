@@ -1,10 +1,13 @@
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_icons.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/controllers/locale_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/social_sdk_service.dart';
@@ -12,6 +15,7 @@ import 'package:go_nomads_app/utils/app_logo_util.dart';
 import 'package:go_nomads_app/utils/qq_share_util.dart';
 import 'package:go_nomads_app/utils/wechat_share_util.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -46,11 +50,11 @@ class ShareBottomSheet extends StatefulWidget {
     String? imageUrl,
     required String shareUrl,
   }) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ShareBottomSheet(
+    return AppBottomDrawer.show<void>(
+      context,
+      maxHeightFactor: 0.72,
+      contentPadding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
+      child: ShareBottomSheet(
         title: title,
         description: description,
         imageUrl: imageUrl,
@@ -118,62 +122,36 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   Widget build(BuildContext context) {
     final isChinese = _isChineseUser;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 顶部拖动条
-            Container(
-              margin: EdgeInsets.only(top: 8.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-
-            // 标题
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_expandedChannel != ShareChannelType.none)
-                    GestureDetector(
-                      onTap: () => _toggleSubChannel(ShareChannelType.none),
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 8.w),
-                        child: Icon(Icons.arrow_back_ios, size: 18.sp, color: Colors.grey),
-                      ),
-                    ),
-                  Text(
-                    _getTitle(),
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(4.w, 4.h, 4.w, 16.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_expandedChannel != ShareChannelType.none)
+                GestureDetector(
+                  onTap: () => _toggleSubChannel(ShareChannelType.none),
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: Icon(AppIcons.back, size: 18.sp, color: AppColors.icon),
                   ),
-                ],
+                ),
+              Text(
+                _getTitle(),
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-
-            // 分享选项
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: _buildShareContent(context, isChinese),
-            ),
-
-            SizedBox(height: 20.h),
-          ],
+            ],
+          ),
         ),
-      ),
+        _buildShareContent(context, isChinese),
+        SizedBox(height: 12.h),
+      ],
     );
   }
 
@@ -475,7 +453,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                   height: 50.w,
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
                   ),
                   child: Icon(
                     icon,
@@ -493,7 +471,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
                       height: 16.w,
                       decoration: BoxDecoration(
                         color: color,
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(AppUiTokens.radiusSm),
                       ),
                       child: Icon(
                         Icons.arrow_forward_ios,
@@ -509,7 +487,7 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
               label,
               style: TextStyle(
                 fontSize: 11.sp,
-                color: Colors.grey[700],
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
@@ -522,8 +500,12 @@ class _ShareBottomSheetState extends State<ShareBottomSheet> {
   }
 
   /// 复制链接
-  void _copyLink(BuildContext context) {
-    Share.share(shareUrl);
+  Future<void> _copyLink(BuildContext context) async {
+    await Clipboard.setData(ClipboardData(text: shareUrl));
+    if (!context.mounted) {
+      return;
+    }
+
     Navigator.pop(context);
     AppToast.success(AppLocalizations.of(context)!.linkCopied);
   }

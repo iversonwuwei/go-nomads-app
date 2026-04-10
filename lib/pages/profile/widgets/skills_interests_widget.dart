@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_state_surface.dart';
 
 /// 技能与兴趣部分组件
 class SkillsInterestsWidget extends StatelessWidget {
@@ -68,19 +69,12 @@ class _EmptyStateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppStateSurface(
       padding: EdgeInsets.symmetric(
         vertical: isMobile ? 40 : 60,
         horizontal: isMobile ? 20 : 40,
       ),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.3),
-          width: 1,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Center(
+      content: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

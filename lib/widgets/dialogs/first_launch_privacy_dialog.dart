@@ -11,7 +11,9 @@ import 'package:go_nomads_app/models/legal_document.dart';
 import 'package:go_nomads_app/pages/legal/privacy_policy_page.dart';
 import 'package:go_nomads_app/pages/legal/sdk_list_page.dart';
 import 'package:go_nomads_app/pages/legal/terms_of_service_page.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:go_nomads_app/services/legal_service.dart';
+import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 首次启动隐私政策弹窗 key
@@ -42,8 +44,8 @@ class FirstLaunchPrivacyDialog {
 
   /// 记录用户已同意隐私政策和用户协议
   static Future<void> _saveConsent({
-    String privacyVersion = _kCurrentPrivacyPolicyVersion,
-    String termsVersion = _kCurrentTermsOfServiceVersion,
+    required String privacyVersion,
+    required String termsVersion,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kPrivacyConsentKey, true);
@@ -54,10 +56,50 @@ class FirstLaunchPrivacyDialog {
 
   /// 外部调用：标记本地已同意法律文档（用于后端已同意但本地未记录的场景）
   static Future<void> markConsented({
-    String privacyVersion = _kCurrentPrivacyPolicyVersion,
-    String termsVersion = _kCurrentTermsOfServiceVersion,
+    String? privacyVersion,
+    String? termsVersion,
   }) async {
-    await _saveConsent(privacyVersion: privacyVersion, termsVersion: termsVersion);
+    final versions = await _resolveConsentVersions(
+      privacyVersion: privacyVersion,
+      termsVersion: termsVersion,
+    );
+    await _saveConsent(
+      privacyVersion: versions.privacyVersion,
+      termsVersion: versions.termsVersion,
+    );
+  }
+
+  static Future<({String privacyVersion, String termsVersion})> _resolveConsentVersions({
+    String? privacyVersion,
+    String? termsVersion,
+  }) async {
+    var resolvedPrivacyVersion = privacyVersion?.trim();
+    var resolvedTermsVersion = termsVersion?.trim();
+
+    if ((resolvedPrivacyVersion == null || resolvedPrivacyVersion.isEmpty) ||
+        (resolvedTermsVersion == null || resolvedTermsVersion.isEmpty)) {
+      final configVersions = await AppConfigService().getLegalConsentVersions(forceRefresh: true);
+      resolvedPrivacyVersion ??= configVersions.privacyPolicyVersion;
+      resolvedTermsVersion ??= configVersions.termsOfServiceVersion;
+    }
+
+    if ((resolvedPrivacyVersion == null || resolvedPrivacyVersion.isEmpty) ||
+        (resolvedTermsVersion == null || resolvedTermsVersion.isEmpty)) {
+      final legalService = LegalService();
+      final privacyDoc = await legalService.getPrivacyPolicy(forceRefresh: true);
+      final termsDoc = await legalService.getTermsOfService(forceRefresh: true);
+      resolvedPrivacyVersion ??= privacyDoc?.version;
+      resolvedTermsVersion ??= termsDoc?.version;
+    }
+
+    return (
+      privacyVersion: (resolvedPrivacyVersion == null || resolvedPrivacyVersion.isEmpty)
+          ? _kCurrentPrivacyPolicyVersion
+          : resolvedPrivacyVersion,
+      termsVersion: (resolvedTermsVersion == null || resolvedTermsVersion.isEmpty)
+          ? _kCurrentTermsOfServiceVersion
+          : resolvedTermsVersion,
+    );
   }
 
   /// 清除本地同意状态（用于后端重置/文档版本更新时强制重新确认）
@@ -80,7 +122,11 @@ class FirstLaunchPrivacyDialog {
     );
 
     if (result == true) {
-      await _saveConsent();
+      final versions = await _resolveConsentVersions();
+      await _saveConsent(
+        privacyVersion: versions.privacyVersion,
+        termsVersion: versions.termsVersion,
+      );
       log('✅ 用户同意首次启动法律文档');
       return true;
     }
@@ -99,24 +145,157 @@ class _FirstLaunchPrivacyDialogWidget extends StatefulWidget {
 
 class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDialogWidget> {
   List<LegalSummary>? _summaryItems;
+  FirstLaunchPrivacyDialogCopy? _dialogCopy;
+  String? _privacyDocumentTitle;
+  String? _termsDocumentTitle;
   bool _isLoading = true;
   bool _privacyChecked = false;
   bool _termsChecked = false;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSummary();
+    _loadDialogContent();
   }
 
-  Future<void> _loadSummary() async {
-    final doc = await LegalService().getPrivacyPolicy();
+  Future<void> _onAgree(BuildContext context, AppLocalizations? l10n) async {
+    if (!_privacyChecked || !_termsChecked) {
+      AppToast.warning(
+        _uncheckedToastMessage(l10n),
+        title: _uncheckedToastTitle(l10n),
+      );
+      return;
+    }
+
+    if (_isSubmitting) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.of(context, rootNavigator: true).pop(true);
+  }
+
+  Future<void> _loadDialogContent() async {
+    final legalService = LegalService();
+    final privacyFuture = legalService.getPrivacyPolicy();
+    final termsFuture = legalService.getTermsOfService();
+    final copyFuture = AppConfigService().getFirstLaunchPrivacyDialogCopy();
+
+    final privacyDoc = await privacyFuture;
+    final termsDoc = await termsFuture;
+    final dialogCopy = await copyFuture;
+
     if (mounted) {
       setState(() {
-        _summaryItems = doc?.summary;
+        _summaryItems = privacyDoc?.summary;
+        _dialogCopy = dialogCopy;
+        _privacyDocumentTitle = _normalizeText(privacyDoc?.title);
+        _termsDocumentTitle = _normalizeText(termsDoc?.title);
         _isLoading = false;
       });
     }
+  }
+
+  static String? _normalizeText(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
+  String _dialogTitle() {
+    return _dialogCopy?.title ?? '服务协议与隐私政策';
+  }
+
+  String _dialogIntro() {
+    return _dialogCopy?.intro ?? '欢迎使用行途（Go-Nomads）！为了继续使用应用，请您阅读并同意《隐私政策》和《用户协议》。';
+  }
+
+  String _privacyCheckboxPrefix() {
+    return _dialogCopy?.privacyCheckboxPrefix ?? '我已阅读并同意';
+  }
+
+  String _termsCheckboxPrefix() {
+    return _dialogCopy?.termsCheckboxPrefix ?? '我已阅读并同意';
+  }
+
+  String _declineTipPrefix() {
+    return _dialogCopy?.declineTipPrefix ?? '如果您不同意上述法律文档，将无法继续使用本应用。您可以随时在设置中查看完整的';
+  }
+
+  String _declineTipLinkSeparator() {
+    return _dialogCopy?.declineTipLinkSeparator ?? '、';
+  }
+
+  String _declineTipLinkFinalConnector() {
+    return _dialogCopy?.declineTipLinkFinalConnector ?? '和';
+  }
+
+  String _declineTipSuffix() {
+    return _dialogCopy?.declineTipSuffix ?? '。';
+  }
+
+  String _sdkLinkLabel() {
+    return _dialogCopy?.sdkLinkLabel ?? '第三方SDK清单';
+  }
+
+  String _agreeButtonLabel(AppLocalizations? l10n) {
+    return _dialogCopy?.agreeButtonLabel ?? l10n?.agreeAndContinue ?? '同意并继续';
+  }
+
+  String _rejectButtonLabel(AppLocalizations? l10n) {
+    return _dialogCopy?.rejectButtonLabel ?? '不同意并退出';
+  }
+
+  String _summaryFallbackTitle() {
+    return _dialogCopy?.summaryFallbackTitle ?? '法律文档说明';
+  }
+
+  String _summaryFallbackContent() {
+    return _dialogCopy?.summaryFallbackContent ?? '我们重视您的隐私与使用权益。请查看完整隐私政策、用户协议和第三方 SDK 清单。';
+  }
+
+  String _uncheckedToastTitle(AppLocalizations? l10n) {
+    return _dialogCopy?.uncheckedToastTitle ?? l10n?.termsRequired ?? '需要同意条款';
+  }
+
+  String _uncheckedToastMessage(AppLocalizations? l10n) {
+    return _dialogCopy?.uncheckedToastMessage ?? l10n?.pleaseAgreeToTerms ?? '请先同意隐私政策和用户协议';
+  }
+
+  String _declineConfirmTitle(AppLocalizations? l10n) {
+    return _dialogCopy?.declineConfirmTitle ?? l10n?.privacyDeclineTitle ?? '温馨提示';
+  }
+
+  String _declineConfirmMessage(AppLocalizations? l10n) {
+    return _dialogCopy?.declineConfirmMessage ??
+        l10n?.privacyDeclineMessage ??
+        '如果您不同意隐私政策和用户协议，将无法使用本应用的相关功能。\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。\n\n您确定不同意吗？';
+  }
+
+  String _declineConfirmCancelLabel(AppLocalizations? l10n) {
+    return _dialogCopy?.declineConfirmCancelLabel ?? l10n?.reconsider ?? '再想想';
+  }
+
+  String _declineConfirmExitLabel(AppLocalizations? l10n) {
+    return _dialogCopy?.declineConfirmExitLabel ?? l10n?.confirmExit ?? '确认退出';
+  }
+
+  String _privacyLinkLabel(AppLocalizations? l10n) {
+    return '《${_privacyDocumentTitle ?? l10n?.privacyPolicy ?? '隐私政策'}》';
+  }
+
+  String _termsLinkLabel(AppLocalizations? l10n) {
+    return '《${_termsDocumentTitle ?? '用户协议'}》';
   }
 
   /// 将后端返回的 icon 名称字符串映射为 Material IconData
@@ -173,7 +352,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              '服务协议与隐私政策',
+              _dialogTitle(),
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
@@ -193,7 +372,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '欢迎使用行途（Go-Nomads）！为了继续使用应用，请您阅读并同意《隐私政策》和《用户协议》。',
+            _dialogIntro(),
             style: TextStyle(
               fontSize: 14.sp,
               color: AppColors.textPrimary,
@@ -218,8 +397,8 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
             // API 加载失败时的兜底文案
             _buildSection(
               icon: Icons.info_outline,
-              title: '法律文档说明',
-              content: '我们重视您的隐私与使用权益。请查看完整隐私政策、用户协议和第三方 SDK 清单。',
+              title: _summaryFallbackTitle(),
+              content: _summaryFallbackContent(),
             ),
 
           SizedBox(height: 12.h),
@@ -231,8 +410,8 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                 _privacyChecked = value ?? false;
               });
             },
-            leadingText: '我已阅读并同意',
-            linkText: '《隐私政策》',
+            leadingText: _privacyCheckboxPrefix(),
+            linkText: _privacyLinkLabel(l10n),
             onTapLink: () => _openPrivacyPolicyUrl(context),
           ),
           SizedBox(height: 8.h),
@@ -243,8 +422,8 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                 _termsChecked = value ?? false;
               });
             },
-            leadingText: '我已阅读并同意',
-            linkText: '《用户协议》',
+            leadingText: _termsCheckboxPrefix(),
+            linkText: _termsLinkLabel(l10n),
             onTapLink: () => _openTermsOfServiceUrl(context),
           ),
 
@@ -273,10 +452,10 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                       ),
                       children: [
                         TextSpan(
-                          text: '如果您不同意上述法律文档，将无法继续使用本应用。您可以随时在设置中查看完整的',
+                          text: _declineTipPrefix(),
                         ),
                         TextSpan(
-                          text: l10n?.privacyPolicy ?? '隐私政策',
+                          text: _privacyLinkLabel(l10n),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.amber[900],
@@ -288,9 +467,9 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                               _openPrivacyPolicyUrl(context);
                             },
                         ),
-                        const TextSpan(text: '、'),
+                        TextSpan(text: _declineTipLinkSeparator()),
                         TextSpan(
-                          text: '用户协议',
+                          text: _termsLinkLabel(l10n),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.amber[900],
@@ -302,9 +481,9 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                               _openTermsOfServiceUrl(context);
                             },
                         ),
-                        const TextSpan(text: '和'),
+                        TextSpan(text: _declineTipLinkFinalConnector()),
                         TextSpan(
-                          text: '第三方SDK清单',
+                          text: _sdkLinkLabel(),
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.amber[900],
@@ -316,7 +495,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                               _openSdkListPage(context);
                             },
                         ),
-                        const TextSpan(text: '。'),
+                        TextSpan(text: _declineTipSuffix()),
                       ],
                     ),
                   ),
@@ -434,21 +613,28 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
             width: double.infinity,
             height: 44.h,
             child: ElevatedButton(
-              onPressed: () {
-                if (_privacyChecked && _termsChecked) {
-                  Navigator.of(context).pop(true);
-                }
-              },
+              onPressed: _isSubmitting ? null : () => _onAgree(context, l10n),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: AppColors.cityPrimary.withValues(alpha: 0.7),
+                disabledForegroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
                 elevation: 0,
               ),
-              child: Text(
-                l10n?.agreeAndContinue ?? '同意',
-                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
-              ),
+              child: _isSubmitting
+                  ? SizedBox(
+                      width: 18.w,
+                      height: 18.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      _agreeButtonLabel(l10n),
+                      style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                    ),
             ),
           ),
           SizedBox(height: 10.h),
@@ -466,7 +652,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
               ),
               child: Text(
-                l10n?.disagreeAndExit ?? '不同意',
+                _rejectButtonLabel(l10n),
                 style: TextStyle(fontSize: 14.sp),
               ),
             ),
@@ -484,14 +670,11 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         title: Text(
-          l10n?.privacyDeclineTitle ?? '温馨提示',
+          _declineConfirmTitle(l10n),
           style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
         ),
         content: Text(
-          l10n?.privacyDeclineMessage ??
-              '如果您不同意隐私政策和用户协议，将无法使用本应用的相关功能。'
-                  '\n\n我们非常重视您的隐私安全，收集的信息仅用于为您提供更好的服务。'
-                  '\n\n您确定不同意吗？',
+          _declineConfirmMessage(l10n),
           style: TextStyle(fontSize: 14.sp, height: 1.5),
         ),
         actions: [
@@ -501,7 +684,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
               Navigator.of(ctx).pop(false);
             },
             child: Text(
-              l10n?.reconsider ?? '再想想',
+              _declineConfirmCancelLabel(l10n),
               style: const TextStyle(color: AppColors.cityPrimary),
             ),
           ),
@@ -511,7 +694,7 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
               Navigator.of(ctx).pop(true);
             },
             child: Text(
-              l10n?.confirmExit ?? '确认退出',
+              _declineConfirmExitLabel(l10n),
               style: const TextStyle(color: AppColors.textTertiary),
             ),
           ),
@@ -520,6 +703,9 @@ class _FirstLaunchPrivacyDialogWidgetState extends State<_FirstLaunchPrivacyDial
     ).then((confirmed) {
       if (confirmed == true) {
         // 用户确认不同意，退出应用
+        if (!context.mounted) {
+          return;
+        }
         Navigator.of(context).pop(false);
         _exitApp();
       }

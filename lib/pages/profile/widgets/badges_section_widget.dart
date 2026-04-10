@@ -4,6 +4,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/widgets/profile_section_header.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_card_surface.dart';
 
 /// 徽章部分组件
 class BadgesSectionWidget extends StatelessWidget {
@@ -64,11 +65,13 @@ class _BadgeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompact = MediaQuery.of(context).size.width < 768;
 
-    return Container(
-      constraints:
-          BoxConstraints(minWidth: isCompact ? double.infinity : 156.w, maxWidth: isCompact ? double.infinity : 240.w),
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: isCompact ? double.infinity : 156.w,
+        maxWidth: isCompact ? double.infinity : 240.w,
+      ),
+      child: AppCardSurface(
+        padding: EdgeInsets.all(14.w),
         gradient: LinearGradient(
           colors: [
             Colors.white.withValues(alpha: 0.82),
@@ -86,49 +89,49 @@ class _BadgeCard extends StatelessWidget {
             offset: const Offset(0, 8),
           ),
         ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40.w,
-            height: 40.h,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF4458).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14.r),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40.w,
+              height: 40.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF4458).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: Center(
+                child: Text(badge.icon, style: TextStyle(fontSize: 20.sp)),
+              ),
             ),
-            child: Center(
-              child: Text(badge.icon, style: TextStyle(fontSize: 20.sp)),
-            ),
-          ),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  badge.name,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF2B1A1D),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    badge.name,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF2B1A1D),
+                    ),
                   ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  badge.description,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    height: 1.35,
-                    color: const Color(0xFF7A5B61),
+                  SizedBox(height: 4.h),
+                  Text(
+                    badge.description,
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      height: 1.35,
+                      color: const Color(0xFF7A5B61),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

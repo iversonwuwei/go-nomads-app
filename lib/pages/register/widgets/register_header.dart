@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 注册页面头部 - Logo 和标题
 class RegisterHeader extends StatelessWidget {
-  const RegisterHeader({super.key});
+  final PreAuthMarketingCopy? copy;
+
+  const RegisterHeader({super.key, this.copy});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +35,7 @@ class RegisterHeader extends StatelessWidget {
           SizedBox(height: 24.h),
           // 标题
           Text(
-            '🌍 ${l10n.goNomad}',
+            '🌍 ${copy?.registerHeaderTitle ?? l10n.goNomad}',
             style: TextStyle(
               fontSize: 32.sp,
               fontWeight: FontWeight.bold,
@@ -42,7 +45,7 @@ class RegisterHeader extends StatelessWidget {
           SizedBox(height: 12.h),
           // 副标题
           Text(
-            l10n.joinGlobalCommunity,
+            copy?.registerHeaderSubtitle ?? l10n.joinGlobalCommunity,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16.sp,

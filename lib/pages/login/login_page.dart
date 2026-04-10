@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_icons.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
@@ -12,93 +13,99 @@ import 'package:go_nomads_app/pages/login/widgets/login_phone_form.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_register_link.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_social_buttons.dart';
 import 'package:go_nomads_app/pages/login/widgets/login_terms_checkbox.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:go_nomads_app/widgets/copyright_widget.dart';
 
 /// 登录页面 - 使用响应式验证，无需 GlobalKey
-class LoginPage extends GetView<LoginController> {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  late final Future<LoginEntryCopyBundle> _entryCopyFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _entryCopyFuture = AppConfigService().getLoginEntryCopyBundle().then((bundle) {
+      Get.find<LoginController>().applyFeedbackCopy(bundle.feedback);
+      return bundle;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: LoginConstants.pagePadding,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Logo 和标题
-                const LoginHeader(),
+    return FutureBuilder<LoginEntryCopyBundle>(
+      future: _entryCopyFuture,
+      builder: (context, snapshot) {
+        final entryCopy = snapshot.data;
+        final marketingCopy = entryCopy?.marketing;
+        final formCopy = entryCopy?.form;
+        final socialCopy = entryCopy?.social;
 
-                SizedBox(height: 36.h),
-
-                // 邮箱/手机号 书签式 Tab 切换
-                const _LoginModeTabs(),
-
-                SizedBox(height: 24.h),
-
-                // 根据登录模式显示不同表单（带切换动画）
-                Obx(() => AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeIn,
-                      transitionBuilder: (child, animation) {
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.05),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: controller.loginMode.value == LoginMode.phone
-                          ? const LoginPhoneForm(key: ValueKey('phone'))
-                          : const LoginEmailForm(key: ValueKey('email')),
-                    )),
-
-                SizedBox(height: 24.h),
-
-                // 用户协议勾选框（工信部/腾讯合规要求）
-                const LoginTermsCheckbox(),
-
-                SizedBox(height: 16.h),
-
-                // 社交登录按钮
-                const LoginSocialButtons(),
-
-                SizedBox(height: 32.h),
-
-                // 注册提示
-                const LoginRegisterLink(),
-
-                SizedBox(height: 32.h),
-
-                // 社区亮点
-                const LoginCommunityHighlight(),
-
-                SizedBox(height: 24.h),
-
-                // ICP 备案信息
-                const CopyrightWidget(),
-
-                SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
-              ],
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: LoginConstants.pagePadding,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    LoginHeader(copy: marketingCopy),
+                    SizedBox(height: 36.h),
+                    _LoginModeTabs(copy: formCopy),
+                    SizedBox(height: 24.h),
+                    Obx(() => AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0, 0.05),
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Get.find<LoginController>().loginMode.value == LoginMode.phone
+                              ? LoginPhoneForm(key: const ValueKey('phone'), copy: formCopy)
+                              : LoginEmailForm(key: const ValueKey('email'), copy: formCopy),
+                        )),
+                    SizedBox(height: 24.h),
+                    const LoginTermsCheckbox(),
+                    SizedBox(height: 16.h),
+                    LoginSocialButtons(copy: socialCopy),
+                    SizedBox(height: 32.h),
+                    LoginRegisterLink(copy: marketingCopy),
+                    SizedBox(height: 32.h),
+                    LoginCommunityHighlight(copy: marketingCopy),
+                    SizedBox(height: 24.h),
+                    const CopyrightWidget(),
+                    SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
 /// 书签式登录模式切换 Tab（滑动指示器方案）
 class _LoginModeTabs extends StatefulWidget {
-  const _LoginModeTabs();
+  final LoginFormCopy? copy;
+
+  const _LoginModeTabs({this.copy});
 
   @override
   State<_LoginModeTabs> createState() => _LoginModeTabsState();
@@ -220,15 +227,15 @@ class _LoginModeTabsState extends State<_LoginModeTabs> with SingleTickerProvide
               Row(
                 children: [
                   _buildTab(
-                    label: l10n.emailLogin,
-                    icon: Icons.email_outlined,
+                    label: widget.copy?.emailTabLabel ?? l10n.emailLogin,
+                    icon: AppIcons.email,
                     colorAnimation: _emailTextColor,
                     scaleAnimation: _emailIconScale,
                     onTap: () => _controller.setLoginMode(LoginMode.email),
                   ),
                   _buildTab(
-                    label: l10n.phoneLogin,
-                    icon: Icons.phone_android_outlined,
+                    label: widget.copy?.phoneTabLabel ?? l10n.phoneLogin,
+                    icon: AppIcons.phone,
                     colorAnimation: _phoneTextColor,
                     scaleAnimation: _phoneIconScale,
                     onTap: () => _controller.setLoginMode(LoginMode.phone),

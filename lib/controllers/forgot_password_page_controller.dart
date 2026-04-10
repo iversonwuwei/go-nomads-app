@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/api_config.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
@@ -11,6 +12,7 @@ import 'package:go_nomads_app/widgets/app_toast.dart';
 /// 步骤：0=输入账号 → 1=输入验证码 → 2=设置新密码
 class ForgotPasswordController extends GetxController {
   final HttpService _httpService = HttpService();
+  final AppConfigService _appConfigService = AppConfigService();
 
   // 表单控制器
   final accountController = TextEditingController();
@@ -36,6 +38,13 @@ class ForgotPasswordController extends GetxController {
   // 密码可见性
   final newPasswordVisible = false.obs;
   final confirmPasswordVisible = false.obs;
+  final forgotPasswordCopy = Rxn<ForgotPasswordCopy>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    unawaited(_loadRemoteCopyAsync());
+  }
 
   @override
   void onClose() {
@@ -47,11 +56,59 @@ class ForgotPasswordController extends GetxController {
     super.onClose();
   }
 
+  Future<void> _loadRemoteCopyAsync() async {
+    forgotPasswordCopy.value = await _appConfigService.getForgotPasswordCopy(forceRefresh: true);
+  }
+
+  String getStepTitle(int step) {
+    switch (step) {
+      case 0:
+        return forgotPasswordCopy.value?.accountStepTitle ?? '找回密码';
+      case 1:
+        return forgotPasswordCopy.value?.verifyStepTitle ?? '验证身份';
+      case 2:
+        return forgotPasswordCopy.value?.resetStepTitle ?? '设置新密码';
+      default:
+        return forgotPasswordCopy.value?.accountStepTitle ?? '找回密码';
+    }
+  }
+
+  String get accountStepDescription =>
+      forgotPasswordCopy.value?.accountStepDescription ?? '请输入您的邮箱或手机号\n我们将发送验证码帮助您重置密码';
+
+  String get accountInputLabel => forgotPasswordCopy.value?.accountInputLabel ?? '邮箱或手机号';
+
+  String get accountSendCodeButton => forgotPasswordCopy.value?.accountSendCodeButton ?? '发送验证码';
+
+  String get verifyCodeLabel => forgotPasswordCopy.value?.verifyCodeLabel ?? '验证码';
+
+  String get verifyResendButton => forgotPasswordCopy.value?.verifyResendButton ?? '重新发送验证码';
+
+  String get verifyNextButton => forgotPasswordCopy.value?.verifyNextButton ?? '下一步';
+
+  String get resetStepDescription => forgotPasswordCopy.value?.resetStepDescription ?? '请设置您的新密码';
+
+  String get resetNewPasswordLabel => forgotPasswordCopy.value?.resetNewPasswordLabel ?? '新密码';
+
+  String get resetConfirmPasswordLabel => forgotPasswordCopy.value?.resetConfirmPasswordLabel ?? '确认密码';
+
+  String get resetSubmitButton => forgotPasswordCopy.value?.resetSubmitButton ?? '重置密码';
+
+  String getVerifyDescription(String target) {
+    final template = forgotPasswordCopy.value?.verifyStepDescriptionTemplate ?? '验证码已发送至\n{target}';
+    return template.replaceAll('{target}', target);
+  }
+
+  String getResendCountdownLabel(int seconds) {
+    final template = forgotPasswordCopy.value?.verifyResendCountdownTemplate ?? '{seconds}s 后重新发送';
+    return template.replaceAll('{seconds}', seconds.toString());
+  }
+
   /// 发送验证码
   Future<void> sendCode() async {
     final account = accountController.text.trim();
     if (account.isEmpty) {
-      AppToast.warning('请输入邮箱或手机号');
+      AppToast.warning(forgotPasswordCopy.value?.toastAccountRequired ?? '请输入邮箱或手机号');
       return;
     }
 
@@ -76,7 +133,9 @@ class ForgotPasswordController extends GetxController {
           // 跳到验证码输入步骤
           currentStep.value = 1;
           AppToast.success(
-            recoveryMethod.value == 'email' ? '验证码已发送到邮箱' : '验证码已发送到手机',
+            recoveryMethod.value == 'email'
+                ? (forgotPasswordCopy.value?.toastCodeSentEmail ?? '验证码已发送到邮箱')
+                : (forgotPasswordCopy.value?.toastCodeSentPhone ?? '验证码已发送到手机'),
           );
         } else {
           AppToast.error((data['message'] as String?) ?? '发送失败');
@@ -88,7 +147,7 @@ class ForgotPasswordController extends GetxController {
       if (e is HttpException) {
         AppToast.error(e.message);
       } else {
-        AppToast.error('发送验证码失败，请稍后重试');
+        AppToast.error(forgotPasswordCopy.value?.toastSendFailedFallback ?? '发送验证码失败，请稍后重试');
       }
     } finally {
       isSendingCode.value = false;
@@ -105,11 +164,11 @@ class ForgotPasswordController extends GetxController {
   void goToResetStep() {
     final code = codeController.text.trim();
     if (code.isEmpty) {
-      AppToast.warning('请输入验证码');
+      AppToast.warning(forgotPasswordCopy.value?.toastCodeRequired ?? '请输入验证码');
       return;
     }
     if (code.length < 6) {
-      AppToast.warning('请输入完整的验证码');
+      AppToast.warning(forgotPasswordCopy.value?.toastCodeIncomplete ?? '请输入完整的验证码');
       return;
     }
     currentStep.value = 2;
@@ -121,19 +180,19 @@ class ForgotPasswordController extends GetxController {
     final confirmPwd = confirmPasswordController.text.trim();
 
     if (newPwd.isEmpty) {
-      AppToast.warning('请输入新密码');
+      AppToast.warning(forgotPasswordCopy.value?.toastNewPasswordRequired ?? '请输入新密码');
       return;
     }
     if (newPwd.length < 6) {
-      AppToast.warning('密码至少需要6个字符');
+      AppToast.warning(forgotPasswordCopy.value?.toastPasswordMinLength ?? '密码至少需要6个字符');
       return;
     }
     if (confirmPwd.isEmpty) {
-      AppToast.warning('请确认新密码');
+      AppToast.warning(forgotPasswordCopy.value?.toastConfirmPasswordRequired ?? '请确认新密码');
       return;
     }
     if (newPwd != confirmPwd) {
-      AppToast.warning('两次输入的密码不一致');
+      AppToast.warning(forgotPasswordCopy.value?.toastPasswordMismatch ?? '两次输入的密码不一致');
       return;
     }
 
@@ -147,14 +206,14 @@ class ForgotPasswordController extends GetxController {
           'newPassword': newPwd,
         },
       );
-      AppToast.success('密码重置成功，请使用新密码登录');
+      AppToast.success(forgotPasswordCopy.value?.toastResetSuccess ?? '密码重置成功，请使用新密码登录');
       Get.back();
     } catch (e) {
       log('重置密码失败: $e');
       if (e is HttpException) {
         AppToast.error(e.message);
       } else {
-        AppToast.error('重置密码失败，请稍后重试');
+        AppToast.error(forgotPasswordCopy.value?.toastResetFailedFallback ?? '重置密码失败，请稍后重试');
       }
     } finally {
       isLoading.value = false;

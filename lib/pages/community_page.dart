@@ -15,11 +15,13 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_glass_icon_button.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_hero_banner.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_section_header.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_card_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_section_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_state_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_subsection_header.dart';
 
 class CommunityPage extends StatefulWidget {
   const CommunityPage({super.key});
@@ -86,7 +88,8 @@ class _CommunityPageState extends State<CommunityPage> {
     );
   }
 
-  bool _isCurrentUser(String userId) => _userStateController?.currentUser.value?.id == userId;
+  bool _isCurrentUser(String userId) =>
+      _userStateController?.currentUser.value?.id == userId;
 
   void _openDirectChat(User user) {
     Get.toNamed(AppRoutes.directChat, arguments: user);
@@ -112,7 +115,9 @@ class _CommunityPageState extends State<CommunityPage> {
           report: report,
           onLike: () => _communityController.toggleLikeTripReport(report.id),
           onOpenCityChat: () => Get.toNamed(AppRoutes.cityChat),
-          onMessageAuthor: _isCurrentUser(report.userId) ? null : () => _openDirectChat(reportAuthor),
+          onMessageAuthor: _isCurrentUser(report.userId)
+              ? null
+              : () => _openDirectChat(reportAuthor),
           openCityChatLabel: l10n.communityDetailOpenCityChat,
           messageAuthorLabel: l10n.communityDetailMessageAuthor,
           likeLabel: l10n.communityDetailLikeFieldNote,
@@ -138,20 +143,28 @@ class _CommunityPageState extends State<CommunityPage> {
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.92,
         child: Obx(() {
-          final answers = _communityController.answers[question.id] ?? const <Answer>[];
-          final isLoadingAnswers = _communityController.isLoadingAnswers(question.id);
+          final answers =
+              _communityController.answers[question.id] ?? const <Answer>[];
+          final isLoadingAnswers =
+              _communityController.isLoadingAnswers(question.id);
           final l10n = AppLocalizations.of(context)!;
 
           return _QuestionDetailSheet(
             question: question,
             answers: answers,
             isLoadingAnswers: isLoadingAnswers,
-            onUpvoteQuestion: () => _communityController.toggleUpvoteQuestion(question.id),
-            onUpvoteAnswer: (answerId) => _communityController.toggleUpvoteAnswer(question.id, answerId),
+            onUpvoteQuestion: () =>
+                _communityController.toggleUpvoteQuestion(question.id),
+            onUpvoteAnswer: (answerId) =>
+                _communityController.toggleUpvoteAnswer(question.id, answerId),
             onOpenCityChat: () => Get.toNamed(AppRoutes.cityChat),
-            onMessageAsker: _isCurrentUser(question.userId) ? null : () => _openDirectChat(asker),
+            onMessageAsker: _isCurrentUser(question.userId)
+                ? null
+                : () => _openDirectChat(asker),
             onMessageAnswerer: (answer) {
-              if (_isCurrentUser(answer.userId) || answer.userId.isEmpty || answer.userId.startsWith('system-')) {
+              if (_isCurrentUser(answer.userId) ||
+                  answer.userId.isEmpty ||
+                  answer.userId.startsWith('system-')) {
                 return;
               }
 
@@ -186,17 +199,20 @@ class _CommunityPageState extends State<CommunityPage> {
         child: Obx(() {
           final user = _userStateController?.currentUser.value;
           final latestTravelPlan = _aiStateController?.latestTravelPlan;
-          final meetups = _communityController.meetups.take(3).toList(growable: false);
-          final tripReports = (_communityController.popularTripReports.isNotEmpty
-                  ? _communityController.popularTripReports
-                  : _communityController.tripReports)
-              .take(3)
-              .toList(growable: false);
-          final questionFeed = (_communityController.unresolvedQuestions.isNotEmpty
-                  ? _communityController.unresolvedQuestions
-                  : _communityController.questions)
-              .take(3)
-              .toList(growable: false);
+          final meetups =
+              _communityController.meetups.take(3).toList(growable: false);
+          final tripReports =
+              (_communityController.popularTripReports.isNotEmpty
+                      ? _communityController.popularTripReports
+                      : _communityController.tripReports)
+                  .take(3)
+                  .toList(growable: false);
+          final questionFeed =
+              (_communityController.unresolvedQuestions.isNotEmpty
+                      ? _communityController.unresolvedQuestions
+                      : _communityController.questions)
+                  .take(3)
+                  .toList(growable: false);
           final focusCity = _resolveCityContext(
             user,
             latestTravelPlan,
@@ -214,7 +230,9 @@ class _CommunityPageState extends State<CommunityPage> {
             tripReports: tripReports,
             questions: questionFeed,
           );
-          final joinedCircleCount = circles.where((circle) => _communityController.isCircleJoined(circle.id)).length;
+          final joinedCircleCount = circles
+              .where((circle) => _communityController.isCircleJoined(circle.id))
+              .length;
           final initialLoading = _communityController.isLoading.value &&
               _communityController.tripReports.isEmpty &&
               _communityController.questions.isEmpty;
@@ -223,10 +241,14 @@ class _CommunityPageState extends State<CommunityPage> {
               title: l10n.communityLayerMeetupsTitle,
               subtitle: '',
               highlight: meetups.length.toString(),
-              actionLabel: meetups.isNotEmpty ? l10n.communityCirclesViewMeetups : l10n.communityCirclesCreateMeetup,
+              actionLabel: meetups.isNotEmpty
+                  ? l10n.communityCirclesViewMeetups
+                  : l10n.communityCirclesCreateMeetup,
               icon: Icons.event_available_rounded,
               accentColor: const Color(0xFF457B9D),
-              onPressed: () => Get.toNamed(meetups.isNotEmpty ? AppRoutes.meetupsList : AppRoutes.createMeetup),
+              onPressed: () => Get.toNamed(meetups.isNotEmpty
+                  ? AppRoutes.meetupsList
+                  : AppRoutes.createMeetup),
             ),
             _CommunityLaneCardData(
               title: l10n.communityLayerCityChatTitle,
@@ -266,7 +288,8 @@ class _CommunityPageState extends State<CommunityPage> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   SliverPadding(
-                    padding: EdgeInsets.fromLTRB(isMobile ? 14 : 22, 16, isMobile ? 14 : 22, 112),
+                    padding: EdgeInsets.fromLTRB(
+                        isMobile ? 14 : 22, 16, isMobile ? 14 : 22, 112),
                     sliver: SliverToBoxAdapter(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,7 +299,11 @@ class _CommunityPageState extends State<CommunityPage> {
                             title: l10n.communityCirclesHeroTitle,
                             subtitle: '',
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFFF1F2), Color(0xFFF7FAFC), Color(0xFFEAF4FF)],
+                              colors: [
+                                Color(0xFFFFF1F2),
+                                Color(0xFFF7FAFC),
+                                Color(0xFFEAF4FF)
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -288,59 +315,54 @@ class _CommunityPageState extends State<CommunityPage> {
                             metrics: [
                               CockpitHeroMetric(
                                 icon: Icons.hub_rounded,
-                                label: l10n.communityCirclesMetricCircles(circles.length.toString()),
+                                label: l10n.communityCirclesMetricCircles(
+                                    circles.length.toString()),
                               ),
                               CockpitHeroMetric(
                                 icon: Icons.event_available_rounded,
-                                label: l10n.communityCirclesMetricMeetups(meetups.length.toString()),
+                                label: l10n.communityCirclesMetricMeetups(
+                                    meetups.length.toString()),
                               ),
                               CockpitHeroMetric(
                                 icon: Icons.edit_note_rounded,
-                                label: l10n.communityCirclesMetricFieldNotes(tripReports.length.toString()),
+                                label: l10n.communityCirclesMetricFieldNotes(
+                                    tripReports.length.toString()),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16),
-                          CockpitPanel(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CockpitSectionHeader(
-                                  title: l10n.communityLayersTitle,
-                                ),
-                                const SizedBox(height: 14),
-                                if (isMobile)
-                                  Column(
+                          AppSectionSurface(
+                            title: l10n.communityLayersTitle,
+                            child: isMobile
+                                ? Column(
                                     children: laneCards
                                         .map(
                                           (lane) => Padding(
-                                            padding: const EdgeInsets.only(bottom: 12),
-                                            child: _CommunityLaneCard(data: lane),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 12),
+                                            child:
+                                                _CommunityLaneCard(data: lane),
                                           ),
                                         )
                                         .toList(growable: false),
                                   )
-                                else
-                                  Wrap(
+                                : Wrap(
                                     spacing: 12,
                                     runSpacing: 12,
                                     children: laneCards
                                         .map(
                                           (lane) => SizedBox(
                                             width: 260,
-                                            child: _CommunityLaneCard(data: lane),
+                                            child:
+                                                _CommunityLaneCard(data: lane),
                                           ),
                                         )
                                         .toList(growable: false),
                                   ),
-                              ],
-                            ),
                           ),
                           const SizedBox(height: 16),
                           _ContentSection(
-                            header: CockpitSectionHeader(
-                              title: l10n.communityCirclesMeetupsTitle,
-                            ),
+                            title: l10n.communityCirclesMeetupsTitle,
                             emptyLabel: l10n.communityCirclesMeetupsEmpty,
                             hasItems: meetups.isNotEmpty,
                             children: meetups
@@ -355,26 +377,29 @@ class _CommunityPageState extends State<CommunityPage> {
                           const SizedBox(height: 16),
                           Container(
                             key: _intelligenceSectionKey,
-                            child: CockpitPanel(
+                            child: AppSectionSurface(
+                              title: l10n.communityIntelligenceTitle,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  CockpitSectionHeader(
-                                    title: l10n.communityIntelligenceTitle,
-                                  ),
-                                  const SizedBox(height: 14),
                                   Wrap(
                                     spacing: 10,
                                     runSpacing: 10,
                                     children: [
-                                      _MetaPill(icon: Icons.place_outlined, label: focusCity),
+                                      _MetaPill(
+                                          icon: Icons.place_outlined,
+                                          label: focusCity),
                                       _MetaPill(
                                         icon: Icons.help_outline_rounded,
-                                        label: l10n.communityLayerQuestionsBadge(questionFeed.length.toString()),
+                                        label:
+                                            l10n.communityLayerQuestionsBadge(
+                                                questionFeed.length.toString()),
                                       ),
                                       _MetaPill(
                                         icon: Icons.edit_note_rounded,
-                                        label: l10n.communityCirclesMetricFieldNotes(tripReports.length.toString()),
+                                        label: l10n
+                                            .communityCirclesMetricFieldNotes(
+                                                tripReports.length.toString()),
                                       ),
                                     ],
                                   ),
@@ -382,9 +407,12 @@ class _CommunityPageState extends State<CommunityPage> {
                                   Align(
                                     alignment: Alignment.centerLeft,
                                     child: OutlinedButton.icon(
-                                      onPressed: () => _openCreateQuestionDialog(focusCity),
-                                      icon: const Icon(Icons.add_comment_outlined),
-                                      label: Text(l10n.communityCreateQuestionAction),
+                                      onPressed: () =>
+                                          _openCreateQuestionDialog(focusCity),
+                                      icon: const Icon(
+                                          Icons.add_comment_outlined),
+                                      label: Text(
+                                          l10n.communityCreateQuestionAction),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
@@ -392,14 +420,17 @@ class _CommunityPageState extends State<CommunityPage> {
                                     title: l10n.communityCirclesQuestionsTitle,
                                     subtitle: '',
                                     hasItems: questionFeed.isNotEmpty,
-                                    emptyLabel: l10n.communityCirclesQuestionsEmpty,
+                                    emptyLabel:
+                                        l10n.communityCirclesQuestionsEmpty,
                                     children: questionFeed
                                         .map(
                                           (question) => Padding(
-                                            padding: const EdgeInsets.only(bottom: 12),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 12),
                                             child: _QuestionTile(
                                               question: question,
-                                              onTap: () => _openQuestionDetails(question),
+                                              onTap: () => _openQuestionDetails(
+                                                  question),
                                             ),
                                           ),
                                         )
@@ -410,15 +441,21 @@ class _CommunityPageState extends State<CommunityPage> {
                                     title: l10n.communityCirclesFieldNotesTitle,
                                     subtitle: '',
                                     hasItems: tripReports.isNotEmpty,
-                                    emptyLabel: l10n.communityCirclesFieldNotesEmpty,
+                                    emptyLabel:
+                                        l10n.communityCirclesFieldNotesEmpty,
                                     children: tripReports
                                         .map(
                                           (report) => Padding(
-                                            padding: const EdgeInsets.only(bottom: 12),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 12),
                                             child: _TripReportTile(
                                               report: report,
-                                              onLike: () => _communityController.toggleLikeTripReport(report.id),
-                                              onTap: () => _openTripReportDetails(report),
+                                              onLike: () => _communityController
+                                                  .toggleLikeTripReport(
+                                                      report.id),
+                                              onTap: () =>
+                                                  _openTripReportDetails(
+                                                      report),
                                             ),
                                           ),
                                         )
@@ -429,27 +466,28 @@ class _CommunityPageState extends State<CommunityPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          CockpitPanel(
+                          AppSectionSurface(
+                            title: l10n.communityCoordinationTitle,
+                            subtitle: l10n.communityCoordinationSubtitle,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                CockpitSectionHeader(
-                                  title: l10n.communityCoordinationTitle,
-                                  subtitle: l10n.communityCoordinationSubtitle,
-                                ),
-                                const SizedBox(height: 14),
                                 Wrap(
                                   spacing: 10,
                                   runSpacing: 10,
                                   children: [
-                                    _MetaPill(icon: Icons.place_outlined, label: nextCoordinationCity),
+                                    _MetaPill(
+                                        icon: Icons.place_outlined,
+                                        label: nextCoordinationCity),
                                     _MetaPill(
                                       icon: Icons.hub_rounded,
-                                      label: l10n.communityCirclesMetricCircles(joinedCircleCount.toString()),
+                                      label: l10n.communityCirclesMetricCircles(
+                                          joinedCircleCount.toString()),
                                     ),
                                     _MetaPill(
                                       icon: Icons.event_available_rounded,
-                                      label: l10n.communityCirclesMetricMeetups(meetups.length.toString()),
+                                      label: l10n.communityCirclesMetricMeetups(
+                                          meetups.length.toString()),
                                     ),
                                   ],
                                 ),
@@ -457,7 +495,8 @@ class _CommunityPageState extends State<CommunityPage> {
                                 _QuickActionButton(
                                   icon: Icons.mark_email_unread_outlined,
                                   label: l10n.communityCirclesOpenInbox,
-                                  onPressed: () => Get.toNamed(AppRoutes.conversations),
+                                  onPressed: () =>
+                                      Get.toNamed(AppRoutes.conversations),
                                 ),
                               ],
                             ),
@@ -465,41 +504,43 @@ class _CommunityPageState extends State<CommunityPage> {
                           const SizedBox(height: 16),
                           Container(
                             key: _circlesSectionKey,
-                            child: CockpitPanel(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CockpitSectionHeader(
-                                    title: l10n.communityCirclesSuggestedTitle,
-                                    subtitle: l10n.communityCirclesSuggestedSubtitle,
-                                  ),
-                                  const SizedBox(height: 18),
-                                  if (isMobile)
-                                    Column(
+                            child: AppSectionSurface(
+                              title: l10n.communityCirclesSuggestedTitle,
+                              subtitle: l10n.communityCirclesSuggestedSubtitle,
+                              child: isMobile
+                                  ? Column(
                                       children: circles
                                           .map(
                                             (circle) => Padding(
-                                              padding: const EdgeInsets.only(bottom: 12),
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 12),
                                               child: _CircleCard(
                                                 data: circle,
-                                                joined: _communityController.isCircleJoined(circle.id),
-                                                actionLabel: _communityController.isCircleJoined(circle.id)
+                                                joined: _communityController
+                                                    .isCircleJoined(circle.id),
+                                                actionLabel: _communityController
+                                                        .isCircleJoined(
+                                                            circle.id)
                                                     ? l10n.communityCirclesOpen
                                                     : l10n.communityCirclesJoin,
                                                 onPressed: () {
-                                                  if (_communityController.isCircleJoined(circle.id)) {
-                                                    Get.toNamed(AppRoutes.meetupsList);
+                                                  if (_communityController
+                                                      .isCircleJoined(
+                                                          circle.id)) {
+                                                    Get.toNamed(
+                                                        AppRoutes.meetupsList);
                                                     return;
                                                   }
-                                                  _communityController.toggleCircleMembership(circle.id);
+                                                  _communityController
+                                                      .toggleCircleMembership(
+                                                          circle.id);
                                                 },
                                               ),
                                             ),
                                           )
                                           .toList(growable: false),
                                     )
-                                  else
-                                    Wrap(
+                                  : Wrap(
                                       spacing: 12,
                                       runSpacing: 12,
                                       children: circles
@@ -508,24 +549,30 @@ class _CommunityPageState extends State<CommunityPage> {
                                               width: 260,
                                               child: _CircleCard(
                                                 data: circle,
-                                                joined: _communityController.isCircleJoined(circle.id),
-                                                actionLabel: _communityController.isCircleJoined(circle.id)
+                                                joined: _communityController
+                                                    .isCircleJoined(circle.id),
+                                                actionLabel: _communityController
+                                                        .isCircleJoined(
+                                                            circle.id)
                                                     ? l10n.communityCirclesOpen
                                                     : l10n.communityCirclesJoin,
                                                 onPressed: () {
-                                                  if (_communityController.isCircleJoined(circle.id)) {
-                                                    Get.toNamed(AppRoutes.meetupsList);
+                                                  if (_communityController
+                                                      .isCircleJoined(
+                                                          circle.id)) {
+                                                    Get.toNamed(
+                                                        AppRoutes.meetupsList);
                                                     return;
                                                   }
-                                                  _communityController.toggleCircleMembership(circle.id);
+                                                  _communityController
+                                                      .toggleCircleMembership(
+                                                          circle.id);
                                                 },
                                               ),
                                             ),
                                           )
                                           .toList(growable: false),
                                     ),
-                                ],
-                              ),
                             ),
                           ),
                         ],
@@ -557,8 +604,9 @@ class _CommunityPageState extends State<CommunityPage> {
       questions,
       fallbackCityLabel: l10n.communityRemoteBaseLabel,
     );
-    final skill =
-        user != null && user.skills.isNotEmpty ? user.skills.first.name : l10n.communityCirclesGeneralistLabel;
+    final skill = user != null && user.skills.isNotEmpty
+        ? user.skills.first.name
+        : l10n.communityCirclesGeneralistLabel;
 
     return [
       _CircleCardData(
@@ -573,7 +621,8 @@ class _CommunityPageState extends State<CommunityPage> {
         id: 'migration-circle',
         title: l10n.communityCircleMigrationTitle,
         subtitle: '',
-        badge: latestTravelPlan?.formattedDepartureDate ?? l10n.communityCirclesFlexibleLabel,
+        badge: latestTravelPlan?.formattedDepartureDate ??
+            l10n.communityCirclesFlexibleLabel,
         accentColor: const Color(0xFF457B9D),
         icon: Icons.alt_route_rounded,
       ),
@@ -607,7 +656,9 @@ class _CommunityPageState extends State<CommunityPage> {
     final candidates = <String?>[
       user?.currentCity,
       latestTravelPlan?.cityName,
-      meetups.isNotEmpty ? meetups.first.location.cityName ?? meetups.first.location.city : null,
+      meetups.isNotEmpty
+          ? meetups.first.location.cityName ?? meetups.first.location.city
+          : null,
       tripReports.isNotEmpty ? tripReports.first.city : null,
       questions.isNotEmpty ? questions.first.city : null,
     ];
@@ -660,7 +711,11 @@ class _CommunityPageState extends State<CommunityPage> {
               city: city,
               title: titleController.text.trim(),
               content: contentController.text.trim(),
-              tags: tagsController.text.split(',').map((item) => item.trim()).where((item) => item.isNotEmpty).toList(),
+              tags: tagsController.text
+                  .split(',')
+                  .map((item) => item.trim())
+                  .where((item) => item.isNotEmpty)
+                  .toList(),
             );
             Get.back<void>();
           },
@@ -733,20 +788,18 @@ class _CommunityLaneCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCardSurface(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.56),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
-        boxShadow: [
-          BoxShadow(
-            color: data.accentColor.withValues(alpha: 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white.withValues(alpha: 0.56),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      boxShadow: [
+        BoxShadow(
+          color: data.accentColor.withValues(alpha: 0.08),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -758,18 +811,21 @@ class _CommunityLaneCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: data.accentColor.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.55)),
                 ),
                 child: Icon(data.icon, color: data.accentColor),
               ),
               const Spacer(),
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.72),
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.7)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.7)),
                   ),
                   child: Text(
                     data.highlight,
@@ -810,7 +866,8 @@ class _CommunityLaneCard extends StatelessWidget {
               backgroundColor: Colors.white.withValues(alpha: 0.66),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
               minimumSize: const Size(0, 38),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
             ),
             child: Text(data.actionLabel),
           ),
@@ -853,20 +910,18 @@ class _CircleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCardSurface(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.56),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
-        boxShadow: [
-          BoxShadow(
-            color: data.accentColor.withValues(alpha: 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white.withValues(alpha: 0.56),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      boxShadow: [
+        BoxShadow(
+          color: data.accentColor.withValues(alpha: 0.08),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -878,17 +933,20 @@ class _CircleCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: data.accentColor.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.55)),
                 ),
                 child: Icon(data.icon, color: data.accentColor),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.72),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.7)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.7)),
                 ),
                 child: Text(
                   data.badge,
@@ -922,11 +980,14 @@ class _CircleCard extends StatelessWidget {
           FilledButton.tonal(
             onPressed: onPressed,
             style: FilledButton.styleFrom(
-              backgroundColor: joined ? data.accentColor : Colors.white.withValues(alpha: 0.66),
+              backgroundColor: joined
+                  ? data.accentColor
+                  : Colors.white.withValues(alpha: 0.66),
               foregroundColor: joined ? Colors.white : data.accentColor,
               minimumSize: const Size(0, 38),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
             ),
             child: Text(actionLabel),
           ),
@@ -985,32 +1046,13 @@ class _PanelListSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
+        AppSubsectionHeader(
+          title: title,
+          subtitle: subtitle.isNotEmpty ? subtitle : null,
         ),
-        if (subtitle.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.35,
-                ),
-          ),
-        ],
         SizedBox(height: subtitle.isNotEmpty ? 12 : 10),
         if (!hasItems)
-          Text(
-            emptyLabel,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.35,
-                ),
-          )
+          AppStateSurface.message(message: emptyLabel)
         else
           ...children,
       ],
@@ -1019,13 +1061,13 @@ class _PanelListSection extends StatelessWidget {
 }
 
 class _ContentSection extends StatelessWidget {
-  final Widget header;
+  final String title;
   final bool hasItems;
   final String emptyLabel;
   final List<Widget> children;
 
   const _ContentSection({
-    required this.header,
+    required this.title,
     required this.hasItems,
     required this.emptyLabel,
     required this.children,
@@ -1033,20 +1075,13 @@ class _ContentSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CockpitPanel(
+    return AppSectionSurface(
+      title: title,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          header,
-          const SizedBox(height: 14),
           if (!hasItems)
-            Text(
-              emptyLabel,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.35,
-                  ),
-            )
+            AppStateSurface.message(message: emptyLabel)
           else
             ...children,
         ],
@@ -1062,78 +1097,83 @@ class _MeetupTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return AppCardSurface(
       onTap: () => Get.toNamed(AppRoutes.meetupDetail, arguments: meetup),
+      padding: const EdgeInsets.all(14),
+      backgroundColor: Colors.white.withValues(alpha: 0.56),
       borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.56),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF457B9D).withValues(alpha: 0.08),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
+      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFF457B9D).withValues(alpha: 0.08),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: const Color(0xFF457B9D).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
-              ),
-              child: const Icon(Icons.groups_2_rounded, color: Color(0xFF457B9D)),
+      ],
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: const Color(0xFF457B9D).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    meetup.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    meetup.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                          height: 1.5,
-                        ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
-                    children: [
-                      _MetaPill(icon: Icons.schedule_rounded, label: meetup.schedule.formattedStartTime),
-                      _MetaPill(icon: Icons.place_outlined, label: meetup.location.fullDescription),
-                      _MetaPill(
-                        icon: Icons.people_outline_rounded,
-                        label: '${meetup.capacity.currentAttendees}/${meetup.capacity.maxAttendees}',
+            child: const Icon(Icons.groups_2_rounded, color: Color(0xFF457B9D)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  meetup.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  meetup.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                      ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    _MetaPill(
+                      icon: Icons.schedule_rounded,
+                      label: meetup.schedule.formattedStartTime,
+                    ),
+                    _MetaPill(
+                      icon: Icons.place_outlined,
+                      label: meetup.location.fullDescription,
+                    ),
+                    _MetaPill(
+                      icon: Icons.people_outline_rounded,
+                      label:
+                          '${meetup.capacity.currentAttendees}/${meetup.capacity.maxAttendees}',
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.arrow_outward_rounded, color: AppColors.textSecondary),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(
+            Icons.arrow_outward_rounded,
+            color: AppColors.textSecondary,
+          ),
+        ],
       ),
     );
   }
@@ -1154,117 +1194,130 @@ class _TripReportTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return InkWell(
+    return AppCardSurface(
       onTap: onTap,
+      padding: const EdgeInsets.all(14),
+      backgroundColor: Colors.white.withValues(alpha: 0.58),
       borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.58),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFF4458).withValues(alpha: 0.08),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
+      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFFFF4458).withValues(alpha: 0.08),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                SafeCircleAvatar(imageUrl: report.userAvatar, radius: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        report.userName,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SafeCircleAvatar(imageUrl: report.userAvatar, radius: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      report.userName,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${_formatTripReportLocation(report)} • ${_formatTimeAgo(report.createdAt)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  report.overallRating.toStringAsFixed(1),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF92400E),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${_formatTripReportLocation(report)} • ${_formatTimeAgo(report.createdAt)}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            report.title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            report.content,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.6,
+                ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            children: [
+              _MetaPill(
+                icon: Icons.date_range_outlined,
+                label: _formatTripWindow(report),
+              ),
+              _MetaPill(
+                icon: Icons.thumb_up_alt_outlined,
+                label: '${report.likes} ${l10n.likes}',
+              ),
+              _MetaPill(
+                icon: Icons.forum_outlined,
+                label: '${report.comments} ${l10n.comments}',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: onLike,
+                icon: Icon(
+                  report.isLiked
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  color: report.isLiked
+                      ? const Color(0xFFFF4458)
+                      : AppColors.textSecondary,
+                ),
+                label: Text(
+                  '${report.likes}',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: AppColors.textPrimary,
                       ),
-                    ],
-                  ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    report.overallRating.toStringAsFixed(1),
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF92400E),
-                        ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Text(
-              report.title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              report.content,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.6,
-                  ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
-              children: [
-                _MetaPill(icon: Icons.date_range_outlined, label: _formatTripWindow(report)),
-                _MetaPill(icon: Icons.thumb_up_alt_outlined, label: '${report.likes} ${l10n.likes}'),
-                _MetaPill(icon: Icons.forum_outlined, label: '${report.comments} ${l10n.comments}'),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                TextButton.icon(
-                  onPressed: onLike,
-                  icon: Icon(
-                    report.isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                    color: report.isLiked ? const Color(0xFFFF4458) : AppColors.textSecondary,
-                  ),
-                  label: Text(
-                    '${report.likes}',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                  ),
-                ),
-                const Spacer(),
-                Icon(Icons.arrow_outward_rounded, size: 18, color: AppColors.textSecondary),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const Spacer(),
+              const Icon(
+                Icons.arrow_outward_rounded,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1280,107 +1333,125 @@ class _QuestionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return InkWell(
+    return AppCardSurface(
       onTap: onTap,
+      padding: const EdgeInsets.all(14),
+      backgroundColor: Colors.white.withValues(alpha: 0.56),
       borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.56),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFE9C46A).withValues(alpha: 0.08),
-              blurRadius: 18,
-              offset: const Offset(0, 8),
-            ),
-          ],
+      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFFE9C46A).withValues(alpha: 0.08),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    question.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: question.hasAcceptedAnswer ? const Color(0xFFE8F5E9) : const Color(0xFFFFF4E5),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    question.hasAcceptedAnswer ? l10n.communityQuestionResolved : l10n.communityQuestionNeedsAnswer,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: question.hasAcceptedAnswer ? const Color(0xFF2E7D32) : const Color(0xFFED6C02),
-                        ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              question.content,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.6,
-                  ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
-              children: [
-                _MetaPill(icon: Icons.place_outlined, label: question.city),
-                _MetaPill(icon: Icons.thumb_up_alt_outlined, label: '${question.upvotes} ${l10n.likes}'),
-                _MetaPill(icon: Icons.question_answer_outlined, label: '${question.answerCount} ${l10n.answers}'),
-              ],
-            ),
-            if (question.tags.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: question.tags
-                    .take(4)
-                    .map(
-                      (tag) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
-                        ),
-                        child: Text(
-                          '#$tag',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  question.title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
-                    )
-                    .toList(growable: false),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: question.hasAcceptedAnswer
+                      ? const Color(0xFFE8F5E9)
+                      : const Color(0xFFFFF4E5),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  question.hasAcceptedAnswer
+                      ? l10n.communityQuestionResolved
+                      : l10n.communityQuestionNeedsAnswer,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: question.hasAcceptedAnswer
+                            ? const Color(0xFF2E7D32)
+                            : const Color(0xFFED6C02),
+                      ),
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            question.content,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.6,
+                ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            children: [
+              _MetaPill(icon: Icons.place_outlined, label: question.city),
+              _MetaPill(
+                icon: Icons.thumb_up_alt_outlined,
+                label: '${question.upvotes} ${l10n.likes}',
+              ),
+              _MetaPill(
+                icon: Icons.question_answer_outlined,
+                label: '${question.answerCount} ${l10n.answers}',
+              ),
+            ],
+          ),
+          if (question.tags.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Icon(Icons.arrow_outward_rounded, size: 18, color: AppColors.textSecondary),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: question.tags
+                  .take(4)
+                  .map(
+                    (tag) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.72),
+                        ),
+                      ),
+                      child: Text(
+                        '#$tag',
+                        style:
+                            Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                      ),
+                    ),
+                  )
+                  .toList(growable: false),
             ),
           ],
-        ),
+          const SizedBox(height: 12),
+          const Align(
+            alignment: Alignment.centerRight,
+            child: Icon(
+              Icons.arrow_outward_rounded,
+              size: 18,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1497,11 +1568,13 @@ class _TripReportDetailSheet extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFEF3C7).withValues(alpha: 0.72),
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.72)),
                   ),
                   child: Text(
                     report.overallRating.toStringAsFixed(1),
@@ -1526,10 +1599,18 @@ class _TripReportDetailSheet extends StatelessWidget {
               spacing: 10,
               runSpacing: 8,
               children: [
-                _MetaPill(icon: Icons.date_range_outlined, label: _formatTripWindow(report)),
-                _MetaPill(icon: Icons.thumb_up_alt_outlined, label: '${report.likes} ${l10n.likes}'),
-                _MetaPill(icon: Icons.forum_outlined, label: '${report.comments} ${l10n.comments}'),
-                _MetaPill(icon: Icons.photo_library_outlined, label: '${report.photos.length} ${l10n.photos}'),
+                _MetaPill(
+                    icon: Icons.date_range_outlined,
+                    label: _formatTripWindow(report)),
+                _MetaPill(
+                    icon: Icons.thumb_up_alt_outlined,
+                    label: '${report.likes} ${l10n.likes}'),
+                _MetaPill(
+                    icon: Icons.forum_outlined,
+                    label: '${report.comments} ${l10n.comments}'),
+                _MetaPill(
+                    icon: Icons.photo_library_outlined,
+                    label: '${report.photos.length} ${l10n.photos}'),
               ],
             ),
             const SizedBox(height: 18),
@@ -1550,18 +1631,21 @@ class _TripReportDetailSheet extends StatelessWidget {
                 children: report.ratings.entries
                     .map(
                       (entry) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.56),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.72)),
                         ),
                         child: Text(
                           '${entry.key}: ${entry.value.toStringAsFixed(1)}',
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
                         ),
                       ),
                     )
@@ -1572,13 +1656,15 @@ class _TripReportDetailSheet extends StatelessWidget {
               const SizedBox(height: 24),
               _DetailSectionTitle(title: l10n.communityDetailProsTitle),
               const SizedBox(height: 10),
-              ...report.pros.map((item) => _BulletLine(text: item, color: const Color(0xFF2A9D8F))),
+              ...report.pros.map((item) =>
+                  _BulletLine(text: item, color: const Color(0xFF2A9D8F))),
             ],
             if (report.cons.isNotEmpty) ...[
               const SizedBox(height: 24),
               _DetailSectionTitle(title: l10n.communityDetailConsTitle),
               const SizedBox(height: 10),
-              ...report.cons.map((item) => _BulletLine(text: item, color: const Color(0xFFFF6B6B))),
+              ...report.cons.map((item) =>
+                  _BulletLine(text: item, color: const Color(0xFFFF6B6B))),
             ],
             if (report.photos.isNotEmpty) ...[
               const SizedBox(height: 24),
@@ -1612,9 +1698,11 @@ class _TripReportDetailSheet extends StatelessWidget {
                     label: Text(openCityChatLabel),
                     style: OutlinedButton.styleFrom(
                       backgroundColor: Colors.white.withValues(alpha: 0.56),
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.72)),
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.72)),
                       minimumSize: const Size(0, 42),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
                 ),
@@ -1627,9 +1715,11 @@ class _TripReportDetailSheet extends StatelessWidget {
                       label: Text(messageAuthorLabel),
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white.withValues(alpha: 0.56),
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.72)),
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.72)),
                         minimumSize: const Size(0, 42),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                       ),
                     ),
                   ),
@@ -1638,11 +1728,14 @@ class _TripReportDetailSheet extends StatelessWidget {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: onLike,
-                    icon: Icon(report.isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded),
+                    icon: Icon(report.isLiked
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded),
                     label: Text(likeLabel),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 42),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
                 ),
@@ -1688,7 +1781,9 @@ class _QuestionDetailSheet extends StatelessWidget {
 
   bool _canMessageAnswerer(Answer answer) {
     final userId = answer.userId.trim();
-    return userId.isNotEmpty && !userId.startsWith('system-') && userId != question.userId;
+    return userId.isNotEmpty &&
+        !userId.startsWith('system-') &&
+        userId != question.userId;
   }
 
   @override
@@ -1724,8 +1819,12 @@ class _QuestionDetailSheet extends StatelessWidget {
               runSpacing: 8,
               children: [
                 _MetaPill(icon: Icons.place_outlined, label: question.city),
-                _MetaPill(icon: Icons.thumb_up_alt_outlined, label: '${question.upvotes} ${l10n.likes}'),
-                _MetaPill(icon: Icons.question_answer_outlined, label: '${question.answerCount} ${l10n.answers}'),
+                _MetaPill(
+                    icon: Icons.thumb_up_alt_outlined,
+                    label: '${question.upvotes} ${l10n.likes}'),
+                _MetaPill(
+                    icon: Icons.question_answer_outlined,
+                    label: '${question.answerCount} ${l10n.answers}'),
               ],
             ),
             const SizedBox(height: 18),
@@ -1741,19 +1840,25 @@ class _QuestionDetailSheet extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: question.hasAcceptedAnswer
                         ? const Color(0xFFE8F5E9).withValues(alpha: 0.72)
                         : const Color(0xFFFFF4E5).withValues(alpha: 0.72),
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.72)),
                   ),
                   child: Text(
-                    question.hasAcceptedAnswer ? l10n.communityQuestionResolved : l10n.communityQuestionNeedsAnswer,
+                    question.hasAcceptedAnswer
+                        ? l10n.communityQuestionResolved
+                        : l10n.communityQuestionNeedsAnswer,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: question.hasAcceptedAnswer ? const Color(0xFF2E7D32) : const Color(0xFFED6C02),
+                          color: question.hasAcceptedAnswer
+                              ? const Color(0xFF2E7D32)
+                              : const Color(0xFFED6C02),
                         ),
                   ),
                 ),
@@ -1775,18 +1880,21 @@ class _QuestionDetailSheet extends StatelessWidget {
                 children: question.tags
                     .map(
                       (tag) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.56),
                           borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.72)),
                         ),
                         child: Text(
                           '#$tag',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                       ),
                     )
@@ -1837,7 +1945,9 @@ class _QuestionDetailSheet extends StatelessWidget {
                   child: _AnswerCard(
                     answer: answer,
                     onUpvote: () => onUpvoteAnswer(answer.id),
-                    onMessage: _canMessageAnswerer(answer) ? () => onMessageAnswerer(answer) : null,
+                    onMessage: _canMessageAnswerer(answer)
+                        ? () => onMessageAnswerer(answer)
+                        : null,
                     messageLabel: messageAnswererLabel,
                   ),
                 ),
@@ -1852,9 +1962,11 @@ class _QuestionDetailSheet extends StatelessWidget {
                     label: Text(openCityChatLabel),
                     style: OutlinedButton.styleFrom(
                       backgroundColor: Colors.white.withValues(alpha: 0.56),
-                      side: BorderSide(color: Colors.white.withValues(alpha: 0.72)),
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.72)),
                       minimumSize: const Size(0, 42),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
                 ),
@@ -1867,9 +1979,11 @@ class _QuestionDetailSheet extends StatelessWidget {
                       label: Text(messageAskerLabel),
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white.withValues(alpha: 0.56),
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.72)),
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.72)),
                         minimumSize: const Size(0, 42),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                       ),
                     ),
                   ),
@@ -1878,11 +1992,14 @@ class _QuestionDetailSheet extends StatelessWidget {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: onUpvoteQuestion,
-                    icon: Icon(question.isUpvoted ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined),
+                    icon: Icon(question.isUpvoted
+                        ? Icons.thumb_up_alt_rounded
+                        : Icons.thumb_up_alt_outlined),
                     label: Text(upvoteLabel),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 42),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
                 ),
@@ -1912,13 +2029,11 @@ class _AnswerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Container(
+    return AppCardSurface(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.58),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
-      ),
+      backgroundColor: Colors.white.withValues(alpha: 0.58),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1949,11 +2064,13 @@ class _AnswerCard extends StatelessWidget {
               ),
               if (answer.isAccepted)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE8F5E9).withValues(alpha: 0.72),
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.72)),
                   ),
                   child: Text(
                     l10n.communityQuestionResolved,
@@ -1983,13 +2100,18 @@ class _AnswerCard extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onUpvote,
                   icon: Icon(
-                    answer.isUpvoted ? Icons.thumb_up_alt_rounded : Icons.thumb_up_alt_outlined,
-                    color: answer.isUpvoted ? const Color(0xFF457B9D) : AppColors.textSecondary,
+                    answer.isUpvoted
+                        ? Icons.thumb_up_alt_rounded
+                        : Icons.thumb_up_alt_outlined,
+                    color: answer.isUpvoted
+                        ? const Color(0xFF457B9D)
+                        : AppColors.textSecondary,
                   ),
                   label: Text('${answer.upvotes} ${l10n.likes}'),
                   style: TextButton.styleFrom(
                     backgroundColor: Colors.white.withValues(alpha: 0.4),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                 ),
                 if (onMessage != null)
@@ -1999,7 +2121,8 @@ class _AnswerCard extends StatelessWidget {
                     label: Text(messageLabel),
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.white.withValues(alpha: 0.4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
               ],
@@ -2018,12 +2141,8 @@ class _DetailSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
+    return AppSubsectionHeader(
+      title: title,
     );
   }
 }

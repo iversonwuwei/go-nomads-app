@@ -21,9 +21,8 @@ import 'package:go_nomads_app/routes/route_refresh_observer.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_glass_icon_button.dart';
 import 'package:go_nomads_app/widgets/cockpit/cockpit_hero_banner.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_section_header.dart';
 import 'package:go_nomads_app/widgets/skeletons/skeletons.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_section_surface.dart';
 
 /// Profile 页面 - 使用 GetView 模式
 ///
@@ -35,7 +34,8 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with RouteAwareRefreshMixin<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage>
+    with RouteAwareRefreshMixin<ProfilePage> {
   late final ProfileController _controller;
 
   @override
@@ -69,7 +69,9 @@ class _ProfilePageContent extends GetView<ProfileController> {
         child: Obx(() {
           final user = controller.currentUser;
           return AppLoadingSwitcher(
-            isLoading: controller.isPageLoading || controller.isLoadingUser || user == null,
+            isLoading: controller.isPageLoading ||
+                controller.isLoadingUser ||
+                user == null,
             loading: const ProfileSkeleton(),
             child: _ProfileContentView(
               onLogout: () => _showLogoutDialog(context, l10n),
@@ -178,16 +180,26 @@ class _ProfileInsightBoard extends StatelessWidget {
       builder: (context, constraints) {
         final items = [
           _ProfileInsightItem(
-              icon: Icons.workspace_premium_outlined, label: l10n.badges, value: user.badges.length.toString()),
+              icon: Icons.workspace_premium_outlined,
+              label: l10n.badges,
+              value: user.badges.length.toString()),
           _ProfileInsightItem(
-              icon: Icons.psychology_alt_outlined, label: l10n.skills, value: user.skills.length.toString()),
+              icon: Icons.psychology_alt_outlined,
+              label: l10n.skills,
+              value: user.skills.length.toString()),
           _ProfileInsightItem(
-              icon: Icons.favorite_border_rounded, label: l10n.interests, value: user.interests.length.toString()),
-          _ProfileInsightItem(icon: Icons.link_rounded, label: l10n.connect, value: user.socialLinks.length.toString()),
+              icon: Icons.favorite_border_rounded,
+              label: l10n.interests,
+              value: user.interests.length.toString()),
+          _ProfileInsightItem(
+              icon: Icons.link_rounded,
+              label: l10n.connect,
+              value: user.socialLinks.length.toString()),
         ];
         const spacing = 10.0;
         const columns = 2;
-        final cardWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        final cardWidth =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
 
         return Wrap(
           spacing: spacing,
@@ -301,9 +313,7 @@ class _ProfileMobileLayout extends StatelessWidget {
         const NomadCollaborationProfileWidget(),
         if (user.badges.isNotEmpty) ...[
           SizedBox(height: 16.h),
-          CockpitPanel(
-            child: BadgesSectionWidget(badges: user.badges, isMobile: isMobile),
-          ),
+          BadgesSectionWidget(badges: user.badges, isMobile: isMobile),
         ],
         SizedBox(height: 16.h),
         _ProfileSupportPanel(l10n: l10n, onLogout: onLogout),
@@ -357,8 +367,9 @@ class _ProfileDesktopLayout extends StatelessWidget {
               const NomadCollaborationProfileWidget(),
               if (user.badges.isNotEmpty) ...[
                 SizedBox(height: 16.h),
-                CockpitPanel(
-                  child: BadgesSectionWidget(badges: user.badges, isMobile: isMobile),
+                BadgesSectionWidget(
+                  badges: user.badges,
+                  isMobile: isMobile,
                 ),
               ],
               SizedBox(height: 16.h),
@@ -384,15 +395,12 @@ class _ProfileOverviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CockpitPanel(
+    return AppSectionSurface(
+      title: l10n.profileCockpitIdentityTitle,
+      subtitle: isMobile ? null : l10n.profileCockpitIdentitySubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CockpitSectionHeader(
-            title: l10n.profileCockpitIdentityTitle,
-            subtitle: isMobile ? '' : l10n.profileCockpitIdentitySubtitle,
-          ),
-          SizedBox(height: 16.h),
           if (isMobile) ...[
             ProfileHeaderWidget(user: user, isMobile: true),
             SizedBox(height: 16.h),
@@ -408,7 +416,8 @@ class _ProfileOverviewPanel extends StatelessWidget {
                 SizedBox(width: 16.w),
                 Expanded(
                   flex: 4,
-                  child: _ProfileInsightBoard(user: user, isMobile: false, l10n: l10n),
+                  child: _ProfileInsightBoard(
+                      user: user, isMobile: false, l10n: l10n),
                 ),
               ],
             ),
@@ -429,15 +438,12 @@ class _ProfileWorkspacePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CockpitPanel(
+    return AppSectionSurface(
+      title: l10n.profileCockpitOperationsTitle,
+      subtitle: l10n.profileCockpitOperationsSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CockpitSectionHeader(
-            title: l10n.profileCockpitOperationsTitle,
-            subtitle: l10n.profileCockpitOperationsSubtitle,
-          ),
-          SizedBox(height: 16.h),
           const MembershipCardWidget(),
           SizedBox(height: 24.h),
           TravelPlansWidget(isMobile: isMobile),
@@ -458,15 +464,12 @@ class _ProfileSupportPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CockpitPanel(
+    return AppSectionSurface(
+      title: l10n.profileCockpitSupportTitle,
+      subtitle: l10n.profileCockpitSupportSubtitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CockpitSectionHeader(
-            title: l10n.profileCockpitSupportTitle,
-            subtitle: l10n.profileCockpitSupportSubtitle,
-          ),
-          SizedBox(height: 16.h),
           const HelpAndSupportWidget(),
           SizedBox(height: 16.h),
           const LegalInfoWidget(),
@@ -557,8 +560,10 @@ class _ProfileCommandDeck extends GetView<ProfileController> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
-    final currentBase =
-        [user.currentCity, user.currentCountry].whereType<String>().where((value) => value.isNotEmpty).join(', ');
+    final currentBase = [user.currentCity, user.currentCountry]
+        .whereType<String>()
+        .where((value) => value.isNotEmpty)
+        .join(', ');
     final metrics = isMobile
         ? [
             CockpitHeroMetric(
@@ -568,7 +573,8 @@ class _ProfileCommandDeck extends GetView<ProfileController> {
             ),
             CockpitHeroMetric(
               icon: Icons.auto_awesome_rounded,
-              label: '${l10n.profileCockpitExperience}: ${user.experienceLevel}',
+              label:
+                  '${l10n.profileCockpitExperience}: ${user.experienceLevel}',
             ),
           ]
         : [
@@ -579,7 +585,8 @@ class _ProfileCommandDeck extends GetView<ProfileController> {
             ),
             CockpitHeroMetric(
               icon: Icons.public_rounded,
-              label: '${l10n.modularProfileStatCountries}: ${user.stats.countriesVisited}',
+              label:
+                  '${l10n.modularProfileStatCountries}: ${user.stats.countriesVisited}',
             ),
             CockpitHeroMetric(
               icon: Icons.location_city_rounded,
@@ -587,7 +594,8 @@ class _ProfileCommandDeck extends GetView<ProfileController> {
             ),
             CockpitHeroMetric(
               icon: Icons.auto_awesome_rounded,
-              label: '${l10n.profileCockpitExperience}: ${user.experienceLevel}',
+              label:
+                  '${l10n.profileCockpitExperience}: ${user.experienceLevel}',
             ),
           ];
 

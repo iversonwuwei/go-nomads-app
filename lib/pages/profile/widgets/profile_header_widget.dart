@@ -6,6 +6,7 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_card_surface.dart';
 import 'package:intl/intl.dart';
 
 /// 个人资料头部组件
@@ -23,7 +24,9 @@ class ProfileHeaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locationLabel =
-        user.currentCity != null && user.currentCountry != null ? '${user.currentCity}, ${user.currentCountry}' : null;
+        user.currentCity != null && user.currentCountry != null
+            ? '${user.currentCity}, ${user.currentCountry}'
+            : null;
     final joinedLabel = _formatJoinDate(context, user.joinedDate);
     final bio = user.bio?.trim();
 
@@ -77,7 +80,8 @@ class ProfileHeaderWidget extends StatelessWidget {
                               width: 32,
                               height: 32,
                               decoration: BoxDecoration(
-                                color: AppColors.cityPrimaryLight.withValues(alpha: 0.75),
+                                color: AppColors.cityPrimaryLight
+                                    .withValues(alpha: 0.75),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
@@ -104,7 +108,8 @@ class ProfileHeaderWidget extends StatelessWidget {
                             _MetaPill(
                               icon: FontAwesomeIcons.locationDot,
                               label: locationLabel,
-                              background: AppColors.cityPrimaryLight.withValues(alpha: 0.65),
+                              background: AppColors.cityPrimaryLight
+                                  .withValues(alpha: 0.65),
                               foreground: AppColors.textPrimary,
                               iconColor: AppColors.cityPrimary,
                             ),
@@ -128,7 +133,9 @@ class ProfileHeaderWidget extends StatelessWidget {
                   iconColor: AppColors.textSecondary,
                 ),
                 _MetaPill(
-                  icon: user.isVerified ? FontAwesomeIcons.shield : FontAwesomeIcons.pen,
+                  icon: user.isVerified
+                      ? FontAwesomeIcons.shield
+                      : FontAwesomeIcons.pen,
                   label: l10n.editProfile,
                   background: Colors.white.withValues(alpha: 0.55),
                   foreground: AppColors.textSecondary,
@@ -191,7 +198,8 @@ class ProfileHeaderWidget extends StatelessWidget {
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          color: AppColors.cityPrimaryLight.withValues(alpha: 0.75),
+                          color: AppColors.cityPrimaryLight
+                              .withValues(alpha: 0.75),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -218,7 +226,8 @@ class ProfileHeaderWidget extends StatelessWidget {
                       _MetaPill(
                         icon: FontAwesomeIcons.locationDot,
                         label: locationLabel,
-                        background: AppColors.cityPrimaryLight.withValues(alpha: 0.65),
+                        background:
+                            AppColors.cityPrimaryLight.withValues(alpha: 0.65),
                         foreground: AppColors.textPrimary,
                         iconColor: AppColors.cityPrimary,
                       ),
@@ -244,7 +253,8 @@ class ProfileHeaderWidget extends StatelessWidget {
   }
 
   String _formatJoinDate(BuildContext context, DateTime date) {
-    return DateFormat.yMMM(Localizations.localeOf(context).toLanguageTag()).format(date);
+    return DateFormat.yMMM(Localizations.localeOf(context).toLanguageTag())
+        .format(date);
   }
 }
 
@@ -319,14 +329,11 @@ class _BioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return AppCardSurface(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
-      ),
+      backgroundColor: Colors.white.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(16.r),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -397,9 +404,11 @@ class _ProfileInitialsAvatar extends StatelessWidget {
     if (user.name.isNotEmpty) {
       final nameParts = user.name.trim().split(' ');
       if (nameParts.length >= 2) {
-        initials = nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
+        initials =
+            nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
       } else {
-        initials = user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
+        initials =
+            user.name.substring(0, user.name.length >= 2 ? 2 : 1).toUpperCase();
       }
     } else {
       initials = '?';

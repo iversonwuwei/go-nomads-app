@@ -4,8 +4,8 @@ import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/profile/profile_controller.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_panel.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_section_header.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_section_surface.dart';
+import 'package:go_nomads_app/widgets/surfaces/app_state_surface.dart';
 
 class NomadCollaborationProfileWidget extends GetView<ProfileController> {
   const NomadCollaborationProfileWidget({super.key});
@@ -44,16 +44,13 @@ class NomadCollaborationProfileWidget extends GetView<ProfileController> {
         ),
       ];
 
-      return CockpitPanel(
+      return AppSectionSurface(
+        title: l10n.profileCollaborationTitle,
+        subtitle: isMobile ? null : l10n.profileCollaborationSubtitle,
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CockpitSectionHeader(
-              title: l10n.profileCollaborationTitle,
-              subtitle: isMobile ? '' : l10n.profileCollaborationSubtitle,
-            ),
-            const SizedBox(height: 16),
             LayoutBuilder(
               builder: (context, constraints) {
                 const spacing = 10.0;
@@ -287,12 +284,9 @@ class _TagGroup extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (tags.isEmpty)
-            Text(
-              emptyLabel,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                  ),
+            AppStateSurface.message(
+              message: emptyLabel,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             )
           else
             Wrap(

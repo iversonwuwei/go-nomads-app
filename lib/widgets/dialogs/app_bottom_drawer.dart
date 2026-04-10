@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 
 class AppBottomDrawer extends StatelessWidget {
   final String? title;
@@ -29,8 +30,7 @@ class AppBottomDrawer extends StatelessWidget {
     required Widget child,
     Widget? footer,
     double maxHeightFactor = 0.9,
-    EdgeInsetsGeometry contentPadding =
-        const EdgeInsets.fromLTRB(20, 12, 20, 20),
+    EdgeInsetsGeometry contentPadding = const EdgeInsets.fromLTRB(20, 12, 20, 20),
     bool isDismissible = true,
     bool enableDrag = true,
     bool showHandle = true,
@@ -45,11 +45,11 @@ class AppBottomDrawer extends StatelessWidget {
       builder: (_) => AppBottomDrawer(
         title: title,
         subtitle: subtitle,
-        child: child,
         footer: footer,
         maxHeightFactor: maxHeightFactor,
         contentPadding: contentPadding,
         showHandle: showHandle,
+        child: child,
       ),
     );
   }
@@ -74,15 +74,9 @@ class AppBottomDrawer extends StatelessWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 32,
-                  offset: const Offset(0, -8),
-                ),
-              ],
+              color: AppColors.surface,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(AppUiTokens.radiusXl)),
+              boxShadow: AppUiTokens.softTopSheetShadow,
             ),
             child: SafeArea(
               top: false,
@@ -161,6 +155,9 @@ class AppBottomDrawerActionRow extends StatelessWidget {
   final String primaryLabel;
   final VoidCallback? onPrimaryPressed;
   final bool primaryDestructive;
+  final bool primaryLoading;
+  final bool secondaryEnabled;
+  final bool primaryEnabled;
 
   const AppBottomDrawerActionRow({
     super.key,
@@ -169,6 +166,9 @@ class AppBottomDrawerActionRow extends StatelessWidget {
     required this.primaryLabel,
     required this.onPrimaryPressed,
     this.primaryDestructive = false,
+    this.primaryLoading = false,
+    this.secondaryEnabled = true,
+    this.primaryEnabled = true,
   });
 
   @override
@@ -179,12 +179,12 @@ class AppBottomDrawerActionRow extends StatelessWidget {
         children: [
           Expanded(
             child: OutlinedButton(
-              onPressed: onSecondaryPressed,
+              onPressed: secondaryEnabled ? onSecondaryPressed : null,
               style: OutlinedButton.styleFrom(
                 minimumSize: Size.fromHeight(48.h),
                 side: const BorderSide(color: AppColors.border),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
                 ),
               ),
               child: Text(secondaryLabel),
@@ -193,17 +193,26 @@ class AppBottomDrawerActionRow extends StatelessWidget {
           SizedBox(width: 12.w),
           Expanded(
             child: FilledButton(
-              onPressed: onPrimaryPressed,
+              onPressed: primaryEnabled && !primaryLoading ? onPrimaryPressed : null,
               style: FilledButton.styleFrom(
                 minimumSize: Size.fromHeight(48.h),
-                backgroundColor: primaryDestructive
-                    ? AppColors.cityPrimaryDark
-                    : AppColors.cityPrimary,
+                backgroundColor: primaryDestructive ? AppColors.cityPrimaryDark : AppColors.cityPrimary,
+                disabledBackgroundColor:
+                    (primaryDestructive ? AppColors.cityPrimaryDark : AppColors.cityPrimary).withValues(alpha: 0.45),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
                 ),
               ),
-              child: Text(primaryLabel),
+              child: primaryLoading
+                  ? SizedBox(
+                      width: 18.w,
+                      height: 18.h,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(primaryLabel),
             ),
           ),
         ],

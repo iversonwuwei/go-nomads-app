@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
-import 'package:go_nomads_app/widgets/double_spin_loader.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
+import 'package:go_nomads_app/widgets/double_spin_loader.dart';
 
 /// 通用加载对话框
 ///
@@ -106,11 +106,15 @@ class AppLoadingDialog {
 
   /// 关闭加载对话框
   static void hide() {
-    if (_isShowing &&
-        (Get.isDialogOpen == true || Get.isBottomSheetOpen == true)) {
-      Get.back();
-      _isShowing = false;
+    if (!_isShowing) {
+      return;
     }
+
+    if (Get.isDialogOpen == true || Get.isBottomSheetOpen == true) {
+      Get.back();
+    }
+
+    _isShowing = false;
   }
 
   /// 检查对话框是否正在显示

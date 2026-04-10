@@ -8,6 +8,7 @@ import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_
 import 'package:go_nomads_app/features/user/domain/repositories/i_user_preferences_repository.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:go_nomads_app/services/http_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/dialogs/first_launch_privacy_dialog.dart';
@@ -42,8 +43,22 @@ class RegisterController extends GetxController {
 
   // 是否显示验证错误（首次提交后才显示）
   final RxBool showValidationErrors = false.obs;
+  RegisterFeedbackCopy? _feedbackCopy;
 
   AppLocalizations get _l10n => AppLocalizations.of(Get.context!)!;
+
+  void applyFeedbackCopy(RegisterFeedbackCopy? copy) {
+    _feedbackCopy = copy;
+  }
+
+  String _copyOrFallback(String? remote, String fallback) {
+    if (remote == null) {
+      return fallback;
+    }
+
+    final trimmed = remote.trim();
+    return trimmed.isEmpty ? fallback : trimmed;
+  }
 
   @override
   void onInit() {
@@ -203,9 +218,13 @@ class RegisterController extends GetxController {
         if (success) {
           codeSent.value = true;
           _startCountdown(60);
-          AppToast.success(_l10n.registerCodeSentToEmail);
+          AppToast.success(
+            _copyOrFallback(_feedbackCopy?.codeSentToEmailMessage, _l10n.registerCodeSentToEmail),
+          );
         } else {
-          AppToast.error((data['message'] as String?) ?? _l10n.sendFailed);
+          AppToast.error(
+            (data['message'] as String?) ?? _copyOrFallback(_feedbackCopy?.sendFailedMessage, _l10n.sendFailed),
+          );
         }
       }
     } on HttpException catch (e) {
@@ -213,7 +232,9 @@ class RegisterController extends GetxController {
       AppToast.error(e.message);
     } catch (e) {
       log('发送注册验证码失败: $e');
-      AppToast.error(_l10n.registerSendCodeFailedRetry);
+      AppToast.error(
+        _copyOrFallback(_feedbackCopy?.sendCodeFailedRetryMessage, _l10n.registerSendCodeFailedRetry),
+      );
     } finally {
       isSendingCode.value = false;
     }
@@ -287,21 +308,21 @@ class RegisterController extends GetxController {
       } else {
         log('❌ 注册失败');
         AppToast.error(
-          _l10n.registerFailedCheckInput,
-          title: _l10n.registerFailedTitle,
+          _copyOrFallback(_feedbackCopy?.registerFailedCheckInputMessage, _l10n.registerFailedCheckInput),
+          title: _copyOrFallback(_feedbackCopy?.registerFailedTitle, _l10n.registerFailedTitle),
         );
       }
     } on HttpException catch (e) {
       log('❌ 注册失败 (HttpException): ${e.message}');
       AppToast.error(
         e.message,
-        title: _l10n.registerFailedTitle,
+        title: _copyOrFallback(_feedbackCopy?.registerFailedTitle, _l10n.registerFailedTitle),
       );
     } catch (e) {
       log('❌ 注册错误: $e');
       AppToast.error(
-        _l10n.registerFailedProcessError,
-        title: _l10n.registerFailedTitle,
+        _copyOrFallback(_feedbackCopy?.registerFailedProcessErrorMessage, _l10n.registerFailedProcessError),
+        title: _copyOrFallback(_feedbackCopy?.registerFailedTitle, _l10n.registerFailedTitle),
       );
     } finally {
       isRegistering.value = false;

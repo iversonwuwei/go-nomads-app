@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_nomads_app/pages/login/login_constants.dart';
+import 'package:flutter/services.dart';
+import 'package:go_nomads_app/widgets/forms/app_input_field.dart';
 
 /// 登录页面通用输入框 - 使用响应式错误显示，无需 Form/GlobalKey
 class LoginFormField extends StatelessWidget {
@@ -14,6 +14,7 @@ class LoginFormField extends StatelessWidget {
   final String? errorText;
   final int? maxLength;
   final double? compactHeight;
+  final List<TextInputFormatter>? inputFormatters;
 
   const LoginFormField({
     super.key,
@@ -27,89 +28,23 @@ class LoginFormField extends StatelessWidget {
     this.errorText,
     this.maxLength,
     this.compactHeight,
+    this.inputFormatters,
   });
-
-  /// 检查 TextEditingController 是否仍然有效（未被 dispose）
-  bool _isControllerValid(TextEditingController? ctrl) {
-    if (ctrl == null) return false;
-    try {
-      // 尝试访问 text 属性，如果已被 dispose 会抛出异常
-      ctrl.text;
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    // 如果控制器无效，返回禁用状态的输入框
-    if (!_isControllerValid(controller)) {
-      return TextField(
-        enabled: false,
-        decoration: InputDecoration(
-          labelText: labelText,
-          hintText: hintText,
-          prefixIcon: Icon(prefixIcon),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
-          ),
-        ),
-      );
-    }
-
-    final hasError = errorText != null && errorText!.isNotEmpty;
-    final decorationConstraints =
-        compactHeight != null ? BoxConstraints(minHeight: compactHeight!, maxHeight: compactHeight!) : null;
-
-    return TextField(
+    return AppInputField(
       controller: controller,
+      labelText: labelText,
+      hintText: hintText,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
       obscureText: obscureText,
       keyboardType: keyboardType,
+      errorText: errorText,
       maxLength: maxLength,
-      decoration: InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: Icon(prefixIcon),
-        prefixIconConstraints: compactHeight != null
-            ? BoxConstraints(
-                minWidth: 48.w,
-                minHeight: compactHeight!,
-              )
-            : null,
-        suffixIcon: suffixIcon,
-        errorText: errorText,
-        counterText: maxLength != null ? '' : null,
-        isDense: compactHeight != null,
-        contentPadding: compactHeight != null
-            ? EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h)
-            : null,
-        constraints: decorationConstraints,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
-          borderSide: BorderSide(
-            color: hasError ? Colors.red.shade300 : Colors.grey.shade300,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
-          borderSide: BorderSide(
-            color: hasError ? Colors.red : LoginConstants.primaryColor,
-            width: 2,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
-          borderSide: BorderSide(color: Colors.red.shade300),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(LoginConstants.inputBorderRadius),
-          borderSide: BorderSide(color: Colors.red, width: 2),
-        ),
-      ),
+      compactHeight: compactHeight,
+      inputFormatters: inputFormatters,
     );
   }
 }

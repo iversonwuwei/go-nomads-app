@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:go_nomads_app/widgets/double_spin_loader.dart';
 
 enum AppLoadingScene {
@@ -205,13 +206,15 @@ class AppLoadingWidget extends StatefulWidget {
 
 class _AppLoadingWidgetState extends State<AppLoadingWidget> with SingleTickerProviderStateMixin {
   late final AnimationController _pulseController;
+  late final Future<PublicBrandingCopy> _brandingCopyFuture;
 
-  static const _brandTitle = '行途 Go Nomads';
-  static const _brandTagline = 'Explore cities, workspaces and community';
+  static const _defaultBrandTitle = '行途 Go Nomads';
+  static const _defaultBrandTagline = 'Explore cities, workspaces and community';
 
   @override
   void initState() {
     super.initState();
+    _brandingCopyFuture = AppConfigService().getPublicBrandingCopy();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -313,195 +316,204 @@ class _AppLoadingWidgetState extends State<AppLoadingWidget> with SingleTickerPr
 
     if (!widget.fullScreen) return content;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.background,
-            Color.lerp(AppColors.background, Colors.white, 0.45)!,
-            Color.lerp(AppColors.background, accent, 0.06)!,
-          ],
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -80.h,
-            right: -50.w,
-            child: _DecorativeGlow(
-              size: 220.w,
-              color: accent.withValues(alpha: 0.12),
+    return FutureBuilder<PublicBrandingCopy>(
+      future: _brandingCopyFuture,
+      builder: (context, snapshot) {
+        final copy = snapshot.data;
+        final brandTitle = copy?.loadingTitle ?? _defaultBrandTitle;
+        final brandTagline = copy?.loadingTagline ?? _defaultBrandTagline;
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.background,
+                Color.lerp(AppColors.background, Colors.white, 0.45)!,
+                Color.lerp(AppColors.background, accent, 0.06)!,
+              ],
             ),
           ),
-          Positioned(
-            bottom: -90.h,
-            left: -60.w,
-            child: _DecorativeGlow(
-              size: 240.w,
-              color: AppColors.containerBlueGrey.withValues(alpha: 0.12),
-            ),
-          ),
-          SizedBox.expand(
-            child: SafeArea(
-              child: AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, child) {
-                  final t = _pulseController.value;
-                  final pulseScale = 0.985 + (t * 0.015);
-                  final opacity = 0.9 + (t * 0.1);
+          child: Stack(
+            children: [
+              Positioned(
+                top: -80.h,
+                right: -50.w,
+                child: _DecorativeGlow(
+                  size: 220.w,
+                  color: accent.withValues(alpha: 0.12),
+                ),
+              ),
+              Positioned(
+                bottom: -90.h,
+                left: -60.w,
+                child: _DecorativeGlow(
+                  size: 240.w,
+                  color: AppColors.containerBlueGrey.withValues(alpha: 0.12),
+                ),
+              ),
+              SizedBox.expand(
+                child: SafeArea(
+                  child: AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (context, child) {
+                      final t = _pulseController.value;
+                      final pulseScale = 0.985 + (t * 0.015);
+                      final opacity = 0.9 + (t * 0.1);
 
-                  return Opacity(
-                    opacity: opacity,
-                    child: Transform.scale(
-                      scale: pulseScale,
-                      child: child,
-                    ),
-                  );
-                },
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final maxHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0;
-                    final topGap = math.max(24.h, maxHeight * 0.12);
-                    final betweenGap = math.max(18.h, maxHeight * 0.04);
-                    final bottomGap = math.max(12.h, maxHeight * 0.03);
-
-                    return SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 24.h),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: math.max(0, maxHeight - (48.h)),
+                      return Opacity(
+                        opacity: opacity,
+                        child: Transform.scale(
+                          scale: pulseScale,
+                          child: child,
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            SizedBox(height: topGap),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
+                      );
+                    },
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final maxHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0;
+                        final topGap = math.max(24.h, maxHeight * 0.12);
+                        final betweenGap = math.max(18.h, maxHeight * 0.04);
+                        final bottomGap = math.max(12.h, maxHeight * 0.03);
+
+                        return SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 24.h),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: math.max(0, maxHeight - (48.h)),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  width: 72.w,
-                                  height: 72.w,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(22.r),
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        accent.withValues(alpha: 0.92),
-                                        Color.lerp(accent, AppColors.cityPrimaryLight, 0.55)!,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
+                                SizedBox(height: topGap),
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 72.w,
+                                      height: 72.w,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(22.r),
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            accent.withValues(alpha: 0.92),
+                                            Color.lerp(accent, AppColors.cityPrimaryLight, 0.55)!,
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: accent.withValues(alpha: 0.18),
+                                            blurRadius: 22.r,
+                                            offset: const Offset(0, 10),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        Icons.explore_rounded,
+                                        color: Colors.white,
+                                        size: 34.w,
+                                      ),
                                     ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: accent.withValues(alpha: 0.18),
-                                        blurRadius: 22.r,
-                                        offset: const Offset(0, 10),
+                                    SizedBox(height: betweenGap),
+                                    Text(
+                                      brandTitle,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 24.sp,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary,
+                                        letterSpacing: 0.4,
+                                      ),
+                                    ),
+                                    SizedBox(height: 10.h),
+                                    ConstrainedBox(
+                                      constraints: BoxConstraints(maxWidth: 280.w),
+                                      child: Text(
+                                        brandTagline,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 13.sp,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.45,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                    if (widget.showSpinner) ...[
+                                      SizedBox(height: math.max(24.h, maxHeight * 0.05)),
+                                      DoubleSpinLoader(
+                                        size: 58.w,
+                                        strokeWidth: 3.2,
+                                        color1: accent,
+                                        color2: accent.withValues(alpha: 0.5),
+                                        trackColor: accent.withValues(alpha: 0.12),
                                       ),
                                     ],
-                                  ),
-                                  child: Icon(
-                                    Icons.explore_rounded,
-                                    color: Colors.white,
-                                    size: 34.w,
-                                  ),
-                                ),
-                                SizedBox(height: betweenGap),
-                                Text(
-                                  _brandTitle,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 24.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                                SizedBox(height: 10.h),
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(maxWidth: 280.w),
-                                  child: Text(
-                                    _brandTagline,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.45,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                                if (widget.showSpinner) ...[
-                                  SizedBox(height: math.max(24.h, maxHeight * 0.05)),
-                                  DoubleSpinLoader(
-                                    size: 58.w,
-                                    strokeWidth: 3.2,
-                                    color1: accent,
-                                    color2: accent.withValues(alpha: 0.5),
-                                    trackColor: accent.withValues(alpha: 0.12),
-                                  ),
-                                ],
-                                SizedBox(height: math.max(18.h, maxHeight * 0.035)),
-                                Text(
-                                  widget.title ?? 'Loading',
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 17.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                                if (widget.subtitle != null) ...[
-                                  SizedBox(height: 8.h),
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: 300.w),
-                                    child: Text(
-                                      widget.subtitle!,
+                                    SizedBox(height: math.max(18.h, maxHeight * 0.035)),
+                                    Text(
+                                      widget.title ?? 'Loading',
                                       textAlign: TextAlign.center,
-                                      maxLines: 3,
+                                      maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w400,
-                                        color: AppColors.textSecondary,
+                                        fontSize: 17.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                        letterSpacing: 0.2,
                                       ),
                                     ),
+                                    if (widget.subtitle != null) ...[
+                                      SizedBox(height: 8.h),
+                                      ConstrainedBox(
+                                        constraints: BoxConstraints(maxWidth: 300.w),
+                                        child: Text(
+                                          widget.subtitle!,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 13.sp,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    SizedBox(height: 14.h),
+                                    _LoadingStatusDots(
+                                      color: accent.withValues(alpha: 0.7),
+                                      animation: _pulseController,
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.only(top: betweenGap, bottom: bottomGap),
+                                  child: Text(
+                                    'v1.0',
+                                    style: TextStyle(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.textTertiary,
+                                    ),
                                   ),
-                                ],
-                                SizedBox(height: 14.h),
-                                _LoadingStatusDots(
-                                  color: accent.withValues(alpha: 0.7),
-                                  animation: _pulseController,
                                 ),
                               ],
                             ),
-                            Padding(
-                              padding: EdgeInsets.only(top: betweenGap, bottom: bottomGap),
-                              child: Text(
-                                'v1.0',
-                                style: TextStyle(
-                                  fontSize: 11.sp,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textTertiary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

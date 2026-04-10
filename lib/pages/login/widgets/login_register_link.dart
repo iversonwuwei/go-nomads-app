@@ -4,10 +4,13 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 
 /// 注册链接
 class LoginRegisterLink extends StatelessWidget {
-  const LoginRegisterLink({super.key});
+  final PreAuthMarketingCopy? copy;
+
+  const LoginRegisterLink({super.key, this.copy});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +20,7 @@ class LoginRegisterLink extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            l10n.letsGo,
+            copy?.loginRegisterLinkPrefix ?? l10n.letsGo,
             style: TextStyle(color: Colors.black87, fontSize: 15.sp),
           ),
           SizedBox(width: 8.w),

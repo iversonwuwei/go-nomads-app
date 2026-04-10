@@ -7,22 +7,34 @@ import 'package:get/get.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
 import 'package:go_nomads_app/pages/login/login_controller.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:go_nomads_app/services/social_login_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 
 /// 社交登录按钮组
 class LoginSocialButtons extends GetView<LoginController> {
-  const LoginSocialButtons({super.key});
+  final LoginSocialCopy? copy;
+
+  const LoginSocialButtons({super.key, this.copy});
+
+  static String resolveCopy(String? remote, String fallback) {
+    if (remote == null) {
+      return fallback;
+    }
+
+    final trimmed = remote.trim();
+    return trimmed.isEmpty ? fallback : trimmed;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         // 分隔线
-        _Divider(),
+        _Divider(copy: copy),
         SizedBox(height: 24.h),
         // 社交登录按钮
-        if (controller.isChineseUser) _ChineseSocialButtons() else _InternationalSocialButtons(),
+        if (controller.isChineseUser) _ChineseSocialButtons(copy: copy) else _InternationalSocialButtons(copy: copy),
       ],
     );
   }
@@ -30,6 +42,10 @@ class LoginSocialButtons extends GetView<LoginController> {
 
 /// 分隔线
 class _Divider extends StatelessWidget {
+  final LoginSocialCopy? copy;
+
+  const _Divider({this.copy});
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -38,7 +54,7 @@ class _Divider extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.w),
           child: Text(
-            AppLocalizations.of(context)!.orContinueWith,
+            LoginSocialButtons.resolveCopy(copy?.dividerLabel, AppLocalizations.of(context)!.orContinueWith),
             style: TextStyle(color: Colors.grey.shade600, fontSize: 14.sp),
           ),
         ),
@@ -50,23 +66,32 @@ class _Divider extends StatelessWidget {
 
 /// 中国区社交登录按钮
 class _ChineseSocialButtons extends GetView<LoginController> {
+  final LoginSocialCopy? copy;
+
+  const _ChineseSocialButtons({this.copy});
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final wechatLabel = LoginSocialButtons.resolveCopy(copy?.wechatLabel, l10n.wechat);
+    final qqLabel = LoginSocialButtons.resolveCopy(copy?.qqLabel, 'QQ');
+    final appleLabel = LoginSocialButtons.resolveCopy(copy?.appleLabel, 'Apple');
+    final googleLabel = LoginSocialButtons.resolveCopy(copy?.googleLabel, 'Google');
+
     if (!Platform.isIOS) {
       return Row(
         children: [
           _SocialButton(
-            onPressed: () =>
-                controller.handleSocialLogin(SocialLoginType.wechat, AppLocalizations.of(Get.context!)!.wechat),
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.wechat, wechatLabel),
             icon: FontAwesomeIcons.weixin,
             color: LoginConstants.wechatGreen,
-            label: AppLocalizations.of(Get.context!)!.wechat,
+            label: wechatLabel,
           ),
           _SocialButton(
-            onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, qqLabel),
             icon: FontAwesomeIcons.qq,
             color: LoginConstants.qqBlue,
-            label: 'QQ',
+            label: qqLabel,
           ),
         ],
       );
@@ -75,29 +100,28 @@ class _ChineseSocialButtons extends GetView<LoginController> {
     return Row(
       children: [
         _SocialButton(
-          onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, appleLabel),
           icon: FontAwesomeIcons.apple,
           color: Colors.black,
-          label: 'Apple',
+          label: appleLabel,
         ),
         _SocialButton(
-          onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.google, googleLabel),
           icon: FontAwesomeIcons.google,
           color: LoginConstants.googleRed,
-          label: 'Google',
+          label: googleLabel,
         ),
         _SocialButton(
-          onPressed: () =>
-              controller.handleSocialLogin(SocialLoginType.wechat, AppLocalizations.of(Get.context!)!.wechat),
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.wechat, wechatLabel),
           icon: FontAwesomeIcons.weixin,
           color: LoginConstants.wechatGreen,
-          label: AppLocalizations.of(Get.context!)!.wechat,
+          label: wechatLabel,
         ),
         _SocialButton(
-          onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, 'QQ'),
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.qq, qqLabel),
           icon: FontAwesomeIcons.qq,
           color: LoginConstants.qqBlue,
-          label: 'QQ',
+          label: qqLabel,
         ),
       ],
     );
@@ -106,36 +130,49 @@ class _ChineseSocialButtons extends GetView<LoginController> {
 
 /// 国际区社交登录按钮
 class _InternationalSocialButtons extends GetView<LoginController> {
+  final LoginSocialCopy? copy;
+
+  const _InternationalSocialButtons({this.copy});
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final googleLabel = LoginSocialButtons.resolveCopy(copy?.googleLabel, 'Google');
+    final appleLabel = LoginSocialButtons.resolveCopy(copy?.appleLabel, 'Apple');
+    final twitterLabel = LoginSocialButtons.resolveCopy(copy?.twitterLabel, 'Twitter');
+    final facebookLabel = LoginSocialButtons.resolveCopy(copy?.facebookLabel, 'Facebook');
+    final facebookUnavailableTitle =
+        LoginSocialButtons.resolveCopy(copy?.facebookUnavailableTitle, l10n.continueWithFacebook);
+    final facebookUnavailableMessage =
+        LoginSocialButtons.resolveCopy(copy?.facebookUnavailableMessage, l10n.profileEditingComingSoon);
+
     return Row(
       children: [
         _SocialButton(
-          onPressed: () => controller.handleSocialLogin(SocialLoginType.google, 'Google'),
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.google, googleLabel),
           icon: FontAwesomeIcons.google,
           color: LoginConstants.googleRed,
-          label: 'Google',
+          label: googleLabel,
         ),
         // Apple 登录仅在 iOS 上显示
         if (Platform.isIOS)
           _SocialButton(
-            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, 'Apple'),
+            onPressed: () => controller.handleSocialLogin(SocialLoginType.apple, appleLabel),
             icon: FontAwesomeIcons.apple,
             color: Colors.black,
-            label: 'Apple',
+            label: appleLabel,
           ),
         _SocialButton(
-          onPressed: () => controller.handleSocialLogin(SocialLoginType.twitter, 'Twitter'),
+          onPressed: () => controller.handleSocialLogin(SocialLoginType.twitter, twitterLabel),
           icon: FontAwesomeIcons.xTwitter,
           color: Colors.black,
-          label: 'Twitter',
+          label: twitterLabel,
         ),
         _SocialButton(
-          onPressed: () => AppToast.info(l10n.profileEditingComingSoon, title: l10n.continueWithFacebook),
+          onPressed: () => AppToast.info(facebookUnavailableMessage, title: facebookUnavailableTitle),
           icon: FontAwesomeIcons.facebook,
           color: LoginConstants.facebookBlue,
-          label: 'Facebook',
+          label: facebookLabel,
         ),
       ],
     );

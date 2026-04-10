@@ -129,7 +129,7 @@ class CheckLoginStatusWithDatabaseUseCase extends UseCase<bool, NoParams> {
   Future<Result<bool>> execute(NoParams params) async {
     try {
       log('🔐 [CheckLoginStatus] 开始检查登录状态...');
-      
+
       // 1. 先检查内存中的 Token
       final isAuthInMemory = await _authRepository.isAuthenticated();
       log('   内存中是否有有效 Token: $isAuthInMemory');
@@ -152,7 +152,7 @@ class CheckLoginStatusWithDatabaseUseCase extends UseCase<bool, NoParams> {
 
           log('   从 SQLite 找到 Token: userId=${tokenData.userId}');
           log('   expiresAt: ${tokenData.expiresAt}');
-          
+
           // 3. 使用 TokenDatabaseData 自带的 isExpired 检查
           final isExpired = tokenData.isExpired;
           log('   Token 是否过期: $isExpired');
@@ -204,8 +204,8 @@ class CheckLoginStatusWithDatabaseUseCase extends UseCase<bool, NoParams> {
           return Result.success(true);
         },
         onFailure: (error) {
-          log('❌ [CheckLoginStatus] 从 SQLite 获取 Token 失败: $error');
-          return Result.failure(error);
+          log('⚠️ [CheckLoginStatus] 从 SQLite 获取 Token 失败，降级为未登录: $error');
+          return Result.success(false);
         },
       );
     } catch (e) {

@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/login/login_constants.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 登录页面头部 - Logo 和标题
 class LoginHeader extends StatelessWidget {
-  const LoginHeader({super.key});
+  final PreAuthMarketingCopy? copy;
+
+  const LoginHeader({super.key, this.copy});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +35,7 @@ class LoginHeader extends StatelessWidget {
 
         // 标题
         Text(
-          l10n.welcome,
+          copy?.loginHeaderTitle ?? l10n.welcome,
           style: TextStyle(
             fontSize: 32.sp,
             fontWeight: FontWeight.bold,
@@ -43,7 +46,7 @@ class LoginHeader extends StatelessWidget {
 
         // 副标题
         Text(
-          l10n.login,
+          copy?.loginHeaderSubtitle ?? l10n.login,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 16.sp,

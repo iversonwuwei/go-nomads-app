@@ -12,6 +12,15 @@ class AppColors {
   /// 白色背景
   static const Color white = Colors.white;
 
+  /// 一级表面背景
+  static const Color surface = Colors.white;
+
+  /// 二级表面背景
+  static const Color surfaceMuted = Color(0xFFF8FAFC);
+
+  /// 禁用表面背景
+  static const Color surfaceDisabled = Color(0xFFF1F5F9);
+
   // ============ 文本颜色 ============
   /// 深灰色文本 - 主要文本
   static const Color textPrimary = Color(0xFF111827);
@@ -89,6 +98,30 @@ class AppColors {
 
   /// City 渐变结束色
   static const Color cityGradientEnd = Color(0xFFFF6B7A);
+
+  /// 成功反馈色
+  static const Color feedbackSuccess = Color(0xFF10B981);
+
+  /// 成功反馈深色
+  static const Color feedbackSuccessDark = Color(0xFF059669);
+
+  /// 错误反馈色
+  static const Color feedbackError = Color(0xFFEF4444);
+
+  /// 错误反馈深色
+  static const Color feedbackErrorDark = Color(0xFFDC2626);
+
+  /// 警告反馈色
+  static const Color feedbackWarning = Color(0xFFF59E0B);
+
+  /// 警告反馈深色
+  static const Color feedbackWarningDark = Color(0xFFD97706);
+
+  /// 信息反馈色
+  static const Color feedbackInfo = Color(0xFF3B82F6);
+
+  /// 信息反馈深色
+  static const Color feedbackInfoDark = Color(0xFF2563EB);
 
   // ============ 图标颜色 ============
   /// 主图标颜色

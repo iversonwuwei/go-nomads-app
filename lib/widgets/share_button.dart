@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_icons.dart';
+import 'package:go_nomads_app/widgets/buttons/app_icon_action_button.dart';
 
 /// 普通 AppBar 的分享按钮
 /// 用于不带跑马灯效果的页面
@@ -18,12 +19,10 @@ class AppShareButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: FaIcon(
-        FontAwesomeIcons.shareNodes,
-        color: color ?? Colors.black87,
-        size: size,
-      ),
+    return AppIconActionButton(
+      icon: AppIcons.share,
+      iconColor: color ?? Colors.black87,
+      size: size,
       onPressed: onPressed,
     );
   }
@@ -47,31 +46,13 @@ class SliverShareButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isScrolled = opacity > 0.5;
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.w),
-      decoration: BoxDecoration(
-        color: isScrolled
-            ? Colors.grey.withValues(alpha: 0.1)
-            : Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 8.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: IconButton(
-        icon: FaIcon(
-          FontAwesomeIcons.shareNodes,
-          color: isScrolled ? Colors.black87 : Colors.white,
-          size: size,
-        ),
-        onPressed: onPressed,
-        padding: EdgeInsets.all(8.w),
-        constraints: const BoxConstraints(),
-      ),
+    return AppIconActionButton(
+      icon: AppIcons.share,
+      iconColor: isScrolled ? Colors.black87 : Colors.white,
+      size: size,
+      onPressed: onPressed,
+      backgroundColor:
+          isScrolled ? AppColors.surfaceMuted.withValues(alpha: 0.92) : Colors.black.withValues(alpha: 0.28),
     );
   }
 }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/services/report_service.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 /// 举报内容类型
 enum ReportContentType {
@@ -54,13 +57,20 @@ class ReportDialog {
     final reasons = _getReportReasons(l10n);
 
     Get.bottomSheet(
-      _ReportBottomSheet(
-        contentType: contentType,
-        targetId: targetId,
-        targetName: targetName,
-        reasons: reasons,
-        l10n: l10n,
+      AppBottomDrawer(
+        title: l10n.report,
+        subtitle: targetName,
+        maxHeightFactor: 0.76,
+        child: _ReportBottomSheet(
+          contentType: contentType,
+          targetId: targetId,
+          targetName: targetName,
+          reasons: reasons,
+          l10n: l10n,
+        ),
       ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
     );
   }
 
@@ -130,129 +140,25 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 顶部拖动条
-            Container(
-              margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            // 标题
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-              child: Row(
-                children: [
-                  Icon(FontAwesomeIcons.circleExclamation, size: 20.r, color: Color(0xFFFF4458)),
-                  SizedBox(width: 10.w),
-                  Text(
-                    widget.l10n.report,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF333333),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (widget.targetName != null)
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Text(
-                  widget.targetName!,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Color(0xFF999999),
-                  ),
-                ),
-              ),
-            Divider(height: 16.h),
-            // 举报原因列表（可滚动，防止小屏溢出）
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                children: widget.reasons.map((reason) => _buildReasonItem(reason)).toList(),
-              ),
-            ),
-            Divider(height: 1.h),
-            // 底部按钮区域：取消 + 确认
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-              child: Row(
-                children: [
-                  // 取消按钮
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Get.back(),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        side: const BorderSide(color: Color(0xFFE0E0E0)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                      child: Text(
-                        widget.l10n.cancel,
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          color: Color(0xFF999999),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 16.w),
-                  // 确认按钮
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: (_selectedReasonId == null || _isSubmitting) ? null : _onConfirm,
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        backgroundColor: const Color(0xFFFF4458),
-                        disabledBackgroundColor: const Color(0xFFE0E0E0),
-                        disabledForegroundColor: const Color(0xFFBBBBBB),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: _isSubmitting
-                          ? SizedBox(
-                              width: 20.w,
-                              height: 20.h,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.w,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              widget.l10n.confirm,
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 4.h),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: ListView(
+            shrinkWrap: true,
+            padding: EdgeInsets.zero,
+            children: widget.reasons.map((reason) => _buildReasonItem(reason)).toList(),
+          ),
         ),
-      ),
+        AppBottomDrawerActionRow(
+          secondaryLabel: widget.l10n.cancel,
+          onSecondaryPressed: () => Get.back(),
+          primaryLabel: widget.l10n.confirm,
+          onPrimaryPressed: _onConfirm,
+          primaryEnabled: _selectedReasonId != null,
+          primaryLoading: _isSubmitting,
+        ),
+      ],
     );
   }
 
@@ -266,14 +172,21 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
         });
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-        color: isSelected ? const Color(0xFFFFF0F1) : null,
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+        margin: EdgeInsets.only(bottom: 8.h),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.cityPrimaryLight : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
+          border: Border.all(
+            color: isSelected ? AppColors.cityPrimary.withValues(alpha: 0.35) : AppColors.borderLight,
+          ),
+        ),
         child: Row(
           children: [
             Icon(
               reason.icon,
               size: 20.r,
-              color: isSelected ? const Color(0xFFFF4458) : const Color(0xFF666666),
+              color: isSelected ? AppColors.cityPrimary : AppColors.textSecondary,
             ),
             SizedBox(width: 14.w),
             Expanded(
@@ -281,15 +194,15 @@ class _ReportBottomSheetState extends State<_ReportBottomSheet> {
                 reason.label,
                 style: TextStyle(
                   fontSize: 16.sp,
-                  color: isSelected ? const Color(0xFFFF4458) : const Color(0xFF333333),
+                  color: isSelected ? AppColors.cityPrimary : AppColors.textPrimary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
             ),
             if (isSelected)
-              Icon(FontAwesomeIcons.circleCheck, size: 18.r, color: Color(0xFFFF4458))
+              Icon(FontAwesomeIcons.circleCheck, size: 18.r, color: AppColors.cityPrimary)
             else
-              Icon(FontAwesomeIcons.circle, size: 18.r, color: Color(0xFFDDDDDD)),
+              Icon(FontAwesomeIcons.circle, size: 18.r, color: AppColors.border),
           ],
         ),
       ),

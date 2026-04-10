@@ -1,40 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_icons.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/register/register_constants.dart';
 import 'package:go_nomads_app/pages/register/register_controller.dart';
 import 'package:go_nomads_app/pages/register/widgets/register_form_field.dart';
+import 'package:go_nomads_app/services/app_config_service.dart';
 
 /// 注册表单 - 使用响应式验证，无需 Form/GlobalKey
 class RegisterForm extends GetView<RegisterController> {
-  const RegisterForm({super.key});
+  final RegisterFormCopy? copy;
+
+  const RegisterForm({super.key, this.copy});
+
+  String _copyOrFallback(String? remote, String fallback) {
+    if (remote == null) return fallback;
+    final trimmed = remote.trim();
+    return trimmed.isEmpty ? fallback : trimmed;
+  }
+
+  String _formatCountdown(int seconds) {
+    final template = _copyOrFallback(copy?.verificationCodeCountdownTemplate, '{seconds}s');
+    return template.replaceAll('{seconds}', seconds.toString());
+  }
 
   /// 根据错误key获取本地化错误文本
   String? _getErrorText(String? errorKey, AppLocalizations l10n) {
     if (errorKey == null) return null;
     switch (errorKey) {
       case 'usernameRequired':
-        return l10n.usernameRequired;
+        return _copyOrFallback(copy?.usernameRequiredError, l10n.usernameRequired);
       case 'usernameMinLength':
-        return l10n.usernameMinLength;
+        return _copyOrFallback(copy?.usernameMinLengthError, l10n.usernameMinLength);
       case 'emailRequired':
-        return l10n.email;
+        return _copyOrFallback(copy?.emailRequiredError, '请输入邮箱');
       case 'emailInvalid':
-        return l10n.email;
+        return _copyOrFallback(copy?.emailInvalidError, l10n.invalidEmailFormat);
       case 'passwordRequired':
-        return l10n.password;
+        return _copyOrFallback(copy?.passwordRequiredError, l10n.pleaseEnterPassword);
       case 'passwordMinLength':
-        return l10n.password;
+        return _copyOrFallback(copy?.passwordMinLengthError, l10n.passwordMinLength);
       case 'confirmPasswordRequired':
-        return l10n.confirmPasswordRequired;
+        return _copyOrFallback(copy?.confirmPasswordRequiredError, l10n.confirmPasswordRequired);
       case 'passwordsNotMatch':
-        return l10n.passwordsNotMatch;
+        return _copyOrFallback(copy?.passwordsNotMatchError, l10n.passwordsNotMatch);
       case 'verificationCodeRequired':
-        return l10n.verificationCodeRequired;
+        return _copyOrFallback(copy?.verificationCodeRequiredError, l10n.verificationCodeRequired);
       case 'verificationCodeLength':
-        return l10n.verificationCodeLength;
+        return _copyOrFallback(copy?.verificationCodeLengthError, l10n.verificationCodeLength);
       default:
         return errorKey;
     }
@@ -49,9 +64,9 @@ class RegisterForm extends GetView<RegisterController> {
         // 用户名输入
         Obx(() => RegisterFormField(
               controller: controller.usernameController,
-              labelText: l10n.username,
-              hintText: l10n.chooseUsername,
-              prefixIcon: FontAwesomeIcons.user,
+              labelText: copy?.usernameLabel ?? l10n.username,
+              hintText: copy?.usernameHint ?? l10n.chooseUsername,
+              prefixIcon: AppIcons.account,
               errorText:
                   controller.showValidationErrors.value ? _getErrorText(controller.usernameError.value, l10n) : null,
             )),
@@ -61,9 +76,9 @@ class RegisterForm extends GetView<RegisterController> {
         // 邮箱输入
         Obx(() => RegisterFormField(
               controller: controller.emailController,
-              labelText: l10n.email,
-              hintText: l10n.email,
-              prefixIcon: FontAwesomeIcons.envelope,
+              labelText: copy?.emailLabel ?? l10n.email,
+              hintText: copy?.emailHint ?? l10n.email,
+              prefixIcon: AppIcons.email,
               keyboardType: TextInputType.emailAddress,
               errorText:
                   controller.showValidationErrors.value ? _getErrorText(controller.emailError.value, l10n) : null,
@@ -78,9 +93,9 @@ class RegisterForm extends GetView<RegisterController> {
                 Expanded(
                   child: RegisterFormField(
                     controller: controller.verificationCodeController,
-                    labelText: l10n.verificationCode,
-                    hintText: l10n.enterVerificationCode,
-                    prefixIcon: FontAwesomeIcons.shieldHalved,
+                    labelText: copy?.verificationCodeLabel ?? l10n.verificationCode,
+                    hintText: copy?.verificationCodeHint ?? l10n.enterVerificationCode,
+                    prefixIcon: AppIcons.verificationCode,
                     keyboardType: TextInputType.number,
                     compactHeight: _registerCodeRowHeight.h,
                     errorText: controller.showValidationErrors.value
@@ -91,14 +106,14 @@ class RegisterForm extends GetView<RegisterController> {
                 SizedBox(width: 12.w),
                 SizedBox(
                   height: _registerCodeRowHeight.h,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: controller.isSendingCode.value || controller.countdown.value > 0
                         ? null
                         : () => controller.sendVerificationCode(),
-                    style: ElevatedButton.styleFrom(
+                    style: FilledButton.styleFrom(
                       backgroundColor: RegisterConstants.primaryColor,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey.shade300,
+                      disabledBackgroundColor: RegisterConstants.primaryColor.withValues(alpha: 0.5),
                       minimumSize: Size(88.w, _registerCodeRowHeight.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(RegisterConstants.inputBorderRadius),
@@ -116,8 +131,10 @@ class RegisterForm extends GetView<RegisterController> {
                           )
                         : Text(
                             controller.countdown.value > 0
-                                ? '${controller.countdown.value}s'
-                                : (controller.codeSent.value ? l10n.resend : l10n.sendCode),
+                                ? _formatCountdown(controller.countdown.value)
+                                : (controller.codeSent.value
+                                    ? (copy?.verificationCodeResendButton ?? l10n.resend)
+                                    : (copy?.verificationCodeSendButton ?? l10n.sendCode)),
                             style: TextStyle(fontSize: 14.sp),
                           ),
                   ),
@@ -130,8 +147,8 @@ class RegisterForm extends GetView<RegisterController> {
         // 密码输入
         _PasswordField(
           controller: controller.passwordController,
-          labelText: l10n.password,
-          hintText: l10n.createPassword,
+          labelText: copy?.passwordLabel ?? l10n.password,
+          hintText: copy?.passwordHint ?? l10n.createPassword,
           obscureValue: controller.obscurePassword,
           onToggle: controller.toggleObscurePassword,
           errorText: controller.showValidationErrors.value ? _getErrorText(controller.passwordError.value, l10n) : null,
@@ -145,8 +162,8 @@ class RegisterForm extends GetView<RegisterController> {
         // 确认密码输入
         _PasswordField(
           controller: controller.confirmPasswordController,
-          labelText: l10n.confirmPassword,
-          hintText: l10n.reenterPassword,
+          labelText: copy?.confirmPasswordLabel ?? l10n.confirmPassword,
+          hintText: copy?.confirmPasswordHint ?? l10n.reenterPassword,
           obscureValue: controller.obscureConfirmPassword,
           onToggle: controller.toggleObscureConfirmPassword,
           errorText:
@@ -192,11 +209,12 @@ class _PasswordField extends StatelessWidget {
           controller: controller,
           labelText: labelText,
           hintText: hintText,
-          prefixIcon: FontAwesomeIcons.lock,
+          prefixIcon: AppIcons.password,
           obscureText: obscureValue.value,
           suffixIcon: IconButton(
             icon: Icon(
-              obscureValue.value ? FontAwesomeIcons.eye : FontAwesomeIcons.eyeSlash,
+              obscureValue.value ? AppIcons.visibilityOn : AppIcons.visibilityOff,
+              color: AppColors.icon,
             ),
             onPressed: onToggle,
           ),
