@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 
 class CoworkingDetailImageSection extends StatelessWidget {
   final String controllerTag;
@@ -37,8 +38,12 @@ class CoworkingDetailImageSection extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: Colors.grey[300],
-                          child: Icon(FontAwesomeIcons.building, size: 100.r),
+                          color: AppColors.backgroundSecondary,
+                          child: Icon(
+                            FontAwesomeIcons.building,
+                            size: 100.r,
+                            color: AppColors.textTertiary,
+                          ),
                         );
                       },
                     );
@@ -49,8 +54,12 @@ class CoworkingDetailImageSection extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: Colors.grey[300],
-                      child: Icon(FontAwesomeIcons.building, size: 100.r),
+                      color: AppColors.backgroundSecondary,
+                      child: Icon(
+                        FontAwesomeIcons.building,
+                        size: 100.r,
+                        color: AppColors.textTertiary,
+                      ),
                     );
                   },
                 ),
@@ -62,9 +71,9 @@ class CoworkingDetailImageSection extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.2),
+                    Colors.white.withValues(alpha: 0.02),
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.5),
+                    const Color(0xFF13202A).withValues(alpha: 0.48),
                   ],
                   stops: const [0.0, 0.4, 1.0],
                 ),
@@ -94,7 +103,9 @@ class CoworkingDetailImageSection extends StatelessWidget {
                         height: 8.h,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _c.currentImageIndex.value == index ? Colors.white : Colors.white.withAlpha(128),
+                          color: _c.currentImageIndex.value == index
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.45),
                         ),
                       ),
                     ),
@@ -115,11 +126,12 @@ class CoworkingDetailImageSection extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.5),
+          color: AppColors.surfaceElevated.withValues(alpha: 0.94),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.r),
             topRight: Radius.circular(20.r),
           ),
+          border: Border.all(color: AppColors.borderLight),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,23 +154,23 @@ class CoworkingDetailImageSection extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.25),
+                      color: AppColors.cityPrimaryLight,
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
-                        color: Colors.amber.withValues(alpha: 0.5),
+                        color: AppColors.cityPrimary.withValues(alpha: 0.18),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(FontAwesomeIcons.star, size: 14.r, color: Colors.amber),
+                        Icon(FontAwesomeIcons.star, size: 14.r, color: AppColors.travelAmber),
                         SizedBox(width: 6.w),
                         Text(
                           space.spaceInfo.rating.toStringAsFixed(1),
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         SizedBox(width: 4.w),
@@ -166,14 +178,14 @@ class CoworkingDetailImageSection extends StatelessWidget {
                           '(${space.spaceInfo.reviewCount})',
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                         SizedBox(width: 4.w),
                         Icon(
                           FontAwesomeIcons.chevronRight,
                           size: 10.r,
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: AppColors.textSecondary,
                         ),
                       ],
                     ),
@@ -184,7 +196,7 @@ class CoworkingDetailImageSection extends StatelessWidget {
                 CoworkingVerificationBadge(
                   space: space,
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                  darkTheme: true,
+                  darkTheme: false,
                   onVerified: (updatedSpace) => _c.updateSpace(updatedSpace),
                 ),
                 const Spacer(),
@@ -309,22 +321,24 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttonColor = color ?? Colors.white;
+    final backgroundColor = color == null ? AppColors.surfaceSubtle : buttonColor.withValues(alpha: 0.12);
+    final borderColor = color == null ? AppColors.borderLight : buttonColor.withValues(alpha: 0.22);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: buttonColor.withValues(alpha: 0.2),
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(10.r),
           border: Border.all(
-            color: buttonColor.withValues(alpha: 0.4),
+            color: borderColor,
           ),
         ),
         child: Icon(
           icon,
           size: 16.r,
-          color: buttonColor,
+          color: color ?? AppColors.textPrimary,
         ),
       ),
     );
@@ -345,16 +359,16 @@ class _HeroPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pillColor = color ?? Colors.white;
+    final pillColor = color ?? AppColors.textPrimary;
     final hasCustomColor = color != null;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.15),
+        color: hasCustomColor ? pillColor.withValues(alpha: 0.14) : AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : AppColors.borderLight,
         ),
       ),
       child: Row(
@@ -363,7 +377,7 @@ class _HeroPill extends StatelessWidget {
           Icon(
             icon,
             size: 12.r,
-            color: hasCustomColor ? pillColor : Colors.white.withValues(alpha: 0.9),
+            color: hasCustomColor ? pillColor : AppColors.textPrimary,
           ),
           SizedBox(width: 4.w),
           Text(
@@ -371,7 +385,7 @@ class _HeroPill extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w600,
-              color: hasCustomColor ? pillColor : Colors.white,
+              color: hasCustomColor ? pillColor : AppColors.textPrimary,
             ),
           ),
         ],
@@ -397,13 +411,14 @@ class CoworkingDetailImageCounterBadge extends StatelessWidget {
         margin: EdgeInsets.only(right: 16.w),
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
         decoration: BoxDecoration(
-          color: Colors.black.withAlpha(128),
+          color: AppColors.surfaceElevated.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: AppColors.borderLight),
         ),
         child: Obx(() => Text(
               '${_c.currentImageIndex.value + 1}/${allImages.length}',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 12.sp,
               ),

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-批量替换剩余的Material Icons为FontAwesome图标
+批量替换剩余的 Material Icons 为 FontAwesome 图标。
 """
 
-import glob
+from pathlib import Path
 
-# 扩展的图标映射表
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+LIB_DIR = PROJECT_ROOT / 'lib'
+
+
 ICON_MAPPINGS = {
     'Icons.notifications_none': 'FontAwesomeIcons.bell',
     'Icons.group': 'FontAwesomeIcons.userGroup',
@@ -103,73 +106,63 @@ ICON_MAPPINGS = {
 }
 
 
-def process_file(file_path):
-    """处理单个文件"""
+def process_file(file_path: Path) -> bool:
+    """处理单个文件。"""
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
+        content = file_path.read_text(encoding='utf-8')
         original_content = content
         needs_fontawesome_import = False
-        
-        # 替换所有映射的图标
+
         for material_icon, fontawesome_icon in ICON_MAPPINGS.items():
             if material_icon in content:
                 content = content.replace(material_icon, fontawesome_icon)
                 needs_fontawesome_import = True
-        
-        # 如果有替换且没有FontAwesome导入,添加导入
+
         if needs_fontawesome_import and 'font_awesome_flutter' not in content:
-            # 找到import部分并添加
-            import_lines = []
-            other_lines = []
+            import_lines: list[str] = []
+            other_lines: list[str] = []
             in_imports = False
-            
-            for line in content.split('\n'):
+            all_lines = content.split('\n')
+
+            for line in all_lines:
                 if line.startswith('import '):
                     in_imports = True
                     import_lines.append(line)
                 elif in_imports and line.strip() == '':
-                    # 导入结束
                     import_lines.append("import 'package:font_awesome_flutter/font_awesome_flutter.dart';")
                     import_lines.append(line)
                     in_imports = False
-                    other_lines = content.split('\n')[len(import_lines):]
-                    break
                 else:
                     other_lines.append(line)
-            
-            if in_imports:  # 如果还在导入区
+
+            if in_imports:
                 import_lines.append("import 'package:font_awesome_flutter/font_awesome_flutter.dart';")
                 import_lines.append('')
-            
+
             content = '\n'.join(import_lines + other_lines)
-        
-        # 只有在内容发生变化时才写入
+
         if content != original_content:
-            with open(file_path, 'w', encoding='utf-8', newline='\n') as f:
-                f.write(content)
-            print(f'✓ 已更新: {file_path}')
+            file_path.write_text(content, encoding='utf-8', newline='\n')
+            print(f'✓ 已更新: {file_path.relative_to(PROJECT_ROOT).as_posix()}')
             return True
         return False
-        
-    except Exception as e:
-        print(f'✗ 处理失败 {file_path}: {e}')
+
+    except Exception as exc:
+        print(f'✗ 处理失败 {file_path.relative_to(PROJECT_ROOT).as_posix()}: {exc}')
         return False
 
 
-def main():
-    """主函数"""
-    print('开始批量替换Material Icons...\n')
-    
-    # 获取所有Dart文件
-    dart_files = glob.glob('lib/**/*.dart', recursive=True)
-    
+def main() -> None:
+    """主函数。"""
+    print('开始批量替换 Material Icons...\n')
+
+    dart_files = sorted(LIB_DIR.rglob('*.dart'))
+
     updated_count = 0
     for file_path in dart_files:
         if process_file(file_path):
             updated_count += 1
-    
+
     print(f'\n完成! 共更新了 {updated_count} 个文件')
 
 

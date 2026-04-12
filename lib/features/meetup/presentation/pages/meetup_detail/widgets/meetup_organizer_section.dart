@@ -23,12 +23,9 @@ class MeetupOrganizerSection extends GetView<MeetupDetailController> {
       final meetup = controller.meetup.value;
       if (meetup == null) return const SizedBox.shrink();
 
-      return Container(
-        padding: EdgeInsets.all(20.w),
-        color: Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             Text(
               l10n.organizer,
               style: TextStyle(
@@ -76,8 +73,9 @@ class MeetupOrganizerSection extends GetView<MeetupDetailController> {
                   OutlinedButton(
                     onPressed: () => _contactOrganizer(meetup.organizer, l10n),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFFF4458),
-                      side: BorderSide(color: const Color(0xFFFF4458), width: 1.5),
+                      foregroundColor: AppColors.cityPrimary,
+                      backgroundColor: AppColors.cityPrimaryLight,
+                      side: BorderSide(color: AppColors.cityPrimary.withValues(alpha: 0.18), width: 1.2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20.r),
                       ),
@@ -93,8 +91,7 @@ class MeetupOrganizerSection extends GetView<MeetupDetailController> {
                   ),
               ],
             ),
-          ],
-        ),
+        ],
       );
     });
   }

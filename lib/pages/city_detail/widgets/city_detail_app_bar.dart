@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:go_nomads_app/pages/city_detail/city_detail_controller.dart';
 import 'package:go_nomads_app/widgets/back_button.dart';
@@ -64,7 +65,7 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
         elevation: opacity > 0 ? 4 : 0,
         backgroundColor: Color.lerp(
           Colors.transparent,
-          Colors.white,
+          AppColors.background,
           opacity,
         ),
         leading: SliverBackButton(opacity: opacity),
@@ -98,9 +99,9 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w800,
           fontSize: 18.sp,
-          color: AppColors.cityPrimary,
+          color: AppColors.textPrimary,
           shadows: [],
         ),
       ),
@@ -137,7 +138,7 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
               imageUrl: url,
               fit: BoxFit.cover,
               placeholder: Container(
-                color: Colors.grey[300],
+                color: AppColors.surfaceMuted,
                 child: const Center(
                   child: CircularProgressIndicator(),
                 ),
@@ -153,9 +154,9 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.3),
+                  Colors.black.withValues(alpha: 0.18),
                   Colors.transparent,
-                  Colors.black.withValues(alpha: 0.5),
+                  Colors.black.withValues(alpha: 0.22),
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),
@@ -176,19 +177,35 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(images.length, (index) {
-                final isActive = index == _currentPage;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: EdgeInsets.symmetric(horizontal: 4.w),
-                  height: 6.h,
-                  width: isActive ? 18 : 8,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: isActive ? 0.9 : 0.4),
-                    borderRadius: BorderRadius.circular(4.r),
+                    color: AppColors.surfaceElevated.withValues(alpha: 0.84),
+                    borderRadius: BorderRadius.circular(999.r),
+                    border: Border.all(color: AppColors.borderLight.withValues(alpha: 0.9)),
+                    boxShadow: AppUiTokens.softFloatingShadow,
                   ),
-                );
-              }),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(images.length, (index) {
+                      final isActive = index == _currentPage;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: EdgeInsets.symmetric(horizontal: 3.w),
+                        height: 6.h,
+                        width: isActive ? 18 : 6,
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppColors.cityPrimary
+                              : AppColors.textTertiary.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(999.r),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ],
             ),
           ),
       ],
@@ -206,27 +223,23 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
       final displayScore = city?.displayOverallScore ?? widget.overallScore;
       final displayReviewCount = city?.displayReviewCount ?? widget.reviewCount;
 
-      debugPrint(
-          '🔄 [CityDetailAppBar] Obx 重建: score=$displayScore, reviewCount=$displayReviewCount, cityOverallScore=${city?.overallScore}, cityReviewCount=${city?.reviewCount}');
-
       return Stack(
         children: [
-          // 背景装饰 - 忽略手势让滑动穿透
           Positioned.fill(
             child: IgnorePointer(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(16.r),
+                  color: AppColors.surfaceElevated.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.18),
+                    color: AppColors.borderLight.withValues(alpha: 0.9),
                     width: 1,
                   ),
+                  boxShadow: AppUiTokens.heroCardShadow,
                 ),
               ),
             ),
           ),
-          // 内容区域
           Padding(
             padding: EdgeInsets.all(14.w),
             child: Column(
@@ -241,7 +254,7 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                     style: TextStyle(
                       fontSize: 22.sp,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -255,14 +268,14 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                           children: [
                             IgnorePointer(
                               child: _StatPill(
-                                label: '评分',
+                                  label: 'Score',
                                 value: displayScore.toStringAsFixed(1),
                               ),
                             ),
                             SizedBox(width: 10.w),
                             IgnorePointer(
                               child: _StatPill(
-                                label: '评论',
+                                  label: 'Reviews',
                                 value: '$displayReviewCount',
                               ),
                             ),
@@ -271,7 +284,6 @@ class _CityDetailAppBarState extends State<CityDetailAppBar> {
                       ),
                     ),
                     SizedBox(width: 10.w),
-                    // 关注按钮不包裹 IgnorePointer，允许点击
                     _FavoriteButton(cityId: widget.controller.cityId),
                   ],
                 ),
@@ -300,9 +312,9 @@ class _FavoriteButton extends StatelessWidget {
       return Container(
         height: 44.h,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          color: AppColors.surfaceSubtle,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: AppColors.borderLight),
         ),
         child: isToggling
             ? Padding(
@@ -313,7 +325,7 @@ class _FavoriteButton extends StatelessWidget {
                     height: 18.h,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.cityPrimary),
                     ),
                   ),
                 ),
@@ -321,7 +333,7 @@ class _FavoriteButton extends StatelessWidget {
             : IconButton(
                 icon: Icon(
                   isFavorited ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorited ? AppColors.cityPrimary : Colors.white,
+                  color: isFavorited ? AppColors.cityPrimary : AppColors.textPrimary,
                   size: 22.r,
                 ),
                 tooltip: isFavorited ? '已关注' : '关注',
@@ -346,10 +358,10 @@ class _StatPill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(12.r),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: AppColors.borderLight,
         ),
       ),
       child: Column(
@@ -359,7 +371,7 @@ class _StatPill extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12.sp,
-              color: Colors.white.withValues(alpha: 0.8),
+              color: AppColors.textSecondary,
             ),
           ),
           SizedBox(height: 2.h),
@@ -368,7 +380,7 @@ class _StatPill extends StatelessWidget {
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 
@@ -21,31 +22,22 @@ class CityFilterBar extends GetView<CityListController> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.background,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 搜索框
           Padding(
             padding: EdgeInsets.fromLTRB(
               isMobile ? 16 : 20,
               isMobile ? 12 : 16,
               isMobile ? 16 : 20,
-              8,
+              10,
             ),
             child: _buildSearchField(context, l10n),
           ),
-          // 区域 Tab 栏
           Padding(
-            padding: EdgeInsets.only(bottom: 5.h),
+            padding: EdgeInsets.only(bottom: 10.h),
             child: _buildRegionTabs(l10n),
           ),
         ],
@@ -88,10 +80,12 @@ class CityFilterBar extends GetView<CityListController> {
 
   Widget _buildSearchField(BuildContext context, AppLocalizations l10n) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(8.r),
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(18.r),
+        boxShadow: AppUiTokens.softFloatingShadow,
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         children: [
@@ -172,22 +166,18 @@ class _RegionTabChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2B7A78) : Colors.transparent,
+          color: isSelected ? AppColors.cityPrimary.withValues(alpha: 0.10) : Colors.transparent,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF2B7A78) : AppColors.borderLight,
-            width: 1,
-          ),
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
               fontSize: 13.sp,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? Colors.white : AppColors.textSecondary,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? AppColors.cityPrimary : AppColors.textSecondary,
             ),
           ),
         ),

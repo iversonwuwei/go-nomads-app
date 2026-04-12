@@ -1,8 +1,8 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/layouts/bottom_nav/bottom_nav_controller.dart';
 
 /// 导航栏项目数据模型
@@ -38,9 +38,8 @@ class ModernBottomNavBar extends GetView<BottomNavController> {
     final isCompact = items.length >= 6;
 
     // 紧凑的导航栏尺寸
-    final iconSize = ((isCompact ? 25 : 30) * scaleFactor).clamp(22.0, 34.0);
-    final navBarHeight = ((isCompact ? 44 : 48) * scaleFactor).clamp(40.0, 54.0);
-    final indicatorSize = ((isCompact ? 36 : 44) * scaleFactor).clamp(34.0, 50.0);
+    final iconSize = ((isCompact ? 20 : 22) * scaleFactor).clamp(18.0, 24.0);
+    final navBarHeight = ((isCompact ? 62 : 68) * scaleFactor).clamp(58.0, 74.0);
     final borderRadius = (36 * scaleFactor).clamp(30.0, 40.0);
     final horizontalMargin = ((isCompact ? 10 : 14) * scaleFactor).clamp(8.0, 18.0);
     final bottomMargin = (18 * scaleFactor).clamp(12.0, 22.0);
@@ -72,61 +71,33 @@ class ModernBottomNavBar extends GetView<BottomNavController> {
           bottomMargin,
         ),
         decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 48.r,
-              offset: const Offset(0, 12),
-              spreadRadius: 2.r,
-            ),
-            BoxShadow(
-              color: Colors.white.withValues(alpha: 0.10),
-              blurRadius: 0,
-              offset: const Offset(0, -1),
-              spreadRadius: 0,
-            ),
-          ],
+          boxShadow: AppUiTokens.softFloatingShadow,
+          border: Border.all(color: AppColors.borderLight),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 56, sigmaY: 56),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.36),
-                borderRadius: BorderRadius.circular(borderRadius),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  width: 0.5,
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: SizedBox(
-                  height: navBarHeight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: List.generate(updatedItems.length, (index) {
-                      final item = updatedItems[index];
-                      final isSelected = currentIndex == index;
-                      return Expanded(
-                        child: _NavBarItemWidget(
-                          item: item,
-                          isSelected: isSelected,
-                          onTap: () => controller.onNavTap(index),
-                          iconSize: iconSize,
-                          navBarHeight: navBarHeight,
-                          indicatorSize: indicatorSize,
-                          scaleFactor: scaleFactor,
-                          isCompact: isCompact,
-                        ),
-                      );
-                    }),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: navBarHeight,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: List.generate(updatedItems.length, (index) {
+                final item = updatedItems[index];
+                final isSelected = currentIndex == index;
+                return Expanded(
+                  child: _NavBarItemWidget(
+                    item: item,
+                    isSelected: isSelected,
+                    onTap: () => controller.onNavTap(index),
+                    iconSize: iconSize,
+                    navBarHeight: navBarHeight,
+                    scaleFactor: scaleFactor,
+                    isCompact: isCompact,
                   ),
-                ),
-              ),
+                );
+              }),
             ),
           ),
         ),
@@ -142,7 +113,6 @@ class _NavBarItemWidget extends StatelessWidget {
   final VoidCallback onTap;
   final double iconSize;
   final double navBarHeight;
-  final double indicatorSize;
   final double scaleFactor;
   final bool isCompact;
 
@@ -152,7 +122,6 @@ class _NavBarItemWidget extends StatelessWidget {
     required this.onTap,
     required this.iconSize,
     required this.navBarHeight,
-    required this.indicatorSize,
     required this.scaleFactor,
     required this.isCompact,
   });
@@ -172,44 +141,58 @@ class _NavBarItemWidget extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(28.r * scaleFactor),
-        splashColor: const Color(0xFF2196F3).withValues(alpha: 0.10),
-        highlightColor: const Color(0xFF2196F3).withValues(alpha: 0.05),
+        splashColor: AppColors.cityPrimary.withValues(alpha: 0.08),
+        highlightColor: AppColors.cityPrimary.withValues(alpha: 0.04),
         child: Center(
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
-            width: indicatorSize,
-            height: navBarHeight * 0.9,
+            margin: EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.h),
+            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.transparent,
+              color: isSelected ? AppColors.cityPrimary.withValues(alpha: 0.10) : Colors.transparent,
               borderRadius: BorderRadius.circular(18.r * scaleFactor),
             ),
             child: Stack(
               clipBehavior: Clip.none,
+              alignment: Alignment.center,
               children: [
-                Icon(
-                  item.icon,
-                  size: iconSize,
-                  color: isSelected
-                      ? const Color(0xFF2196F3) // 选中：蓝色
-                      : const Color(0xFF8E8E93), // 未选中：灰色
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      item.icon,
+                      size: iconSize,
+                      color: isSelected ? AppColors.cityPrimary : AppColors.textTertiary,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      item.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isSelected ? AppColors.cityPrimary : AppColors.textTertiary,
+                        fontSize: ((isCompact ? 9.0 : 10.0) * scaleFactor).clamp(8.5, 11.0),
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        height: 1,
+                      ),
+                    ),
+                  ],
                 ),
                 if (item.badge > 0)
                   Positioned(
-                    right: -badgeOffset,
-                    top: -badgeOffset,
+                    right: -badgeOffset + 10.w,
+                    top: -badgeOffset + 2.h,
                     child: Container(
                       height: badgeHeight,
                       padding: EdgeInsets.symmetric(horizontal: badgeHorizontalPadding),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF4458),
+                        color: AppColors.cityPrimary,
                         borderRadius: BorderRadius.circular(badgeHeight / 2),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: badgeBorderWidth,
-                        ),
+                        border: Border.all(color: Colors.white, width: badgeBorderWidth),
                       ),
                       constraints: BoxConstraints(
                         minWidth: badgeMinWidth,

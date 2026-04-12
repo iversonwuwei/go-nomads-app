@@ -1,10 +1,11 @@
-import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
-import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
+import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 class CoworkingDetailPricingSection extends StatelessWidget {
   final String controllerTag;
@@ -24,7 +25,10 @@ class CoworkingDetailPricingSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.pricing, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+            Text(
+              l10n.pricing,
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
             SizedBox(height: 16.h),
             Row(
               children: [
@@ -53,18 +57,18 @@ class CoworkingDetailPricingSection extends StatelessWidget {
                 width: double.infinity,
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
+                  color: AppColors.travelMint.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(color: Colors.green[200]!),
+                  border: Border.all(color: AppColors.travelMint.withValues(alpha: 0.24)),
                 ),
                 child: Row(
                   children: [
-                    Icon(FontAwesomeIcons.tag, color: Colors.green[700]),
+                    Icon(FontAwesomeIcons.tag, color: AppColors.travelMint),
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
                         '${l10n.freeTrialAvailable} ${space.pricing.trialDuration ?? ''}',
-                        style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.w600),
+                        style: TextStyle(color: AppColors.travelMint, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -81,18 +85,18 @@ class CoworkingDetailPricingSection extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.blue[50],
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.blue[100]!),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.blue[700]),
+          Icon(icon, color: AppColors.cityPrimary),
           SizedBox(height: 4.h),
-          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
+          Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12.sp)),
           SizedBox(height: 4.h),
           Text([currency, price.toStringAsFixed(0)].join(' '),
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         ],
       ),
     );
@@ -117,7 +121,10 @@ class CoworkingDetailSpecsSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.specifications, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+            Text(
+              l10n.specifications,
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
             SizedBox(height: 16.h),
             Row(
               children: [
@@ -181,9 +188,9 @@ class CoworkingDetailSpecsSection extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: color.withAlpha(26),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withAlpha(77)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -193,8 +200,11 @@ class CoworkingDetailSpecsSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
-                Text(value, style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold)),
+                Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12.sp)),
+                Text(
+                  value,
+                  style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
               ],
             ),
           ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'weather_utils.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -27,15 +29,10 @@ class SunriseSunsetCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12.r,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,6 +42,7 @@ class SunriseSunsetCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: 12.h),
@@ -59,13 +57,13 @@ class SunriseSunsetCard extends StatelessWidget {
   Widget _buildSunriseRow(String time) {
     return Row(
       children: [
-        Icon(FontAwesomeIcons.solidSun, color: Colors.orange, size: 20.r),
+        Icon(FontAwesomeIcons.solidSun, color: AppColors.travelAmber, size: 20.r),
         SizedBox(width: 12.w),
         Expanded(
           child: Text(
             l10n.sunrise,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontSize: 14.sp,
             ),
           ),
@@ -75,6 +73,7 @@ class SunriseSunsetCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w500,
+            color: AppColors.textPrimary,
           ),
         ),
       ],
@@ -84,13 +83,13 @@ class SunriseSunsetCard extends StatelessWidget {
   Widget _buildSunsetRow(String time) {
     return Row(
       children: [
-        Icon(FontAwesomeIcons.solidMoon, color: Color(0xFF5B6FD8), size: 20.r),
+        Icon(FontAwesomeIcons.solidMoon, color: AppColors.travelSky, size: 20.r),
         SizedBox(width: 12.w),
         Expanded(
           child: Text(
             l10n.sunset,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontSize: 14.sp,
             ),
           ),
@@ -100,6 +99,7 @@ class SunriseSunsetCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 16.sp,
             fontWeight: FontWeight.w500,
+            color: AppColors.textPrimary,
           ),
         ),
       ],
@@ -127,15 +127,10 @@ class DataSourceCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12.r,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,13 +140,14 @@ class DataSourceCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: 12.h),
           Text(
             dataSource ?? 'OpenWeatherMap',
             style: TextStyle(
-              color: Colors.grey[700],
+              color: AppColors.textPrimary,
               fontSize: 15.sp,
               fontWeight: FontWeight.w500,
             ),
@@ -160,7 +156,7 @@ class DataSourceCard extends StatelessWidget {
           Text(
             '${l10n.timezone}: $timezone',
             style: TextStyle(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontSize: 13.sp,
             ),
           ),

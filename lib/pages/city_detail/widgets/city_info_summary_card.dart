@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/city/presentation/controllers/city_detail_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 
@@ -31,16 +32,10 @@ class CityInfoSummaryCard extends StatelessWidget {
       margin: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12.r,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,13 +50,13 @@ class CityInfoSummaryCard extends StatelessWidget {
                   children: [
                     _InfoPill(
                       icon: FontAwesomeIcons.star,
-                      iconColor: Colors.amber[700]!,
+                      iconColor: AppColors.travelAmber,
                       label: scoreLabel,
                       value: overallScore.toStringAsFixed(1),
                     ),
                     _InfoPill(
                       icon: FontAwesomeIcons.solidMessage,
-                      iconColor: Colors.blueGrey[700]!,
+                      iconColor: AppColors.travelSky,
                       label: reviewLabel,
                       value: '$reviewCount',
                     ),
@@ -77,7 +72,7 @@ class CityInfoSummaryCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontSize: 12.sp,
               height: 1.35,
             ),
@@ -106,9 +101,9 @@ class _InfoPill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -124,7 +119,7 @@ class _InfoPill extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 12.sp,
-                  color: Colors.grey[700],
+                  color: AppColors.textSecondary,
                 ),
               ),
               SizedBox(height: 2.h),
@@ -161,8 +156,11 @@ class _FavoriteButton extends StatelessWidget {
 
       return Container(
         decoration: BoxDecoration(
-          color: isFavorited ? AppColors.cityPrimary.withValues(alpha: 0.1) : Colors.grey[100],
+          color: isFavorited ? AppColors.cityPrimaryLight : AppColors.surfaceSubtle,
           borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isFavorited ? AppColors.cityPrimary.withValues(alpha: 0.16) : AppColors.borderLight,
+          ),
         ),
         child: isToggling
             ? SizedBox(
@@ -182,7 +180,7 @@ class _FavoriteButton extends StatelessWidget {
             : IconButton(
                 icon: Icon(
                   FontAwesomeIcons.heart,
-                  color: isFavorited ? AppColors.cityPrimary : Colors.grey[700],
+                  color: isFavorited ? AppColors.cityPrimary : AppColors.textSecondary,
                   size: 22.r,
                 ),
                 onPressed: () => cityController.toggleFavorite(),

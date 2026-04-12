@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_coworking_review/add_coworking_review_page.dart';
@@ -27,10 +29,22 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l10n.coworkingDetailUserComments, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+              Expanded(
+                child: Text(
+                  l10n.coworkingDetailUserComments,
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
+              ),
+              SizedBox(width: 12.w),
               TextButton.icon(
                 onPressed: () => _navigateToAddComment(context),
-                icon: Icon(FontAwesomeIcons.commentMedical, size: 20.r),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.cityPrimary,
+                  backgroundColor: AppColors.cityPrimaryLight,
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                ),
+                icon: Icon(FontAwesomeIcons.commentMedical, size: 16.r),
                 label: Text(l10n.coworkingDetailPostComment),
               ),
             ],
@@ -41,7 +55,7 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
               return Center(
                 child: Padding(
                   padding: EdgeInsets.all(32.0.w),
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(color: AppColors.cityPrimary),
                 ),
               );
             } else if (_c.comments.isEmpty) {
@@ -56,6 +70,7 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
                 padding: EdgeInsets.only(top: 16.h),
                 child: Center(
                   child: TextButton(
+                    style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
                     onPressed: () {
                       Get.to(() => CoworkingReviewsPage(
                             coworkingId: _c.space.value.id,
@@ -82,13 +97,24 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(32.w),
       alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderLight),
+      ),
       child: Column(
         children: [
-          Icon(FontAwesomeIcons.comment, size: 48.r, color: Colors.grey[400]),
+          Icon(FontAwesomeIcons.comment, size: 48.r, color: AppColors.textTertiary),
           SizedBox(height: 16.h),
-          Text(l10n.coworkingDetailNoComments, style: TextStyle(color: Colors.grey[600], fontSize: 16.sp)),
+          Text(
+            l10n.coworkingDetailNoComments,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 16.sp, fontWeight: FontWeight.w600),
+          ),
           SizedBox(height: 8.h),
-          Text(l10n.coworkingDetailBeFirstCommenter, style: TextStyle(color: Colors.grey[500], fontSize: 14.sp)),
+          Text(
+            l10n.coworkingDetailBeFirstCommenter,
+            style: TextStyle(color: AppColors.textTertiary, fontSize: 14.sp),
+          ),
         ],
       ),
     );
@@ -97,8 +123,14 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
   Widget _buildCommentsList() {
     return Obx(() => Column(
           children: _c.comments.map((comment) {
-            return Card(
+            return Container(
               margin: EdgeInsets.only(bottom: 12.h),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: AppColors.borderLight),
+                boxShadow: AppUiTokens.softFloatingShadow,
+              ),
               child: Padding(
                 padding: EdgeInsets.all(16.w),
                 child: Column(
@@ -109,14 +141,14 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
                         SafeCircleAvatar(
                           imageUrl: comment.userAvatar,
                           radius: 20,
-                          backgroundColor: Colors.blue[100],
+                          backgroundColor: AppColors.cityPrimaryLight,
                           placeholder: Text(
                             comment.username.substring(0, 1).toUpperCase(),
-                            style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold),
+                            style: TextStyle(color: AppColors.cityPrimary, fontWeight: FontWeight.bold),
                           ),
                           errorWidget: Text(
                             comment.username.substring(0, 1).toUpperCase(),
-                            style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold),
+                            style: TextStyle(color: AppColors.cityPrimary, fontWeight: FontWeight.bold),
                           ),
                         ),
                         SizedBox(width: 12.w),
@@ -124,16 +156,24 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(comment.username, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp)),
-                              Text(_c.formatDate(comment.createdAt),
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
+                              Text(
+                                comment.username,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14.sp,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              Text(
+                                _c.formatDate(comment.createdAt),
+                                style: TextStyle(color: AppColors.textSecondary, fontSize: 12.sp),
+                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
                     SizedBox(height: 12.h),
-                    // 评分星级
                     if (comment.rating > 0)
                       Padding(
                         padding: EdgeInsets.only(bottom: 8.h),
@@ -147,13 +187,13 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
 
                               if (rating >= starValue) {
                                 iconData = FontAwesomeIcons.solidStar;
-                                color = Colors.amber;
+                                color = AppColors.travelAmber;
                               } else if (rating > starValue - 1 && rating < starValue) {
                                 iconData = FontAwesomeIcons.starHalfStroke;
-                                color = Colors.amber;
+                                color = AppColors.travelAmber;
                               } else {
                                 iconData = FontAwesomeIcons.star;
-                                color = Colors.grey.shade300;
+                                color = AppColors.border;
                               }
 
                               return Icon(iconData, color: color, size: 16.r);
@@ -161,7 +201,11 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
                             SizedBox(width: 8.w),
                             Text(
                               comment.rating.toStringAsFixed(1),
-                              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -169,9 +213,19 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
                     if (comment.title.isNotEmpty)
                       Padding(
                         padding: EdgeInsets.only(bottom: 8.h),
-                        child: Text(comment.title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16.sp)),
+                        child: Text(
+                          comment.title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16.sp,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
                       ),
-                    Text(comment.content, style: TextStyle(fontSize: 15.sp, height: 1.5)),
+                    Text(
+                      comment.content,
+                      style: TextStyle(fontSize: 15.sp, height: 1.5, color: AppColors.textSecondary),
+                    ),
                     if (comment.photoUrls.isNotEmpty)
                       Padding(
                         padding: EdgeInsets.only(top: 12.h),
@@ -180,7 +234,7 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
                           runSpacing: 8.w,
                           children: comment.photoUrls.take(3).map((imageUrl) {
                             return ClipRRect(
-                              borderRadius: BorderRadius.circular(8.r),
+                              borderRadius: BorderRadius.circular(12.r),
                               child: Image.network(
                                 imageUrl,
                                 width: 100.w,
@@ -190,8 +244,8 @@ class CoworkingDetailCommentsSection extends StatelessWidget {
                                   return Container(
                                     width: 100.w,
                                     height: 100.h,
-                                    color: Colors.grey[300],
-                                    child: const Icon(FontAwesomeIcons.image),
+                                    color: AppColors.backgroundSecondary,
+                                    child: Icon(FontAwesomeIcons.image, color: AppColors.textTertiary, size: 18.r),
                                   );
                                 },
                               ),

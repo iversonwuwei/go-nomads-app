@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
@@ -64,11 +66,11 @@ class InnovationListHeader extends StatelessWidget {
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF8B5CF6),
+          backgroundColor: AppColors.cityPrimary,
           foregroundColor: Colors.white,
-          elevation: 2,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
           ),
         ),
       ),
@@ -80,7 +82,7 @@ class InnovationListHeader extends StatelessWidget {
       children: [
         Icon(
           FontAwesomeIcons.compass,
-          color: Color(0xFF8B5CF6),
+          color: AppColors.cityPrimary,
           size: 24.r,
         ),
         SizedBox(width: 8.w),
@@ -89,7 +91,7 @@ class InnovationListHeader extends StatelessWidget {
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
+            color: AppColors.textPrimary,
           ),
         ),
       ],
@@ -104,28 +106,42 @@ class InnovationListEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isZh = Localizations.localeOf(context).languageCode == 'zh';
+
     return Center(
-      child: Column(
-        children: [
-          SizedBox(height: 48.h),
-          Icon(FontAwesomeIcons.lightbulb, size: 64.r, color: Colors.grey[300]),
-          SizedBox(height: 16.h),
-          Text(
-            '暂无创意项目',
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: Colors.grey[500],
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(top: 32.h),
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.softFloatingShadow,
+        ),
+        child: Column(
+          children: [
+            Icon(FontAwesomeIcons.lightbulb, size: 64.r, color: AppColors.textTertiary),
+            SizedBox(height: 16.h),
+            Text(
+              isZh ? '暂无创意项目' : 'No innovation projects yet',
+              style: TextStyle(
+                fontSize: 16.sp,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            '成为第一个分享创意的人吧！',
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: Colors.grey[400],
+            SizedBox(height: 8.h),
+            Text(
+              isZh ? '成为第一个分享创意的人吧！' : 'Be the first to share your idea.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AppColors.textSecondary,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -147,21 +163,37 @@ class InnovationListErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(FontAwesomeIcons.circleExclamation, size: 48.r, color: Colors.grey[400]),
-          SizedBox(height: 16.h),
-          Text(
-            errorMessage,
-            style: TextStyle(color: Colors.grey[600]),
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton(
-            onPressed: onRetry,
-            child: Text(l10n.retry),
-          ),
-        ],
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.softFloatingShadow,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(FontAwesomeIcons.circleExclamation, size: 48.r, color: AppColors.feedbackError),
+            SizedBox(height: 16.h),
+            Text(
+              errorMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+            SizedBox(height: 16.h),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.cityPrimary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+              ),
+              child: Text(l10n.retry),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -181,13 +213,15 @@ class InnovationListLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isZh = Localizations.localeOf(context).languageCode == 'zh';
+
     if (!hasMore) {
       return Padding(
         padding: EdgeInsets.all(16.w),
         child: Center(
           child: Text(
-            '已加载全部项目',
-            style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
+            isZh ? '已加载全部项目' : 'All projects loaded',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 14.sp),
           ),
         ),
       );

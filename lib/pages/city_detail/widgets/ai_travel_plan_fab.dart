@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_planner_access_service.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 
@@ -51,8 +52,7 @@ class AiTravelPlanFab extends StatelessWidget {
     final fabLabel = isEnglish ? 'AI Plan' : 'AI Travel Plan';
 
     return Material(
-      elevation: 6,
-      shadowColor: AppColors.cityPrimary.withValues(alpha: 0.4),
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(28.r),
       child: InkWell(
         onTap: () => _onTap(context),
@@ -60,52 +60,66 @@ class AiTravelPlanFab extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.cityPrimary, Color(0xFFFF6B7A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: AppColors.surfaceElevated,
             borderRadius: BorderRadius.circular(28.r),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.cityPrimary.withValues(alpha: 0.3),
-                blurRadius: 8.r,
-                offset: const Offset(0, 3),
-              ),
-            ],
+            border: Border.all(color: AppColors.borderLight),
+            boxShadow: AppUiTokens.heroCardShadow,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: EdgeInsets.all(6.w),
+                padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
+                  color: AppColors.cityPrimaryLight,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   FontAwesomeIcons.wandMagicSparkles,
-                  color: Colors.white,
-                  size: 16.r,
+                  color: AppColors.cityPrimary,
+                  size: 15.r,
                 ),
               ),
               SizedBox(width: 10.w),
-              Text(
-                fabLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.3.sp,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    fabLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    isEnglish ? 'Create a city-specific route' : '生成当前城市的专属行程',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: 4.w),
-              Icon(
-                FontAwesomeIcons.arrowRight,
-                color: Colors.white,
-                size: 16.r,
+              SizedBox(width: 12.w),
+              Container(
+                width: 30.w,
+                height: 30.w,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceSubtle,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  FontAwesomeIcons.arrowRight,
+                  color: AppColors.cityPrimary,
+                  size: 14.r,
+                ),
               ),
             ],
           ),

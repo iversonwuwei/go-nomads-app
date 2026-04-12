@@ -1429,6 +1429,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exploreCities => '探索城市';
 
   @override
+  String get homeExploreTabNew => '最新';
+
+  @override
+  String get homeExploreTabRecent => '最近';
+
+  @override
+  String get homeExploreTabRecommended => '推荐';
+
+  @override
   String get travelPlanCard => '旅行计划卡片';
 
   @override

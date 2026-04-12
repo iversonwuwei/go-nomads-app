@@ -3,13 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/navigation_hub/presentation/widgets/hub_action_card.dart';
 import 'package:go_nomads_app/features/visa/domain/entities/visa_center.dart';
 import 'package:go_nomads_app/features/visa/presentation/controllers/visa_center_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_loading_widget.dart';
-import 'package:go_nomads_app/widgets/cockpit/cockpit_glass_icon_button.dart';
 import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 
 class VisaCenterPage extends GetView<VisaCenterController> {
@@ -24,19 +24,24 @@ class VisaCenterPage extends GetView<VisaCenterController> {
       body: SafeArea(
         child: Obx(() {
           final data = controller.visaCenter.value;
+          final focusProfile = controller.focusProfile;
 
           return RefreshIndicator(
             color: AppColors.cityPrimary,
             onRefresh: controller.refreshVisaCenter,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 32.h),
+              padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 32.h),
               children: [
                 _HeroCard(
                   title: l10n.visaCenterHeroTitle,
-                  subtitle: '',
-                  statusLabel: _recommendedActionLabel(
-                      l10n, data?.recommendedAction ?? ''),
+                  subtitle: _heroSubtitle(l10n, focusProfile),
+                  statusLabel: _recommendedActionLabel(l10n, data?.recommendedAction ?? ''),
+                  insights: [
+                    '${data?.activeProfileCount ?? 0} ${l10n.visaCenterProfiles}',
+                    '${data?.attentionRequiredCount ?? 0} ${l10n.visaCenterAttentionRequired}',
+                    _focusDaysLabel(l10n, focusProfile),
+                  ],
                   onRefreshTap: controller.refreshVisaCenter,
                 ),
                 SizedBox(height: 18.h),
@@ -52,7 +57,7 @@ class VisaCenterPage extends GetView<VisaCenterController> {
                 else if (!controller.hasData)
                   _EmptyState(
                     title: l10n.visaCenterEmptyTitle,
-                    subtitle: '',
+                    subtitle: _recommendedActionLabel(l10n, data?.recommendedAction ?? 'create-first-plan'),
                     ctaLabel: l10n.createTravelPlan,
                     onCtaTap: () => Get.toNamed(AppRoutes.createTravelPlan),
                   )
@@ -97,16 +102,18 @@ class VisaCenterPage extends GetView<VisaCenterController> {
                     ],
                   ),
                   SizedBox(height: 18.h),
-                  if (controller.focusProfile != null) ...[
+                  if (focusProfile != null) ...[
                     _SectionHeader(title: l10n.visaCenterFocusProfile),
                     SizedBox(height: 12.h),
                     _FocusVisaCard(
-                      profile: controller.focusProfile!,
+                      profile: focusProfile,
                       expiryLabel: l10n.visaCenterExpiryDate,
                       requirementsLabel: l10n.visaCenterRequirements,
                       processLabel: l10n.visaCenterProcess,
-                      statusLabel: _profileStatusLabel(
-                          l10n, controller.focusProfile!.status),
+                      costLabel: l10n.budgetCenterForecast,
+                      documentsLabel: l10n.visaCenterDocumentsLabel,
+                      stayDaysLabel: l10n.visaCenterStayDaysLabel,
+                      statusLabel: _profileStatusLabel(l10n, focusProfile.status),
                     ),
                     SizedBox(height: 18.h),
                     _SectionHeader(title: l10n.visaCenterQuickActions),
@@ -114,7 +121,7 @@ class VisaCenterPage extends GetView<VisaCenterController> {
                     HubActionCard(
                       icon: FontAwesomeIcons.bell,
                       title: l10n.visaCenterSetReminder,
-                      subtitle: '',
+                      subtitle: l10n.visaCenterSetReminderSubtitle,
                       onTap: controller.isSettingReminder.value
                           ? () {}
                           : controller.setReminderForFocusProfile,
@@ -123,16 +130,15 @@ class VisaCenterPage extends GetView<VisaCenterController> {
                     HubActionCard(
                       icon: FontAwesomeIcons.route,
                       title: l10n.visaCenterOpenPlan,
-                      subtitle: '',
-                      onTap: () => _openPlan(controller.focusProfile!),
+                      subtitle: l10n.visaCenterOpenPlanSubtitle,
+                      onTap: () => _openPlan(focusProfile),
                     ),
                     SizedBox(height: 12.h),
                     HubActionCard(
                       icon: FontAwesomeIcons.filePen,
                       title: l10n.visaCenterEditProfile,
-                      subtitle: '',
-                      onTap: () => _openVisaProfileEditor(
-                          context, controller.focusProfile!),
+                      subtitle: _editProfileSubtitle(l10n, focusProfile),
+                      onTap: () => _openVisaProfileEditor(context, focusProfile),
                     ),
                     SizedBox(height: 18.h),
                   ],
@@ -144,6 +150,7 @@ class VisaCenterPage extends GetView<VisaCenterController> {
                       child: _VisaProfileCard(
                         profile: profile,
                         statusLabel: _profileStatusLabel(l10n, profile.status),
+                        expiryLabel: l10n.visaCenterExpiryDate,
                         onTap: () => _openPlan(profile),
                       ),
                     ),
@@ -345,6 +352,33 @@ class VisaCenterPage extends GetView<VisaCenterController> {
     }
   }
 
+  String _heroSubtitle(AppLocalizations l10n, VisaProfile? profile) {
+    if (profile == null) {
+      return _recommendedActionLabel(l10n, 'create-first-plan');
+    }
+
+    final daysLabel = _focusDaysLabel(l10n, profile);
+    return '${profile.cityName} · $daysLabel';
+  }
+
+  String _editProfileSubtitle(AppLocalizations l10n, VisaProfile profile) {
+    final typeLabel = _visaTypeLabel(l10n, profile.visaType);
+    return '$typeLabel · ${profile.cityName}';
+  }
+
+  String _visaTypeLabel(AppLocalizations l10n, String visaType) {
+    switch (visaType) {
+      case 'long_stay_visa':
+        return l10n.visaCenterTypeLongStay;
+      case 'digital_nomad_entry':
+        return l10n.visaCenterTypeDigitalNomad;
+      case 'priority_evisa':
+        return l10n.visaCenterTypePriorityEVisa;
+      default:
+        return l10n.visaCenterTypeShortStay;
+    }
+  }
+
   String _focusDaysLabel(AppLocalizations l10n, VisaProfile? profile) {
     if (profile?.daysRemaining == null) {
       return '-';
@@ -358,12 +392,14 @@ class _HeroCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String statusLabel;
+  final List<String> insights;
   final VoidCallback onRefreshTap;
 
   const _HeroCard({
     required this.title,
     required this.subtitle,
     required this.statusLabel,
+    required this.insights,
     required this.onRefreshTap,
   });
 
@@ -379,7 +415,8 @@ class _HeroCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusHero),
+        boxShadow: AppUiTokens.heroCardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,19 +427,38 @@ class _HeroCard extends StatelessWidget {
                 width: 48.w,
                 height: 48.w,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
+                  color: AppColors.textWhite.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Icon(
                   FontAwesomeIcons.passport,
                   size: 20.r,
-                  color: Colors.white,
+                  color: AppColors.textWhite,
                 ),
               ),
               const Spacer(),
-              CockpitGlassIconButton(
-                icon: Icons.refresh_rounded,
-                onTap: onRefreshTap,
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onRefreshTap,
+                  borderRadius: BorderRadius.circular(14.r),
+                  child: Container(
+                    width: 44.w,
+                    height: 44.w,
+                    decoration: BoxDecoration(
+                      color: AppColors.textWhite.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(
+                        color: AppColors.textWhite.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.refresh_rounded,
+                      size: 20.r,
+                      color: AppColors.textWhite,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -410,7 +466,7 @@ class _HeroCard extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.textWhite,
               fontSize: 22.sp,
               fontWeight: FontWeight.w800,
             ),
@@ -420,21 +476,56 @@ class _HeroCard extends StatelessWidget {
             Text(
               subtitle,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.92),
+                color: AppColors.textWhite.withValues(alpha: 0.92),
                 fontSize: 13.sp,
                 height: 1.4,
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 12.h),
           ] else
-            SizedBox(height: 10.h),
-          Text(
-            statusLabel,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
+            SizedBox(height: 14.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: AppColors.textWhite.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(999.r),
+              border: Border.all(
+                color: AppColors.textWhite.withValues(alpha: 0.18),
+              ),
             ),
+            child: Text(
+              statusLabel,
+              style: TextStyle(
+                color: AppColors.textWhite,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: insights
+                .where((item) => item.trim().isNotEmpty && item.trim() != '-')
+                .map(
+                  (item) => Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.textWhite.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999.r),
+                    ),
+                    child: Text(
+                      item,
+                      style: TextStyle(
+                        color: AppColors.textWhite.withValues(alpha: 0.95),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
       ),
@@ -458,9 +549,10 @@ class _MetricCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,12 +589,65 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: TextStyle(
-        color: AppColors.textPrimary,
-        fontSize: 18.sp,
-        fontWeight: FontWeight.w700,
+    return Row(
+      children: [
+        Container(
+          width: 6.w,
+          height: 22.h,
+          decoration: BoxDecoration(
+            color: AppColors.cityPrimary,
+            borderRadius: BorderRadius.circular(999.r),
+          ),
+        ),
+        SizedBox(width: 10.w),
+        Text(
+          title,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniInfoTile extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _MiniInfoTile({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: AppColors.textTertiary,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            value,
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -513,6 +658,9 @@ class _FocusVisaCard extends StatelessWidget {
   final String expiryLabel;
   final String requirementsLabel;
   final String processLabel;
+  final String costLabel;
+  final String documentsLabel;
+  final String stayDaysLabel;
   final String statusLabel;
 
   const _FocusVisaCard({
@@ -520,6 +668,9 @@ class _FocusVisaCard extends StatelessWidget {
     required this.expiryLabel,
     required this.requirementsLabel,
     required this.processLabel,
+    required this.costLabel,
+    required this.documentsLabel,
+    required this.stayDaysLabel,
     required this.statusLabel,
   });
 
@@ -530,9 +681,10 @@ class _FocusVisaCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -567,53 +719,116 @@ class _FocusVisaCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 10.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              _buildTag(_visaTypeLabel(l10n, profile.visaType)),
+              _buildTag('$stayDaysLabel · ${profile.stayDurationDays}'),
+              if (profile.daysRemaining != null)
+                _buildTag(l10n.daysRemaining(profile.daysRemaining!)),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Row(
+            children: [
+              Expanded(
+                child: _MiniInfoTile(
+                  label: expiryLabel,
+                  value: profile.expiryDate != null ? _formatDate(profile.expiryDate!) : '-',
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: _MiniInfoTile(
+                  label: costLabel,
+                  value: profile.estimatedCostUsd > 0
+                      ? '\$${profile.estimatedCostUsd.toStringAsFixed(0)}'
+                      : '-',
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            children: [
+              Expanded(
+                child: _MiniInfoTile(
+                  label: documentsLabel,
+                  value: '${profile.requiredDocuments.length}',
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: _MiniInfoTile(
+                  label: l10n.visaCenterReminderReady,
+                  value: '${profile.reminderDates.length}',
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          _buildContentBlock(
+            label: requirementsLabel,
+            value: profile.requirementsSummary,
+          ),
+          SizedBox(height: 12.h),
+          _buildContentBlock(
+            label: processLabel,
+            value: profile.processSummary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContentBlock({required String label, required String value}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            _visaTypeLabel(l10n, profile.visaType),
+            label,
             style: TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
           SizedBox(height: 6.h),
           Text(
-            '$expiryLabel: ${profile.expiryDate != null ? _formatDate(profile.expiryDate!) : '-'}',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13.sp),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            l10n.daysRemaining(profile.daysRemaining ?? 0),
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13.sp),
-          ),
-          SizedBox(height: 14.h),
-          Text(
-            requirementsLabel,
+            value,
             style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            profile.requirementsSummary,
-            style: TextStyle(
-                color: AppColors.textSecondary, fontSize: 13.sp, height: 1.5),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            processLabel,
-            style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            profile.processSummary,
-            style: TextStyle(
-                color: AppColors.textSecondary, fontSize: 13.sp, height: 1.5),
+              color: AppColors.textSecondary,
+              fontSize: 13.sp,
+              height: 1.5,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTag(String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: AppColors.cityPrimaryLight,
+        borderRadius: BorderRadius.circular(999.r),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: AppColors.cityPrimary,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -639,29 +854,38 @@ class _FocusVisaCard extends StatelessWidget {
 class _VisaProfileCard extends StatelessWidget {
   final VisaProfile profile;
   final String statusLabel;
+  final String expiryLabel;
   final VoidCallback onTap;
 
   const _VisaProfileCard({
     required this.profile,
     required this.statusLabel,
+    required this.expiryLabel,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Material(
-      color: Colors.white,
+      color: AppColors.surfaceElevated,
       borderRadius: BorderRadius.circular(18.r),
+      elevation: 0,
+      shadowColor: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(18.r),
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
+            color: AppColors.surfaceElevated,
             borderRadius: BorderRadius.circular(18.r),
             border: Border.all(color: AppColors.borderLight),
+            boxShadow: AppUiTokens.softFloatingShadow,
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 42.w,
@@ -690,11 +914,42 @@ class _VisaProfileCard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 4.h),
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 6.h),
+                          decoration: BoxDecoration(
+                            color: AppColors.cityPrimaryLight,
+                            borderRadius: BorderRadius.circular(999.r),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: TextStyle(
+                              color: AppColors.cityPrimary,
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          _visaTypeLabel(l10n, profile.visaType),
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6.h),
                     Text(
-                      statusLabel,
+                      _timelineText(l10n),
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12.sp,
+                        height: 1.4,
                       ),
                     ),
                   ],
@@ -712,6 +967,27 @@ class _VisaProfileCard extends StatelessWidget {
       ),
     );
   }
+
+  String _timelineText(AppLocalizations l10n) {
+    final dateText = profile.expiryDate == null
+        ? '-'
+        : '${profile.expiryDate!.year}-${profile.expiryDate!.month.toString().padLeft(2, '0')}-${profile.expiryDate!.day.toString().padLeft(2, '0')}';
+    final daysText = profile.daysRemaining == null ? '' : ' · ${l10n.daysRemaining(profile.daysRemaining!)}';
+    return '$expiryLabel: $dateText$daysText';
+  }
+
+  String _visaTypeLabel(AppLocalizations l10n, String visaType) {
+    switch (visaType) {
+      case 'long_stay_visa':
+        return l10n.visaCenterTypeLongStay;
+      case 'digital_nomad_entry':
+        return l10n.visaCenterTypeDigitalNomad;
+      case 'priority_evisa':
+        return l10n.visaCenterTypePriorityEVisa;
+      default:
+        return l10n.visaCenterTypeShortStay;
+    }
+  }
 }
 
 class _LoadingState extends StatelessWidget {
@@ -721,7 +997,15 @@ class _LoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 240.h,
-      child: const Center(child: AppLoadingWidget()),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.softFloatingShadow,
+        ),
+        child: const Center(child: AppLoadingWidget()),
+      ),
     );
   }
 }
@@ -742,14 +1026,26 @@ class _ErrorState extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         children: [
-          Icon(FontAwesomeIcons.circleExclamation,
-              color: AppColors.cityPrimaryDark, size: 24.r),
+          Container(
+            width: 52.w,
+            height: 52.w,
+            decoration: BoxDecoration(
+              color: AppColors.cityPrimaryLight,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Icon(
+              FontAwesomeIcons.circleExclamation,
+              color: AppColors.cityPrimaryDark,
+              size: 22.r,
+            ),
+          ),
           SizedBox(height: 12.h),
           Text(
             message,
@@ -793,14 +1089,26 @@ class _EmptyState extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         children: [
-          Icon(FontAwesomeIcons.passport,
-              size: 28.r, color: AppColors.cityPrimary),
+          Container(
+            width: 56.w,
+            height: 56.w,
+            decoration: BoxDecoration(
+              color: AppColors.cityPrimaryLight,
+              borderRadius: BorderRadius.circular(18.r),
+            ),
+            child: Icon(
+              FontAwesomeIcons.passport,
+              size: 24.r,
+              color: AppColors.cityPrimary,
+            ),
+          ),
           SizedBox(height: 12.h),
           Text(
             title,

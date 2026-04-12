@@ -2780,6 +2780,24 @@ abstract class AppLocalizations {
   /// **'探索城市'**
   String get exploreCities;
 
+  /// No description provided for @homeExploreTabNew.
+  ///
+  /// In zh, this message translates to:
+  /// **'最新'**
+  String get homeExploreTabNew;
+
+  /// No description provided for @homeExploreTabRecent.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近'**
+  String get homeExploreTabRecent;
+
+  /// No description provided for @homeExploreTabRecommended.
+  ///
+  /// In zh, this message translates to:
+  /// **'推荐'**
+  String get homeExploreTabRecommended;
+
   /// No description provided for @travelPlanCard.
   ///
   /// In zh, this message translates to:

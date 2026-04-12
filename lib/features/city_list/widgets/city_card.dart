@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city_list/city_list_controller.dart';
@@ -46,17 +48,12 @@ class CityCard extends GetView<CityListController> {
 
       return Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 8.r,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(24.r),
+          boxShadow: AppUiTokens.softFloatingShadow,
+          border: Border.all(color: AppColors.borderLight),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(24.r),
           child: GestureDetector(
             onTap: () => _navigateToDetail(context, city),
             onLongPress: () => _handleLongPress(context, city),
@@ -87,21 +84,19 @@ class CityCard extends GetView<CityListController> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // 背景图片 - 填充整个卡片
         Positioned.fill(
           child: SafeNetworkImage(
             imageUrl: city.displayImageUrl,
             fit: BoxFit.cover,
             key: ValueKey(city.displayImageUrl),
             errorWidget: Container(
-              color: Colors.grey[300],
+              color: AppColors.surfaceMuted,
               child: Center(
-                child: Icon(FontAwesomeIcons.imagePortrait, size: 36.r, color: Colors.grey),
+                child: Icon(FontAwesomeIcons.imagePortrait, size: 36.r, color: AppColors.iconSecondary),
               ),
             ),
           ),
         ),
-        // 渐变遮罩
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -111,35 +106,30 @@ class CityCard extends GetView<CityListController> {
                 colors: [
                   Colors.black.withValues(alpha: 0.1),
                   Colors.transparent,
-                  Colors.black.withValues(alpha: 0.6),
+                  Colors.black.withValues(alpha: 0.72),
                 ],
                 stops: const [0.0, 0.4, 1.0],
               ),
             ),
           ),
         ),
-        // 右上角：关注按钮（纯图标）
         Positioned(
           top: 6.h,
           right: 6.w,
           child: _CityFollowButton(cityId: city.id),
         ),
-        // 左上角：评分徽章 + 版主图标
         Positioned(
           top: 6.h,
           left: 6.w,
           child: _buildScoreBadge(city.overallScore ?? 0.0),
         ),
-        // 底部信息面板
         Positioned(
           left: 0,
           right: 0,
           bottom: 0,
           child: _buildHeroInfoPanel(city),
         ),
-        // 管理员/版主蒙层提示
         _buildAdminOverlay(city),
-        // 图片生成中蒙层
         _buildGeneratingOverlay(city),
       ],
     );
@@ -148,27 +138,23 @@ class CityCard extends GetView<CityListController> {
   /// 评分徽章 - 左上角，与底部指标同款样式
   Widget _buildScoreBadge(double score) {
     return Container(
-      height: 20.h,
-      padding: EdgeInsets.symmetric(horizontal: 5.w),
+      height: 24.h,
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFFF4458).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 0.5,
-        ),
+        color: Colors.white.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(FontAwesomeIcons.solidStar, size: 9.r, color: Colors.white),
+          Icon(FontAwesomeIcons.solidStar, size: 9.r, color: const Color(0xFFFBBF24)),
           SizedBox(width: 3.w),
           Text(
             score.toStringAsFixed(1),
             style: TextStyle(
               fontSize: 10.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -179,7 +165,7 @@ class CityCard extends GetView<CityListController> {
   /// 底部信息面板 - 一目了然的紧凑布局
   Widget _buildHeroInfoPanel(City city) {
     return Container(
-      padding: EdgeInsets.fromLTRB(8.w, 12.h, 8.w, 8.h),
+      padding: EdgeInsets.fromLTRB(10.w, 16.h, 10.w, 10.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -198,8 +184,8 @@ class CityCard extends GetView<CityListController> {
           Text(
             city.name,
             style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w800,
               color: Colors.white,
               height: 1.2,
             ),
@@ -340,7 +326,7 @@ class CityCard extends GetView<CityListController> {
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

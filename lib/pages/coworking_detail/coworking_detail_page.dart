@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
 import 'package:go_nomads_app/features/coworking/domain/entities/coworking_space.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -39,14 +41,16 @@ class CoworkingDetailPage extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F1EA),
+        backgroundColor: AppColors.background,
         body: CustomScrollView(
           slivers: [
             SliverAppBar(
-              expandedHeight: 300,
+              expandedHeight: 320.h,
               pinned: true,
-              backgroundColor: const Color(0xFF17191D),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.surfaceElevated,
+              foregroundColor: AppColors.textPrimary,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
               leading: SliverBackButton(onPressed: () => _handleBack(controller)),
               actions: [
                 CoworkingDetailImageCounterBadge(controllerTag: _controllerTag),
@@ -65,7 +69,7 @@ class CoworkingDetailPage extends StatelessWidget {
                       offset: Offset(0, -40.h),
                       child: _CoworkingSummaryCard(controllerTag: _controllerTag),
                     ),
-                    SizedBox(height: 8.h),
+                    SizedBox(height: 4.h),
                     _CoworkingSectionCard(
                       eyebrow: 'Work signals',
                       title: 'What this space is optimized for',
@@ -78,7 +82,7 @@ class CoworkingDetailPage extends StatelessWidget {
                       child: Column(
                         children: [
                           CoworkingDetailAddressSection(controllerTag: _controllerTag),
-                          const Divider(),
+                          Divider(height: 1, color: AppColors.divider),
                           CoworkingDetailAboutSection(controllerTag: _controllerTag),
                         ],
                       ),
@@ -90,7 +94,7 @@ class CoworkingDetailPage extends StatelessWidget {
                       child: Column(
                         children: [
                           CoworkingDetailPricingSection(controllerTag: _controllerTag),
-                          const Divider(),
+                          Divider(height: 1, color: AppColors.divider),
                           CoworkingDetailSpecsSection(controllerTag: _controllerTag),
                         ],
                       ),
@@ -113,7 +117,7 @@ class CoworkingDetailPage extends StatelessWidget {
                       child: Column(
                         children: [
                           CoworkingDetailContactSection(controllerTag: _controllerTag),
-                          const Divider(),
+                          Divider(height: 1, color: AppColors.divider),
                           CoworkingDetailCommentsSection(controllerTag: _controllerTag),
                         ],
                       ),
@@ -134,14 +138,9 @@ class CoworkingDetailPage extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 10.r,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: AppColors.surfaceElevated,
+        border: Border(top: BorderSide(color: AppColors.borderLight)),
+        boxShadow: AppUiTokens.softTopSheetShadow,
       ),
       child: Row(
         children: [
@@ -151,8 +150,9 @@ class CoworkingDetailPage extends StatelessWidget {
               label: Text(l10n.directions),
               style: OutlinedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
-                side: const BorderSide(color: Color(0xFFD8CABB)),
-                foregroundColor: const Color(0xFF1C232C),
+                side: BorderSide(color: AppColors.border),
+                foregroundColor: AppColors.textPrimary,
+                backgroundColor: AppColors.surfaceElevated,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18.r),
                 ),
@@ -167,7 +167,11 @@ class CoworkingDetailPage extends StatelessWidget {
                   label: Text(l10n.visitWebsite),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 16.h),
-                    backgroundColor: const Color(0xFF17191D),
+                    backgroundColor: AppColors.cityPrimary,
+                    disabledBackgroundColor: AppColors.surfaceDisabled,
+                    disabledForegroundColor: AppColors.textTertiary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18.r),
                     ),
@@ -217,9 +221,9 @@ class _CoworkingHero extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
+                Colors.white.withValues(alpha: 0.04),
                 Colors.black.withValues(alpha: 0.12),
-                Colors.black.withValues(alpha: 0.18),
-                const Color(0xFF101317).withValues(alpha: 0.92),
+                const Color(0xFF15212B).withValues(alpha: 0.78),
               ],
             ),
           ),
@@ -295,19 +299,10 @@ class _CoworkingSummaryCard extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.all(18.w),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF3EDE3), Color(0xFFE8DDCF)],
-          ),
-          borderRadius: BorderRadius.circular(28.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 22.r,
-              offset: Offset(0, 10.h),
-            ),
-          ],
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(AppUiTokens.radiusXl),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.heroCardShadow,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,7 +320,7 @@ class _CoworkingSummaryCard extends StatelessWidget {
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1.1,
-                          color: const Color(0xFF7F5832),
+                          color: AppColors.cityPrimary,
                         ),
                       ),
                       SizedBox(height: 8.h),
@@ -334,7 +329,7 @@ class _CoworkingSummaryCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 24.sp,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1D1A17),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       SizedBox(height: 6.h),
@@ -345,7 +340,7 @@ class _CoworkingSummaryCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13.sp,
                           height: 1.45,
-                          color: const Color(0xFF655345),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -355,8 +350,9 @@ class _CoworkingSummaryCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF17191D),
+                    color: AppColors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(22.r),
+                    border: Border.all(color: AppColors.borderLight),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -368,13 +364,13 @@ class _CoworkingSummaryCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       SizedBox(height: 2.h),
                       Text(
                         currentSpace.lowestPrice > 0 ? 'starting rate' : 'price on request',
-                        style: TextStyle(fontSize: 11.sp, color: Colors.white70),
+                        style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -499,9 +495,10 @@ class _CoworkingSectionCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(28.r),
-        border: Border.all(color: const Color(0xFFE6DDD2)),
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusXl),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,7 +514,7 @@ class _CoworkingSectionCard extends StatelessWidget {
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.1,
-                    color: const Color(0xFF7F5832),
+                    color: AppColors.cityPrimary,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -526,7 +523,7 @@ class _CoworkingSectionCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 22.sp,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1C232C),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -565,9 +562,9 @@ class _SignalTile extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: signal.accent.withValues(alpha: 0.08),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(color: signal.accent.withValues(alpha: 0.14)),
+        border: Border.all(color: signal.accent.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -589,12 +586,12 @@ class _SignalTile extends StatelessWidget {
           SizedBox(height: 8.h),
           Text(
             signal.value,
-            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1C232C)),
+            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
           ),
           SizedBox(height: 6.h),
           Text(
             signal.detail,
-            style: TextStyle(fontSize: 12.sp, height: 1.45, color: const Color(0xFF51606B)),
+            style: TextStyle(fontSize: 12.sp, height: 1.45, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -618,17 +615,18 @@ class _SummaryMetric extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.56),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFF7F5832))),
+          Text(label, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: AppColors.cityPrimary)),
           SizedBox(height: 8.h),
-          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1D1A17))),
+          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           SizedBox(height: 4.h),
-          Text(hint, style: TextStyle(fontSize: 11.sp, height: 1.35, color: const Color(0xFF655345))),
+          Text(hint, style: TextStyle(fontSize: 11.sp, height: 1.35, color: AppColors.textSecondary)),
         ],
       ),
     );

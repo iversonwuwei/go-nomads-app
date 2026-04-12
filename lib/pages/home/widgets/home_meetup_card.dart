@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/controllers/meetup_state_controller.dart';
@@ -45,23 +46,24 @@ class HomeMeetupCard extends StatelessWidget {
       return Container(
         width: isMobile ? 280 : 320,
         margin: EdgeInsets.only(right: 16.w),
-        child: Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-            side: BorderSide(color: AppColors.borderLight, width: 1),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceElevated,
+            borderRadius: BorderRadius.circular(24.r),
+            border: Border.all(color: AppColors.borderLight),
+            boxShadow: AppUiTokens.softFloatingShadow,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 图片区域
-              _buildImageSection(context),
-              // 内容区域
-              _buildContentSection(context, date),
-              // 操作按钮
-              _buildActionButtons(context, isJoined, isFull, isOrganizer),
-            ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24.r),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildImageSection(context),
+                _buildContentSection(context, date),
+                _buildActionButtons(context, isJoined, isFull, isOrganizer),
+              ],
+            ),
           ),
         ),
       );
@@ -71,11 +73,11 @@ class HomeMeetupCard extends StatelessWidget {
   Widget _buildImageSection(BuildContext context) {
     return InkWell(
       onTap: () => Get.toNamed(AppRoutes.meetupDetail, arguments: meetup),
-      borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             child: Image.network(
               meetup.images.isNotEmpty
                   ? meetup.images.first
@@ -90,7 +92,7 @@ class HomeMeetupCard extends StatelessWidget {
                   height: 140.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -119,7 +121,7 @@ class HomeMeetupCard extends StatelessWidget {
                   height: 140.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
                   ),
                   child: Center(
                     child: CircularProgressIndicator(
@@ -140,15 +142,15 @@ class HomeMeetupCard extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: _getTypeColor(meetup.eventType?.enName ?? meetup.type.value),
-                borderRadius: BorderRadius.circular(6.r),
+                color: Colors.white.withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(14.r),
               ),
               child: Text(
                 meetup.eventType?.name ?? meetup.type.value,
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
+                  color: _getTypeColor(meetup.eventType?.enName ?? meetup.type.value),
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -162,27 +164,23 @@ class HomeMeetupCard extends StatelessWidget {
     return InkWell(
       onTap: () => Get.toNamed(AppRoutes.meetupDetail, arguments: meetup),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(10.w, 10.h, 10.w, 6.h),
+        padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 8.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 标题
             Text(
               meetup.title,
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-              maxLines: 1,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             SizedBox(height: 6.h),
-            // 日期和地点
             _buildDateLocation(date),
-            SizedBox(height: 8.h),
-            // 参与者信息
+            SizedBox(height: 10.h),
             _buildAttendeeInfo(),
           ],
         ),
@@ -203,9 +201,9 @@ class HomeMeetupCard extends StatelessWidget {
               child: Text(
                 '${_formatDate(localDate)} ${localDate.hour.toString().padLeft(2, '0')}:${localDate.minute.toString().padLeft(2, '0')}',
                 style: TextStyle(
-                  fontSize: 11.sp,
+                  fontSize: 12.sp,
                   color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -224,7 +222,7 @@ class HomeMeetupCard extends StatelessWidget {
                   meetup.location.fullDescription,
                 ].where((s) => s.isNotEmpty).join(', '),
                 style: TextStyle(
-                  fontSize: 11.sp,
+                  fontSize: 12.sp,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
@@ -245,20 +243,27 @@ class HomeMeetupCard extends StatelessWidget {
 
     return Row(
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(FontAwesomeIcons.users, size: 13.r, color: AppColors.textSecondary),
-            SizedBox(width: 4.w),
-            Text(
-              '$currentAttendees',
-              style: TextStyle(
-                fontSize: 11.sp,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMuted,
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(FontAwesomeIcons.users, size: 11.r, color: AppColors.textSecondary),
+              SizedBox(width: 5.w),
+              Text(
+                '$currentAttendees',
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         SizedBox(width: 12.w),
         if ((maxAttendees - currentAttendees) > 0)
@@ -266,7 +271,7 @@ class HomeMeetupCard extends StatelessWidget {
             l10n.spotsLeftCount(maxAttendees - currentAttendees),
             style: TextStyle(
               fontSize: 11.sp,
-              color: Color(0xFFFF4458),
+              color: AppColors.cityPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -337,14 +342,14 @@ class HomeMeetupCard extends StatelessWidget {
   Widget _buildDisabledButton(IconData icon, String text) {
     return SizedBox(
       width: double.infinity,
-      height: 32.h,
+      height: 38.h,
       child: ElevatedButton(
         onPressed: null,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.borderLight,
           foregroundColor: AppColors.textSecondary,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
           disabledBackgroundColor: AppColors.borderLight,
           disabledForegroundColor: AppColors.textSecondary,
         ),
@@ -384,7 +389,7 @@ class HomeMeetupCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return SizedBox(
-      height: 32.h,
+      height: 38.h,
       child: OutlinedButton(
         onPressed: enabled
             ? () {
@@ -403,14 +408,14 @@ class HomeMeetupCard extends StatelessWidget {
               }
             : null,
         style: OutlinedButton.styleFrom(
-          foregroundColor: enabled ? Colors.blue : Colors.grey,
+          foregroundColor: enabled ? AppColors.accent : AppColors.textTertiary,
           side: BorderSide(
-            color: enabled ? Colors.blue : Colors.grey.shade300,
-            width: 1.5,
+            color: enabled ? AppColors.accent.withValues(alpha: 0.28) : Colors.grey.shade300,
+            width: 1.2,
           ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
           padding: EdgeInsets.symmetric(horizontal: 6.w),
-          backgroundColor: enabled ? null : Colors.grey.shade50,
+          backgroundColor: enabled ? AppColors.accent.withValues(alpha: 0.05) : Colors.grey.shade50,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -429,14 +434,14 @@ class HomeMeetupCard extends StatelessWidget {
 
   Widget _buildCancelButton(BuildContext context) {
     return SizedBox(
-      height: 32.h,
+      height: 38.h,
       child: ElevatedButton(
         onPressed: () => _handleCancelMeetup(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -455,14 +460,14 @@ class HomeMeetupCard extends StatelessWidget {
 
   Widget _buildJoinButton(BuildContext context, AppLocalizations l10n, bool isJoined, bool isFull) {
     return SizedBox(
-      height: 32.h,
+      height: 38.h,
       child: ElevatedButton(
         onPressed: (isFull && !isJoined) ? null : () => _handleToggleJoin(context, isJoined),
         style: ElevatedButton.styleFrom(
           backgroundColor: isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
           foregroundColor: isJoined ? AppColors.textSecondary : Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
           padding: EdgeInsets.symmetric(horizontal: 6.w),
           disabledBackgroundColor: AppColors.borderLight,
           disabledForegroundColor: AppColors.textSecondary,

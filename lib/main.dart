@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 
 import 'config/api_config.dart';
 import 'config/supabase_config.dart';
@@ -269,38 +270,113 @@ class MyApp extends StatelessWidget {
               supportedLocales: localeController.supportedLocales,
 
               theme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+                colorScheme: const ColorScheme.light(
+                  primary: AppColors.cityPrimary,
+                  onPrimary: Colors.white,
+                  secondary: AppColors.accent,
+                  onSecondary: Colors.white,
+                  surface: AppColors.surface,
+                  onSurface: AppColors.textPrimary,
+                  error: AppColors.feedbackError,
+                  onError: Colors.white,
+                ),
+                scaffoldBackgroundColor: AppColors.background,
+                cardColor: AppColors.surfaceElevated,
+                dividerColor: AppColors.divider,
+                splashColor: AppColors.cityPrimary.withValues(alpha: 0.08),
+                highlightColor: Colors.transparent,
                 useMaterial3: true,
+                textTheme: Typography.blackCupertino.copyWith(
+                  headlineLarge: Typography.blackCupertino.headlineLarge?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.8,
+                  ),
+                  headlineMedium: Typography.blackCupertino.headlineMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.6,
+                  ),
+                  titleLarge: Typography.blackCupertino.titleLarge?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  titleMedium: Typography.blackCupertino.titleMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  bodyLarge: Typography.blackCupertino.bodyLarge?.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                  bodyMedium: Typography.blackCupertino.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  bodySmall: Typography.blackCupertino.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  labelLarge: Typography.blackCupertino.labelLarge?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
 
                 // ── 全局统一控件高度 ──
                 // 按钮和输入框统一为 48.h 高度
                 elevatedButtonTheme: ElevatedButtonThemeData(
                   style: ElevatedButton.styleFrom(
                     minimumSize: Size(0, 48.h),
+                    elevation: 0,
+                    backgroundColor: AppColors.cityPrimary,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(16.r),
                     ),
                   ),
                 ),
                 outlinedButtonTheme: OutlinedButtonThemeData(
                   style: OutlinedButton.styleFrom(
                     minimumSize: Size(0, 48.h),
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(color: AppColors.border),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(16.r),
                     ),
                   ),
                 ),
                 textButtonTheme: TextButtonThemeData(
                   style: TextButton.styleFrom(
                     minimumSize: Size(0, 48.h),
+                    foregroundColor: AppColors.cityPrimary,
                   ),
                 ),
                 inputDecorationTheme: InputDecorationTheme(
+                  filled: true,
+                  fillColor: AppColors.surfaceSubtle,
                   contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                    borderRadius: BorderRadius.circular(18.r),
+                    borderSide: const BorderSide(color: Colors.transparent),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                    borderSide: const BorderSide(color: Colors.transparent),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18.r),
+                    borderSide: BorderSide(color: AppColors.cityPrimary, width: 1.2),
+                  ),
+                ),
+                navigationBarTheme: NavigationBarThemeData(
+                  backgroundColor: Colors.white,
+                  indicatorColor: AppColors.cityPrimary.withValues(alpha: 0.12),
+                  labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                    final selected = states.contains(WidgetState.selected);
+                    return TextStyle(
+                      color: selected ? AppColors.cityPrimary : AppColors.textTertiary,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                      fontSize: 12.sp,
+                    );
+                  }),
                 ),
               ),
 

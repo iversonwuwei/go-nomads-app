@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 
 import '../../../../controllers/hotel_list_page_controller.dart';
 import '../../../../features/city/presentation/controllers/city_detail_state_controller.dart';
@@ -107,9 +109,11 @@ class _HotelsContextHeader extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF173042), Color(0xFF27546D)],
+          colors: [Color(0xFFFFFFFF), Color(0xFFF8FBFF), Color(0xFFFFF8F4)],
         ),
         borderRadius: BorderRadius.circular(24.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +139,7 @@ class _HotelsContextHeader extends StatelessWidget {
             style: TextStyle(
               fontSize: 24.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: 8.h),
@@ -144,7 +148,7 @@ class _HotelsContextHeader extends StatelessWidget {
             style: TextStyle(
               fontSize: 13.sp,
               height: 1.5,
-              color: Colors.white.withValues(alpha: 0.78),
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -164,21 +168,21 @@ class _HeaderPill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12.r, color: Colors.white),
+          Icon(icon, size: 12.r, color: AppColors.travelSky),
           SizedBox(width: 8.w),
           Text(
             label,
             style: TextStyle(
               fontSize: 11.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -256,8 +260,8 @@ class _EmptyHotelState extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF27546D).withValues(alpha: 0.08),
-            const Color(0xFF27546D).withValues(alpha: 0.02),
+            AppColors.travelSky.withValues(alpha: 0.12),
+            AppColors.surfaceSubtle,
           ],
         ),
         borderRadius: BorderRadius.circular(100.r),
@@ -272,7 +276,7 @@ class _EmptyHotelState extends StatelessWidget {
               width: 60.w,
               height: 60.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF27546D).withValues(alpha: 0.1),
+                color: AppColors.travelSky.withValues(alpha: 0.14),
                 shape: BoxShape.circle,
               ),
             ),
@@ -284,7 +288,7 @@ class _EmptyHotelState extends StatelessWidget {
               width: 40.w,
               height: 40.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF27546D).withValues(alpha: 0.15),
+                color: AppColors.travelSky.withValues(alpha: 0.18),
                 shape: BoxShape.circle,
               ),
             ),
@@ -306,22 +310,24 @@ class _EmptyHotelState extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
         decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
           border: Border.all(
-            color: const Color(0xFFFF4458).withValues(alpha: 0.3),
+            color: AppColors.cityPrimary.withValues(alpha: 0.22),
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(30.r),
+          boxShadow: AppUiTokens.softFloatingShadow,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(FontAwesomeIcons.plus, size: 20.r, color: Colors.grey[700]),
+            Icon(FontAwesomeIcons.plus, size: 20.r, color: AppColors.cityPrimary),
             SizedBox(width: 8.w),
             Text(
               'Add First Hotel',
               style: TextStyle(
                 fontSize: 15.sp,
-                color: Colors.grey[700],
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 0.3.sp,
               ),
@@ -384,9 +390,9 @@ class _HotelCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12.r,
-            offset: const Offset(0, 4),
+            color: const Color(0x120F172A),
+            blurRadius: 18.r,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -447,9 +453,9 @@ class _HotelCard extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.1),
+                  Colors.black.withValues(alpha: 0.04),
                   Colors.transparent,
-                  Colors.black.withValues(alpha: 0.6),
+                  Colors.black.withValues(alpha: 0.16),
                 ],
                 stops: const [0.0, 0.4, 1.0],
               ),
@@ -464,9 +470,9 @@ class _HotelCard extends StatelessWidget {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.85),
+                color: AppColors.travelAmber.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                border: Border.all(color: AppColors.travelAmber.withValues(alpha: 0.22)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -510,12 +516,13 @@ class _HotelCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
+        color: AppColors.surfaceElevated.withValues(alpha: 0.94),
         borderRadius: BorderRadius.circular(14.r),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.18),
+          color: AppColors.borderLight,
           width: 1,
         ),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -527,7 +534,7 @@ class _HotelCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -540,7 +547,7 @@ class _HotelCard extends StatelessWidget {
                 Icon(
                   FontAwesomeIcons.locationDot,
                   size: 11.r,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  color: AppColors.textSecondary,
                 ),
                 SizedBox(width: 4.w),
                 Expanded(
@@ -548,7 +555,7 @@ class _HotelCard extends StatelessWidget {
                     hotel.address,
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: AppColors.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -623,21 +630,21 @@ class _SourceBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBooking = hotel.isBookingHotel;
     final backgroundColor =
-        isBooking ? const Color(0xFF0A66C2).withValues(alpha: 0.85) : const Color(0xFFB45309).withValues(alpha: 0.85);
+        isBooking ? AppColors.travelSky.withValues(alpha: 0.9) : AppColors.travelAmber.withValues(alpha: 0.9);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        border: Border.all(color: backgroundColor.withValues(alpha: 0.24)),
       ),
       child: Text(
         hotel.sourceLabel,
         style: TextStyle(
           fontSize: 11.sp,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: AppColors.textPrimary,
         ),
       ),
     );
@@ -661,16 +668,16 @@ class _HeroPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pillColor = color ?? Colors.white;
+    final pillColor = color ?? AppColors.textPrimary;
     final hasCustomColor = color != null;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: hasCustomColor ? pillColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.15),
+        color: hasCustomColor ? pillColor.withValues(alpha: 0.12) : AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: hasCustomColor ? pillColor.withValues(alpha: 0.18) : AppColors.borderLight,
         ),
       ),
       child: Row(
@@ -679,7 +686,7 @@ class _HeroPill extends StatelessWidget {
           Icon(
             icon,
             size: 12.r,
-            color: hasCustomColor ? pillColor : Colors.white.withValues(alpha: 0.9),
+            color: hasCustomColor ? pillColor : AppColors.textPrimary,
           ),
           SizedBox(width: 4.w),
           Text(
@@ -687,7 +694,7 @@ class _HeroPill extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w600,
-              color: hasCustomColor ? pillColor : Colors.white,
+              color: hasCustomColor ? pillColor : AppColors.textPrimary,
             ),
           ),
         ],

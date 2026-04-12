@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/features/weather/domain/entities/weather.dart';
 import 'weather_utils.dart';
@@ -35,19 +37,13 @@ class WeatherMainCard extends StatelessWidget {
       padding: EdgeInsets.all(28.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFF4458), Color(0xFFFF6B7A)],
+          colors: [Color(0xFFFFFFFF), Color(0xFFF7FBFF), Color(0xFFFFF7F3)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(28.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFF4458).withValues(alpha: 0.4),
-            blurRadius: 24.r,
-            offset: const Offset(0, 12),
-            spreadRadius: 4.r,
-          ),
-        ],
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.heroCardShadow,
       ),
       child: Column(
         children: [
@@ -79,7 +75,7 @@ class WeatherMainCard extends StatelessWidget {
                   Text(
                     weather.temperature.toStringAsFixed(0),
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontSize: 72.sp,
                       fontWeight: FontWeight.bold,
                       height: 0.95,
@@ -91,7 +87,7 @@ class WeatherMainCard extends StatelessWidget {
                     child: Text(
                       '°C',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.cityPrimary,
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -104,7 +100,7 @@ class WeatherMainCard extends StatelessWidget {
               Text(
                 description,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.3.sp,
@@ -117,14 +113,14 @@ class WeatherMainCard extends StatelessWidget {
                   children: [
                     Icon(
                       FontAwesomeIcons.locationDot,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: AppColors.cityPrimary,
                       size: 16.r,
                     ),
                     SizedBox(width: 4.w),
                     Text(
                       cityName,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
+                        color: AppColors.textSecondary,
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -138,15 +134,16 @@ class WeatherMainCard extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: AppColors.cityPrimaryLight,
             borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: AppColors.borderLight),
           ),
           child: FaIcon(
             WeatherUtils.getWeatherIcon(
               weather.weatherIcon,
               isNight: weather.weatherIcon.endsWith('n'),
             ),
-            color: Colors.white,
+            color: AppColors.cityPrimary,
             size: 64.r,
           ),
         ),
@@ -160,9 +157,9 @@ class WeatherMainCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.white.withValues(alpha: 0.0),
-            Colors.white.withValues(alpha: 0.3),
-            Colors.white.withValues(alpha: 0.0),
+            AppColors.borderLight.withValues(alpha: 0.0),
+            AppColors.borderLight,
+            AppColors.borderLight.withValues(alpha: 0.0),
           ],
         ),
       ),
@@ -206,7 +203,7 @@ class WeatherMainCard extends StatelessWidget {
     return Text(
       '$timezone • ${l10n.updated} $updatedAt',
       style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.7),
+        color: AppColors.textTertiary,
         fontSize: 12.sp,
         fontWeight: FontWeight.w500,
       ),
@@ -232,14 +229,14 @@ class _WeatherMiniInfo extends StatelessWidget {
       children: [
         Icon(
           icon,
-          color: Colors.white.withValues(alpha: 0.9),
+          color: AppColors.cityPrimary,
           size: 24.r,
         ),
         SizedBox(height: 6.h),
         Text(
           value,
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 16.sp,
             fontWeight: FontWeight.bold,
           ),
@@ -248,7 +245,7 @@ class _WeatherMiniInfo extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
+            color: AppColors.textSecondary,
             fontSize: 11.sp,
             fontWeight: FontWeight.w500,
           ),

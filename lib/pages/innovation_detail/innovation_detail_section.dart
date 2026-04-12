@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 
 /// Innovation Detail Section Widget
 /// 创意项目详情页 - 通用内容区块组件
@@ -27,8 +29,8 @@ class InnovationDetailSection extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: color.withAlpha(26),
-                borderRadius: BorderRadius.circular(8.r),
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(icon, size: 20.r, color: color),
             ),
@@ -38,7 +40,7 @@ class InnovationDetailSection extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1a1a1a),
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -48,15 +50,16 @@ class InnovationDetailSection extends StatelessWidget {
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: Colors.grey[200]!),
+            color: AppColors.surfaceElevated,
+            borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
+            border: Border.all(color: AppColors.borderLight),
+            boxShadow: AppUiTokens.softFloatingShadow,
           ),
           child: Text(
             content,
             style: TextStyle(
               fontSize: 15.sp,
-              color: Color(0xFF4a5568),
+              color: AppColors.textSecondary,
               height: 1.6,
             ),
           ),
@@ -92,8 +95,8 @@ class InnovationDetailListSection extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: color.withAlpha(26),
-                borderRadius: BorderRadius.circular(8.r),
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(icon, size: 20.r, color: color),
             ),
@@ -103,7 +106,7 @@ class InnovationDetailListSection extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1a1a1a),
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -113,9 +116,10 @@ class InnovationDetailListSection extends StatelessWidget {
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: Colors.grey[200]!),
+            color: AppColors.surfaceElevated,
+            borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
+            border: Border.all(color: AppColors.borderLight),
+            boxShadow: AppUiTokens.softFloatingShadow,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +149,7 @@ class InnovationDetailListSection extends StatelessWidget {
                             entry.value,
                             style: TextStyle(
                               fontSize: 15.sp,
-                              color: Color(0xFF4a5568),
+                              color: AppColors.textSecondary,
                               height: 1.6,
                             ),
                           ),

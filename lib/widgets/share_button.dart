@@ -48,11 +48,14 @@ class SliverShareButton extends StatelessWidget {
 
     return AppIconActionButton(
       icon: AppIcons.share,
-      iconColor: isScrolled ? Colors.black87 : Colors.white,
+      iconColor: AppColors.textPrimary,
       size: size,
       onPressed: onPressed,
       backgroundColor:
-          isScrolled ? AppColors.surfaceMuted.withValues(alpha: 0.92) : Colors.black.withValues(alpha: 0.28),
+          isScrolled
+              ? AppColors.surfaceMuted.withValues(alpha: 0.96)
+              : AppColors.surfaceElevated.withValues(alpha: 0.92),
+      borderColor: AppColors.borderLight.withValues(alpha: 0.9),
     );
   }
 }

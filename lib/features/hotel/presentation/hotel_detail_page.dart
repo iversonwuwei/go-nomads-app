@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/core/domain/result.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/hotel/domain/entities/hotel_review.dart';
@@ -123,6 +125,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         }
       },
       child: Scaffold(
+        backgroundColor: AppColors.background,
         body: CustomScrollView(
           slivers: [
             _buildSliverAppBar(),
@@ -158,8 +161,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     return SliverAppBar(
       expandedHeight: 300,
       pinned: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      foregroundColor: hasImages ? Colors.white : null,
+      backgroundColor: AppColors.surfaceElevated,
+      foregroundColor: AppColors.textPrimary,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
       leading: SliverBackButton(onPressed: _handleBack),
       actions: [
         // 编辑按钮 - 只有创建者或管理员可见
@@ -194,13 +199,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               vertical: 6.h,
             ),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: AppColors.surfaceElevated.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: AppColors.borderLight),
             ),
             child: Text(
               '${_currentImageIndex + 1}/${images.length}',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 12.sp,
               ),
@@ -228,12 +234,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         imageUrl: images[index],
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          color: Colors.grey[300],
+                          color: AppColors.backgroundSecondary,
                           child: const AppLoadingWidget(fullScreen: false),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[300],
-                          child: Icon(Icons.hotel, size: 64.r, color: Colors.grey),
+                          color: AppColors.backgroundSecondary,
+                          child: Icon(Icons.hotel, size: 64.r, color: AppColors.textTertiary),
                         ),
                       );
                     },
@@ -251,7 +257,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.5),
+                            const Color(0xFF15212B).withValues(alpha: 0.48),
                           ],
                         ),
                       ),
@@ -281,8 +287,8 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 ],
               )
             : Container(
-                color: Colors.grey[200],
-                child: Icon(Icons.hotel, size: 64.r, color: Colors.grey),
+                color: AppColors.backgroundSecondary,
+                child: Icon(Icons.hotel, size: 64.r, color: AppColors.textTertiary),
               ),
       ),
     );
@@ -290,8 +296,15 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 基本信息区域：名称、评分、地址、分类标签
   Widget _buildBasicInfoSection() {
-    return Padding(
-      padding: EdgeInsets.all(16.w),
+    return Container(
+      margin: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusXl),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.heroCardShadow,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -300,16 +313,19 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             hotel.name,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
           ),
           SizedBox(height: 8.h),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
             decoration: BoxDecoration(
-              color: hotel.isBookingHotel ? const Color(0xFFF4F8FF) : const Color(0xFFFFF7ED),
+              color: AppColors.surfaceSubtle,
               borderRadius: BorderRadius.circular(14.r),
               border: Border.all(
-                color: hotel.isBookingHotel ? const Color(0xFFD6E8FF) : const Color(0xFFFED7AA),
+                color: hotel.isBookingHotel
+                    ? AppColors.travelSky.withValues(alpha: 0.22)
+                    : AppColors.travelAmber.withValues(alpha: 0.24),
               ),
             ),
             child: Row(
@@ -318,7 +334,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 Icon(
                   hotel.isBookingHotel ? Icons.public : Icons.people_alt_outlined,
                   size: 18.r,
-                  color: hotel.isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+                  color: hotel.isBookingHotel ? AppColors.travelSky : AppColors.travelAmber,
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
@@ -330,7 +346,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w800,
-                          color: hotel.isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+                          color: hotel.isBookingHotel ? AppColors.travelSky : AppColors.travelAmber,
                         ),
                       ),
                       SizedBox(height: 2.h),
@@ -341,7 +357,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         style: TextStyle(
                           fontSize: 12.sp,
                           height: 1.35,
-                          color: Colors.grey[700],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -357,15 +373,15 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               if (hotel.starRating != null) ...[
                 ...List.generate(
                   hotel.starRating!,
-                  (index) => Icon(Icons.star, color: Colors.amber, size: 18.r),
+                  (index) => Icon(Icons.star, color: AppColors.travelAmber, size: 18.r),
                 ),
                 SizedBox(width: 8.w),
               ],
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(4.r),
+                  color: AppColors.cityPrimary,
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Text(
                   hotel.rating.toStringAsFixed(1),
@@ -378,7 +394,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               SizedBox(width: 8.w),
               Text(
                 _getRatingText(hotel.rating),
-                style: TextStyle(color: Colors.grey[600]),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -387,12 +403,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.location_on, size: 18.r, color: Colors.grey[600]),
-              SizedBox(width: 4.w),
+              Icon(Icons.location_on, size: 18.r, color: AppColors.textSecondary),
+              SizedBox(width: 6.w),
               Expanded(
                 child: Text(
                   hotel.address,
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
             ],
@@ -421,8 +437,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: isBookingHotel ? const Color(0xFFE8F3FF) : const Color(0xFFFFF0E0),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(
+          color: isBookingHotel ? AppColors.travelSky.withValues(alpha: 0.22) : AppColors.travelAmber.withValues(alpha: 0.24),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -430,7 +449,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           Icon(
             isBookingHotel ? Icons.public : Icons.people_alt_outlined,
             size: 14.r,
-            color: isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+            color: isBookingHotel ? AppColors.travelSky : AppColors.travelAmber,
           ),
           SizedBox(width: 6.w),
           Text(
@@ -438,7 +457,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w700,
-              color: isBookingHotel ? const Color(0xFF0A66C2) : const Color(0xFFB45309),
+              color: isBookingHotel ? AppColors.travelSky : AppColors.travelAmber,
             ),
           ),
         ],
@@ -451,9 +470,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: isHighlight ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : Colors.grey[100],
+        color: isHighlight ? AppColors.cityPrimaryLight : AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(16.r),
-        border: isHighlight ? Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)) : null,
+        border: Border.all(
+          color: isHighlight ? AppColors.cityPrimary.withValues(alpha: 0.18) : AppColors.borderLight,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -461,14 +482,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           Icon(
             icon,
             size: 14.r,
-            color: isHighlight ? Theme.of(context).colorScheme.primary : Colors.grey[600],
+            color: isHighlight ? AppColors.cityPrimary : AppColors.textSecondary,
           ),
           SizedBox(width: 4.w),
           Text(
             text,
             style: TextStyle(
               fontSize: 12.sp,
-              color: isHighlight ? Theme.of(context).colorScheme.primary : Colors.grey[700],
+              color: isHighlight ? AppColors.cityPrimary : AppColors.textSecondary,
             ),
           ),
         ],
@@ -493,11 +514,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-        ),
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,6 +526,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             l10n.priceLabel,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
           ),
           SizedBox(height: 12.h),
@@ -539,18 +560,18 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   Widget _buildPriceItem(String label, String price, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20.r),
+        Icon(icon, color: AppColors.cityPrimary, size: 20.r),
         SizedBox(width: 8.w),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12.sp)),
+            Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12.sp)),
             Text(
               price,
               style: TextStyle(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -568,13 +589,23 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
     return Padding(
       padding: EdgeInsets.all(16.w),
-      child: Column(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.softFloatingShadow,
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.nomadFeatures,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
           ),
           SizedBox(height: 12.h),
@@ -624,6 +655,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -639,8 +671,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       width: cardWidth,
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Row(
         children: [
@@ -659,14 +692,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                  style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
                 ),
                 Text(
                   subtitle,
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
-                    color: color,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -685,13 +718,23 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
     return Padding(
       padding: EdgeInsets.all(16.w),
-      child: Column(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.softFloatingShadow,
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.facilities,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
           ),
           SizedBox(height: 12.h),
@@ -702,8 +745,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               return Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: AppColors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(color: AppColors.borderLight),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -711,12 +755,12 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     Icon(
                       _getAmenityIcon(amenity),
                       size: 16.r,
-                      color: Colors.grey[700],
+                      color: AppColors.textSecondary,
                     ),
                     SizedBox(width: 6.w),
                     Text(
                       amenity,
-                      style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
+                      style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -724,6 +768,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             }).toList(),
           ),
         ],
+      ),
       ),
     );
   }
@@ -754,13 +799,23 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
     return Padding(
       padding: EdgeInsets.all(16.w),
-      child: Column(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.softFloatingShadow,
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.contactInfo,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
           ),
           SizedBox(height: 12.h),
@@ -787,6 +842,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             ),
         ],
       ),
+      ),
     );
   }
 
@@ -799,21 +855,27 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8.r),
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.h),
+      borderRadius: BorderRadius.circular(14.r),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceSubtle,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: AppColors.borderLight),
+        ),
         child: Row(
           children: [
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                color: AppColors.cityPrimaryLight,
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
                 icon,
                 size: 20.r,
-                color: Theme.of(context).colorScheme.primary,
+                color: AppColors.cityPrimary,
               ),
             ),
             SizedBox(width: 12.w),
@@ -823,19 +885,19 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
                   ),
                   Text(
                     value,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
+            Icon(Icons.chevron_right, color: AppColors.textTertiary),
           ],
         ),
       ),
@@ -856,14 +918,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10.r,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: AppColors.surfaceElevated,
+        border: Border(top: BorderSide(color: AppColors.borderLight)),
+        boxShadow: AppUiTokens.softTopSheetShadow,
       ),
       child: SafeArea(
         child: Column(
@@ -880,12 +937,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       icon: Icon(Icons.bed, size: 20.r),
                       label: Text(l10n.roomTypes(hotel.roomTypes.length.toString())),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.secondary,
+                        backgroundColor: AppColors.textPrimary,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
+                        elevation: 0,
                       ),
                     ),
                   ),
@@ -897,6 +955,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     icon: Icon(Icons.rate_review, size: 20.r),
                     label: Text(l10n.writeReview),
                     style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textPrimary,
+                      side: BorderSide(color: AppColors.border),
+                      backgroundColor: AppColors.surfaceElevated,
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -917,12 +978,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     icon: const Icon(Icons.directions),
                     label: Text(l10n.directions),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: AppColors.cityPrimary,
                       foregroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(vertical: 14.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
+                      elevation: 0,
                     ),
                   ),
                 ),
@@ -935,6 +997,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       icon: const Icon(Icons.language),
                       label: Text(l10n.visitWebsite),
                       style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textPrimary,
+                        side: BorderSide(color: AppColors.border),
+                        backgroundColor: AppColors.surfaceElevated,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -963,8 +1028,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+            color: AppColors.surfaceElevated,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(AppUiTokens.radiusXl)),
+            boxShadow: AppUiTokens.softTopSheetShadow,
           ),
           child: Column(
             children: [
@@ -974,7 +1040,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppColors.border,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -989,16 +1055,17 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(Icons.close, color: AppColors.textPrimary),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
               ),
-              const Divider(),
+              Divider(height: 1, color: AppColors.divider),
               // 房型列表
               Expanded(
                 child: ListView.builder(
@@ -1020,11 +1087,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 房型卡片
   Widget _buildRoomTypeCard(RoomType roomType) {
-    return Card(
+    return Container(
       margin: EdgeInsets.only(bottom: 16.h),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Padding(
         padding: EdgeInsets.all(16.w),
@@ -1034,7 +1103,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             // 房型图片
             if (roomType.images.isNotEmpty)
               ClipRRect(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(14.r),
                 child: CachedNetworkImage(
                   imageUrl: roomType.images.first,
                   height: 150.h,
@@ -1042,13 +1111,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     height: 150.h,
-                    color: Colors.grey[200],
+                    color: AppColors.backgroundSecondary,
                     child: const AppLoadingWidget(fullScreen: false),
                   ),
                   errorWidget: (context, url, error) => Container(
                     height: 150.h,
-                    color: Colors.grey[200],
-                    child: Icon(Icons.image, size: 48.r, color: Colors.grey),
+                    color: AppColors.backgroundSecondary,
+                    child: Icon(Icons.image, size: 48.r, color: AppColors.textTertiary),
                   ),
                 ),
               ),
@@ -1063,6 +1132,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -1070,8 +1140,8 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(4.r),
+                      color: AppColors.feedbackError,
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
                       AppLocalizations.of(context)!.soldOut,
@@ -1087,7 +1157,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 roomType.description,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -1113,11 +1183,17 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 Wrap(
                   spacing: 4.w,
                   children: roomType.amenities.take(3).map((amenity) {
-                    return Chip(
-                      label: Text(amenity, style: TextStyle(fontSize: 10.sp)),
-                      padding: EdgeInsets.zero,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.compact,
+                    return Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceSubtle,
+                        borderRadius: BorderRadius.circular(999.r),
+                        border: Border.all(color: AppColors.borderLight),
+                      ),
+                      child: Text(
+                        amenity,
+                        style: TextStyle(fontSize: 10.sp, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      ),
                     );
                   }).toList(),
                 ),
@@ -1130,14 +1206,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
                       AppLocalizations.of(context)!.perNight,
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -1155,17 +1231,18 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(6.r),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14.r, color: Colors.grey[700]),
+          Icon(icon, size: 14.r, color: AppColors.textSecondary),
           SizedBox(width: 4.w),
           Text(
             label,
-            style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
+            style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -1198,8 +1275,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           ),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(AppUiTokens.radiusXl)),
+              boxShadow: AppUiTokens.softTopSheetShadow,
             ),
             padding: EdgeInsets.all(20.w),
             child: SingleChildScrollView(
@@ -1213,7 +1291,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       width: 40.w,
                       height: 4.h,
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
+                        color: AppColors.border,
                         borderRadius: BorderRadius.circular(2.r),
                       ),
                     ),
@@ -1228,10 +1306,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         style: TextStyle(
                           fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close),
+                        icon: Icon(Icons.close, color: AppColors.textPrimary),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -1243,6 +1322,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   SizedBox(height: 8.h),
@@ -1257,7 +1337,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           padding: EdgeInsets.symmetric(horizontal: 4.w),
                           child: Icon(
                             index < rating ? Icons.star : Icons.star_border,
-                            color: Colors.amber,
+                            color: AppColors.travelAmber,
                             size: 40.r,
                           ),
                         ),
@@ -1270,7 +1350,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       _getReviewRatingText(rating),
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -1336,12 +1416,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                               );
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: AppColors.cityPrimary,
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
                         ),
+                        elevation: 0,
                       ),
                       child: isSubmitting
                           ? SizedBox(
@@ -1479,15 +1560,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1499,7 +1575,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 children: [
                   Icon(
                     Icons.bed,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: AppColors.cityPrimary,
                     size: 24.r,
                   ),
                   SizedBox(width: 8.w),
@@ -1508,12 +1584,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
               ),
               TextButton(
                 onPressed: _showRoomTypesModal,
+                style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
                 child: Text(l10n.viewAllCount(hotel.roomTypes.length.toString())),
               ),
             ],
@@ -1533,8 +1611,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       margin: EdgeInsets.only(bottom: 8.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8.r),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         children: [
@@ -1550,20 +1629,20 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     placeholder: (context, url) => Container(
                       width: 60.w,
                       height: 60.h,
-                      color: Colors.grey[200],
+                      color: AppColors.backgroundSecondary,
                     ),
                     errorWidget: (context, url, error) => Container(
                       width: 60.w,
                       height: 60.h,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.bed, color: Colors.grey),
+                      color: AppColors.backgroundSecondary,
+                      child: Icon(Icons.bed, color: AppColors.textTertiary),
                     ),
                   )
                 : Container(
                     width: 60.w,
                     height: 60.h,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.bed, color: Colors.grey),
+                    color: AppColors.backgroundSecondary,
+                    child: Icon(Icons.bed, color: AppColors.textTertiary),
                   ),
           ),
           SizedBox(width: 12.w),
@@ -1577,6 +1656,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -1584,7 +1664,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   '${roomType.bedType} · ${l10n.maxOccupancy(roomType.maxOccupancy.toString())}',
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -1599,14 +1679,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: AppColors.textPrimary,
                 ),
               ),
               Text(
                 l10n.perNight,
                 style: TextStyle(
                   fontSize: 10.sp,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -1623,15 +1703,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1643,7 +1718,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 children: [
                   Icon(
                     Icons.rate_review,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: AppColors.cityPrimary,
                     size: 24.r,
                   ),
                   SizedBox(width: 8.w),
@@ -1652,6 +1727,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -1687,7 +1763,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                 l10n.reviewCount(hotel.reviewCount.toString()),
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
               ),
               SizedBox(width: 16.w),
@@ -1707,19 +1783,20 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             Center(
               child: Column(
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 48.r, color: Colors.grey[300]),
+                  Icon(Icons.chat_bubble_outline, size: 48.r, color: AppColors.textTertiary),
                   SizedBox(height: 8.h),
                   Text(
                     l10n.noReviews,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.grey[500],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   SizedBox(height: 8.h),
                   TextButton.icon(
                     onPressed: _showWriteReviewDialog,
                     icon: Icon(Icons.edit, size: 16.r),
+                    style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
                     label: Text(l10n.beFirstReviewer),
                   ),
                 ],
@@ -1735,6 +1812,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   child: TextButton.icon(
                     onPressed: _showWriteReviewDialog,
                     icon: Icon(Icons.edit, size: 16.r),
+                    style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
                     label: Text(l10n.writeReview),
                   ),
                 ),
@@ -1751,7 +1829,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       l10n.noReviews,
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.grey[500],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   )
@@ -1767,6 +1845,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                               ? const Center(child: AppLoadingWidget(fullScreen: false))
                               : TextButton(
                                   onPressed: _loadReviews,
+                                  style: TextButton.styleFrom(foregroundColor: AppColors.cityPrimary),
                                   child: Text(l10n.loadMoreReviews),
                                 ),
                         ),
@@ -1786,9 +1865,9 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[200]!),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1799,13 +1878,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               // 用户头像
               CircleAvatar(
                 radius: 18,
-                backgroundColor: Colors.grey[300],
+                backgroundColor: AppColors.cityPrimaryLight,
                 backgroundImage: review.userAvatar != null ? CachedNetworkImageProvider(review.userAvatar!) : null,
                 child: review.userAvatar == null
                     ? Text(
                         review.userName.isNotEmpty ? review.userName[0].toUpperCase() : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: AppColors.cityPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       )
@@ -1824,6 +1903,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         if (review.isVerified) ...[
@@ -1831,7 +1911,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                           Icon(
                             Icons.verified,
                             size: 14.r,
-                            color: Colors.blue[400],
+                            color: AppColors.travelSky,
                           ),
                         ],
                       ],
@@ -1840,7 +1920,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                       _formatReviewDate(review.createdAt),
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.grey[500],
+                        color: AppColors.textTertiary,
                       ),
                     ),
                   ],
@@ -1879,6 +1959,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
             ),
             SizedBox(height: 4.h),
@@ -1888,7 +1969,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             review.content,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -1911,18 +1992,18 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                         height: 80.h,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          color: Colors.grey[200],
+                          color: AppColors.backgroundSecondary,
                           child: Center(
                             child: SizedBox(
                               width: 20.w,
                               height: 20.h,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.cityPrimary),
                             ),
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[200],
-                          child: Icon(Icons.broken_image, size: 24.r),
+                          color: AppColors.backgroundSecondary,
+                          child: Icon(Icons.broken_image, size: 24.r, color: AppColors.textTertiary),
                         ),
                       ),
                     ),
@@ -1936,13 +2017,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
             SizedBox(height: 8.h),
             Row(
               children: [
-                Icon(Icons.thumb_up_alt_outlined, size: 14.r, color: Colors.grey[500]),
+                Icon(Icons.thumb_up_alt_outlined, size: 14.r, color: AppColors.textTertiary),
                 SizedBox(width: 4.w),
                 Text(
                   l10n.helpfulCount(review.helpfulCount.toString()),
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: Colors.grey[500],
+                    color: AppColors.textTertiary,
                   ),
                 ),
               ],
@@ -1977,11 +2058,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
 
   /// 获取评分颜色
   Color _getRatingColor(double rating) {
-    if (rating >= 4.5) return Colors.green;
-    if (rating >= 4.0) return Colors.lightGreen;
-    if (rating >= 3.0) return Colors.orange;
-    if (rating >= 2.0) return Colors.deepOrange;
-    return Colors.red;
+    if (rating >= 4.5) return AppColors.travelMint;
+    if (rating >= 4.0) return const Color(0xFF84C77D);
+    if (rating >= 3.0) return AppColors.travelAmber;
+    if (rating >= 2.0) return const Color(0xFFF28C52);
+    return AppColors.feedbackError;
   }
 
   /// 获取评分描述

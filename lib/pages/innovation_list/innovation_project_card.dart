@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/controllers/innovation_list_page_controller.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
@@ -27,11 +29,14 @@ class InnovationProjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,7 +91,7 @@ class InnovationProjectCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1a1a1a),
+              color: AppColors.textPrimary,
             ),
           ),
 
@@ -97,7 +102,7 @@ class InnovationProjectCard extends StatelessWidget {
             project.elevatorPitch,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.grey[700],
+              color: AppColors.textSecondary,
               height: 1.4,
             ),
             maxLines: 2,
@@ -128,8 +133,13 @@ class InnovationProjectCard extends StatelessWidget {
       spacing: 8.w,
       runSpacing: 8.w,
       children: [
-        _buildTag(project.productType, const Color(0xFF8B5CF6)),
-        ...project.keyFeatures.split("\n").take(2).map((feature) => _buildTag(feature, const Color(0xFF6366F1))),
+        _buildTag(project.productType, AppColors.cityPrimary),
+        ...project.keyFeatures
+            .split("\n")
+            .map((feature) => feature.trim())
+            .where((feature) => feature.isNotEmpty)
+            .take(2)
+            .map((feature) => _buildTag(feature, AppColors.travelSky)),
       ],
     );
   }
@@ -138,8 +148,9 @@ class InnovationProjectCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: color.withAlpha(26),
-        borderRadius: BorderRadius.circular(4.r),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999.r),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
       ),
       child: Text(
         text,
@@ -157,14 +168,14 @@ class InnovationProjectCard extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 12,
-          backgroundColor: const Color(0xFF8B5CF6),
+          backgroundColor: AppColors.cityPrimaryLight,
           backgroundImage:
               project.userAvatar != null && project.userAvatar!.isNotEmpty ? NetworkImage(project.userAvatar!) : null,
           child: project.userAvatar == null || project.userAvatar!.isEmpty
               ? Text(
                   (project.userName ?? '?').isNotEmpty ? (project.userName ?? '?').substring(0, 1).toUpperCase() : '?',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.cityPrimary,
                     fontSize: 12.sp,
                   ),
                 )
@@ -175,17 +186,17 @@ class InnovationProjectCard extends StatelessWidget {
           project.userName ?? 'Unknown',
           style: TextStyle(
             fontSize: 12.sp,
-            color: Colors.grey[600],
+            color: AppColors.textSecondary,
           ),
         ),
         const Spacer(),
-        Icon(FontAwesomeIcons.clock, size: 14.r, color: Colors.grey[600]),
+        Icon(FontAwesomeIcons.clock, size: 14.r, color: AppColors.textSecondary),
         SizedBox(width: 4.w),
         Text(
           _c.formatDate(context, project.updatedAt ?? project.createdAt),
           style: TextStyle(
             fontSize: 12.sp,
-            color: Colors.grey[600],
+            color: AppColors.textSecondary,
           ),
         ),
       ],
@@ -212,10 +223,11 @@ class InnovationProjectCard extends StatelessWidget {
             icon: Icon(FontAwesomeIcons.eye, size: 18.r),
             label: Text(l10n.viewDetails),
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF8B5CF6),
-              side: const BorderSide(color: Color(0xFF8B5CF6)),
+              foregroundColor: AppColors.cityPrimary,
+              side: const BorderSide(color: AppColors.cityPrimary),
+              backgroundColor: AppColors.surfaceElevated,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
               ),
             ),
           ),
@@ -229,11 +241,11 @@ class InnovationProjectCard extends StatelessWidget {
               icon: Icon(FontAwesomeIcons.comments, size: 18.r),
               label: Text(l10n.contactCreator),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B5CF6),
+                backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
+                  borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
                 ),
               ),
             ),
@@ -276,8 +288,8 @@ class InnovationProjectCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-            const Color(0xFF6366F1).withValues(alpha: 0.2),
+            AppColors.cityPrimaryLight,
+            AppColors.surfaceSubtle,
           ],
         ),
       ),
@@ -285,7 +297,7 @@ class InnovationProjectCard extends StatelessWidget {
         child: Icon(
           FontAwesomeIcons.lightbulb,
           size: 50.r,
-          color: const Color(0xFF8B5CF6).withValues(alpha: 0.5),
+          color: AppColors.cityPrimary.withValues(alpha: 0.45),
         ),
       ),
     );
@@ -310,6 +322,8 @@ class InnovationFollowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Obx(() {
       final isFollowed = _c.isProjectFollowed(projectId, project);
 
@@ -321,15 +335,9 @@ class InnovationFollowButton extends StatelessWidget {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: isFollowed ? const Color(0xFF8B5CF6) : Colors.white.withAlpha(230),
+              color: isFollowed ? AppColors.cityPrimary : Colors.white.withValues(alpha: 0.92),
               borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(26),
-                  blurRadius: 8.r,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              boxShadow: AppUiTokens.softFloatingShadow,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -337,15 +345,15 @@ class InnovationFollowButton extends StatelessWidget {
                 Icon(
                   isFollowed ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
                   size: 16.r,
-                  color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
+                  color: isFollowed ? Colors.white : AppColors.cityPrimary,
                 ),
                 SizedBox(width: 4.w),
                 Text(
-                  isFollowed ? '已关注' : '关注',
+                  isFollowed ? l10n.following : l10n.follow,
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
-                    color: isFollowed ? Colors.white : const Color(0xFF8B5CF6),
+                    color: isFollowed ? Colors.white : AppColors.cityPrimary,
                   ),
                 ),
               ],

@@ -32,6 +32,8 @@ class VisaCenterController extends GetxController {
   }
 
   Future<void> refreshVisaCenter() async {
+    final previousData = visaCenter.value;
+
     try {
       isLoading.value = true;
       errorMessage.value = null;
@@ -40,12 +42,12 @@ class VisaCenterController extends GetxController {
       result.fold(
         onSuccess: (data) => visaCenter.value = data,
         onFailure: (exception) {
-          visaCenter.value = null;
+          visaCenter.value = previousData;
           errorMessage.value = exception.message;
         },
       );
     } catch (error) {
-      visaCenter.value = null;
+      visaCenter.value = previousData;
       errorMessage.value = error.toString();
     } finally {
       isLoading.value = false;
@@ -82,7 +84,7 @@ class VisaCenterController extends GetxController {
     }
   }
 
-  Future<void> saveVisaProfile({
+  Future<bool> saveVisaProfile({
     required VisaProfile profile,
     required String visaType,
     required int stayDurationDays,
@@ -121,5 +123,7 @@ class VisaCenterController extends GetxController {
         }
       },
     );
+
+    return result.isSuccess;
   }
 }

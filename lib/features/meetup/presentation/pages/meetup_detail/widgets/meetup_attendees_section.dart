@@ -18,12 +18,9 @@ class MeetupAttendeesSection extends GetView<MeetupDetailController> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
           // 标题行
           Obx(() {
             final attendeesCount = controller.meetup.value?.capacity.currentAttendees ?? 0;
@@ -41,11 +38,16 @@ class MeetupAttendeesSection extends GetView<MeetupDetailController> {
                 if (attendeesCount > 0)
                   TextButton(
                     onPressed: () => _showAllAttendees(context, l10n),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.cityPrimary,
+                      backgroundColor: AppColors.cityPrimaryLight,
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                    ),
                     child: Text(
                       l10n.viewAll,
                       style: TextStyle(
                         fontSize: 13.sp,
-                        color: const Color(0xFFFF4458),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -57,23 +59,37 @@ class MeetupAttendeesSection extends GetView<MeetupDetailController> {
           // 参与者头像列表
           Obx(() {
             if (controller.participants.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20.h),
+              return Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceSubtle,
+                  borderRadius: BorderRadius.circular(18.r),
+                  border: Border.all(color: AppColors.borderLight),
+                ),
+                child: Center(
                   child: Text(
                     l10n.noAttendeesYet,
                     style: TextStyle(
                       fontSize: 14.sp,
                       color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               );
             }
 
-            return SizedBox(
-              height: 40.h,
-              child: ListView.builder(
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSubtle,
+                borderRadius: BorderRadius.circular(18.r),
+                border: Border.all(color: AppColors.borderLight),
+              ),
+              child: SizedBox(
+                height: 44.h,
+                child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: controller.participants.length.clamp(0, 10),
                 itemBuilder: (context, index) {
@@ -96,19 +112,27 @@ class MeetupAttendeesSection extends GetView<MeetupDetailController> {
                       },
                       child: Tooltip(
                         message: userName,
-                        child: SafeCircleAvatar(
-                          imageUrl: userAvatar,
-                          radius: 20.r,
+                        child: Container(
+                          padding: EdgeInsets.all(2.w),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.borderLight),
+                            color: AppColors.surfaceElevated,
+                          ),
+                          child: SafeCircleAvatar(
+                            imageUrl: userAvatar,
+                            radius: 20.r,
+                          ),
                         ),
                       ),
                     ),
                   );
                 },
               ),
+              ),
             );
           }),
-        ],
-      ),
+      ],
     );
   }
 
@@ -117,6 +141,12 @@ class MeetupAttendeesSection extends GetView<MeetupDetailController> {
       AppBottomDrawer(
         title: l10n.allAttendees,
         maxHeightFactor: 0.72,
+        footer: AppBottomDrawerActionRow(
+          secondaryLabel: l10n.close,
+          onSecondaryPressed: () => Get.back<void>(),
+          primaryLabel: l10n.close,
+          onPrimaryPressed: () => Get.back<void>(),
+        ),
         child: Obx(() {
           if (controller.participants.isEmpty) {
             return Padding(
@@ -168,12 +198,6 @@ class MeetupAttendeesSection extends GetView<MeetupDetailController> {
             },
           );
         }),
-        footer: AppBottomDrawerActionRow(
-          secondaryLabel: l10n.close,
-          onSecondaryPressed: () => Get.back<void>(),
-          primaryLabel: l10n.close,
-          onPrimaryPressed: () => Get.back<void>(),
-        ),
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

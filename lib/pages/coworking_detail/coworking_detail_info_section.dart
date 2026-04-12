@@ -1,9 +1,10 @@
-import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
-import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/controllers/coworking_detail_page_controller.dart';
+import 'package:go_nomads_app/generated/app_localizations.dart';
 
 class CoworkingDetailAddressSection extends StatelessWidget {
   final String controllerTag;
@@ -27,7 +28,7 @@ class CoworkingDetailAddressSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 22.sp,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: AppColors.textPrimary,
                 ),
               ),
               SizedBox(height: 12.h),
@@ -38,12 +39,12 @@ class CoworkingDetailAddressSection extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.1),
+                      color: AppColors.cityPrimaryLight,
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
                       FontAwesomeIcons.locationDot,
-                      color: Colors.red,
+                      color: AppColors.cityPrimary,
                       size: 16.r,
                     ),
               ),
@@ -53,7 +54,7 @@ class CoworkingDetailAddressSection extends StatelessWidget {
                       _c.space.value.fullAddress,
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.grey[700],
+                        color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -68,12 +69,12 @@ class CoworkingDetailAddressSection extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.1),
+                        color: AppColors.surfaceSubtle,
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
                         FontAwesomeIcons.user,
-                        color: Colors.blue,
+                        color: AppColors.travelSky,
                         size: 16.r,
                       ),
                     ),
@@ -85,7 +86,7 @@ class CoworkingDetailAddressSection extends StatelessWidget {
                           l10n.createdBy,
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: Colors.grey[500],
+                            color: AppColors.textTertiary,
                           ),
                         ),
                         SizedBox(height: 2.h),
@@ -94,7 +95,7 @@ class CoworkingDetailAddressSection extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ],
@@ -124,11 +125,14 @@ class CoworkingDetailAboutSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.about, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+          Text(
+            l10n.about,
+            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          ),
           SizedBox(height: 8.h),
           Obx(() => Text(
             _c.space.value.spaceInfo.description,
-            style: TextStyle(fontSize: 15.sp, color: Colors.grey[700], height: 1.5),
+            style: TextStyle(fontSize: 15.sp, color: AppColors.textSecondary, height: 1.5),
           )),
         ],
       ),

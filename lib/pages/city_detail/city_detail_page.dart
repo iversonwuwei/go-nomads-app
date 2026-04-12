@@ -1,10 +1,11 @@
 import 'dart:developer';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/utils/navigation_util.dart';
 import 'package:go_nomads_app/utils/share_link_util.dart';
@@ -131,6 +132,8 @@ class _SectionPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = item.accent;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -139,17 +142,10 @@ class _SectionPill extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           decoration: BoxDecoration(
-            gradient: isActive
-                ? const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFFF6B7A), Color(0xFFFF4458)],
-                  )
-                : null,
-            color: isActive ? null : Colors.white,
+            color: isActive ? activeColor.withValues(alpha: 0.12) : AppColors.surfaceElevated,
             borderRadius: BorderRadius.circular(18.r),
             border: Border.all(
-              color: isActive ? Colors.transparent : const Color(0xFFE8E1D6),
+              color: isActive ? activeColor.withValues(alpha: 0.16) : AppColors.borderLight,
             ),
           ),
           child: Row(
@@ -158,7 +154,7 @@ class _SectionPill extends StatelessWidget {
               Icon(
                 item.icon,
                 size: 12.r,
-                color: isActive ? Colors.white : const Color(0xFF5B6470),
+                color: isActive ? activeColor : AppColors.textSecondary,
               ),
               SizedBox(width: 8.w),
               Text(
@@ -166,7 +162,7 @@ class _SectionPill extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w700,
-                  color: isActive ? Colors.white : const Color(0xFF2A313A),
+                  color: isActive ? activeColor : AppColors.textPrimary,
                 ),
               ),
               if (item.onAddPressed != null) ...[
@@ -178,13 +174,13 @@ class _SectionPill extends StatelessWidget {
                     width: 16.w,
                     height: 16.w,
                     decoration: BoxDecoration(
-                      color: isActive ? Colors.white.withValues(alpha: 0.22) : const Color(0xFFFFEFF1),
+                      color: isActive ? activeColor.withValues(alpha: 0.14) : AppColors.cityPrimary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(5.r),
                     ),
                     child: Icon(
                       FontAwesomeIcons.plus,
                       size: 8.r,
-                      color: isActive ? Colors.white : const Color(0xFFFF4458),
+                      color: isActive ? activeColor : AppColors.cityPrimary,
                     ),
                   ),
                 ),
@@ -221,13 +217,16 @@ class _NavigatorIconButton extends StatelessWidget {
           width: 32.w,
           height: 32.w,
           decoration: BoxDecoration(
-            color: highlighted ? const Color(0xFFFF4458) : Colors.white.withValues(alpha: 0.12),
+            color: highlighted ? AppColors.cityPrimary : AppColors.surfaceElevated,
             borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: highlighted ? Colors.transparent : AppColors.borderLight,
+            ),
           ),
           child: Icon(
             icon,
             size: 13.r,
-            color: Colors.white,
+            color: highlighted ? Colors.white : AppColors.textPrimary,
           ),
         ),
       ),
@@ -246,14 +245,9 @@ class _CityStickySectionNavigatorDelegate extends SliverPersistentHeaderDelegate
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: Container(
-          color: Colors.white.withAlpha(200),
-          child: child,
-        ),
-      ),
+    return Container(
+      color: AppColors.background,
+      child: child,
     );
   }
 
@@ -392,36 +386,34 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
         final canGoNext = currentIndex < items.length - 1;
 
         return Container(
-          padding: EdgeInsets.fromLTRB(10.w, 8.h, 10.w, 6.h),
+          padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 8.h),
           decoration: const BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: Color(0x11000000), width: 1),
+              bottom: BorderSide(color: AppColors.borderLight, width: 1),
             ),
           ),
           child: Column(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF17191D), Color(0xFF2A2E35)],
-                  ),
+                  color: AppColors.surfaceElevated,
                   borderRadius: BorderRadius.circular(22.r),
+                  border: Border.all(color: AppColors.borderLight),
+                  boxShadow: AppUiTokens.softFloatingShadow,
                 ),
                 child: Row(
                   children: [
                     Container(
-                      width: 30.w,
-                      height: 30.w,
+                      width: 34.w,
+                      height: 34.w,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
+                        color: currentItem.accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
-                      child: Icon(currentItem.icon, size: 13.r, color: Colors.white),
+                      child: Icon(currentItem.icon, size: 14.r, color: currentItem.accent),
                     ),
-                    SizedBox(width: 8.w),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,7 +426,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                                 style: TextStyle(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.white60,
+                                  color: AppColors.textTertiary,
                                 ),
                               ),
                               SizedBox(width: 8.w),
@@ -443,14 +435,25 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                                   currentItem.label,
                                   style: TextStyle(
                                     fontSize: 14.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.textPrimary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
+                          ),
+                          SizedBox(height: 4.h),
+                          Text(
+                            currentItem.subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              height: 1.3,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
@@ -480,9 +483,9 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                   ],
                 ),
               ),
-              SizedBox(height: 4.h),
+              SizedBox(height: 8.h),
               SizedBox(
-                height: 32.h,
+                height: 36.h,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: items.length,
@@ -619,13 +622,13 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                   width: 38.w,
                   height: 38.w,
                   decoration: BoxDecoration(
-                    color: isActive ? const Color(0xFFFFEFF1) : const Color(0xFFF5F1EA),
+                    color: isActive ? item.accent.withValues(alpha: 0.12) : AppColors.surfaceMuted,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
                     item.icon,
                     size: 16.r,
-                    color: isActive ? const Color(0xFFFF4458) : const Color(0xFF5B6470),
+                    color: isActive ? item.accent : AppColors.textSecondary,
                   ),
                 ),
                 title: Text(
@@ -633,7 +636,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
-                    color: isActive ? const Color(0xFFFF4458) : const Color(0xFF20262E),
+                    color: isActive ? item.accent : AppColors.textPrimary,
                   ),
                 ),
                 subtitle: Padding(
@@ -643,7 +646,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                     style: TextStyle(
                       fontSize: 12.sp,
                       height: 1.35,
-                      color: const Color(0xFF66707D),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -651,7 +654,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                     ? Container(
                         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFEFF1),
+                          color: item.accent.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(999.r),
                         ),
                         child: Text(
@@ -659,7 +662,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                           style: TextStyle(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFFFF4458),
+                            color: item.accent,
                           ),
                         ),
                       )
@@ -668,7 +671,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF8A94A1),
+                          color: AppColors.textTertiary,
                         ),
                       ),
               );
@@ -969,12 +972,12 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
           children: [
             Row(
               children: [
-                Icon(icon, color: const Color(0xFFFF4458), size: 28.r),
+                Icon(icon, color: AppColors.cityPrimary, size: 28.r),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
                     message,
-                    style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
                   ),
                 ),
               ],
@@ -982,8 +985,8 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
             SizedBox(height: 20.h),
             LinearProgressIndicator(
               value: progress / 100,
-              backgroundColor: Colors.grey[200],
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+              backgroundColor: AppColors.surfaceSubtle,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.cityPrimary),
             ),
             SizedBox(height: 16.h),
             Align(
@@ -993,7 +996,7 @@ class _CityDetailPageContent extends GetView<CityDetailController> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16.sp,
-                  color: const Color(0xFFFF4458),
+                  color: AppColors.cityPrimary,
                 ),
               ),
             ),

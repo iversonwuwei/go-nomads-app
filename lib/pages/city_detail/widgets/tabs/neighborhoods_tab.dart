@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 
 import '../../../../features/ai/presentation/controllers/ai_state_controller.dart';
@@ -17,15 +19,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class NeighborhoodsTab extends GetView<CityDetailController> {
   const NeighborhoodsTab({
     super.key,
-    required this.tag,
+    required String? tag,
     required this.onGeneratePressed,
     required this.onCheckPermission,
-  });
+  }) : _tag = tag;
 
-  @override
-  final String? tag;
+  final String? _tag;
   final VoidCallback onGeneratePressed;
   final Future<bool> Function() onCheckPermission;
+
+  @override
+  String? get tag => _tag;
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +110,7 @@ class _LoadingState extends StatelessWidget {
             title: controller.isGeneratingNearbyCities ? 'AI 正在生成附近城市' : '正在加载附近城市',
             subtitle: controller.isGeneratingNearbyCities ? 'Generating nearby cities...' : 'Loading nearby cities...',
             icon: Icons.map_rounded,
-            accentColor: const Color(0xFFFF4458),
+            accentColor: AppColors.cityPrimary,
           ),
           if (controller.isGeneratingNearbyCities) ...[
             SizedBox(height: 12.h),
@@ -121,7 +125,7 @@ class _LoadingState extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFFF4458),
+                    color: AppColors.cityPrimary,
                   ),
                 )),
           ],
@@ -178,7 +182,7 @@ class _EmptyState extends StatelessWidget {
               icon: const Icon(FontAwesomeIcons.wandMagicSparkles),
               label: Text(l10n.neighborhoodsGenerateNearbyCities),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4458),
+                backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: Colors.grey[300],
                 disabledForegroundColor: Colors.grey[500],
@@ -198,17 +202,19 @@ class _EmptyState extends StatelessWidget {
 /// 附近城市内容组件
 class _NearbyCitiesContent extends GetView<CityDetailController> {
   const _NearbyCitiesContent({
-    required this.tag,
+    required String tag,
     required this.cities,
     required this.onGeneratePressed,
     required this.onCheckPermission,
-  });
+  }) : _tag = tag;
 
-  @override
-  final String? tag;
+  final String? _tag;
   final List<NearbyCityDto> cities;
   final VoidCallback onGeneratePressed;
   final Future<bool> Function() onCheckPermission;
+
+  @override
+  String? get tag => _tag;
 
   @override
   Widget build(BuildContext context) {
@@ -232,15 +238,25 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.1),
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Row(
         children: [
-          Icon(
-            FontAwesomeIcons.cloudArrowUp,
-            color: Colors.green,
-            size: 20.r,
+          Container(
+            width: 32.w,
+            height: 32.w,
+            decoration: BoxDecoration(
+              color: AppColors.travelMint.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(
+              FontAwesomeIcons.cloudArrowUp,
+              color: AppColors.feedbackSuccessDark,
+              size: 16.r,
+            ),
           ),
           SizedBox(width: 8.w),
           Expanded(
@@ -248,7 +264,8 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
               l10n.neighborhoodsLoadedFromBackend,
               style: TextStyle(
                 fontSize: 13.sp,
-                color: Colors.green[800],
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -261,8 +278,8 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
                     icon: Icon(FontAwesomeIcons.arrowsRotate, size: 18.r),
                     label: Text(l10n.refresh),
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFFF4458),
-                      disabledForegroundColor: Colors.grey[400],
+                      foregroundColor: AppColors.cityPrimary,
+                      disabledForegroundColor: AppColors.textTertiary,
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                     ),
                   )),
@@ -277,8 +294,8 @@ class _NearbyCitiesContent extends GetView<CityDetailController> {
                     icon: Icon(FontAwesomeIcons.wandMagicSparkles, size: 18.r),
                     label: Text(l10n.guideTabAiGenerate),
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFFF4458),
-                      disabledForegroundColor: Colors.grey[400],
+                      foregroundColor: AppColors.cityPrimary,
+                      disabledForegroundColor: AppColors.textTertiary,
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                     ),
                   )),
@@ -298,15 +315,17 @@ class _NearbyCityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: EdgeInsets.only(bottom: 16.h),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: InkWell(
         onTap: () => _navigateToCityDetail(),
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -333,7 +352,7 @@ class _NearbyCityCard extends StatelessWidget {
 
   Widget _buildCityImage() {
     return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
       child: city.imageUrl != null && city.imageUrl!.isNotEmpty
           ? SafeNetworkImage(
               imageUrl: city.imageUrl!,
@@ -348,7 +367,7 @@ class _NearbyCityCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Colors.grey[300]!, Colors.grey[200]!],
+                  colors: [AppColors.surfaceSubtle, AppColors.backgroundSecondary],
                 ),
               ),
               child: Column(
@@ -400,7 +419,7 @@ class _NearbyCityCard extends StatelessWidget {
               SizedBox(height: 4.h),
               Text(
                 city.country,
-                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -414,20 +433,21 @@ class _NearbyCityCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+        color: AppColors.cityPrimaryLight,
         borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.cityPrimary.withValues(alpha: 0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(_getTransportIcon(city.transportation), size: 14.r, color: const Color(0xFFFF4458)),
+          Icon(_getTransportIcon(city.transportation), size: 14.r, color: AppColors.cityPrimary),
           SizedBox(width: 6.w),
           Text(
             '${city.distance.toStringAsFixed(0)} km',
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.bold,
-              color: Color(0xFFFF4458),
+              color: AppColors.cityPrimary,
             ),
           ),
         ],
@@ -438,11 +458,11 @@ class _NearbyCityCard extends StatelessWidget {
   Widget _buildTravelTime() {
     return Row(
       children: [
-        Icon(FontAwesomeIcons.clock, size: 14.r, color: Colors.grey),
+        Icon(FontAwesomeIcons.clock, size: 14.r, color: AppColors.textSecondary),
         SizedBox(width: 6.w),
         Text(
           _formatTravelTime(city.travelTimeMinutes),
-          style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -458,12 +478,13 @@ class _NearbyCityCard extends StatelessWidget {
           return Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
+              color: AppColors.travelSky.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: AppColors.travelSky.withValues(alpha: 0.16)),
             ),
             child: Text(
               highlight,
-              style: TextStyle(fontSize: 12.sp, color: Colors.blue[700]),
+              style: TextStyle(fontSize: 12.sp, color: AppColors.textPrimary),
             ),
           );
         }).toList(),
@@ -478,20 +499,20 @@ class _NearbyCityCard extends StatelessWidget {
       child: Row(
         children: [
           if (features.internetSpeedMbps != null) ...[
-            Icon(FontAwesomeIcons.wifi, size: 12.r, color: Colors.green),
+            Icon(FontAwesomeIcons.wifi, size: 12.r, color: AppColors.feedbackSuccessDark),
             SizedBox(width: 4.w),
             Text(
               '${features.internetSpeedMbps} Mbps',
-              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
             ),
             SizedBox(width: 16.w),
           ],
           if (features.monthlyCostUsd != null) ...[
-            Icon(FontAwesomeIcons.dollarSign, size: 12.r, color: Colors.orange),
+            Icon(FontAwesomeIcons.dollarSign, size: 12.r, color: AppColors.travelAmber),
             SizedBox(width: 4.w),
             Text(
               '\$${features.monthlyCostUsd!.toStringAsFixed(0)}/mo',
-              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
             ),
           ],
         ],

@@ -1459,6 +1459,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exploreCities => 'Explore Cities';
 
   @override
+  String get homeExploreTabNew => 'New';
+
+  @override
+  String get homeExploreTabRecent => 'Recent';
+
+  @override
+  String get homeExploreTabRecommended => 'Recommended';
+
+  @override
   String get travelPlanCard => 'Travel plan card';
 
   @override

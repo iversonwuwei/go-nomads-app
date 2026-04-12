@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/membership/presentation/services/ai_quota_service.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -15,13 +16,15 @@ import 'package:go_nomads_app/widgets/dialogs/app_bottom_drawer.dart';
 /// Guide Tab - AI 数字游民指南
 /// 使用 GetView 绑定 CityDetailController
 class GuideTab extends GetView<CityDetailController> {
-  @override
-  final String? tag;
+  final String? _tag;
 
   const GuideTab({
     super.key,
-    required this.tag,
-  });
+    required String? tag,
+  }) : _tag = tag;
+
+  @override
+  String? get tag => _tag;
 
   @override
   Widget build(BuildContext context) {
@@ -165,17 +168,35 @@ class _GuideActionBar extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.1),
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Row(
         children: [
-          Icon(FontAwesomeIcons.cloudArrowUp, color: Colors.green, size: 20.r),
+          Container(
+            width: 32.w,
+            height: 32.w,
+            decoration: BoxDecoration(
+              color: AppColors.travelMint.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(
+              FontAwesomeIcons.cloudArrowUp,
+              color: AppColors.feedbackSuccessDark,
+              size: 16.r,
+            ),
+          ),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
               '☁️ 从后端加载',
-              style: TextStyle(fontSize: 13.sp, color: Colors.green[800]),
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Obx(() => Row(
@@ -188,7 +209,7 @@ class _GuideActionBar extends StatelessWidget {
                     label: Text(l10n.refresh),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cityPrimary,
-                      disabledForegroundColor: Colors.grey[400],
+                      disabledForegroundColor: AppColors.textTertiary,
                     ),
                   ),
                   SizedBox(width: 4.w),
@@ -200,7 +221,7 @@ class _GuideActionBar extends StatelessWidget {
                     label: Text(l10n.guideTabAiGenerate),
                     style: TextButton.styleFrom(
                       foregroundColor: AppColors.cityPrimary,
-                      disabledForegroundColor: Colors.grey[400],
+                      disabledForegroundColor: AppColors.textTertiary,
                     ),
                   ),
                 ],
@@ -406,8 +427,14 @@ class _BestAreaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: EdgeInsets.only(bottom: 12.h),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
+      ),
       child: Padding(
         padding: EdgeInsets.all(16.w),
         child: Column(
@@ -420,7 +447,11 @@ class _BestAreaCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     area.name,
-                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -430,7 +461,11 @@ class _BestAreaCard extends StatelessWidget {
             SizedBox(height: 8.h),
             Text(
               area.description,
-              style: TextStyle(fontSize: 14.sp, color: Colors.grey[700]),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
             ),
           ],
         ),
@@ -447,14 +482,29 @@ class _TipItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: AppColors.borderLight),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(FontAwesomeIcons.lightbulb, size: 18.r, color: AppColors.cityPrimary),
+          Icon(FontAwesomeIcons.lightbulb, size: 18.r, color: AppColors.travelAmber),
           SizedBox(width: 8.w),
-          Expanded(child: Text(tip, style: TextStyle(fontSize: 15.sp))),
+          Expanded(
+            child: Text(
+              tip,
+              style: TextStyle(
+                fontSize: 15.sp,
+                color: AppColors.textPrimary,
+                height: 1.45,
+              ),
+            ),
+          ),
         ],
       ),
     );

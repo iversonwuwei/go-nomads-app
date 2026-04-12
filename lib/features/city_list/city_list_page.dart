@@ -33,37 +33,41 @@ class CityListPage extends GetView<CityListController> {
 
   PreferredSizeWidget _buildAppBar(AppLocalizations l10n, bool isMobile) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       elevation: 0,
       title: Text(
         l10n.exploreCities,
         style: TextStyle(
           color: AppColors.textPrimary,
           fontSize: isMobile ? 20 : 24,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w800,
         ),
       ),
       leading: const AppBackButton(),
       actions: [
-        // 全球地图按钮
-        IconButton(
-          icon: FaIcon(
-            FontAwesomeIcons.mapLocationDot,
-            color: AppColors.textPrimary,
-            size: 20.r,
+        Padding(
+          padding: EdgeInsets.only(right: 12.w),
+          child: Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: AppColors.borderLight),
+            ),
+            child: IconButton(
+              icon: FaIcon(
+                FontAwesomeIcons.mapLocationDot,
+                color: AppColors.textPrimary,
+                size: 16.r,
+              ),
+              onPressed: () {
+                Get.to(() => const GlobalMapPage());
+              },
+            ),
           ),
-          onPressed: () {
-            Get.to(() => const GlobalMapPage());
-          },
         ),
       ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1.h,
-          color: AppColors.borderLight,
-        ),
-      ),
     );
   }
 
@@ -73,9 +77,7 @@ class CityListPage extends GetView<CityListController> {
 
       final content = Column(
         children: [
-          // 搜索栏 + 区域 Tab 栏
           CityFilterBar(isMobile: isMobile),
-          // 城市网格列表区域
           Expanded(
             child: Obx(() {
               final showCitiesInitialLoading = controller.isLoading.value && controller.cities.isEmpty;
@@ -125,16 +127,16 @@ class _CityGridContent extends GetView<CityListController> {
             // 城市网格
             SliverPadding(
               padding: EdgeInsets.fromLTRB(
-                isMobile ? 12 : 20,
-                isMobile ? 12 : 20,
-                isMobile ? 12 : 20,
+                isMobile ? 18 : 28,
+                isMobile ? 16 : 20,
+                isMobile ? 18 : 28,
                 0,
               ),
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: isMobile ? 2 : 3,
-                  crossAxisSpacing: isMobile ? 10 : 16,
-                  mainAxisSpacing: isMobile ? 10 : 16,
+                  crossAxisSpacing: isMobile ? 12 : 18,
+                  mainAxisSpacing: isMobile ? 12 : 18,
                   childAspectRatio: 0.68,
                 ),
                 delegate: SliverChildBuilderDelegate(
@@ -151,7 +153,6 @@ class _CityGridContent extends GetView<CityListController> {
               const SliverToBoxAdapter(
                 child: CityListLoadingIndicator(),
               ),
-            // 底部留白
             SliverPadding(padding: EdgeInsets.only(bottom: 100.h)),
           ],
         ),

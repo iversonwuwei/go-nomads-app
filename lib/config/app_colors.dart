@@ -7,7 +7,10 @@ class AppColors {
 
   // ============ 主色调 ============
   /// 背景色 - 极浅灰
-  static const Color background = Color(0xFFF5F7FB);
+  static const Color background = Color(0xFFF4F6FA);
+
+  /// 次级背景，用于分组区域或柔和底板
+  static const Color backgroundSecondary = Color(0xFFEEF2F7);
 
   /// 白色背景
   static const Color white = Colors.white;
@@ -16,20 +19,26 @@ class AppColors {
   static const Color surface = Colors.white;
 
   /// 二级表面背景
-  static const Color surfaceMuted = Color(0xFFF8FAFC);
+  static const Color surfaceMuted = Color(0xFFF0F3F7);
+
+  /// 搜索框/分段筛选等控件的柔和底色
+  static const Color surfaceSubtle = Color(0xFFECEFF4);
+
+  /// 浮层卡片表面
+  static const Color surfaceElevated = Color(0xFFFFFFFF);
 
   /// 禁用表面背景
   static const Color surfaceDisabled = Color(0xFFF1F5F9);
 
   // ============ 文本颜色 ============
   /// 深灰色文本 - 主要文本
-  static const Color textPrimary = Color(0xFF111827);
+  static const Color textPrimary = Color(0xFF1E2430);
 
   /// 中灰色文本 - 强调文本
-  static const Color textSecondary = Color(0xFF667085);
+  static const Color textSecondary = Color(0xFF6B7280);
 
   /// 浅灰色文本 - 次要文本
-  static const Color textTertiary = Color(0xFF98A2B3);
+  static const Color textTertiary = Color(0xFF98A1AF);
 
   /// 白色文本
   static const Color textWhite = Colors.white;
@@ -42,10 +51,10 @@ class AppColors {
 
   // ============ 边框颜色 ============
   /// 主边框颜色
-  static const Color border = Color(0xFFDCE3EC);
+  static const Color border = Color(0xFFDCE4EE);
 
   /// 浅边框颜色
-  static const Color borderLight = Color(0xFFE8EDF5);
+  static const Color borderLight = Color(0xFFE7ECF3);
 
   /// 白色边框 30% 不透明度
   static const Color borderWhite30 = Color(0x4DFFFFFF);
@@ -71,14 +80,14 @@ class AppColors {
 
   // ============ 分割线颜色 ============
   /// 主分割线
-  static const Color divider = Color(0xFFE8EDF5);
+  static const Color divider = Color(0xFFE8EDF4);
 
   /// 浅分割线
   static const Color dividerLight = Color(0xFFCBD5E1);
 
   // ============ 强调色 ============
   /// 蓝色强调色 - 选中/激活状态
-  static const Color accent = Color(0xFF2563EB);
+  static const Color accent = Color(0xFF3266E3);
 
   /// 中灰强调色 - 选中/激活状态
   static const Color accentGrey = Color(0xFF667085);
@@ -98,6 +107,15 @@ class AppColors {
 
   /// City 渐变结束色
   static const Color cityGradientEnd = Color(0xFFFF6B7A);
+
+  /// 天空蓝强调色 - 天气/地图等辅助信息
+  static const Color travelSky = Color(0xFF7CC7FF);
+
+  /// 薄荷绿强调色 - 成功/预算节制等信息
+  static const Color travelMint = Color(0xFF67C59B);
+
+  /// 暖琥珀强调色 - inbox/提醒/高优先级信息
+  static const Color travelAmber = Color(0xFFF4BB59);
 
   /// 成功反馈色
   static const Color feedbackSuccess = Color(0xFF10B981);

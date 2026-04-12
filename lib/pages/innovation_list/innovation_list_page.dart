@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
 import 'package:go_nomads_app/controllers/innovation_list_page_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/innovation_list/innovation_list_widgets.dart';
@@ -33,15 +34,17 @@ class InnovationListPage extends StatelessWidget {
     final isMobile = screenWidth < 768;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surfaceElevated,
+        foregroundColor: AppColors.textPrimary,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        leading: const AppBackButton(color: Color(0xFF1a1a1a)),
+        leading: const AppBackButton(color: AppColors.textPrimary),
         title: Text(
           l10n.innovation,
           style: TextStyle(
-            color: Color(0xFF1a1a1a),
+            color: AppColors.textPrimary,
             fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),

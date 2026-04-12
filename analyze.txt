@@ -1,0 +1,100 @@
+Analyzing go-nomads-app...                                      
+
+   info • Statements in an if should be enclosed in a block • lib/controllers/add_coworking_page_controller.dart:176:7 • curly_braces_in_flow_control_structures
+   info • The member 'refresh' overrides an inherited member but isn't annotated with '@override' • lib/controllers/coworking_reviews_page_controller.dart:114:16 • annotate_overrides
+   info • The 'child' argument should be last in widget constructor invocations • lib/core/utils/deep_link_handler.dart:329:9 • sort_child_properties_last
+   info • 'markC2CMessageAsRead' is deprecated and shouldn't be used. no longer supported • lib/features/chat/infrastructure/services/tencent_im/tencent_im_conversation_mixin.dart:192:69 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart:45:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart:59:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart:60:7 • avoid_print
+   info • The 'child' argument should be last in widget constructor invocations • lib/features/meetup/presentation/pages/meetup_detail/widgets/meetup_attendees_section.dart:120:9 • sort_child_properties_last
+   info • Don't use 'BuildContext's across async gaps • lib/features/membership/presentation/pages/membership_plan_page.dart:1280:7 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/features/membership/presentation/pages/membership_plan_page.dart:1284:11 • use_build_context_synchronously
+   info • The 'child' argument should be last in widget constructor invocations • lib/features/membership/presentation/services/ai_planner_access_service.dart:62:9 • sort_child_properties_last
+   info • The 'child' argument should be last in widget constructor invocations • lib/features/membership/presentation/services/ai_quota_service.dart:90:9 • sort_child_properties_last
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:101:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:120:37 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:122:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:148:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:177:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:200:56 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:229:50 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:303:63 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:303:94 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:312:65 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:312:96 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:402:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/navigation_hub/presentation/pages/land_hub_page.dart:402:78 • deprecated_member_use
+   info • The imported package 'uuid' isn't a dependency of the importing package • lib/features/travel_history/services/visited_place_sync_service.dart:5:8 • depend_on_referenced_packages
+   info • 'popAfterSuccess' is deprecated and shouldn't be used. Use backAfterSave instead • lib/pages/add_cost/add_cost_page.dart:144:22 • deprecated_member_use_from_same_package
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/pages/add_cost/currency_section.dart:47:17 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/pages/add_coworking/add_coworking_pricing_section.dart:62:11 • deprecated_member_use
+   info • 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre • lib/pages/add_coworking/add_coworking_pricing_section.dart:93:105 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/pages/add_coworking/add_coworking_specs_section.dart:64:11 • deprecated_member_use
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre • lib/pages/add_coworking/add_coworking_specs_section.dart:82:11 • deprecated_member_use
+   info • The imported package 'uuid' isn't a dependency of the importing package • lib/pages/ai_chat/ai_chat_controller.dart:15:8 • depend_on_referenced_packages
+   info • The imported package 'uuid' isn't a dependency of the importing package • lib/pages/ai_chat_controller.dart:12:8 • depend_on_referenced_packages
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1807:44 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1812:62 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1819:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1844:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1860:42 • use_build_context_synchronously
+   info • Statements in an if should be enclosed in a block • lib/pages/city_chat_page.dart:2504:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/city_chat_page.dart:2519:7 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/city_chat_page.dart:2533:7 • curly_braces_in_flow_control_structures
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/cost_tab.dart:18:17 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/guide_tab.dart:19:17 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/neighborhoods_tab.dart:26:17 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/neighborhoods_tab.dart:208:17 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/photos_tab.dart:19:16 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/reviews_tab.dart:21:17 • overridden_fields
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2286:43 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2297:43 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2304:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2305:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2306:36 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1134:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1517:41 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1527:41 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1538:41 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1549:41 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1559:41 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:53:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:126:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:169:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:203:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:207:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:251:29 • deprecated_member_use
+   info • Statements in an if should be enclosed in a block • lib/pages/meetup_list/widgets/meetup_list_card.dart:285:35 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/meetup_list/widgets/meetup_list_card.dart:289:35 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/meetup_list/widgets/meetup_list_card.dart:294:35 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/meetup_list/widgets/meetup_list_card.dart:298:36 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/meetup_list/widgets/meetup_list_card.dart:302:35 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/meetup_list/widgets/meetup_list_card.dart:306:35 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/meetup_list/widgets/meetup_list_card.dart:310:35 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block • lib/pages/meetup_list/widgets/meetup_list_card.dart:314:35 • curly_braces_in_flow_control_structures
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:419:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:578:28 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:597:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:616:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:666:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:714:29 • deprecated_member_use
+   info • Dangling library doc comment • lib/pages/profile_page.dart:1:1 • dangling_library_doc_comments
+   info • The 'child' argument should be last in widget constructor invocations • lib/widgets/async_task_progress_dialog.dart:32:9 • sort_child_properties_last
+   info • The 'child' argument should be last in widget constructor invocations • lib/widgets/interests_selector.dart:221:9 • sort_child_properties_last
+warning • Unused import: 'package:go_nomads_app/config/app_colors.dart' • lib/widgets/nomad_card.dart:2:8 • unused_import
+warning • Unused import: 'package:go_nomads_app/config/app_ui_tokens.dart' • lib/widgets/nomad_card.dart:3:8 • unused_import
+   info • Parameter 'key' could be a super parameter • lib/widgets/nomad_card.dart:14:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_card.dart:39:61 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_card.dart:44:33 • deprecated_member_use
+   info • Parameter 'key' could be a super parameter • lib/widgets/nomad_glass_dock.dart:10:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:33:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:34:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:37:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:38:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:43:39 • deprecated_member_use
+   info • Parameter 'key' could be a super parameter • lib/widgets/nomad_hero_image.dart:10:9 • use_super_parameters
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_hero_image.dart:57:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_hero_image.dart:58:34 • deprecated_member_use
+   info • The 'child' argument should be last in widget constructor invocations • lib/widgets/skills_selector.dart:215:9 • sort_child_properties_last
+

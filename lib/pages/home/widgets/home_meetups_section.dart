@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/core/navigation/navigation_result.dart';
 import 'package:go_nomads_app/core/sync/refreshable_controller.dart';
 import 'package:go_nomads_app/features/user/presentation/controllers/user_state_controller.dart';
@@ -70,45 +71,55 @@ class HomeMeetupsSection extends StatelessWidget {
   Widget _buildErrorState(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            FontAwesomeIcons.circleExclamation,
-            size: 48.r,
-            color: AppColors.textSecondary,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            l10n.meetupLoadFailed,
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+      padding: EdgeInsets.symmetric(vertical: 12.h),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 28.h),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(24.r),
+          boxShadow: AppUiTokens.softFloatingShadow,
+          border: Border.all(color: AppColors.borderLight),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                color: AppColors.travelAmber.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(18.r),
+              ),
+              child: Icon(
+                FontAwesomeIcons.circleExclamation,
+                size: 22.r,
+                color: AppColors.travelAmber,
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            _homeController.homeMeetupsErrorMessage.value ?? l10n.meetupLoadFailedDescription,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: AppColors.textSecondary,
+            SizedBox(height: 16.h),
+            Text(
+              l10n.meetupLoadFailed,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
             ),
-          ),
-          SizedBox(height: 24.h),
-          OutlinedButton.icon(
-            onPressed: () => _homeController.loadHomeMeetups(forceRefresh: true),
-            icon: Icon(FontAwesomeIcons.arrowsRotate, size: 16.r),
-            label: Text(l10n.retry),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFFF4458),
-              side: const BorderSide(color: Color(0xFFFF4458)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            SizedBox(height: 8.h),
+            Text(
+              _homeController.homeMeetupsErrorMessage.value ?? l10n.meetupLoadFailedDescription,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
             ),
-          ),
-        ],
+            SizedBox(height: 20.h),
+            OutlinedButton.icon(
+              onPressed: () => _homeController.loadHomeMeetups(forceRefresh: true),
+              icon: Icon(FontAwesomeIcons.arrowsRotate, size: 14.r),
+              label: Text(l10n.retry),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -123,7 +134,7 @@ class HomeMeetupsSection extends StatelessWidget {
         SizedBox(height: 24.h),
         // 横向卡片骨架
         SizedBox(
-          height: 300.h,
+          height: 320.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: 3,
@@ -145,8 +156,8 @@ class HomeMeetupsSection extends StatelessWidget {
               width: 180.w,
               height: 28.h,
               decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(4.r),
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(8.r),
               ),
             ),
             SizedBox(height: 8.h),
@@ -154,8 +165,8 @@ class HomeMeetupsSection extends StatelessWidget {
               width: 120.w,
               height: 14.h,
               decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(4.r),
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(8.r),
               ),
             ),
           ],
@@ -164,8 +175,8 @@ class HomeMeetupsSection extends StatelessWidget {
           width: 80.w,
           height: 40.h,
           decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8.r),
+            color: AppColors.surfaceMuted,
+            borderRadius: BorderRadius.circular(16.r),
           ),
         ),
       ],
@@ -177,15 +188,10 @@ class HomeMeetupsSection extends StatelessWidget {
       width: 280.w,
       margin: EdgeInsets.only(right: 16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 10.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: AppUiTokens.softFloatingShadow,
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +201,7 @@ class HomeMeetupsSection extends StatelessWidget {
             height: 140.h,
             decoration: BoxDecoration(
               color: Colors.grey[200],
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             ),
           ),
           Padding(
@@ -209,7 +215,7 @@ class HomeMeetupsSection extends StatelessWidget {
                   height: 20.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4.r),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
                 SizedBox(height: 10.h),
@@ -219,7 +225,7 @@ class HomeMeetupsSection extends StatelessWidget {
                   height: 14.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4.r),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -229,7 +235,7 @@ class HomeMeetupsSection extends StatelessWidget {
                   height: 14.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(4.r),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
               ],
@@ -263,22 +269,24 @@ class HomeMeetupsSection extends StatelessWidget {
   Widget _buildHeader(BuildContext context, AppLocalizations l10n, int count) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               l10n.nextMeetups,
-              style: TextStyle(
-                fontSize: 28.sp,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
             ),
             SizedBox(height: 4.h),
             Text(
               l10n.upcomingEventsCount(count),
-              style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
             ),
           ],
         ),
@@ -300,16 +308,14 @@ class HomeMeetupsSection extends StatelessWidget {
           onPressed: _userController.isLoggedIn
               ? () => _openCreateMeetupAndRefresh(context)
               : () => AppToast.warning(l10n.pleaseLoginToCreateMeetup, title: l10n.loginRequired),
-          icon: Icon(FontAwesomeIcons.plus, size: 18.r),
+          icon: Icon(FontAwesomeIcons.plus, size: 14.r),
           label: Text(isMobile ? l10n.create : l10n.createMeetup),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF4458),
-            foregroundColor: Colors.white,
             padding: EdgeInsets.symmetric(
               horizontal: isMobile ? 12 : 16,
               vertical: isMobile ? 8 : 12,
             ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           ),
         ));
   }
@@ -329,26 +335,20 @@ class HomeMeetupsSection extends StatelessWidget {
   Widget _buildViewAllButtonDesktop(AppLocalizations l10n) {
     return OutlinedButton.icon(
       onPressed: () => Get.toNamed(AppRoutes.meetupsList),
-      icon: Icon(FontAwesomeIcons.arrowRight, size: 20.r, color: Color(0xFFFF4458)),
+      icon: Icon(FontAwesomeIcons.arrowRight, size: 14.r),
       label: Text(
         l10n.viewAllMeetups,
-        style: TextStyle(
-          color: Color(0xFFFF4458),
-          fontSize: 15.sp,
-          fontWeight: FontWeight.w600,
-        ),
       ),
       style: OutlinedButton.styleFrom(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-        side: BorderSide(color: Color(0xFFFF4458), width: 1.5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       ),
     );
   }
 
   Widget _buildMeetupList(List upcomingMeetups) {
     return SizedBox(
-      height: 330.h,
+      height: 346.h,
       child: NotificationListener<ScrollNotification>(
         onNotification: (scrollInfo) {
           if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent * 0.8 &&
@@ -381,7 +381,7 @@ class HomeMeetupsSection extends StatelessWidget {
         child: Obx(() => _homeController.isLoadingMoreHomeMeetups.value
             ? CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF4458)),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.cityPrimary),
               )
             : const SizedBox.shrink()),
       ),
@@ -392,19 +392,13 @@ class HomeMeetupsSection extends StatelessWidget {
     return Center(
       child: OutlinedButton.icon(
         onPressed: () => Get.toNamed(AppRoutes.meetupsList),
-        icon: Icon(FontAwesomeIcons.arrowRight, size: 20.r, color: Color(0xFFFF4458)),
+        icon: Icon(FontAwesomeIcons.arrowRight, size: 14.r),
         label: Text(
           l10n.viewAllMeetups,
-          style: TextStyle(
-            color: Color(0xFFFF4458),
-            fontWeight: FontWeight.w600,
-            fontSize: 15.sp,
-          ),
         ),
         style: OutlinedButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-          side: BorderSide(color: Color(0xFFFF4458), width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         ),
       ),
     );
@@ -428,74 +422,70 @@ class HomeMeetupEmptyState extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 24 : 48,
-        vertical: isMobile ? 40 : 60,
+        vertical: isMobile ? 20 : 28,
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: isMobile ? 100 : 120,
-            height: isMobile ? 100 : 120,
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              FontAwesomeIcons.userGroup,
-              size: isMobile ? 50 : 60,
-              color: const Color(0xFF10B981),
-            ),
-          ),
-          SizedBox(height: isMobile ? 24 : 32),
-          Text(
-            l10n.noMeetupsAvailable,
-            style: TextStyle(
-              fontSize: isMobile ? 24 : 28,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            l10n.noMeetupsDescription,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: isMobile ? 14 : 16,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-          ),
-          SizedBox(height: isMobile ? 32 : 40),
-          ElevatedButton.icon(
-            onPressed: () async {
-              final result = await Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
-              );
-
-              final needsRefresh = result == true || (result is NavigationResult && result.needsRefresh);
-              if (needsRefresh && onCreated != null) {
-                await onCreated!();
-              }
-            },
-            icon: Icon(FontAwesomeIcons.circlePlus, size: 20.r),
-            label: Text(
-              l10n.createMeetup,
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 24 : 32,
-                vertical: isMobile ? 14 : 16,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 24 : 32,
+          vertical: isMobile ? 30 : 36,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(28.r),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.softFloatingShadow,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: isMobile ? 72 : 82,
+              height: isMobile ? 72 : 82,
+              decoration: BoxDecoration(
+                color: AppColors.travelMint.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(24.r),
               ),
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+              child: Icon(
+                FontAwesomeIcons.userGroup,
+                size: isMobile ? 28 : 32,
+                color: AppColors.travelMint,
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: isMobile ? 20 : 24),
+            Text(
+              l10n.noMeetupsAvailable,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+            ),
+            SizedBox(height: 10.h),
+            Text(
+              l10n.noMeetupsDescription,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+            ),
+            SizedBox(height: isMobile ? 24 : 28),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final result = await Navigator.push<dynamic>(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CreateMeetupPage()),
+                );
+
+                final needsRefresh = result == true || (result is NavigationResult && result.needsRefresh);
+                if (needsRefresh && onCreated != null) {
+                  await onCreated!();
+                }
+              },
+              icon: Icon(FontAwesomeIcons.circlePlus, size: 16.r),
+              label: Text(l10n.createMeetup),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/auth/presentation/controllers/auth_state_controller.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/domain/repositories/i_meetup_repository.dart';
@@ -140,13 +141,16 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F1EA),
+        backgroundColor: AppColors.background,
         body: CustomScrollView(
           slivers: [
             SliverAppBar(
               expandedHeight: 300.h,
               pinned: true,
-              backgroundColor: const Color(0xFF17191D),
+              backgroundColor: AppColors.surfaceElevated,
+              foregroundColor: AppColors.textPrimary,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
               leading: SliverBackButton(
                 onPressed: _handleBack,
               ),
@@ -188,11 +192,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    color: const Color(0xFF252A31),
+                                    color: AppColors.backgroundSecondary,
                                     child: Icon(
                                       FontAwesomeIcons.imagePortrait,
                                       size: 64.sp,
-                                      color: Colors.white24,
+                                      color: AppColors.textTertiary,
                                     ),
                                   );
                                 },
@@ -201,11 +205,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                           )
                         else
                           Container(
-                            color: const Color(0xFF252A31),
+                            color: AppColors.backgroundSecondary,
                             child: Icon(
                               FontAwesomeIcons.calendarDays,
                               size: 64.sp,
-                              color: Colors.white24,
+                              color: AppColors.textTertiary,
                             ),
                           ),
                         Container(
@@ -214,9 +218,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
+                                Colors.white.withValues(alpha: 0.04),
                                 Colors.black.withValues(alpha: 0.12),
-                                Colors.black.withValues(alpha: 0.2),
-                                const Color(0xFF101317).withValues(alpha: 0.92),
+                                const Color(0xFF15212B).withValues(alpha: 0.78),
                               ],
                             ),
                           ),
@@ -251,13 +255,14 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                             child: Obx(() => Container(
                                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.5),
+                                    color: AppColors.surfaceElevated.withValues(alpha: 0.9),
                                     borderRadius: BorderRadius.circular(12.r),
+                                    border: Border.all(color: AppColors.borderLight),
                                   ),
                                   child: Text(
                                     '${_currentImageIndex.value + 1} / ${_meetup.value.images.length}',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                       fontSize: 12.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -284,7 +289,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     padding: EdgeInsets.all(40.w),
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: const Color(0xFFFF4458),
+                        color: AppColors.cityPrimary,
                       ),
                     ),
                   );
@@ -372,15 +377,16 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                  color: AppColors.cityPrimaryLight,
                   borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(color: AppColors.cityPrimary.withValues(alpha: 0.16)),
                 ),
                 child: Text(
                   l10n.startingSoon,
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFFFF4458),
+                    color: AppColors.cityPrimary,
                   ),
                 ),
               ),
@@ -514,8 +520,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
               OutlinedButton(
                 onPressed: _contactOrganizer,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFFF4458),
-                  side: BorderSide(color: const Color(0xFFFF4458), width: 1.5),
+                  foregroundColor: AppColors.cityPrimary,
+                  backgroundColor: AppColors.cityPrimaryLight,
+                  side: BorderSide(color: AppColors.cityPrimary.withValues(alpha: 0.18), width: 1.2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20.r),
                   ),
@@ -555,12 +562,17 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
               ),
               if (attendeesCount > 0)
                 TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.cityPrimary,
+                    backgroundColor: AppColors.cityPrimaryLight,
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                  ),
                   onPressed: _showAllAttendees,
                   child: Text(
                     l10n.viewAll,
                     style: TextStyle(
                       fontSize: 13.sp,
-                      color: const Color(0xFFFF4458),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -571,23 +583,37 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         SizedBox(height: 16.h),
         Obx(() {
           if (_participants.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 20.h),
+            return Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceSubtle,
+                borderRadius: BorderRadius.circular(18.r),
+                border: Border.all(color: AppColors.borderLight),
+              ),
+              child: Center(
                 child: Text(
                   l10n.noAttendeesYet,
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             );
           }
 
-          return SizedBox(
-            height: 40.h,
-            child: ListView.builder(
+          return Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceSubtle,
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(color: AppColors.borderLight),
+            ),
+            child: SizedBox(
+              height: 44.h,
+              child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _participants.length.clamp(0, 10),
               itemBuilder: (context, index) {
@@ -610,14 +636,23 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                     },
                     child: Tooltip(
                       message: userName,
-                      child: SafeCircleAvatar(
-                        imageUrl: userAvatar,
-                        radius: 20.r,
+                      child: Container(
+                        padding: EdgeInsets.all(2.w),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.borderLight),
+                          color: AppColors.surfaceElevated,
+                        ),
+                        child: SafeCircleAvatar(
+                          imageUrl: userAvatar,
+                          radius: 20.r,
+                        ),
                       ),
                     ),
                   ),
                 );
               },
+            ),
             ),
           );
         }),
@@ -679,19 +714,10 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       width: double.infinity,
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFF3EDE3), Color(0xFFE8DDCF)],
-        ),
-        borderRadius: BorderRadius.circular(28.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 22.r,
-            offset: Offset(0, 10.h),
-          ),
-        ],
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusXl),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.heroCardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -709,7 +735,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.1,
-                        color: const Color(0xFF7F5832),
+                        color: AppColors.cityPrimary,
                       ),
                     ),
                     SizedBox(height: 8.h),
@@ -718,7 +744,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       style: TextStyle(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1D1A17),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     SizedBox(height: 6.h),
@@ -727,7 +753,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       style: TextStyle(
                         fontSize: 13.sp,
                         height: 1.45,
-                        color: const Color(0xFF655345),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -737,8 +763,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF17191D),
+                  color: AppColors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(22.r),
+                  border: Border.all(color: AppColors.borderLight),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -748,13 +775,13 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     SizedBox(height: 2.h),
                     Text(
                       'spots left',
-                      style: TextStyle(fontSize: 11.sp, color: Colors.white70),
+                      style: TextStyle(fontSize: 11.sp, color: AppColors.textSecondary),
                     ),
                   ],
                 ),
@@ -845,9 +872,10 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
       width: double.infinity,
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(28.r),
-        border: Border.all(color: const Color(0xFFE6DDD2)),
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusXl),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -858,7 +886,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
               fontSize: 11.sp,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.1,
-              color: const Color(0xFF7F5832),
+              color: AppColors.cityPrimary,
             ),
           ),
           SizedBox(height: 8.h),
@@ -867,7 +895,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
             style: TextStyle(
               fontSize: 22.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF1C232C),
+              color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: 16.h),
@@ -906,9 +934,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.08),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(22.r),
-        border: Border.all(color: accent.withValues(alpha: 0.14)),
+        border: Border.all(color: accent.withValues(alpha: 0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -925,9 +953,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           SizedBox(height: 14.h),
           Text(label, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: accent)),
           SizedBox(height: 8.h),
-          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1C232C))),
+          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           SizedBox(height: 6.h),
-          Text(detail, style: TextStyle(fontSize: 12.sp, height: 1.45, color: const Color(0xFF51606B))),
+          Text(detail, style: TextStyle(fontSize: 12.sp, height: 1.45, color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -937,17 +965,18 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.56),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFF7F5832))),
+          Text(label, style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: AppColors.cityPrimary)),
           SizedBox(height: 8.h),
-          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1D1A17))),
+          Text(value, style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           SizedBox(height: 4.h),
-          Text(hint, style: TextStyle(fontSize: 11.sp, height: 1.35, color: const Color(0xFF655345))),
+          Text(hint, style: TextStyle(fontSize: 11.sp, height: 1.35, color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -964,14 +993,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     return Obx(() => Container(
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10.r,
-                offset: Offset(0, -2.h),
-              ),
-            ],
+            color: AppColors.surfaceElevated,
+            border: Border(top: BorderSide(color: AppColors.borderLight)),
+            boxShadow: AppUiTokens.softTopSheetShadow,
           ),
           child: SafeArea(
             child: Row(
@@ -990,15 +1014,16 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.blue,
+                      foregroundColor: AppColors.textPrimary,
                       side: BorderSide(
-                        color: Colors.blue,
+                        color: AppColors.border,
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+                      backgroundColor: AppColors.surfaceElevated,
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -1018,7 +1043,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
-                            _meetup.value.status == MeetupStatus.cancelled ? AppColors.borderLight : Colors.red,
+                          _meetup.value.status == MeetupStatus.cancelled ? AppColors.borderLight : AppColors.feedbackError,
                         foregroundColor:
                             _meetup.value.status == MeetupStatus.cancelled ? AppColors.textSecondary : Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -1045,16 +1070,16 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: _isJoined ? Colors.blue : Colors.grey,
+                      foregroundColor: _isJoined ? AppColors.textPrimary : AppColors.textTertiary,
                       side: BorderSide(
-                        color: _isJoined ? Colors.blue : Colors.grey.shade300,
+                        color: _isJoined ? AppColors.border : AppColors.borderLight,
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-                      backgroundColor: _isJoined ? null : Colors.grey.shade50,
+                      backgroundColor: _isJoined ? AppColors.surfaceElevated : AppColors.surfaceDisabled,
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -1067,7 +1092,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
                           ? null
                           : _toggleJoin,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isJoined ? AppColors.borderLight : const Color(0xFFFF4458),
+                        backgroundColor: _isJoined ? AppColors.borderLight : AppColors.cityPrimary,
                         foregroundColor: _isJoined ? AppColors.textSecondary : Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
@@ -1143,8 +1168,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1165,52 +1191,61 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
   }
 
   Widget _buildInfoRow(IconData icon, String title, String value, {String? subtitle}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.all(10.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10.r),
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: AppColors.cityPrimaryLight,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(icon, size: 18.sp, color: AppColors.cityPrimary),
           ),
-          child: Icon(icon, size: 20.sp, color: const Color(0xFFFF4458)),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              if (subtitle != null) ...[
-                SizedBox(height: 2.h),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  subtitle,
+                  title,
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    color: AppColors.textTertiary,
+                    fontSize: 13.sp,
+                    color: AppColors.textSecondary,
                   ),
                 ),
+                SizedBox(height: 4.h),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1268,9 +1303,12 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           final currentUser = authController.currentUser.value;
           if (currentUser != null) {
             _participants.add({
-              'id': currentUser.id,
-              'name': currentUser.name,
-              'avatarUrl': currentUser.avatar,
+              'userId': currentUser.id,
+              'user': {
+                'name': currentUser.name,
+                'avatar': currentUser.avatar,
+                'email': currentUser.email,
+              },
             });
           }
         } else {
@@ -1278,7 +1316,9 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           final authController = Get.find<AuthStateController>();
           final currentUserId = authController.currentUser.value?.id;
           if (currentUserId != null) {
-            _participants.removeWhere((p) => p['id'] == currentUserId);
+            _participants.removeWhere(
+              (p) => p['id'] == currentUserId || p['userId'] == currentUserId,
+            );
           }
         }
 
@@ -1307,6 +1347,11 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
     // 显示确认对话框
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
+        backgroundColor: AppColors.surfaceElevated,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
         title: Text(l10n.confirmCancelMeetupTitle),
         content: Text(l10n.confirmCancelMeetupMessage),
         actions: [
@@ -1317,7 +1362,7 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
           TextButton(
             onPressed: () => Get.back(result: true),
             style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
+              foregroundColor: AppColors.feedbackError,
             ),
             child: Text(l10n.confirm),
           ),
@@ -1446,21 +1491,32 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
         title: l10n.allAttendees,
         maxHeightFactor: 0.72,
         footer: AppBottomDrawerActionRow(
-          secondaryLabel: l10n.close,
-          onSecondaryPressed: () => Get.back<void>(),
           primaryLabel: l10n.close,
           onPrimaryPressed: () => Get.back<void>(),
+          secondaryLabel: l10n.close,
+          onSecondaryPressed: null,
+          secondaryEnabled: false,
         ),
           child: Obx(() {
             if (_participants.isEmpty) {
               return Padding(
                 padding: EdgeInsets.symmetric(vertical: 20.h),
                 child: Center(
-                  child: Text(
-                    l10n.noAttendeesYet,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      color: AppColors.textSecondary,
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceSubtle,
+                      borderRadius: BorderRadius.circular(18.r),
+                      border: Border.all(color: AppColors.borderLight),
+                    ),
+                    child: Text(
+                      l10n.noAttendeesYet,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                 ),
@@ -1472,32 +1528,44 @@ class _MeetupDetailPageState extends State<MeetupDetailPage> {
               itemCount: _participants.length,
               itemBuilder: (context, index) {
                 final participant = _participants[index];
-                final userId = participant['userId']?.toString() ?? '';
+                final userId = participant['userId']?.toString() ?? participant['id']?.toString() ?? '';
 
                 final userInfo = participant['user'] as Map<String, dynamic>?;
-                final userName = userInfo?['name'] as String? ?? '${l10n.user} ${index + 1}';
-                final userEmail = userInfo?['email'] as String?;
-                final userAvatar = userInfo?['avatar'] as String?;
+                final userName =
+                  userInfo?['name'] as String? ?? participant['name'] as String? ?? '${l10n.user} ${index + 1}';
+                final userEmail = userInfo?['email'] as String? ?? participant['email'] as String?;
+                final userAvatar = userInfo?['avatar'] as String? ?? participant['avatarUrl'] as String?;
 
-                return ListTile(
-                contentPadding: EdgeInsets.zero,
-                onTap: () {
+                return Container(
+                  margin: EdgeInsets.only(bottom: 10.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(color: AppColors.borderLight),
+                  ),
+                  child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 2.h),
+                  onTap: () {
                     final participantUser = _createBasicUserModel(
                       userId,
                       userName,
                       userAvatar ?? '',
                     );
-                  Get.back();
+                  Get.back<void>();
                     Get.to(() => MemberDetailPage(user: participantUser));
                   },
                   leading: SafeCircleAvatar(
                     imageUrl: userAvatar,
                     radius: 20,
                   ),
-                  title: Text(userName, style: TextStyle(fontSize: 14.sp)),
+                  title: Text(
+                    userName,
+                    style: TextStyle(fontSize: 14.sp, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                  ),
                   subtitle: Text(
                     userEmail ?? l10n.digitalNomad,
-                    style: TextStyle(fontSize: 12.sp),
+                    style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+                  ),
                   ),
                 );
               },

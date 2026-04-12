@@ -1,0 +1,6 @@
+Analyzing go-nomads-app...                                      
+
+   info • 'markC2CMessageAsRead' is deprecated and shouldn't be used. no longer supported • lib/features/chat/infrastructure/services/tencent_im/tencent_im_conversation_mixin.dart:192:69 • deprecated_member_use
+  error • 1 positional argument expected by 'backAfterSave', but 0 found • lib/pages/add_cost/add_cost_page.dart:145:9 • not_enough_positional_arguments
+  error • The named parameter 'result' isn't defined • lib/pages/add_cost/add_cost_page.dart:145:9 • undefined_named_parameter
+

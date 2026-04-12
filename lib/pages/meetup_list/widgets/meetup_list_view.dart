@@ -91,22 +91,32 @@ class MeetupListView extends GetView<MeetupListController> {
     switch (tab) {
       case MeetupListTab.joined:
         emptyMessage = l10n.noJoinedMeetupsYet;
-        emptyHint = '参加一些活动来认识新朋友吧！';
+        emptyHint = Localizations.localeOf(context).languageCode == 'zh'
+            ? '参加一些活动来认识新朋友吧！'
+            : 'Join a few meetups and start meeting new people.';
         emptyIcon = FontAwesomeIcons.calendarPlus;
         break;
       case MeetupListTab.past:
         emptyMessage = l10n.noPastMeetups;
-        emptyHint = '还没有参加过任何活动';
+        emptyHint = Localizations.localeOf(context).languageCode == 'zh'
+            ? '还没有参加过任何活动'
+            : 'No attended meetups yet.';
         emptyIcon = FontAwesomeIcons.clockRotateLeft;
         break;
       case MeetupListTab.cancelled:
-        emptyMessage = '暂无已取消的活动';
-        emptyHint = '这里会显示你取消参与的活动记录';
+        emptyMessage = Localizations.localeOf(context).languageCode == 'zh'
+            ? '暂无已取消的活动'
+            : 'No cancelled meetups';
+        emptyHint = Localizations.localeOf(context).languageCode == 'zh'
+            ? '这里会显示你取消参与的活动记录'
+            : 'Cancelled meetup history will show up here.';
         emptyIcon = FontAwesomeIcons.calendarXmark;
         break;
       case MeetupListTab.upcoming:
         emptyMessage = l10n.noMeetupsAvailable;
-        emptyHint = '目前没有即将举行的活动';
+        emptyHint = Localizations.localeOf(context).languageCode == 'zh'
+            ? '目前没有即将举行的活动'
+            : 'No upcoming meetups at the moment.';
         emptyIcon = FontAwesomeIcons.calendarDay;
         break;
     }

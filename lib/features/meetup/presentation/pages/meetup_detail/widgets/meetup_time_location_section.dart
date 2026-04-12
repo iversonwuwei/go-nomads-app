@@ -20,11 +20,8 @@ class MeetupTimeLocationSection extends GetView<MeetupDetailController> {
       final meetup = controller.meetup.value;
       if (meetup == null) return const SizedBox.shrink();
 
-      return Container(
-        padding: EdgeInsets.all(20.w),
-        color: Colors.white,
-        child: Column(
-          children: [
+      return Column(
+        children: [
             _buildInfoRow(
               FontAwesomeIcons.calendar,
               l10n.dateAndTime,
@@ -46,8 +43,7 @@ class MeetupTimeLocationSection extends GetView<MeetupDetailController> {
                   ? l10n.meetupIsFull
                   : l10n.spotsLeft('${meetup.capacity.remainingSlots}'),
             ),
-          ],
-        ),
+        ],
       );
     });
   }
@@ -59,10 +55,11 @@ class MeetupTimeLocationSection extends GetView<MeetupDetailController> {
         Container(
           padding: EdgeInsets.all(10.w),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4458).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10.r),
+            color: AppColors.cityPrimaryLight,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: AppColors.cityPrimary.withValues(alpha: 0.14)),
           ),
-          child: Icon(icon, size: 20.sp, color: const Color(0xFFFF4458)),
+          child: Icon(icon, size: 20.sp, color: AppColors.cityPrimary),
         ),
         SizedBox(width: 12.w),
         Expanded(

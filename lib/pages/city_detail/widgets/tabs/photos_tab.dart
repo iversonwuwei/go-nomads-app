@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -13,15 +14,18 @@ import '../../city_detail_controller.dart';
 
 /// Photos Tab - GetView 实现
 class PhotosTab extends GetView<CityDetailController> {
-  const PhotosTab({super.key, required this.tag});
+  const PhotosTab({super.key, required String tag}) : _tag = tag;
+
+  final String _tag;
 
   @override
-  final String tag;
+  String? get tag => _tag;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final userContentController = Get.find<UserCityContentStateController>();
+    final currentTag = tag ?? '';
 
     return Obx(() {
       final photos = userContentController.photos;
@@ -31,11 +35,11 @@ class PhotosTab extends GetView<CityDetailController> {
 
       final content = photos.isEmpty
           ? _EmptyPhotosState(
-              tag: tag,
+              tag: currentTag,
               l10n: l10n,
             )
           : _PhotosContent(
-              tag: tag,
+              tag: currentTag,
               groupedList: _groupPhotos(photos, l10n),
               allPhotos: photos,
               l10n: l10n,
@@ -106,21 +110,44 @@ class _EmptyPhotosState extends GetView<CityDetailController> {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FontAwesomeIcons.images, size: 56.r, color: Colors.grey[300]),
-                    SizedBox(height: 12.h),
-                    Text(
-                      'No photos yet',
-                      style: TextStyle(fontSize: 15.sp, color: Colors.grey[600]),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      'Be the first to share a photo!',
-                      style: TextStyle(fontSize: 13.sp, color: Colors.grey[500]),
-                    ),
-                  ],
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20.w),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 28.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: AppColors.borderLight),
+                    boxShadow: AppUiTokens.softFloatingShadow,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 72.w,
+                        height: 72.w,
+                        decoration: BoxDecoration(
+                          color: AppColors.travelSky.withValues(alpha: 0.14),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(FontAwesomeIcons.images, size: 28.r, color: AppColors.travelSky),
+                      ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        'No photos yet',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Be the first to share a photo!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -336,13 +363,14 @@ class _PhotoGridItem extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.45),
+                      color: AppColors.surfaceElevated.withValues(alpha: 0.92),
                     borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(color: AppColors.borderLight.withValues(alpha: 0.9)),
                   ),
                   child: Icon(
                     FontAwesomeIcons.magnifyingGlassPlus,
                     size: 14.r,
-                    color: Colors.white,
+                      color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -394,64 +422,88 @@ class _PhotoGalleryDialogState extends State<_PhotoGalleryDialog> {
 
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 24.h),
-      backgroundColor: Colors.black,
-      child: Column(
-        children: [
-          _buildHeader(photos.length),
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (value) => setState(() {
-                _currentIndex = value;
-              }),
-              itemCount: photos.length,
-              itemBuilder: (context, index) {
-                final photo = photos[index];
-                return Hero(
-                  tag: 'city-photo-${photo.id}',
-                  child: InteractiveViewer(
-                    minScale: 0.9,
-                    maxScale: 4,
-                    child: Center(
-                      child: Image.network(
-                        photo.imageUrl,
-                        fit: BoxFit.contain,
+      backgroundColor: Colors.transparent,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28.r),
+        child: Container(
+          color: const Color(0xFF101418),
+          child: Column(
+            children: [
+              _buildHeader(photos.length),
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (value) => setState(() {
+                    _currentIndex = value;
+                  }),
+                  itemCount: photos.length,
+                  itemBuilder: (context, index) {
+                    final photo = photos[index];
+                    return Hero(
+                      tag: 'city-photo-${photo.id}',
+                      child: InteractiveViewer(
+                        minScale: 0.9,
+                        maxScale: 4,
+                        child: Center(
+                          child: Image.network(
+                            photo.imageUrl,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                    );
+                  },
+                ),
+              ),
+              _buildPhotoInfo(photos[_currentIndex], l10n),
+            ],
           ),
-          _buildPhotoInfo(photos[_currentIndex], l10n),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildHeader(int total) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 4.h),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(FontAwesomeIcons.xmark, color: Colors.white),
-            onPressed: Get.back,
+          _GalleryActionButton(
+            icon: FontAwesomeIcons.xmark,
+            onTap: Get.back,
           ),
           const Spacer(),
-          Text(
-            '${_currentIndex + 1}/$total',
-            style: const TextStyle(color: Colors.white70),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            ),
+            child: Text(
+              '${_currentIndex + 1}/$total',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-          SizedBox(width: 12.w),
         ],
       ),
     );
   }
 
   Widget _buildPhotoInfo(UserCityPhoto photo, AppLocalizations l10n) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -508,4 +560,35 @@ class _PhotoGroup {
   final String uploaderId;
   final List<UserCityPhoto> photos;
   DateTime latestUpload;
+}
+
+class _GalleryActionButton extends StatelessWidget {
+  const _GalleryActionButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(14.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14.r),
+        child: Container(
+          width: 40.w,
+          height: 40.w,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          child: Icon(icon, color: Colors.white, size: 18.r),
+        ),
+      ),
+    );
+  }
 }

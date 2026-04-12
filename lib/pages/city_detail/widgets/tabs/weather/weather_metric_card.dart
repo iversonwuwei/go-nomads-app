@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 天气指标卡片 - 显示单个天气指标（如湿度、风速等）
@@ -24,20 +25,15 @@ class WeatherMetricCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(14.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10.r,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: iconColor ?? const Color(0xFFFF4458), size: 20.r),
+          Icon(icon, color: iconColor ?? AppColors.cityPrimary, size: 20.r),
           SizedBox(height: 12.h),
           Text(
             value,
@@ -51,7 +47,7 @@ class WeatherMetricCard extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               fontSize: 13.sp,
             ),
           ),
@@ -60,7 +56,7 @@ class WeatherMetricCard extends StatelessWidget {
             Text(
               subtitle!,
               style: TextStyle(
-                color: Colors.grey[500],
+                color: AppColors.textTertiary,
                 fontSize: 12.sp,
               ),
             ),

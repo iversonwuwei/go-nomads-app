@@ -19,13 +19,9 @@ class MeetupDescriptionSection extends GetView<MeetupDetailController> {
       final meetup = controller.meetup.value;
       if (meetup == null) return const SizedBox.shrink();
 
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(20.w),
-        color: Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             Text(
               l10n.about,
               style: TextStyle(
@@ -43,8 +39,7 @@ class MeetupDescriptionSection extends GetView<MeetupDetailController> {
                 height: 1.6,
               ),
             ),
-          ],
-        ),
+        ],
       );
     });
   }

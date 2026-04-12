@@ -15,7 +15,6 @@ import 'package:go_nomads_app/routes/app_routes.dart';
 import 'package:go_nomads_app/widgets/app_toast.dart';
 import 'package:go_nomads_app/widgets/safe_network_image.dart';
 
-/// 城市卡片组件（网格视图）
 class HomeCityCard extends StatelessWidget {
   final City city;
   final VoidCallback? onReturnFromDetail;
@@ -36,23 +35,134 @@ class HomeCityCard extends StatelessWidget {
       onTap: () => _navigateToDetail(context, l10n),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: AppColors.borderLight, width: 1),
+          borderRadius: BorderRadius.circular(24.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8.r,
-              offset: const Offset(0, 2),
+              color: const Color(0x140F172A),
+              blurRadius: 22.r,
+              offset: const Offset(0, 12),
             ),
           ],
         ),
-        child: Stack(
-          children: [
-            // 背景图片
-            _buildBackgroundImage(),
-            // 内容层
-            _buildContent(isMobile, l10n: l10n),
-          ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24.r),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              SafeNetworkImage(
+                imageUrl: city.displayImageUrl,
+                fit: BoxFit.cover,
+                placeholder: Container(color: const Color(0xFFE7ECF3)),
+                errorWidget: Container(
+                  color: const Color(0xFFE7ECF3),
+                  child: const Icon(FontAwesomeIcons.image, color: Colors.white70),
+                ),
+              ),
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0x1A000000),
+                      Color(0x33000000),
+                      Color(0xCC000000),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 12.h,
+                left: 12.w,
+                right: 12.w,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _GlassBadge(
+                      icon: FontAwesomeIcons.wifi,
+                      label: '${city.displayInternetScore.toStringAsFixed(1)} Mbps',
+                    ),
+                    const Spacer(),
+                    Obx(() {
+                      final authController = Get.find<AuthStateController>();
+                      final user = authController.currentUser.value;
+                      final isAdmin = user?.role.toLowerCase() == 'admin';
+                      final isCityModerator = city.isCurrentUserModerator ||
+                          (city.moderatorId != null && city.moderatorId == user?.id);
+                      if (!isAdmin && !isCityModerator) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return _GenerateImageButton(
+                        cityId: city.id,
+                        cityName: city.name,
+                        isMobile: isMobile,
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              Positioned(
+                left: 14.w,
+                right: 14.w,
+                bottom: 14.h,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      city.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isMobile ? 22.sp : 24.sp,
+                        fontWeight: FontWeight.w800,
+                        height: 1.02,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      city.displayCountry,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.86),
+                        fontSize: isMobile ? 12.sp : 13.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    Row(
+                      children: [
+                        _BottomMetric(
+                          icon: FontAwesomeIcons.solidStar,
+                          value: city.displayOverallScore.toStringAsFixed(1),
+                          iconColor: const Color(0xFFFBBF24),
+                        ),
+                        SizedBox(width: 8.w),
+                        if (city.averageCost != null && city.averageCost! > 0)
+                          _BottomMetric(
+                            icon: FontAwesomeIcons.dollarSign,
+                            value: '\$${city.averageCost!.toInt()}/${l10n.month}',
+                            iconColor: const Color(0xFF86EFAC),
+                          ),
+                        const Spacer(),
+                        _CountPill(
+                          icon: FontAwesomeIcons.laptop,
+                          value: '${city.coworkingCount ?? 0}',
+                        ),
+                        SizedBox(width: 6.w),
+                        _CountPill(
+                          icon: FontAwesomeIcons.userGroup,
+                          value: '${city.meetupCount ?? 0}',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -84,267 +194,37 @@ class HomeCityCard extends StatelessWidget {
         ),
       ),
     ).then((_) {
-      log('🔙 从 CityDetailPage 返回');
       onReturnFromDetail?.call();
     });
   }
+}
 
-  Widget _buildBackgroundImage() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8.r),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          SafeNetworkImage(
-            imageUrl: city.displayImageUrl,
-            fit: BoxFit.cover,
-            placeholder: Container(color: Colors.grey[200]),
-            errorWidget: Container(
-              color: Colors.grey[300],
-              child: const Icon(FontAwesomeIcons.image, color: Colors.white70),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.3),
-                  Colors.black.withValues(alpha: 0.7),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+class _GlassBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
 
-  Widget _buildContent(bool isMobile, {required AppLocalizations l10n}) {
-    return Stack(
-      children: [
-        // 顶部信息
-        _buildTopRow(isMobile),
-        // 底部城市信息
-        _buildBottomInfo(isMobile, l10n: l10n),
-      ],
-    );
-  }
+  const _GlassBadge({required this.icon, required this.label});
 
-  Widget _buildTopRow(bool isMobile) {
-    return Positioned(
-      top: 8.h,
-      left: 8.w,
-      right: 8.w,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // 右侧按钮组
-          _buildTopRightButtons(isMobile),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTopRightButtons(bool isMobile) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // 刷新图片按钮（管理员或城市版主可见）
-        Obx(() {
-          final authController = Get.find<AuthStateController>();
-          final user = authController.currentUser.value;
-          final isAdmin = user?.role.toLowerCase() == 'admin';
-          final isCityModerator =
-              city.isCurrentUserModerator || (city.moderatorId != null && city.moderatorId == user?.id);
-          if (!isAdmin && !isCityModerator) return const SizedBox.shrink();
-
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _GenerateImageButton(
-                cityId: city.id,
-                cityName: city.name,
-                isMobile: isMobile,
-              ),
-              SizedBox(width: isMobile ? 3 : 6),
-            ],
-          );
-        }),
-        // 网络评分
-        Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 3 : 6,
-            vertical: isMobile ? 2 : 3,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(4.r),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                FontAwesomeIcons.wifi,
-                color: Colors.white,
-                size: isMobile ? 7 : 10,
-              ),
-              SizedBox(width: isMobile ? 1 : 3),
-              Text(
-                city.displayInternetScore.toStringAsFixed(1),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isMobile ? 7 : 10,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomInfo(bool isMobile, {required AppLocalizations l10n}) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: EdgeInsets.all(isMobile ? 8 : 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.7),
-            ],
-          ),
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(8.r),
-            bottomRight: Radius.circular(8.r),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 城市名
-            Text(
-              city.name,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isMobile ? 16 : 18,
-                fontWeight: FontWeight.bold,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: isMobile ? 2 : 4),
-            // 国家
-            Text(
-              city.displayCountry,
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: isMobile ? 12 : 14,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: isMobile ? 4 : 8),
-            // 综合得分
-            Row(
-              children: [
-                Icon(
-                  FontAwesomeIcons.star,
-                  color: const Color(0xFFFBBF24),
-                  size: isMobile ? 16 : 18,
-                ),
-                SizedBox(width: isMobile ? 3 : 4),
-                Text(
-                  city.displayOverallScore.toStringAsFixed(1),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isMobile ? 14 : 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(width: isMobile ? 3 : 4),
-                Text(
-                  l10n.overallScore,
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: isMobile ? 11 : 12,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: isMobile ? 4 : 8),
-            // 数字游民核心指标 - Coworking & Meetup 数量
-            Row(
-              children: [
-                // Coworking 数量
-                _buildStatChip(
-                  icon: FontAwesomeIcons.laptop,
-                  value: '${city.coworkingCount ?? 0}',
-                  color: Colors.blue,
-                  isMobile: isMobile,
-                ),
-                SizedBox(width: isMobile ? 6 : 8),
-                // Meetup 数量
-                _buildStatChip(
-                  icon: FontAwesomeIcons.userGroup,
-                  value: '${city.meetupCount ?? 0}',
-                  color: Colors.purple,
-                  isMobile: isMobile,
-                ),
-                SizedBox(width: isMobile ? 6 : 8),
-                // 月均花费
-                if (city.averageCost != null && city.averageCost! > 0) ...[
-                  _buildStatChip(
-                    icon: FontAwesomeIcons.dollarSign,
-                    value: '\$${city.averageCost!.toInt()}',
-                    color: Colors.green,
-                    isMobile: isMobile,
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 构建统计小标签
-  Widget _buildStatChip({
-    required IconData icon,
-    required String value,
-    required Color color,
-    required bool isMobile,
-  }) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 4 : 6,
-        vertical: isMobile ? 2 : 3,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(4.r),
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: isMobile ? 10 : 12),
-          SizedBox(width: isMobile ? 2 : 4),
+          Icon(icon, size: 11.r, color: Colors.white),
+          SizedBox(width: 5.w),
           Text(
-            value,
+            label,
             style: TextStyle(
               color: Colors.white,
-              fontSize: isMobile ? 10 : 12,
-              fontWeight: FontWeight.w600,
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -353,7 +233,77 @@ class HomeCityCard extends StatelessWidget {
   }
 }
 
-/// 生成城市图片按钮组件
+class _BottomMetric extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final Color iconColor;
+
+  const _BottomMetric({
+    required this.icon,
+    required this.value,
+    required this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 9.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10.r, color: iconColor),
+          SizedBox(width: 5.w),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CountPill extends StatelessWidget {
+  final IconData icon;
+  final String value;
+
+  const _CountPill({required this.icon, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(13.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10.r, color: AppColors.textSecondary),
+          SizedBox(width: 4.w),
+          Text(
+            value,
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _GenerateImageButton extends StatelessWidget {
   final String cityId;
   final String cityName;
@@ -382,14 +332,14 @@ class _GenerateImageButton extends StatelessWidget {
     final user = authController.currentUser.value;
     final isAdmin = user?.role.toLowerCase() == 'admin';
 
-    // 检查是否为该城市的版主
     bool isCityModerator = false;
     try {
       final city = cityController.cities.firstWhereOrNull((c) => c.id == cityId) ??
           cityController.recommendedCities.firstWhereOrNull((c) => c.id == cityId) ??
           cityController.popularCities.firstWhereOrNull((c) => c.id == cityId);
       if (city != null) {
-        isCityModerator = city.isCurrentUserModerator || (city.moderatorId != null && city.moderatorId == user?.id);
+        isCityModerator =
+            city.isCurrentUserModerator || (city.moderatorId != null && city.moderatorId == user?.id);
       }
     } catch (_) {}
 
@@ -427,16 +377,17 @@ class _GenerateImageButton extends StatelessWidget {
       return GestureDetector(
         onTap: isGenerating ? null : _generateImages,
         child: Container(
-          padding: EdgeInsets.all(isMobile ? 4 : 6),
+          width: 34.w,
+          height: 34.w,
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(4.r),
+            color: Colors.white.withValues(alpha: 0.16),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
           ),
           child: isGenerating
-              ? SizedBox(
-                  width: isMobile ? 12 : 16,
-                  height: isMobile ? 12 : 16,
-                  child: CircularProgressIndicator(
+              ? Padding(
+                  padding: EdgeInsets.all(9.r),
+                  child: const CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
@@ -444,7 +395,7 @@ class _GenerateImageButton extends StatelessWidget {
               : Icon(
                   FontAwesomeIcons.arrowsRotate,
                   color: Colors.white,
-                  size: isMobile ? 10 : 14,
+                  size: isMobile ? 12 : 14,
                 ),
         ),
       );

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/user_city_content/domain/entities/user_city_content.dart';
 import 'package:go_nomads_app/features/user_city_content/presentation/controllers/user_city_content_state_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -17,13 +18,15 @@ import 'package:intl/intl.dart';
 /// Reviews Tab - 评论标签页
 /// 只加载5条评论预览，header有跳转icon可查看全部
 class ReviewsTab extends GetView<CityDetailController> {
-  @override
-  final String? tag;
+  final String? _tag;
 
   const ReviewsTab({
     super.key,
-    required this.tag,
-  });
+    required String? tag,
+  }) : _tag = tag;
+
+  @override
+  String? get tag => _tag;
 
   @override
   Widget build(BuildContext context) {
@@ -341,7 +344,7 @@ class _FullscreenGalleryPageState extends State<_FullscreenGalleryPage> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black,
+      color: const Color(0xFF0F141A),
       child: SafeArea(
         child: Stack(
           children: [
@@ -374,18 +377,30 @@ class _FullscreenGalleryPageState extends State<_FullscreenGalleryPage> {
               top: 0,
               left: 0,
               right: 0,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      icon: Icon(Icons.close, color: Colors.white, size: 28.r),
+                    _GalleryActionButton(
+                      icon: Icons.close,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
-                    Text(
-                      '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                      style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999.r),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      child: Text(
+                        '${_currentIndex + 1} / ${widget.imageUrls.length}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                     SizedBox(width: 48.w), // 占位保持居中
                   ],
@@ -393,6 +408,37 @@ class _FullscreenGalleryPageState extends State<_FullscreenGalleryPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GalleryActionButton extends StatelessWidget {
+  const _GalleryActionButton({
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(14.r),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(14.r),
+        child: Container(
+          width: 40.w,
+          height: 40.w,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          child: Icon(icon, color: Colors.white, size: 20.r),
         ),
       ),
     );
@@ -416,21 +462,44 @@ class _ReviewsEmptyState extends StatelessWidget {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FontAwesomeIcons.commentDots, size: 64.r, color: Colors.grey[300]),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'No reviews yet',
-                      style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Be the first to write a review!',
-                      style: TextStyle(fontSize: 14.sp, color: Colors.grey[500]),
-                    ),
-                  ],
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20.w),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 28.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: AppColors.borderLight),
+                    boxShadow: AppUiTokens.softFloatingShadow,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 72.w,
+                        height: 72.w,
+                        decoration: BoxDecoration(
+                          color: AppColors.cityPrimaryLight,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(FontAwesomeIcons.commentDots, size: 30.r, color: AppColors.cityPrimary),
+                      ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        'No reviews yet',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Be the first to write a review!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""批量替换 Flutter Material Icons 为 FontAwesome Icons"""
+"""批量替换 Flutter Material Icons 为 FontAwesome Icons。"""
 
 from pathlib import Path
 
-# 图标映射关系
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+LIB_DIR = PROJECT_ROOT / 'lib'
+
+
 ICON_MAPPINGS = {
     'Icons.home': 'FontAwesomeIcons.house',
     'Icons.person': 'FontAwesomeIcons.user',
@@ -139,74 +142,62 @@ ICON_MAPPINGS = {
 
 FA_IMPORT = "import 'package:font_awesome_flutter/font_awesome_flutter.dart';"
 
-def process_file(file_path):
-    """处理单个文件"""
+
+def process_file(file_path: Path) -> bool:
+    """处理单个文件。"""
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
+        content = file_path.read_text(encoding='utf-8')
         original_content = content
-        
-        # 检查是否包含 Icons.
+
         if 'Icons.' not in content:
             return False
-        
-        # 应用所有替换 (按长度降序排序,避免短匹配覆盖长匹配)
-        sorted_keys = sorted(ICON_MAPPINGS.keys(), key=len, reverse=True)
-        for icon_key in sorted_keys:
+
+        for icon_key in sorted(ICON_MAPPINGS.keys(), key=len, reverse=True):
             if icon_key in content:
                 content = content.replace(icon_key, ICON_MAPPINGS[icon_key])
-        
-        # 如果内容被修改
+
         if content != original_content:
-            # 确保包含 FontAwesome import
             if FA_IMPORT not in content:
-                # 在 flutter/material.dart import 后添加
                 if "import 'package:flutter/material.dart';" in content:
                     content = content.replace(
                         "import 'package:flutter/material.dart';",
-                        f"import 'package:flutter/material.dart';\n{FA_IMPORT}"
+                        f"import 'package:flutter/material.dart';\n{FA_IMPORT}",
                     )
                 elif content.startswith('import '):
                     content = f"{FA_IMPORT}\n{content}"
-            
-            # 保存文件
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(content)
-            
+
+            file_path.write_text(content, encoding='utf-8', newline='\n')
             return True
-        
-        return False
-    
-    except Exception as e:
-        print(f"错误处理文件 {file_path}: {e}")
+
         return False
 
-def main():
-    """主函数"""
-    lib_path = Path('lib')
-    dart_files = list(lib_path.rglob('*.dart'))
-    
-    # 排除 .bak 文件
-    dart_files = [f for f in dart_files if '.bak' not in str(f)]
-    
+    except Exception as exc:
+        print(f"错误处理文件 {file_path.relative_to(PROJECT_ROOT).as_posix()}: {exc}")
+        return False
+
+
+def main() -> None:
+    """主函数。"""
+    dart_files = [path for path in LIB_DIR.rglob('*.dart') if '.bak' not in str(path)]
+
     total_files = len(dart_files)
     modified_files = 0
-    
+
     print(f"找到 {total_files} 个 Dart 文件")
-    print("开始处理...")
+    print('开始处理...')
     print()
-    
+
     for file_path in dart_files:
         if process_file(file_path):
             modified_files += 1
-            print(f"✓ 已修改: {file_path}")
-    
+            print(f"✓ 已修改: {file_path.relative_to(PROJECT_ROOT).as_posix()}")
+
     print()
-    print("=" * 50)
-    print(f"总文件数: {total_files}")
-    print(f"已修改文件数: {modified_files}")
-    print("=" * 50)
+    print('=' * 50)
+    print(f'总文件数: {total_files}')
+    print(f'已修改文件数: {modified_files}')
+    print('=' * 50)
+
 
 if __name__ == '__main__':
     main()

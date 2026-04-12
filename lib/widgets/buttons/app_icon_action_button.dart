@@ -9,6 +9,7 @@ class AppIconActionButton extends StatelessWidget {
   final double size;
   final String? tooltip;
   final Color? backgroundColor;
+  final Color? borderColor;
   final EdgeInsetsGeometry? margin;
 
   const AppIconActionButton({
@@ -19,6 +20,7 @@ class AppIconActionButton extends StatelessWidget {
     this.size = 20,
     this.tooltip,
     this.backgroundColor,
+    this.borderColor,
     this.margin,
   });
 
@@ -41,6 +43,7 @@ class AppIconActionButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
+        border: borderColor == null ? null : Border.all(color: borderColor!),
         boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: button,

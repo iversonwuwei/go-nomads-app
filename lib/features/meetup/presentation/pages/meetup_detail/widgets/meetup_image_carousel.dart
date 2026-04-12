@@ -50,11 +50,20 @@ class MeetupImageCarousel extends GetView<MeetupDetailController> {
 
   Widget _buildPlaceholder() {
     return Container(
-      color: AppColors.borderLight,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.cityPrimaryLight,
+            AppColors.surfaceSubtle,
+          ],
+        ),
+      ),
       child: Icon(
         FontAwesomeIcons.calendarDays,
         size: 64.sp,
-        color: AppColors.textTertiary,
+        color: AppColors.cityPrimary.withValues(alpha: 0.38),
       ),
     );
   }
@@ -91,13 +100,14 @@ class MeetupImageCarousel extends GetView<MeetupDetailController> {
       child: Obx(() => Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: AppColors.surfaceElevated.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: AppColors.borderLight),
             ),
             child: Text(
               '${controller.currentImageIndex.value + 1} / $count',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
               ),

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/ai/presentation/controllers/ai_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_nomad_summary.dart';
@@ -568,11 +569,13 @@ class _DecisionHero extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF1B263B), Color(0xFF415A77), Color(0xFFE76F51)],
+          colors: [Color(0xFFFFFFFF), Color(0xFFF8FBFF), Color(0xFFFFF5F0)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(22.r),
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.heroCardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,12 +586,12 @@ class _DecisionHero extends StatelessWidget {
                 width: 42.w,
                 height: 42.w,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: AppColors.cityPrimary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Icon(
                   FontAwesomeIcons.compassDrafting,
-                  color: Colors.white,
+                  color: AppColors.cityPrimary,
                   size: 16.r,
                 ),
               ),
@@ -597,7 +600,7 @@ class _DecisionHero extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w800,
                   ),
@@ -609,7 +612,7 @@ class _DecisionHero extends StatelessWidget {
           Text(
             subtitle,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: AppColors.textSecondary,
               fontSize: 12.sp,
               height: 1.45,
             ),
@@ -618,7 +621,7 @@ class _DecisionHero extends StatelessWidget {
           Text(
             budgetLabel,
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 26.sp,
               fontWeight: FontWeight.w900,
               letterSpacing: -0.6,
@@ -628,7 +631,7 @@ class _DecisionHero extends StatelessWidget {
           Text(
             'monthly move baseline',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.74),
+              color: AppColors.textSecondary,
               fontSize: 12.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -659,19 +662,19 @@ class _HeroChip extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(999.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 11.r, color: Colors.white),
+          Icon(icon, size: 11.r, color: AppColors.cityPrimary),
           SizedBox(width: 6.w),
           Text(
             label,
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimary,
               fontSize: 11.sp,
               fontWeight: FontWeight.w700,
             ),
@@ -733,9 +736,10 @@ class _LeadDecisionCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: const Color(0xFFE7DED0)),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,8 +769,9 @@ class _LeadDecisionCard extends StatelessWidget {
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: const Color(0xFFF6F1EA),
+              color: AppColors.surfaceSubtle,
               borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(color: AppColors.borderLight),
             ),
             child: Text(
               guideLabel,
@@ -794,8 +799,9 @@ class _LeadStat extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(10.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F1EA),
+        color: AppColors.surfaceSubtle,
         borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -849,12 +855,13 @@ class _DecisionTravelPlanLaunchCard extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFF6F8FF), Color(0xFFFFF6F4)],
+          colors: [Color(0xFFFFFFFF), Color(0xFFF8FBFF), Color(0xFFFFF7F4)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: const Color(0xFFDCE5F5)),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -865,12 +872,12 @@ class _DecisionTravelPlanLaunchCard extends StatelessWidget {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1B263B).withValues(alpha: 0.08),
+                  color: AppColors.cityPrimary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Icon(
                   FontAwesomeIcons.wandMagicSparkles,
-                  color: const Color(0xFF1B263B),
+                  color: AppColors.cityPrimary,
                   size: 16.r,
                 ),
               ),
@@ -905,7 +912,7 @@ class _DecisionTravelPlanLaunchCard extends StatelessWidget {
           Text(
             'Turn this decision snapshot into a Travel Brief, then carry your preference stack and shortlist into the AI planner.',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: AppColors.textSecondary,
               fontSize: 13.sp,
               height: 1.45,
             ),
@@ -928,7 +935,7 @@ class _DecisionTravelPlanLaunchCard extends StatelessWidget {
               icon: const Icon(Icons.route_rounded),
               label: Text(l10n.createTravelPlan),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1B263B),
+                backgroundColor: AppColors.cityPrimary,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -964,9 +971,10 @@ class _SignalCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(color: const Color(0xFFE7DED0)),
+          border: Border.all(color: AppColors.borderLight),
+          boxShadow: AppUiTokens.softFloatingShadow,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1033,12 +1041,12 @@ class _SignalCard extends StatelessWidget {
 
   Color _accentColor(int score) {
     if (score >= 80) {
-      return const Color(0xFF2A9D8F);
+      return AppColors.travelMint;
     }
     if (score >= 65) {
-      return const Color(0xFFE9C46A);
+      return AppColors.travelAmber;
     }
-    return const Color(0xFFE76F51);
+    return AppColors.cityPrimaryDark;
   }
 }
 
@@ -1087,7 +1095,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppColors.surfaceElevated,
       borderRadius: BorderRadius.circular(16.r),
       child: InkWell(
         onTap: action.onTap,
@@ -1096,12 +1104,13 @@ class _ActionButton extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFFE7DED0)),
+            border: Border.all(color: AppColors.borderLight),
+            boxShadow: AppUiTokens.softFloatingShadow,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(action.icon, size: 14.r, color: AppColors.textPrimary),
+              Icon(action.icon, size: 14.r, color: AppColors.cityPrimary),
               SizedBox(width: 8.w),
               Text(
                 action.label,
@@ -1201,7 +1210,8 @@ class _PreviewCard extends StatelessWidget {
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18.r),
-            border: Border.all(color: const Color(0xFFE7DED0)),
+            color: AppColors.surfaceElevated,
+            border: Border.all(color: AppColors.borderLight),
           ),
           child: Row(
             children: [
@@ -1209,10 +1219,10 @@ class _PreviewCard extends StatelessWidget {
                 width: 38.w,
                 height: 38.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF0DA),
+                  color: AppColors.cityPrimaryLight,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(icon, size: 15.r, color: const Color(0xFFE76F51)),
+                child: Icon(icon, size: 15.r, color: AppColors.cityPrimary),
               ),
               SizedBox(width: 12.w),
               Expanded(

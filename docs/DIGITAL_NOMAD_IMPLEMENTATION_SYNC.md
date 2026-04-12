@@ -33,6 +33,7 @@
 - Migration Workspace 已切到真实 plan-level 状态源，阶段、待办和时间轴写入 `ai_travel_plans.plan_data.migrationWorkspace`，Flutter 页面补齐了最小编辑入口。
 - Budget Center 已切到真实预算基线写模型，月预算目标、模板、提醒阈值和分类预算写入 `ai_travel_plans.plan_data.budgetWorkspace`。
 - Visa Center 已切到真实签证档案写模型，签证类型、停留区间、材料清单和提醒时间写入 `ai_travel_plans.plan_data.visaWorkspace`。
+- Visa Center 当前进入产品级收口阶段: 页面保留现有视觉方向，但需要补齐最后刷新时间、焦点档案关键信号、空值兜底、错误文案收敛、提醒动作禁用态、编辑抽屉表单校验、日期选择器、保存中保护和失败回退，避免继续停留在“可演示但不够稳”的状态。
 - City Detail 决策面板已消费 City Nomad Summary 的预算信号、推荐住宿、推荐共享办公和即将举行的 meetup 预览；guide prose、tabs、hotel/coworking/meetup 独立列表和详情页仍没有整体改造。
 - Community 现在补上了真实 Q&A 写模型和互动持久化；首页 intelligence feed 与 question detail 优先消费真实 `community_questions/community_answers` 数据，独立 Meetup 列表、详情页、RSVP、SignalR 主链路仍未纳入本轮。
 - P1 当前状态: 未系统启动。Nomad Circles、联合办公增强、长住/Coliving、收件箱统一化深化、Nomad Profile 匹配升级仍是 backlog。

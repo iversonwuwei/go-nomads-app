@@ -1,0 +1,51 @@
+Analyzing go-nomads-app...                                      
+
+   info • 'markC2CMessageAsRead' is deprecated and shouldn't be used. no longer supported • lib/features/chat/infrastructure/services/tencent_im/tencent_im_conversation_mixin.dart:192:69 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart:45:15 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart:59:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/features/innovation_project/infrastructure/repositories/innovation_project_repository.dart:60:7 • avoid_print
+   info • Don't use 'BuildContext's across async gaps • lib/features/membership/presentation/pages/membership_plan_page.dart:1280:7 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/features/membership/presentation/pages/membership_plan_page.dart:1284:11 • use_build_context_synchronously
+   info • 'popAfterSuccess' is deprecated and shouldn't be used. Use backAfterSave instead • lib/pages/add_cost/add_cost_page.dart:144:22 • deprecated_member_use_from_same_package
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1807:44 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1812:62 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1819:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1844:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/city_chat_page.dart:1860:42 • use_build_context_synchronously
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/cost_tab.dart:18:17 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/guide_tab.dart:19:17 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/neighborhoods_tab.dart:26:17 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/neighborhoods_tab.dart:208:17 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/photos_tab.dart:19:16 • overridden_fields
+   info • Field overrides a field inherited from 'GetView' • lib/pages/city_detail/widgets/tabs/reviews_tab.dart:21:17 • overridden_fields
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2286:43 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2297:43 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2304:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2305:35 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/data_service_page.dart:2306:36 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1134:40 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1517:41 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1527:41 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1538:41 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1549:41 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/pages/direct_chat_page.dart:1559:41 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:53:35 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:126:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:169:31 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:203:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:207:33 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:251:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:435:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:594:28 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:613:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:632:48 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:682:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/meetup_list/widgets/meetup_list_card.dart:730:29 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:33:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:34:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:37:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:38:36 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_glass_dock.dart:43:39 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_hero_image.dart:57:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/widgets/nomad_hero_image.dart:58:34 • deprecated_member_use
+

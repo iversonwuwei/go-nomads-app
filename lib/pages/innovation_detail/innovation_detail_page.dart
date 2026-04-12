@@ -1,4 +1,6 @@
 import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/innovation_project/domain/entities/innovation_project.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:go_nomads_app/pages/add_innovation/add_innovation_page.dart';
@@ -47,9 +49,11 @@ class InnovationDetailPage extends StatelessWidget {
         // 加载中显示骨架屏
         if (controller.isLoading.value) {
           return Scaffold(
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.background,
             appBar: AppBar(
-              backgroundColor: const Color(0xFF8B5CF6),
+              backgroundColor: AppColors.surfaceElevated,
+              foregroundColor: AppColors.textPrimary,
+              surfaceTintColor: Colors.transparent,
               leading: SliverBackButton(onPressed: () => _handleBack(controller)),
               title: Text(project.projectName),
             ),
@@ -58,7 +62,7 @@ class InnovationDetailPage extends StatelessWidget {
         }
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.background,
           body: CustomScrollView(
             slivers: [
               // App Bar with Image
@@ -95,11 +99,16 @@ class InnovationDetailPage extends StatelessWidget {
   ) {
     return [
       // 1. 一句话定位
+      _buildOverviewCard(context, controller, l10n),
+
+      SizedBox(height: 24.h),
+
+      // 1. 一句话定位
       InnovationDetailSection(
         icon: FontAwesomeIcons.rocket,
         title: l10n.elevatorPitch,
         content: controller.project.elevatorPitch,
-        color: const Color(0xFF8B5CF6),
+        color: AppColors.cityPrimary,
       ),
 
       SizedBox(height: 24.h),
@@ -109,7 +118,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.circleExclamation,
         title: l10n.problem,
         content: controller.project.problem,
-        color: const Color(0xFFEF4444),
+        color: AppColors.feedbackError,
       ),
 
       SizedBox(height: 24.h),
@@ -119,7 +128,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.lightbulb,
         title: l10n.solution,
         content: controller.project.solution,
-        color: const Color(0xFF10B981),
+        color: AppColors.travelMint,
       ),
 
       SizedBox(height: 24.h),
@@ -129,7 +138,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.users,
         title: l10n.targetAudience,
         content: controller.project.targetAudience,
-        color: const Color(0xFF3B82F6),
+        color: AppColors.travelSky,
       ),
 
       SizedBox(height: 24.h),
@@ -139,7 +148,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.laptop,
         title: l10n.productType,
         content: controller.project.productType,
-        color: const Color(0xFFF59E0B),
+        color: AppColors.travelAmber,
       ),
 
       SizedBox(height: 24.h),
@@ -149,7 +158,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.star,
         title: l10n.keyFeatures,
         items: controller.project.keyFeatures.split('\n').where((s) => s.isNotEmpty).toList(),
-        color: const Color(0xFF8B5CF6),
+        color: AppColors.cityPrimary,
       ),
 
       SizedBox(height: 24.h),
@@ -159,7 +168,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.chartLine,
         title: l10n.competitiveAdvantage,
         content: controller.project.competitiveAdvantage,
-        color: const Color(0xFF6366F1),
+        color: AppColors.travelSky,
       ),
 
       SizedBox(height: 24.h),
@@ -169,7 +178,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.dollarSign,
         title: l10n.businessModel,
         content: controller.project.businessModel,
-        color: const Color(0xFF10B981),
+        color: AppColors.travelMint,
       ),
 
       SizedBox(height: 24.h),
@@ -179,7 +188,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.chartLine,
         title: l10n.marketOpportunity,
         content: controller.project.marketOpportunity,
-        color: const Color(0xFF3B82F6),
+        color: AppColors.travelSky,
       ),
 
       SizedBox(height: 24.h),
@@ -189,7 +198,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.clockRotateLeft,
         title: l10n.currentStatus,
         content: controller.project.currentStatus,
-        color: const Color(0xFFF59E0B),
+        color: AppColors.travelAmber,
       ),
 
       SizedBox(height: 24.h),
@@ -199,7 +208,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.userGroup,
         title: l10n.team,
         team: controller.project.team,
-        color: const Color(0xFF8B5CF6),
+        color: AppColors.cityPrimary,
       ),
 
       SizedBox(height: 24.h),
@@ -209,7 +218,7 @@ class InnovationDetailPage extends StatelessWidget {
         icon: FontAwesomeIcons.handshake,
         title: l10n.ask,
         content: controller.project.ask,
-        color: const Color(0xFFEF4444),
+        color: AppColors.feedbackError,
       ),
 
       SizedBox(height: 32.h),
@@ -222,6 +231,199 @@ class InnovationDetailPage extends StatelessWidget {
       // 底部留白,为底部栏留出空间
       SizedBox(height: 80.h),
     ];
+  }
+
+  Widget _buildOverviewCard(
+    BuildContext context,
+    InnovationDetailPageController controller,
+    AppLocalizations l10n,
+  ) {
+    final currentProject = controller.project;
+    final featureCount = _splitLines(currentProject.keyFeatures).length;
+
+    return Container(
+      padding: AppUiTokens.cardPadding,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusXl),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.heroCardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 10.w,
+            runSpacing: 10.h,
+            children: [
+              _buildSignalChip(
+                icon: FontAwesomeIcons.laptop,
+                label: l10n.productType,
+                value: currentProject.productType,
+                color: AppColors.cityPrimary,
+              ),
+              _buildSignalChip(
+                icon: FontAwesomeIcons.clockRotateLeft,
+                label: l10n.currentStatus,
+                value: currentProject.currentStatus,
+                color: AppColors.travelAmber,
+              ),
+              _buildSignalChip(
+                icon: FontAwesomeIcons.userGroup,
+                label: l10n.team,
+                value: '${currentProject.teamSize}',
+                color: AppColors.travelSky,
+              ),
+              _buildSignalChip(
+                icon: FontAwesomeIcons.star,
+                label: l10n.keyFeatures,
+                value: '$featureCount',
+                color: AppColors.travelMint,
+              ),
+            ],
+          ),
+          SizedBox(height: 18.h),
+          Text(
+            currentProject.elevatorPitch,
+            style: TextStyle(
+              fontSize: 18.sp,
+              height: 1.55,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            currentProject.userName?.isNotEmpty == true
+                ? '${currentProject.userName} · ${controller.formatDate(currentProject.createdAt)}'
+                : controller.formatDate(currentProject.createdAt),
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 18.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricTile(
+                  icon: FontAwesomeIcons.eye,
+                  label: 'Views',
+                  value: '${currentProject.viewCount ?? 0}',
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildMetricTile(
+                  icon: FontAwesomeIcons.heart,
+                  label: 'Likes',
+                  value: '${currentProject.likeCount ?? 0}',
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildMetricTile(
+                  icon: FontAwesomeIcons.commentDots,
+                  label: 'Comments',
+                  value: '${currentProject.commentCount ?? 0}',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSignalChip({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12.r, color: color),
+          SizedBox(width: 8.w),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+          SizedBox(width: 6.w),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 148.w),
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricTile({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 14.r, color: AppColors.textSecondary),
+          SizedBox(height: 10.h),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<String> _splitLines(String value) {
+    return value
+        .split('\n')
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toList();
   }
 
   void _handleBack(InnovationDetailPageController controller) {

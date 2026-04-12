@@ -20,12 +20,9 @@ class MeetupBasicInfoSection extends GetView<MeetupDetailController> {
       final meetup = controller.meetup.value;
       if (meetup == null) return const SizedBox.shrink();
 
-      return Container(
-        padding: EdgeInsets.all(20.w),
-        color: Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             Row(
               children: [
                 _buildTypeChip(
@@ -39,8 +36,9 @@ class MeetupBasicInfoSection extends GetView<MeetupDetailController> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF4458).withValues(alpha: 0.1),
+                      color: AppColors.cityPrimaryLight,
                       borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: AppColors.cityPrimary.withValues(alpha: 0.16)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -83,8 +81,7 @@ class MeetupBasicInfoSection extends GetView<MeetupDetailController> {
                 ),
               ],
             ),
-          ],
-        ),
+        ],
       );
     });
   }
@@ -132,8 +129,9 @@ class MeetupBasicInfoSection extends GetView<MeetupDetailController> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

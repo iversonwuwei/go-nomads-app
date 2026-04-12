@@ -1,4 +1,6 @@
 import 'package:go_nomads_app/controllers/innovation_detail_page_controller.dart';
+import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,14 +26,16 @@ class InnovationDetailCreatorSection extends StatelessWidget {
     return Obx(() => Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(12.r),
+            color: AppColors.surfaceElevated,
+            borderRadius: BorderRadius.circular(AppUiTokens.radiusLg),
+            border: Border.all(color: AppColors.borderLight),
+            boxShadow: AppUiTokens.softFloatingShadow,
           ),
           child: Row(
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: const Color(0xFF8B5CF6),
+                backgroundColor: AppColors.cityPrimaryLight,
                 backgroundImage: _c.project.userAvatar != null &&
                         _c.project.userAvatar!.isNotEmpty
                     ? NetworkImage(_c.project.userAvatar!)
@@ -43,7 +47,7 @@ class InnovationDetailCreatorSection extends StatelessWidget {
                             ? (_c.project.userName ?? '?').substring(0, 1)
                             : '?',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.cityPrimary,
                           fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -60,7 +64,7 @@ class InnovationDetailCreatorSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF1a1a1a),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -68,7 +72,7 @@ class InnovationDetailCreatorSection extends StatelessWidget {
                       '${l10n.createdAt} ${_c.formatDate(_c.project.createdAt)}',
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],

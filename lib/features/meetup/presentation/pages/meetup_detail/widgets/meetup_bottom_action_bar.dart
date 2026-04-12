@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/meetup/domain/entities/meetup.dart';
 import 'package:go_nomads_app/features/meetup/presentation/pages/meetup_detail/meetup_detail_controller.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -32,14 +33,9 @@ class MeetupBottomActionBar extends GetView<MeetupDetailController> {
       return Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10.r,
-              offset: Offset(0, -2.h),
-            ),
-          ],
+          color: AppColors.surfaceElevated,
+          border: Border(top: BorderSide(color: AppColors.borderLight)),
+          boxShadow: AppUiTokens.softTopSheetShadow,
         ),
         child: SafeArea(
           child: Row(
@@ -67,15 +63,16 @@ class MeetupBottomActionBar extends GetView<MeetupDetailController> {
           ),
         ),
         style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.blue,
+          foregroundColor: AppColors.textPrimary,
           side: BorderSide(
-            color: Colors.blue,
+            color: AppColors.border,
             width: 1.5,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+          backgroundColor: AppColors.surfaceElevated,
         ),
       ),
       SizedBox(width: 12.w),
@@ -87,14 +84,14 @@ class MeetupBottomActionBar extends GetView<MeetupDetailController> {
               : () => controller.cancelMeetup(context),
           icon: Icon(FontAwesomeIcons.ban, size: 20.sp),
           label: Text(
-            meetup.status == MeetupStatus.cancelled ? '已取消' : '取消',
+            meetup.status == MeetupStatus.cancelled ? l10n.cancelled : l10n.cancelMeetup,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: meetup.status == MeetupStatus.cancelled ? AppColors.borderLight : Colors.red,
+            backgroundColor: meetup.status == MeetupStatus.cancelled ? AppColors.borderLight : AppColors.feedbackError,
             foregroundColor: meetup.status == MeetupStatus.cancelled ? AppColors.textSecondary : Colors.white,
             padding: EdgeInsets.symmetric(vertical: 14.h),
             shape: RoundedRectangleBorder(
@@ -123,16 +120,16 @@ class MeetupBottomActionBar extends GetView<MeetupDetailController> {
           ),
         ),
         style: OutlinedButton.styleFrom(
-          foregroundColor: controller.isJoined ? Colors.blue : Colors.grey,
+          foregroundColor: controller.isJoined ? AppColors.textPrimary : AppColors.textTertiary,
           side: BorderSide(
-            color: controller.isJoined ? Colors.blue : Colors.grey.shade300,
+            color: controller.isJoined ? AppColors.border : AppColors.borderLight,
             width: 1.5,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-          backgroundColor: controller.isJoined ? null : Colors.grey.shade50,
+          backgroundColor: controller.isJoined ? AppColors.surfaceElevated : AppColors.surfaceDisabled,
         ),
       ),
       SizedBox(width: 12.w),
@@ -167,7 +164,7 @@ class MeetupBottomActionBar extends GetView<MeetupDetailController> {
   }
 
   String _getJoinButtonText(AppLocalizations l10n, Meetup meetup) {
-    if (controller.isCancelled) return '已取消';
+    if (controller.isCancelled) return l10n.cancelled;
     if (controller.isEnded) return l10n.ended;
     if (controller.isFull && !controller.isJoined) return l10n.full;
     if (controller.isJoined) return l10n.leaveMeetup;

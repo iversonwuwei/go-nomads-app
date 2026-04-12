@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/features/city/application/state_controllers/pros_cons_state_controller.dart';
 import 'package:go_nomads_app/features/city/domain/entities/city_detail.dart';
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -27,7 +28,7 @@ class ProsConsTab extends GetView<CityDetailController> {
 
     return Obx(() {
       final isLoading = prosConsController.isLoadingPros.value || prosConsController.isLoadingCons.value;
-      
+
       final content = RefreshIndicator(
         onRefresh: () => prosConsController.loadCityProsCons(controller.cityId),
         child: ListView(
@@ -38,16 +39,25 @@ class ProsConsTab extends GetView<CityDetailController> {
               children: [
                 Container(
                   padding: EdgeInsets.all(8.r),
-                  decoration:
-                      BoxDecoration(color: Colors.green.withAlpha(20), borderRadius: BorderRadius.circular(12.r)),
-                  child: Icon(FontAwesomeIcons.solidThumbsUp, color: Colors.green, size: 18.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.feedbackSuccess.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.solidThumbsUp,
+                    color: AppColors.feedbackSuccessDark,
+                    size: 18.r,
+                  ),
                 ),
                 SizedBox(width: 12.w),
-                Text('有点', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87)),
+                Text(
+                  '有点',
+                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
               ],
             ),
             SizedBox(height: 16.h),
-            
+
             if (prosConsController.prosList.isEmpty)
               _EmptyProsConsState(
                 icon: FontAwesomeIcons.solidThumbsUp,
@@ -64,7 +74,7 @@ class ProsConsTab extends GetView<CityDetailController> {
                     hasVoted: prosConsController.hasUserVoted(item.id),
                     onVote: () => _handleVote(prosConsController, item),
                   )),
-              
+
             SizedBox(height: 32.h),
 
             // Header for Cons
@@ -72,15 +82,25 @@ class ProsConsTab extends GetView<CityDetailController> {
               children: [
                 Container(
                   padding: EdgeInsets.all(8.r),
-                  decoration: BoxDecoration(color: Colors.red.withAlpha(20), borderRadius: BorderRadius.circular(12.r)),
-                  child: Icon(FontAwesomeIcons.solidThumbsDown, color: Colors.red, size: 18.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.feedbackError.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.solidThumbsDown,
+                    color: AppColors.feedbackErrorDark,
+                    size: 18.r,
+                  ),
                 ),
                 SizedBox(width: 12.w),
-                Text('挑战', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black87)),
+                Text(
+                  '挑战',
+                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                ),
               ],
             ),
             SizedBox(height: 16.h),
-            
+
             if (prosConsController.consList.isEmpty)
               _EmptyProsConsState(
                 icon: FontAwesomeIcons.solidThumbsDown,
@@ -139,21 +159,16 @@ class _ModernProsConsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = isPro ? Colors.green : Colors.red;
+    final primaryColor = isPro ? AppColors.feedbackSuccessDark : AppColors.feedbackErrorDark;
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(5),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -163,7 +178,7 @@ class _ModernProsConsItem extends StatelessWidget {
               item.text,
               style: TextStyle(
                 fontSize: 15.sp,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
                 height: 1.4,
               ),
             ),
@@ -176,15 +191,18 @@ class _ModernProsConsItem extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: hasVoted ? primaryColor : Colors.grey[100],
+                color: hasVoted ? primaryColor : AppColors.surfaceSubtle,
                 borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(
+                  color: hasVoted ? primaryColor.withValues(alpha: 0.12) : AppColors.borderLight,
+                ),
               ),
               child: Row(
                 children: [
                   Icon(
                     isPro ? FontAwesomeIcons.arrowUp : FontAwesomeIcons.arrowDown,
                     size: 14.r,
-                    color: hasVoted ? Colors.white : Colors.grey[500],
+                    color: hasVoted ? Colors.white : AppColors.textSecondary,
                   ),
                   if (item.upvotes > 0 || hasVoted) ...[
                     SizedBox(width: 6.w),
@@ -193,7 +211,7 @@ class _ModernProsConsItem extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.bold,
-                        color: hasVoted ? Colors.white : Colors.grey[700],
+                        color: hasVoted ? Colors.white : AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -230,9 +248,10 @@ class _EmptyProsConsState extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -248,13 +267,13 @@ class _EmptyProsConsState extends StatelessWidget {
           SizedBox(height: 16.h),
           Text(
             title,
-            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
           ),
           SizedBox(height: 8.h),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
           ),
           SizedBox(height: 20.h),
           ElevatedButton(

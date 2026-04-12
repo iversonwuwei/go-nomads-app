@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:go_nomads_app/config/app_colors.dart';
+import 'package:go_nomads_app/config/app_ui_tokens.dart';
 import 'package:go_nomads_app/controllers/member_detail_page_controller.dart';
 import 'package:go_nomads_app/features/user/domain/entities/user.dart' as models;
 import 'package:go_nomads_app/generated/app_localizations.dart';
@@ -48,7 +49,9 @@ class MemberDetailPage extends StatelessWidget {
       final loadingView = Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.surfaceElevated,
+          foregroundColor: AppColors.textPrimary,
+          surfaceTintColor: Colors.transparent,
           elevation: 0,
           leading: const AppBackButton(),
         ),
@@ -62,7 +65,9 @@ class MemberDetailPage extends StatelessWidget {
         content = Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
-            backgroundColor: Colors.transparent,
+            backgroundColor: AppColors.surfaceElevated,
+            foregroundColor: AppColors.textPrimary,
+            surfaceTintColor: Colors.transparent,
             elevation: 0,
             leading: const AppBackButton(),
           ),
@@ -73,19 +78,24 @@ class MemberDetailPage extends StatelessWidget {
                 Icon(
                   FontAwesomeIcons.circleExclamation,
                   size: 48.r,
-                  color: Colors.grey,
+                  color: AppColors.feedbackError,
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  controller.errorMessage.value ?? '用户信息不存在',
+                  controller.errorMessage.value ?? AppLocalizations.of(context)!.userNotFound,
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: Colors.grey,
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 SizedBox(height: 24.h),
                 ElevatedButton(
                   onPressed: controller.retry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.cityPrimary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                  ),
                   child: Text(AppLocalizations.of(context)!.retry),
                 ),
               ],
@@ -112,7 +122,9 @@ class MemberDetailPage extends StatelessWidget {
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surfaceElevated,
+            foregroundColor: AppColors.textPrimary,
+            surfaceTintColor: Colors.transparent,
             elevation: 0,
             leading: const SliverBackButton(),
             flexibleSpace: FlexibleSpaceBar(
@@ -125,8 +137,8 @@ class MemberDetailPage extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          const Color(0xFFFF4458).withValues(alpha: 0.1),
-                          Colors.white,
+                          AppColors.cityPrimaryLight,
+                          AppColors.backgroundSecondary,
                         ],
                       ),
                     ),
@@ -139,22 +151,16 @@ class MemberDetailPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Colors.white,
+                              color: AppColors.surfaceElevated,
                               width: 4,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 20.r,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                            boxShadow: AppUiTokens.heroCardShadow,
                           ),
                           child: SafeCircleAvatar(
                             imageUrl: user.avatarUrl,
                             radius: 73,
-                            backgroundColor: Colors.grey[200],
-                            errorWidget: Icon(FontAwesomeIcons.user, size: 40.r, color: Colors.grey),
+                            backgroundColor: AppColors.surfaceSubtle,
+                            errorWidget: Icon(FontAwesomeIcons.user, size: 40.r, color: AppColors.textTertiary),
                           ),
                         ),
                       ),
@@ -175,7 +181,7 @@ class MemberDetailPage extends StatelessWidget {
                                 vertical: 6.h,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF10B981),
+                                color: AppColors.travelMint,
                                 borderRadius: BorderRadius.circular(20.r),
                               ),
                               child: Row(
@@ -212,182 +218,90 @@ class MemberDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Column(
-                      children: [
-                        Text(
-                          user.name,
-                          style: TextStyle(
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1a1a1a),
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          '@${user.username}',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Color(0xFF9ca3af),
-                          ),
-                        ),
-                        if (user.currentCity != null)
-                          Padding(
-                            padding: EdgeInsets.only(top: 8.h),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  FontAwesomeIcons.locationDot,
-                                  size: 16.r,
-                                  color: Color(0xFFFF4458),
-                                ),
-                                SizedBox(width: 4.w),
-                                Text(
-                                  '${user.currentCity}, ${user.currentCountry ?? ''}',
-                                  style: TextStyle(
-                                    fontSize: 14.sp,
-                                    color: Color(0xFF6b7280),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
+                  Transform.translate(
+                    offset: Offset(0, -48.h),
+                    child: _buildProfileSummaryCard(context, controller, user),
                   ),
-                  SizedBox(height: 24.h),
+                  SizedBox(height: 8.h),
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
-                    _buildSectionTitle(AppLocalizations.of(context)!.about),
-                    SizedBox(height: 12.h),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: const Color(0xFFE5E7EB),
-                        ),
-                      ),
+                    _buildSectionCard(
+                      title: AppLocalizations.of(context)!.about,
+                      icon: FontAwesomeIcons.solidUser,
+                      accent: AppColors.travelSky,
                       child: Text(
                         user.bio!,
                         style: TextStyle(
                           fontSize: 14.sp,
                           height: 1.6,
-                          color: Color(0xFF4b5563),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
                     SizedBox(height: 24.h),
                   ],
-                  _buildInterestsSection(context, user),
-                  SizedBox(height: 24.h),
-                  _buildSkillsSection(context, user),
-                  SizedBox(height: 24.h),
-                  _buildBadgesSection(context, user),
-                  SizedBox(height: 24.h),
-                  _buildTravelHistorySection(context, user),
-                  SizedBox(height: 24.h),
-                  _buildSectionTitle(AppLocalizations.of(context)!.stats),
-                  SizedBox(height: 12.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          AppLocalizations.of(context)!.cities,
-                          user.stats.citiesVisited.toString(),
-                          FontAwesomeIcons.city,
-                          const Color(0xFFFF4458),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: _buildStatCard(
-                          AppLocalizations.of(context)!.countries,
-                          user.stats.countriesVisited.toString(),
-                          FontAwesomeIcons.flag,
-                          const Color(0xFF3B82F6),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: _buildStatCard(
-                          AppLocalizations.of(context)!.meetups,
-                          user.stats.reviewsWritten.toString(),
-                          FontAwesomeIcons.users,
-                          const Color(0xFF10B981),
-                        ),
-                      ),
-                    ],
+                  _buildSectionCard(
+                    title: AppLocalizations.of(context)!.interests,
+                    icon: FontAwesomeIcons.heart,
+                    accent: AppColors.cityPrimary,
+                    child: _buildInterestsSection(context, user),
                   ),
                   SizedBox(height: 24.h),
-                  if (!controller.isCurrentUser)
-                    Builder(
-                      builder: (context) {
-                        final l10n = AppLocalizations.of(context)!;
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () => Get.to(() => InviteToMeetupPage(user: user)),
-                                icon: const Icon(FontAwesomeIcons.calendarDays),
-                                label: Text(l10n.inviteToMeetup),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF10B981),
-                                  foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.r),
-                                  ),
-                                  elevation: 0,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  Get.to(() => TencentIMDirectChatPage(user: user));
-                                },
-                                icon: const Icon(FontAwesomeIcons.message),
-                                label: Text(l10n.sendMessage),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFF4458),
-                                  foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.r),
-                                  ),
-                                  elevation: 0,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0xFFE5E7EB),
-                                ),
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                              child: IconButton(
-                                onPressed: () {
-                                  AppToast.success(
-                                    l10n.favoriteAdded,
-                                    title: l10n.favorites,
-                                  );
-                                },
-                                icon: const Icon(
-                                  FontAwesomeIcons.heart,
-                                  color: Color(0xFFFF4458),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
+                  _buildSectionCard(
+                    title: AppLocalizations.of(context)!.skills,
+                    icon: FontAwesomeIcons.star,
+                    accent: AppColors.travelSky,
+                    child: _buildSkillsSection(context, user),
+                  ),
+                  SizedBox(height: 24.h),
+                  _buildSectionCard(
+                    title: AppLocalizations.of(context)!.badges,
+                    icon: FontAwesomeIcons.trophy,
+                    accent: AppColors.travelAmber,
+                    child: _buildBadgesSection(context, user),
+                  ),
+                  SizedBox(height: 24.h),
+                  _buildSectionCard(
+                    title: AppLocalizations.of(context)!.travelHistory,
+                    icon: FontAwesomeIcons.earthAmericas,
+                    accent: AppColors.travelMint,
+                    child: _buildTravelHistorySection(context, user),
+                  ),
+                  SizedBox(height: 24.h),
+                  _buildSectionCard(
+                    title: AppLocalizations.of(context)!.stats,
+                    icon: FontAwesomeIcons.chartColumn,
+                    accent: AppColors.travelAmber,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatCard(
+                            AppLocalizations.of(context)!.cities,
+                            user.stats.citiesVisited.toString(),
+                            FontAwesomeIcons.city,
+                            AppColors.cityPrimary,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: _buildStatCard(
+                            AppLocalizations.of(context)!.countries,
+                            user.stats.countriesVisited.toString(),
+                            FontAwesomeIcons.flag,
+                            AppColors.travelSky,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: _buildStatCard(
+                            AppLocalizations.of(context)!.meetups,
+                            user.stats.reviewsWritten.toString(),
+                            FontAwesomeIcons.users,
+                            AppColors.travelMint,
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
                   SizedBox(height: 40.h),
                 ],
               ),
@@ -398,13 +312,210 @@ class MemberDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 18.sp,
-        fontWeight: FontWeight.bold,
-        color: Color(0xFF1a1a1a),
+  Widget _buildProfileSummaryCard(
+    BuildContext context,
+    MemberDetailPageController controller,
+    models.User user,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusXl),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.heroCardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  user.name,
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  '@${user.username}',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                if (user.currentCity != null)
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.h),
+                    child: Wrap(
+                      spacing: 8.w,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Icon(
+                          FontAwesomeIcons.locationDot,
+                          size: 14.r,
+                          color: AppColors.cityPrimary,
+                        ),
+                        Text(
+                          '${user.currentCity}, ${user.currentCountry ?? ''}',
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(height: 18.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  l10n.cities,
+                  user.stats.citiesVisited.toString(),
+                  FontAwesomeIcons.city,
+                  AppColors.cityPrimary,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildStatCard(
+                  l10n.countries,
+                  user.stats.countriesVisited.toString(),
+                  FontAwesomeIcons.flag,
+                  AppColors.travelSky,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildStatCard(
+                  l10n.meetups,
+                  user.stats.reviewsWritten.toString(),
+                  FontAwesomeIcons.users,
+                  AppColors.travelMint,
+                ),
+              ),
+            ],
+          ),
+          if (!controller.isCurrentUser) ...[
+            SizedBox(height: 16.h),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => Get.to(() => InviteToMeetupPage(user: user)),
+                    icon: const Icon(FontAwesomeIcons.calendarDays),
+                    label: Text(l10n.inviteToMeetup),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.travelMint,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Get.to(() => TencentIMDirectChatPage(user: user));
+                    },
+                    icon: const Icon(FontAwesomeIcons.message),
+                    label: Text(l10n.sendMessage),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.cityPrimary,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    border: Border.all(color: AppColors.borderLight),
+                    borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      AppToast.success(
+                        l10n.favoriteAdded,
+                        title: l10n.favorites,
+                      );
+                    },
+                    icon: const Icon(
+                      FontAwesomeIcons.heart,
+                      color: AppColors.cityPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required Color accent,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusXl),
+        border: Border.all(color: AppColors.borderLight),
+        boxShadow: AppUiTokens.softFloatingShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36.w,
+                height: 36.w,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(icon, size: 16.r, color: accent),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          child,
+        ],
       ),
     );
   }
@@ -413,18 +524,11 @@ class MemberDetailPage extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFFFFD700).withValues(alpha: 0.15),
-            const Color(0xFFFFA500).withValues(alpha: 0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
         border: Border.all(
-          color: const Color(0xFFFFB020).withValues(alpha: 0.3),
-          width: 1.5,
+          color: AppColors.travelAmber.withValues(alpha: 0.24),
+          width: 1.2,
         ),
       ),
       child: Column(
@@ -441,7 +545,7 @@ class MemberDetailPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1a1a1a),
+              color: AppColors.textPrimary,
               height: 1.2,
             ),
             maxLines: 2,
@@ -458,83 +562,23 @@ class MemberDetailPage extends StatelessWidget {
         final isMobile = constraints.maxWidth < 768;
         final crossAxisCount = isMobile ? 3 : 5;
 
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(20.w),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [
-                Color(0xFFFFF3E0),
-                Color(0xFFFFE0B2),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: const Color(0xFFFFB020),
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFFB020).withValues(alpha: 0.2),
-                blurRadius: 8.r,
-                offset: const Offset(0, 2),
-              ),
-            ],
+        if (user.badges.isEmpty) {
+          return _buildEmptySectionMessage(AppLocalizations.of(context)!.noBadgesYet);
+        }
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 12.w,
+            mainAxisSpacing: 12.w,
+            childAspectRatio: 1,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    FontAwesomeIcons.trophy,
-                    color: Color(0xFFFF6F00),
-                    size: 24.r,
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'Badges',
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1a1a1a),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              user.badges.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20.h),
-                        child: Text(
-                          AppLocalizations.of(context)!.noBadgesYet,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: const Color(0xFFFF6F00).withValues(alpha: 0.6),
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 12.w,
-                        mainAxisSpacing: 12.w,
-                        childAspectRatio: 1,
-                      ),
-                      itemCount: user.badges.length,
-                      itemBuilder: (context, index) {
-                        return _buildBadgeCard(user.badges[index]);
-                      },
-                    ),
-            ],
-          ),
+          itemCount: user.badges.length,
+          itemBuilder: (context, index) {
+            return _buildBadgeCard(user.badges[index]);
+          },
         );
       },
     );
@@ -543,97 +587,23 @@ class MemberDetailPage extends StatelessWidget {
   Widget _buildTravelHistorySection(BuildContext context, models.User user) {
     final latestTravel = user.latestTravelHistory;
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFE3F2FD),
-            Color(0xFFBBDEFB),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF2196F3),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2196F3).withValues(alpha: 0.2),
-            blurRadius: 8.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                FontAwesomeIcons.earthAmericas,
-                color: Color(0xFF1976D2),
-                size: 24.r,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Travel History',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1a1a1a),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          latestTravel == null
-              ? Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20.h),
-                    child: Text(
-                      AppLocalizations.of(context)!.noTravelHistoryYet,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFF1976D2).withValues(alpha: 0.6),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                )
-              : _buildLatestTravelHistoryCard(latestTravel, context),
-        ],
-      ),
-    );
+    if (latestTravel == null) {
+      return _buildEmptySectionMessage(AppLocalizations.of(context)!.noTravelHistoryYet);
+    }
+
+    return _buildLatestTravelHistoryCard(latestTravel, context);
   }
 
   Widget _buildLatestTravelHistoryCard(models.LatestTravelHistory travel, BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFFF8E1),
-            Color(0xFFFFF3CD),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
         border: Border.all(
-          color: const Color(0xFFFF9800),
-          width: 1.5,
+          color: AppColors.travelAmber.withValues(alpha: 0.22),
+          width: 1.2,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFF9800).withValues(alpha: 0.2),
-            blurRadius: 8.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -641,17 +611,10 @@ class MemberDetailPage extends StatelessWidget {
             width: 60.w,
             height: 60.h,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFFFFE082),
-                  Color(0xFFFFD54F),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(8.r),
+              color: AppColors.travelAmber.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: const Color(0xFFFFA726),
+                color: AppColors.travelAmber.withValues(alpha: 0.24),
                 width: 1,
               ),
             ),
@@ -672,7 +635,7 @@ class MemberDetailPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1a1a1a),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -680,7 +643,7 @@ class MemberDetailPage extends StatelessWidget {
                   travel.country,
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Color(0xFF6b7280),
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -689,7 +652,7 @@ class MemberDetailPage extends StatelessWidget {
                     Icon(
                       FontAwesomeIcons.calendar,
                       size: 14.r,
-                      color: Color(0xFF9ca3af),
+                      color: AppColors.textTertiary,
                     ),
                     SizedBox(width: 6.w),
                     Flexible(
@@ -697,7 +660,7 @@ class MemberDetailPage extends StatelessWidget {
                         _formatTravelDate(travel.arrivalTime, travel.departureTime),
                         style: TextStyle(
                           fontSize: 13.sp,
-                          color: Color(0xFF9ca3af),
+                          color: AppColors.textTertiary,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -707,7 +670,7 @@ class MemberDetailPage extends StatelessWidget {
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
+                          color: AppColors.travelMint,
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
@@ -772,8 +735,8 @@ class MemberDetailPage extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
         border: Border.all(
           color: color.withValues(alpha: 0.2),
         ),
@@ -799,7 +762,7 @@ class MemberDetailPage extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12.sp,
-              color: Color(0xFF6b7280),
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -808,215 +771,80 @@ class MemberDetailPage extends StatelessWidget {
   }
 
   Widget _buildInterestsSection(BuildContext context, models.User user) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFCE4EC),
-            Color(0xFFF8BBD0),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFFE91E63),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFE91E63).withValues(alpha: 0.2),
-            blurRadius: 8.r,
-            offset: const Offset(0, 2),
+    if (user.interests.isEmpty) {
+      return _buildEmptySectionMessage(AppLocalizations.of(context)!.noInterestsAddedYet);
+    }
+
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 8.w,
+      children: user.interests.map((interest) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: AppColors.cityPrimaryLight,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: AppColors.cityPrimary.withValues(alpha: 0.18)),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                FontAwesomeIcons.heart,
-                color: Color(0xFFC2185B),
-                size: 24.r,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Interests',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1a1a1a),
-                ),
-              ),
-            ],
+          child: Text(
+            interest.name,
+            style: TextStyle(
+              color: AppColors.cityPrimary,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          SizedBox(height: 16.h),
-          user.interests.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20.h),
-                    child: Text(
-                      'No interests added yet',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFFC2185B).withValues(alpha: 0.6),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                )
-              : Wrap(
-                  spacing: 8.w,
-                  runSpacing: 8.w,
-                  children: user.interests.map((interest) {
-                    return Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFFF4458),
-                            Color(0xFFE91E63),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFFF4458).withValues(alpha: 0.3),
-                            blurRadius: 4.r,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            interest.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 
   Widget _buildSkillsSection(BuildContext context, models.User user) {
+    if (user.skills.isEmpty) {
+      return _buildEmptySectionMessage(AppLocalizations.of(context)!.noSkillsAddedYet);
+    }
+
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 8.w,
+      children: user.skills.map((skill) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+          decoration: BoxDecoration(
+            color: AppColors.travelSky.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: AppColors.travelSky.withValues(alpha: 0.22)),
+          ),
+          child: Text(
+            skill.name,
+            style: TextStyle(
+              color: const Color(0xFF276A88),
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildEmptySectionMessage(String message) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFE3F2FD),
-            Color(0xFFBBDEFB),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF2196F3),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2196F3).withValues(alpha: 0.2),
-            blurRadius: 8.r,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppColors.surfaceSubtle,
+        borderRadius: BorderRadius.circular(AppUiTokens.radiusMd),
+        border: Border.all(color: AppColors.borderLight),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                FontAwesomeIcons.star,
-                color: Color(0xFF1976D2),
-                size: 24.r,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Skills',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1a1a1a),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          user.skills.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20.h),
-                    child: Text(
-                      'No skills added yet',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFF1976D2).withValues(alpha: 0.6),
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                )
-              : Wrap(
-                  spacing: 8.w,
-                  runSpacing: 8.w,
-                  children: user.skills.map((skill) {
-                    return Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF3B82F6),
-                            Color(0xFF1976D2),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(20.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                            blurRadius: 4.r,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            skill.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-        ],
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14.sp,
+          color: AppColors.textSecondary,
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }

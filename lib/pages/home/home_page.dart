@@ -54,9 +54,9 @@ class HomePage extends GetView<HomePageController> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
-                  isMobile ? 16 : 32,
-                  14,
-                  isMobile ? 16 : 32,
+                  isMobile ? 18 : 32,
+                  18,
+                  isMobile ? 18 : 32,
                   0,
                 ),
                 child: HomeNomadDashboard(isMobile: isMobile),
@@ -70,7 +70,12 @@ class HomePage extends GetView<HomePageController> {
 
             // 城市网格
             SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+              padding: EdgeInsets.fromLTRB(
+                isMobile ? 18 : 32,
+                8,
+                isMobile ? 18 : 32,
+                0,
+              ),
               sliver: SliverToBoxAdapter(
                 child: HomeCityGrid(isMobile: isMobile),
               ),
@@ -82,7 +87,7 @@ class HomePage extends GetView<HomePageController> {
             // Meetups 区域
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 18 : 32),
                 child: HomeMeetupsSection(isMobile: isMobile),
               ),
             ),
@@ -93,7 +98,7 @@ class HomePage extends GetView<HomePageController> {
             SliverToBoxAdapter(
               child: Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 16 : 32,
+                  horizontal: isMobile ? 18 : 32,
                   vertical: isMobile ? 6 : 14,
                 ),
                 child: HomeFeatureHighlights(isMobile: isMobile),
